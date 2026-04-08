@@ -13,6 +13,7 @@
 *.nav
 *.snm
 *.vrb
+*.tex
 
 # latexmk
 *.run.xml
@@ -24,5 +25,5 @@
 .vscode/
 
 # Keep PDFs and TEX files
-!*.tex
+# !*.tex
 !*.pdf
