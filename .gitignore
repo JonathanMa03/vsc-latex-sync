@@ -27,3 +27,6 @@
 # Keep PDFs and TEX files
 # !*.tex
 !*.pdf
+
+logs/
+tex/
