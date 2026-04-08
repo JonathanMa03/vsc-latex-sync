@@ -1,0 +1,62 @@
+\documentclass[11pt]{article}
+
+% Layout & spacing
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\setstretch{1.15}
+\setlength{\parindent}{0pt} % no indent
+\usepackage{changepage}
+
+% Math & symbols
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools} % for := and other extensions
+
+% Images & figures
+\usepackage{graphicx}
+\usepackage{float} % better figure placement with H option
+\usepackage{caption, subcaption}
+
+% Code blocks if needed
+\usepackage{listings}
+
+% Hyperlinks & navigation
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=cyan, citecolor=blue}
+
+% Table of contents
+\usepackage{tocloft}
+\setlength{\cftbeforesecskip}{6pt}
+
+% Optional but useful
+\usepackage{booktabs} % clean tables
+\usepackage{enumitem} % control over itemize spacing
+\usepackage{physics} % derivatives, norms, etc.
+\usepackage{bm} % bold math symbols if ever needed
+\usepackage{titlesec} % section styling control
+\usepackage{xcolor} % colored text if desired
+\usepackage{tcolorbox} % boxed proofs, highlights, notes
+\tcbuselibrary{theorems}
+
+% Custom note box
+\newtcolorbox{note}[1][]{
+  colback=gray!8,
+  colframe=gray!50,
+  title=Note,
+  sharp corners,
+  #1
+}
+
+% Section formatting (clean + minimal)
+\titleformat{\section}{\large\bfseries}{}{0em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+
+% Title block
+\title{EN.553.733 Nonparametric Bayesian Statistics}
+\author{Jonathan Y. Ma}
+\date{June 2026}
+
+\begin{document}
+
+\maketitle
+
+\end{document}
