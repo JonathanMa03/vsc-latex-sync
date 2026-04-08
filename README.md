@@ -12,4 +12,4 @@ sub-files/treeing works
 cd /path/to/project
 latexmk -pdf -pvc main.tex
 ```
-- use Cmd + S to update
+- use Cmd + S to update automatically
