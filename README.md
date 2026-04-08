@@ -2,12 +2,14 @@
 
 sub-files/treeing works
 
-## To Compile:
+## Simple Compile:
+- Copy the full absolute path
 - terminal: `latexmk -pdf path/to/main.tex`
-- Put `% !TeX root = main.tex` at the top of every non-root file
-- autocompile on save: 
 
+## Autosave and run
+- run:
 ```
-cd path/to/project
-latexmk -pdf main.tex
+cd /path/to/project
+latexmk -pdf -pvc main.tex
 ```
+- use Cmd + S to update
