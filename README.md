@@ -2,14 +2,18 @@
 
 sub-files/treeing works
 
-## Simple Compile:
-- Copy the full absolute path
-- terminal: `latexmk -pdf path/to/main.tex`
+## Simple Compile
+- cd into project folder
+- terminal: `latexmk -pdf main.tex`
 
-## Autosave and run
-- run:
-```
-cd /path/to/project
-latexmk -pdf -pvc main.tex
-```
-- use Cmd + S to update automatically
+## Autosave + Live Compile
+- cd into project folder
+- terminal: `latexmk -pdf -pvc main.tex`
+
+## Live Updates
+- keep terminal running
+- use `Cmd + S` to trigger rebuild
+- open PDF via:
+  - `Cmd + Shift + P`
+  - `LaTeX Workshop: View LaTeX PDF`
+  - choose "View in VS Code tab"
