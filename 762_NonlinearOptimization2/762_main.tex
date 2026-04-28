@@ -1,54 +1,166 @@
-\documentclass[11pt]{article}
+\documentclass[12pt,oneside]{book}
 
-% Layout & spacing
+%============================================================
+% PACKAGES
+%============================================================
+
+%--------------------
+% Page + font
+%--------------------
 \usepackage[margin=1in]{geometry}
-\usepackage{setspace}
-\setstretch{1.15}
-\setlength{\parindent}{0pt} % no indent
-\usepackage{changepage}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
 
-% Math & symbols
-\usepackage{amsmath, amssymb, amsthm}
-\usepackage{mathtools} % for := and other extensions
+%--------------------
+% Math
+%--------------------
+\usepackage{amsmath, amssymb, amsfonts, amsthm, mathtools}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage{mathrsfs}
+\usepackage{dsfont}
 
-% Images & figures
+%--------------------
+% Tables + figures
+%--------------------
 \usepackage{graphicx}
-\usepackage{float} % better figure placement with H option
-\usepackage{caption, subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xltabular}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{subcaption}
 
-% Code blocks if needed
+%--------------------
+% Lists
+%--------------------
+\usepackage{enumitem}
+\setlist[itemize]{topsep=2pt,itemsep=2pt}
+\setlist[enumerate]{topsep=2pt,itemsep=2pt}
+
+%--------------------
+% Colors + hyperlinks
+%--------------------
+\usepackage[dvipsnames]{xcolor}
+\usepackage[
+    colorlinks=true,
+    linkcolor=MidnightBlue,
+    citecolor=MidnightBlue,
+    urlcolor=MidnightBlue
+]{hyperref}
+\usepackage[nameinlink,capitalise]{cleveref}
+
+%--------------------
+% Algorithms
+%--------------------
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+%--------------------
+% Code blocks
+%--------------------
 \usepackage{listings}
 
-% Hyperlinks & navigation
-\usepackage{hyperref}
-\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=cyan, citecolor=blue}
-
-% Table of contents
-\usepackage{tocloft}
-\setlength{\cftbeforesecskip}{6pt}
-
-% Optional but useful
-\usepackage{booktabs} % clean tables
-\usepackage{enumitem} % control over itemize spacing
-\usepackage{physics} % derivatives, norms, etc.
-\usepackage{bm} % bold math symbols if ever needed
-\usepackage{titlesec} % section styling control
-\usepackage{xcolor} % colored text if desired
-\usepackage{tcolorbox} % boxed proofs, highlights, notes
-\tcbuselibrary{theorems}
-
-% Custom note box
-\newtcolorbox{note}[1][]{
-  colback=gray!8,
-  colframe=gray!50,
-  title=Note,
-  sharp corners,
-  #1
+\lstdefinestyle{codestyle}{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    keywordstyle=\color{MidnightBlue},
+    commentstyle=\color{ForestGreen},
+    stringstyle=\color{BrickRed},
+    showstringspaces=false,
+    tabsize=4
 }
 
-% Section formatting (clean + minimal)
-\titleformat{\section}{\large\bfseries}{}{0em}{}
-\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+\lstset{style=codestyle}
+
+%--------------------
+% Section styling
+%--------------------
+\usepackage{titlesec}
+\usepackage{tocloft}
+
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{3}
+
+%============================================================
+% THEOREMS
+%============================================================
+
+\numberwithin{equation}{section}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{exercise}{Exercise}[section]
+\newtheorem{remark}{Remark}[section]
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{corollary}{Corollary}[section]
+
+\theoremstyle{remark}
+\newtheorem*{note}{Note}
+
+%============================================================
+% CUSTOM COMMANDS
+%============================================================
+
+% Sets
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\C}{\mathbb{C}}
+
+% Probability
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Corr}{\mathrm{Corr}}
+\newcommand{\Prob}{\mathbb{P}}
+
+\newcommand{\ind}{\mathbbm{1}}
+\newcommand{\iid}{\overset{\text{iid}}{\sim}}
+\newcommand{\convd}{\overset{d}{\to}}
+\newcommand{\convp}{\overset{p}{\to}}
+\newcommand{\as}{\overset{a.s.}{\to}}
+
+% Operators
+\newcommand{\given}{\,\middle|\,}
+\newcommand{\argmin}{\operatorname*{arg\,min}}
+\newcommand{\argmax}{\operatorname*{arg\,max}}
+
+% Linear algebra / analysis
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\inner}[2]{\left\langle #1, #2 \right\rangle}
+
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\grad}{\nabla}
+\newcommand{\Hess}{\nabla^2}
+
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\diag}{\operatorname{diag}}
+
+% Distributions
+\newcommand{\Normal}{\mathcal{N}}
+\newcommand{\Bern}{\mathrm{Bernoulli}}
+\newcommand{\Bin}{\mathrm{Binomial}}
+\newcommand{\Pois}{\mathrm{Poisson}}
+\newcommand{\Gam}{\mathrm{Gamma}}
+\newcommand{\BetaDist}{\mathrm{Beta}}
+\newcommand{\Exp}{\mathrm{Exponential}}
+\newcommand{\Dir}{\mathrm{Dirichlet}}
+\newcommand{\InvGam}{\mathrm{Inv\text{-}Gamma}}
 
 % Title block
 \title{EN.553.762 Nonlinear Optimization 2}
