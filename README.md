@@ -13,6 +13,7 @@ sub-files/treeing works
 ## Live Updates
 - keep terminal running
 - use `Cmd + S` to trigger rebuild
+- navigate to tex file
 - open PDF via:
   - `Cmd + Shift + P`
   - `LaTeX Workshop: View LaTeX PDF`
