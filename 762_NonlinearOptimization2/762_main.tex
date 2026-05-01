@@ -119,6 +119,7 @@
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\Q}{\mathbb{Q}}
 \newcommand{\C}{\mathbb{C}}
+\newcommand{\poly}{\mathcal{P}}
 
 % Probability
 \newcommand{\E}{\mathbb{E}}
@@ -170,5 +171,1716 @@
 \begin{document}
 
 \maketitle
+\tableofcontents
+
+\newpage
+\chapter{Linear Programs}
+
+\begin{definition}
+    A linear program (LP) minimizes or maximizes a linear function 
+    $$
+    c^Tx = \sum_{i=1}^{n} c_i x_i = \langle c , x \rangle
+    $$ 
+    over a feasible region defined by linear inequalities $a_i^T x \le b_i \forall i = 1,...,m$:
+\end{definition}
+
+\noindent We can also format this as:
+$$
+\begin{cases}
+    \min \max c^T x \\
+    s.t. \quad Ax \le b \quad \text{(elementwise)}
+\end{cases}
+$$
+where
+\begin{itemize}
+    \item $A = \text{row}(a_m^T) = \text{col}(A_n)$
+    \item $Ax= \text{col}(a_m^T x) = A_1x_1 +\text{...}+A_nx_n$
+    \item $n$ is the decision variable dimensions $x \in \R^n$
+    \item $m$ is the number of constraints $b \in \R^m$
+\end{itemize}
+Useful terms to know:
+\begin{enumerate}
+    \item $\{ x | a_i^T \le b_i\}$ for fixed $i$ is called a \emph{half space}
+    \item $\mathcal{P}=\{ x | a_i^T \le b_i \forall i = 1,\text{...},m\}$ is called a \emph{polyhedron}
+    \item If additional $\mathcal{P}$ is bounded, then it is called a \emph{polytope}
+    \item We say a LP is \emph{infeasible} if no $x$ satisfies $Ax\le b$, denoted by
+            $$
+            \begin{cases}
+                \min (\max) c^T x = \pm \infty\\
+                s.t. \quad Ax \le b
+            \end{cases}
+            $$
+    \item We say a LP is \emph{unbounded} if $\exists$ a sequence $x^{(i)} \in \R^n$ such that $\lim_{i \rightarrow \infty} c^T x^{(i)} = -\infty$.
+    \item We say $x^{\*} \in \R^n$ is a \emph{minimizer} (or maximizer) if $Ax^{\*} \le b$ and $c^Tx^* \le c^Tx \forall x \text{s.t.} Ax \le b$ (or $c^Tx^* \ge c^Tx \forall x \text{s.t.} Ax \le b$) \\
+    \item Any $x\in \R^n$ is called a \emph{solution}
+    \begin{itemize}
+        \item $x$ with $Ax\le b$ is called a \emph{feasible solution}
+        \item $x$ minimizing/maximizing is called an \emph{optimal solution}
+    \end{itemize}
+\end{enumerate}
+\begin{theorem}
+    Every LP is infeasible, unbounded, or has an optimal solution
+\end{theorem}
+\begin{proof}
+    We prove this by counter-example. Consider a nonlinear program $$\argmin e^x \text{s.t.} x\in \R$$. This is actually equivalent to taking an infinum, and results in non-attainment (We will worry about this for NLP but not LP)
+\end{proof}
+"Standard Form" LPs are 
+$$
+\begin{cases}
+    \argmin c^Tx \quad \text{(always minimize)} \\
+    \text{s.t.} Ax=b \text{(equality constraints related to A)} \\
+    \quad x \ge 0 \text{(simple inequality constraints)}
+\end{cases}
+$$
+\begin{theorem} Every LP can be equivalently rewritten in standard form \end{theorem} 
+\noindent Example 1: (Knapsack Problem) Suppose you have goods $i = 1,...,n$ and each has three attributes $[w_i, v_i, p_i]$ for weight, volume, and payoff. Given weights and volume upper bounds $W,V$, you aim to maximize your payoff
+$$
+\begin{cases}
+    \argmax p^T x = \sum p_i x_i \\
+    \text{s.t.} w^Tx\le W \\
+    \quad v^Tx\le V \\
+    \quad x \ge 0
+\end{cases}
+\iff
+\begin{cases}
+    \argmin -p^T x \\
+    \text{s.t.} w^Tx + s_1 \le W \\
+    \quad v^Tx + s_2 \le V \\
+    \quad xs \ge 0
+\end{cases}
+$$
+\noindent Example 2: (Transportation Problem) Suppose we are shipping goods from supply centers $i=1,...,m$ to demand centers $j=1,...,n$. Each supply center has $s_i$ supply and each demand center has $d_j$ demand. Shipping cost from $i$ to $j$ is $c_{ij}$ per unit
+$$
+\begin{cases}
+    \argmin \sum_{ij} c_{ij}x_{ij} \\
+    \text{s.t.} \sum_j x_{ij} = s_i \forall i \\
+    \quad \sum_i x_{ij} = d_j \forall j \\
+    x \ge 0
+\end{cases}
+$$
+
+\section{Extreme Points}
+Recall a typical picture of an LP's feasible region is $\mathcal{P} = \{x|Ax \le b\}$ and the equivalent standard form is $\mathcal{P}=\{x| Ax=b, x\ge 0\}$, that is $x$ is in a subspace and a non-negative orthant. Standard form gives a nice property that the feasible region is closed, i.e. $\{x|x_0 + \lambda d \forall \lambda \in \R\} \subsetneq \mathcal{P}$. We will also refer to extreme points as \emph{corners}. There are three definitions:
+\begin{itemize}
+    \item Geometric: we say $x \in \mathcal{P}$ is an \emph{extreme point} if no $y,z \in \mathcal{P}$ with $x = \lambda y + (1-\lambda)z, \lambda \in [0,1]$ exists
+    \item Optimization: we say $x \in \mathcal{P}$ is a \emph{vertex} if some $c$ has $c^Tx < c^Ty \forall y \in \mathcal{P}$
+    \item Algebraic: we say $x \in \mathcal{P}$ is a \emph{basic feasible solution (BFS)} if there exists a linearly independent $a_i$ with $a_i^T x = b_i$ (implying $x$ is the unique solution with those tight constraints)
+\end{itemize}
+\begin{theorem}
+    For any polyhedron $\poly = \{x | Ax \le b\}$, a point $x \in \R^n$ is an extreme point iff it is a vertex and iff it is a BFS. 
+\end{theorem}
+\begin{proof}
+    We will prove this by showing $\text{Vertex} \implies \text{Extreme Point} \implies \text{BFS} \implies \text{Vertex}$. Suppose $x$ is a vertex. Consider any $y,z \in \poly$. Now 
+    $$
+    \lambda (c^Tx < c^T y)+(1-\lambda)(c^Tx < c^T z) = c^T x \le c^T(\lambda y + (1-\lambda)z) 
+    $$
+    $$
+    \implies x \ne \lambda y + (1-\lambda)z \text{for any} \lambda \in [0,1]
+    $$
+    Suppose $x$ is not a BFS, Let $I \subseteq \{1,...,m\}$ such that $a_i^Tx=b_i$ ($i \notin I, a_i^Tx < b_i$). Then $\{a_i\}_{i \in I}$ does not contain linearly independent vectors
+    $$
+    \implies \exists d \ne 0 \quad a_i^T d = 0 \quad \forall i \in I
+    $$
+    $$
+    \implies a_i^T (x \pm \varepsilon d) = a_i^T x = b_i \quad \forall i \in I
+    $$
+    $$
+    \implies x \pm \varepsilon d \text{is feasible for some } \varepsilon \text{as small as we want}
+    $$
+    Since $x = \frac{1}{2} ((x+\varepsilon d)+(x-\varepsilon d))$, $x$ is not an extreme point. Now suppose that $x$ is BFS with $I$ defined as before. Consider $c = -\sum_{i \in I} a_i$. All $y \in \poly$ have
+    $$
+    c^T y = -\sum_{i \in I}a_i^T y > -\sum_{i \in I} b_i = -\sum_{i \in I}a_i^T x = c^Tx
+    $$
+    BFS $\iff n$ linear independent $a_i^T x = b_i$ where $x$ is an $n$-dimensional vector $\iff x$ is the only solution to $a_i^T y = b_i$
+\end{proof}
+Recall a standard form polyhedron with $m$ equalities and $n$ more inequalities is $\poly = \{x | Ax=b,x\ge0\}$ (need $m < n$, assume $A$ has independent rows). \\
+\noindent Pick a \emph{Basis} $B = \{B(1),...,B(m)\} \subseteq \{1,...,n\}$ and complement $\bar{B}=\{1,...,n\}$. Let $x_B=\vec{x}_{B(n)}$, $c_B=\vec{c}_{B(m)}$, $x_{\bar{B}}=\vec{x}_{B(n \times m)}$, $c_{\bar{B}}=\vec{c}_{B(n \times m)}$, $A_B=\text{col}(A_{B(m)})$, and $A_{\bar{B}}=\text{row}(A_{\bar{B}(n \times m)})$. \\
+\noindent A BFS comes from forcing $x_{\bar{B}}=0$
+$$
+\begin{cases}
+    Ax=b\\
+    x_{\bar{B}}=0
+\end{cases}
+\iff
+\begin{cases}
+    A_B x_B + A_{\bar{B}}x_{\bar{B}}=b \\
+    x_{\bar{B}}=0
+\end{cases}
+$$
+if and only if
+$$
+\begin{cases}
+    A_B x_B=b \\
+    x_{\bar{B}}=0
+\end{cases}
+\implies
+\begin{cases}
+    x_B = A_B^{-1}b\\
+    x_{\bar{B}}=0
+\end{cases}
+$$
+\begin{lemma}
+    Every nonempty standard form polyhedron has a BFS
+\end{lemma}
+Consider a standard form LP and recall that $x^*$ is a minimizer if
+$$
+\begin{cases}
+    Ax^* = b, x^* \ge 0 \\
+    c^Tx^* \le c^T y \forall y \in \poly
+\end{cases}
+$$
+\begin{theorem}
+    If an LP has a minimizer, then some BFS is a minimizer.
+\end{theorem}
+\begin{proof}
+    Let $x^*$ be a minimizer of $c^Tx$ over $\poly$. Define $Q = \{x | Ax=b, c^Tx=c^Tx^*, x\ge0\}$. This means there must exist a $x^*$ that is a BFS of Q, and we cannot write $x^*$ as an average of minimizers (elements of $Q$). Consider a BFS $x^*$ with basis B. This implies that a unique $x^*$ solves
+    $$
+    \begin{cases}
+        Ax=b \\
+        x_{bar{B}}=0
+    \end{cases}
+    $$
+\end{proof}
+Consider a BFS $\bar{x}$ with basis $B$. Try increasing some $x_j=\varepsilon, j \in \bar{B}$. \\
+\noindent Let $\tilde{x}$ uniquely solve 
+$$
+\begin{cases}
+    Ax=b \\
+    x_j = \varepsilon \\
+    x_{\bar{B}}=0
+\end{cases}
+\iff
+\begin{cases}
+    \tilde{x}_B = A_B^{-1}b - A_B^{-1}A_j \varepsilon\\
+    \tilde{x}_j = \varepsilon \\
+    \tilde{x}_{\bar{B}}=0
+\end{cases}
+$$
+Primal feasibilitity is $x_B=A_B^{-1}b \ge 0$ and dual feasibility is $c - A^Ty = c-A^T(A_B^{-1}c_B)\ge 0$
+
+\[
+c^T \tilde{x} = 
+\underbrace{c_B^T A_B^{-1} b}_{c^T \tilde{x}} 
+\;-\;
+\underbrace{
+c_B^T A_B^{-1} A_j \epsilon + c_j \epsilon
+}_{\text{The reduced cost of j in basis B: } \bar{c}_j}
+\]
+
+\begin{theorem}
+    Consider a BFS $\bar{x}$ with $B$ basis and $\bar{c}$ reduced costs. (i) if $\bar{c}\ge 0$, then $\bar{x}$ is a minimizer, and (ii) if $\bar{x}$ is a minimizer and nondegenerate, then $\bar{c}\ge 0$.
+\end{theorem}
+
+\begin{proof}[Proof of (i)]
+    Suppose $\bar{c} \ge 0$. Consider any $x \in P = \{x \mid Ax = b,\; x \ge 0\}$.
+    
+    We want to show:
+    \[
+    c^T \bar{x} \le c^T x.
+    \]
+    
+    Let
+    \[
+    d = x - \bar{x}.
+    \]
+    
+    Since $Ax = b$ and $A\bar{x} = b$, we have
+    \[
+    Ad = 0.
+    \]
+    
+    Partitioning into basic and nonbasic components:
+    \[
+    A_B d_B + A_{\bar{B}} d_{\bar{B}} = 0.
+    \]
+    
+    Thus,
+    \[
+    d_B = -A_B^{-1} A_{\bar{B}} d_{\bar{B}}
+    = -\sum_{j \in \bar{B}} A_B^{-1} (A_j d_j).
+    \]
+    
+    Now,
+    \[
+    c^T(x - \bar{x}) = c^T d = c_B^T d_B + c_{\bar{B}}^T d_{\bar{B}}.
+    \]
+    
+    Substitute for $d_B$:
+    \[
+    = c_B^T \left(-\sum_{j \in \bar{B}} A_B^{-1} A_j d_j \right)
+    + \sum_{j \in \bar{B}} c_j d_j.
+    \]
+    
+    \[
+    = -\sum_{j \in \bar{B}} \left(c_B^T A_B^{-1} A_j - c_j\right) d_j.
+    \]
+    
+    \[
+    = \sum_{j \in \bar{B}} \bar{c}_j \, d_j.
+    \]
+    
+    Since $x_j \ge 0$ and $\bar{x}_j = 0$ for $j \in \bar{B}$, we have $d_j \ge 0$, and by assumption $\bar{c}_j \ge 0$. Therefore,
+    \[
+    \sum_{j \in \bar{B}} \bar{c}_j \, d_j \ge 0.
+    \]
+    
+    Hence,
+    \[
+    c^T(x - \bar{x}) \ge 0 \;\;\Rightarrow\;\; c^T \bar{x} \le c^T x.
+    \]
+\end{proof}
+
+Consider a primal standard form LP:
+\[
+\begin{aligned}
+\min \quad & c^T x \\
+\text{s.t.} \quad & Ax = b \\
+& x \ge 0
+\end{aligned}
+\]
+
+Write
+\[
+A =
+\begin{bmatrix}
+a_1^T \\
+\vdots \\
+a_m^T
+\end{bmatrix}.
+\]
+
+Pick multipliers $y \in \mathbb{R}^m$. Then
+\[
+\sum_{i=1}^m y_i \,(a_i^T x = b_i)
+\quad \Longleftrightarrow \quad
+y^T A x = y^T b.
+\]
+
+Ensure that
+\[
+y^T A \le c^T \quad \text{(elementwise)}.
+\]
+
+Since $x \ge 0$, we obtain
+\[
+c^T x \ge y^T b.
+\]
+
+The strongest lower bound is given by the dual LP:
+\[
+\begin{aligned}
+\max \quad & b^T y \\
+\text{s.t.} \quad & A^T y \le c.
+\end{aligned}
+\]
+
+\section{Duality}
+
+\begin{theorem} (Weak Duality) For any $A,b,c$,
+\[
+\begin{aligned}
+\min \quad & c^T x \\
+\text{s.t.} \quad & Ax = b \\
+& x \ge 0
+\end{aligned}
+\;\;\ge\;\;
+\begin{aligned}
+\max \quad & b^T y \\
+\text{s.t.} \quad & A^T y \le c.
+\end{aligned}
+\]
+
+Recall for a basis $B$, the reduced costs are
+\[
+\bar{c}^T = c^T - c_B^T A_B^{-1} A \ge 0.
+\]
+
+Define
+\[
+y^T = c_B^T A_B^{-1}.
+\]
+
+Then
+\[
+A^T y \le c.
+\]
+\end{theorem}
+
+Duality allow for several important things in optimization:
+\begin{itemize}
+    \item Optimizes proofs
+    \item Variational changes (aka shadow prices) via derivative w.r.t. $b$
+    \item Lagrange multipliers as a penalty for infeasibility
+    \item Changing points (Fenchel) and linear functions (gradients)
+\end{itemize}
+
+\begin{theorem}[Strong Duality]
+For any $(A,b,c)$, if at least one of the primal or dual LP is feasible, then
+\[
+p^* =
+\begin{aligned}
+\min \quad & c^T x \\
+\text{s.t.} \quad & Ax = b \\
+& x \ge 0
+\end{aligned}
+\;=\;
+\begin{aligned}
+\max \quad & b^T y \\
+\text{s.t.} \quad & A^T y \le c
+\end{aligned}
+= d^*.
+\]
+\end{theorem}
+    
+\begin{proof}
+By weak duality,
+\[
+p^* \ge d^*.
+\]
+
+If the primal is unbounded, then $p^* = -\infty$, and the dual is infeasible, so $d^* = -\infty$.
+
+Similarly, if the dual is unbounded, then the primal is infeasible, and
+\[
+p^* = \infty = d^*.
+\]
+\end{proof}
+
+\begin{proof}
+WLOG assume the primal is feasible and not unbounded, so an optimal solution $x^*$ exists.
+
+We want to find a dual feasible $y^*$ such that
+\[
+c^T x^* = b^T y^*.
+\]
+
+Construct a basis $B$ such that:
+\begin{itemize}
+\item The associated primal solution $\bar{x}$ is feasible:
+\[
+A\bar{x} = b, \quad \bar{x}_{\bar{B}} = 0, \quad \bar{x}_B = A_B^{-1} b \ge 0.
+\]
+\item The associated dual solution
+\[
+y = A_B^{-T} c_B
+\]
+is feasible.
+\end{itemize}
+
+Dual feasibility follows since the reduced costs satisfy
+\[
+\bar{c}^T = c^T - c_B^T A_B^{-1} A \ge 0
+\quad \Longleftrightarrow \quad
+A^T y \le c.
+\]
+
+Finally,
+\[
+c^T \bar{x}
+= c_B^T \bar{x}_B
+= c_B^T A_B^{-1} b
+= b^T A_B^{-T} c_B
+= b^T y.
+\]
+
+Thus $c^T \bar{x} = b^T y$, completing the proof.
+\end{proof}
+
+\section{The Simplex Method}
+
+The core step is \emph{pivoting}. Given a BFS $\bar{x}$ (nondegenerate) with basis $B$, so that
+\[
+\bar{x}_B = A_B^{-1} b \ge 0, \quad \bar{x}_{\bar{B}} = 0,
+\]
+fix $j \in \bar{B}$ and consider $\tilde{x}(\epsilon)$ defined by
+\[
+\tilde{x}(\epsilon) = \bar{x} + \epsilon d,
+\]
+where the direction $d$ is given by
+\[
+d =
+\begin{bmatrix}
+- A_B^{-1} A_j \\
+1 \\
+0
+\end{bmatrix}.
+\]
+
+Then $\tilde{x}(\epsilon)$ uniquely solves
+\[
+Ax = b, \quad x_j = \epsilon, \quad x_{\bar{B} \setminus \{j\}} = 0.
+\]
+
+\subsection{Unbounded Case}
+
+If $d \ge 0$, then for all $\epsilon \ge 0$,
+\[
+\tilde{x}(\epsilon) = \bar{x} + \epsilon d \ge 0,
+\]
+and by construction,
+\[
+A \tilde{x}(\epsilon) = b.
+\]
+Thus $\tilde{x}(\epsilon)$ is feasible for all $\epsilon \ge 0$.
+
+If $\bar{c}_j < 0$, then
+\[
+c^T \tilde{x}(\epsilon)
+= c^T \bar{x} + \bar{c}_j \epsilon \to -\infty
+\quad \text{as } \epsilon \to \infty.
+\]
+Hence the problem is unbounded.
+
+\subsection{Bounded Case}
+
+Suppose $\bar{c}_j < 0$ but $d \not\ge 0$. Then there exists some $i$ such that
+\[
+d_i < 0.
+\]
+
+Feasibility requires
+\[
+\tilde{x}_i(\epsilon) = \bar{x}_i + \epsilon d_i \ge 0,
+\]
+which holds if and only if
+\[
+\epsilon \le \frac{\bar{x}_i}{-d_i}.
+\]
+
+Define the step size
+\[
+\epsilon^* = \min \left\{ \frac{\bar{x}_i}{-d_i} \;\middle|\; d_i < 0 \right\}.
+\]
+
+Let
+\[
+i \in \arg\min \left\{ \frac{\bar{x}_i}{-d_i} \;\middle|\; d_i < 0 \right\}.
+\]
+
+Then $\tilde{x}(\epsilon^*)$ is feasible and defines the next BFS.
+
+\begin{lemma}
+Let $B' = B \cup \{j\} \setminus \{i\}$. Then $B'$ is a basis for $\tilde{x}(\epsilon^*)$. In particular, $\tilde{x}(\epsilon^*)$ is a BFS.
+\end{lemma}
+
+\begin{proof}
+Clearly, $\tilde{x}(\epsilon^*)$ satisfies
+\[
+Ax = b, \quad x_{\bar{B}'} = 0.
+\]
+Thus we need to show that $A_{B'}$ is invertible.
+
+Note that $A_{B'}$ is obtained from $A_B$ by replacing the $i$-th column with $A_j$. Let $k$ be the position of $i$ in $B$. Then
+\[
+A_{B'} = \big[ A_{B(1)} \ \cdots \ A_j \ \cdots \ A_{B(m)} \big]
+= A_B + (A_j - A_i) e_k^T.
+\]
+
+By the Sherman--Morrison formula, $A_{B'}$ is invertible if and only if
+\[
+1 + e_k^T A_B^{-1} (A_j - A_i) \neq 0.
+\]
+
+Compute:
+\[
+e_k^T A_B^{-1} A_j = -d_k
+\quad \text{(from the definition of $d$)},
+\]
+and
+\[
+e_k^T A_B^{-1} A_i = e_k^T e_k = 1.
+\]
+
+Hence,
+\[
+1 + e_k^T A_B^{-1} (A_j - A_i)
+= 1 + (-d_k - 1)
+= -d_k.
+\]
+
+Since $d_k \neq 0$ (indeed $d_k < 0$ by construction), we conclude that $A_{B'}$ is invertible.
+\end{proof}
+
+Before the 1980s, people used the Simplex Method, and it could be exponential time in the number of systems to be solved. Afterwards, Interior point methods were invented which solved these systems in polynomial time. Nowadays, we use First-Order approaches which instead of solving a system, it does a ton of matrix-vector multiplications
+
+\section{A Bit on LPs}
+
+The simplex method assumes that a basic feasible solution (BFS) is given.
+
+Consider the standard form LP:
+\[
+\begin{aligned}
+\min \quad & c^T x \\
+\text{s.t.} \quad & Ax = b \\
+& x \ge 0.
+\end{aligned}
+\]
+
+To obtain an initial BFS, introduce slack variables and solve the Phase I problem:
+\[
+\begin{aligned}
+\min \quad & \sum_i s_i \\
+\text{s.t.} \quad & Ax + Is = b \\
+& x, s \ge 0,
+\end{aligned}
+\]
+where we assume $b \ge 0$. Then $(x,s) = (0,b)$ is a BFS.
+
+\paragraph{Phase I and Phase II}
+\begin{itemize}
+\item \textbf{Phase I:} Find a feasible solution by minimizing the sum of slack variables.
+\item \textbf{Phase II:} Use the BFS from Phase I to solve the original LP.
+\end{itemize}
+
+\medskip
+
+Adding constraints to the primal can break primal feasibility, while adding variables to the dual does not affect dual feasibility.
+
+\section{Modeling Choices}
+
+Consider the set
+\[
+P = \{ x \mid \|x\|_1 \le 1 \}
+= \left\{ x \;\middle|\; \sum_{i=1}^n |x_i| \le 1 \right\}.
+\]
+
+This polytope has:
+\begin{itemize}
+\item $2^n$ faces corresponding to inequalities
+\[
+(\pm 1, \pm 1, \dots, \pm 1)^T x \le 1,
+\]
+\item $2n$ BFS given by vectors of the form
+\[
+(0, \dots, 0, \pm 1, 0, \dots, 0).
+\]
+\end{itemize}
+
+Moreover,
+\[
+P = \operatorname{conv}\left( \{ \pm e_i \}_{i=1}^n \right)
+= \left\{ \sum_i \lambda_i x_i \;\middle|\; \sum_i \lambda_i = 1,\; \lambda_i \ge 0 \right\}.
+\]
+
+\paragraph{Quadratic Formulation and Lifting}
+
+Consider the problem:
+\[
+\begin{aligned}
+\max \quad & x^T A x = \sum_{i,j} A_{ij} x_i x_j \\
+\text{s.t.} \quad & x \in \{\pm 1\}^n.
+\end{aligned}
+\]
+
+This can be written using matrix inner products:
+\[
+\max \quad \langle A, X \rangle
+\quad \text{s.t.} \quad X = x x^T,\; x \in \{\pm 1\}^n,
+\]
+where
+\[
+\langle A, X \rangle = \operatorname{tr}(A^T X) = \sum_{i,j} A_{ij} X_{ij}.
+\]
+
+Relaxing this, we obtain:
+\[
+\max \quad \langle A, X \rangle
+\quad \text{s.t.} \quad X \in \operatorname{conv}\{ x x^T \mid x \in \{\pm 1\}^n \}.
+\]
+
+This leads to semidefinite programming relaxations, which can often recover good approximations (e.g., $\sim 0.878$ for Max-Cut).
+
+\chapter{Beyond Linearity}
+
+We consider variables $x$ living in a Euclidean, finite-dimensional space $E$ equipped with an inner product $\langle \cdot,\cdot \rangle$ and norm
+\[
+\|x\|^2 = \langle x,x \rangle.
+\]
+
+Examples:
+\[
+E = \mathbb{R}^n, \quad \langle x,y \rangle = x^T y,
+\]
+\[
+E = \mathbb{R}^{n \times n}, \quad \langle X,Y \rangle = \operatorname{tr}(X^T Y).
+\]
+
+We are interested in problems of the form
+\[
+\begin{aligned}
+\min \quad & f(x) \\
+\text{s.t.} \quad & x \in Q,
+\end{aligned}
+\]
+or equivalently,
+\[
+\begin{aligned}
+\min \quad & f(x) \\
+\text{s.t.} \quad & g_i(x) \le 0, \quad i = 1,\dots,m,
+\end{aligned}
+\]
+where $f,g_i : E \to \mathbb{R} \cup \{+\infty\}$.
+
+The domain of a function $h : E \to \mathbb{R} \cup \{+\infty\}$ is
+\[
+\operatorname{dom}(h) = \{ x \in E \mid h(x) < +\infty \}.
+\]
+
+\section{Calculus}
+
+We say $h$ is (Fréchet) differentiable at $x \in \operatorname{dom}(h)$ if there exists $\nabla h(x) \in E$ such that
+\[
+\lim_{\Delta \to 0}
+\frac{h(x+\Delta) - \big(h(x) + \langle \nabla h(x), \Delta \rangle \big)}{\|\Delta\|} = 0.
+\]
+
+The vector $\nabla h(x)$ is called the gradient.
+
+If $\nabla h$ exists everywhere in $\operatorname{dom}(h)$ and is continuous, then $h \in C^1$.
+
+We say $h$ is twice (Fréchet) differentiable at $x$ if there exists a linear operator
+\[
+\nabla^2 h(x) : E \to E
+\]
+such that
+\[
+\lim_{\Delta \to 0}
+\frac{\|\nabla h(x+\Delta) - (\nabla h(x) + \nabla^2 h(x)(\Delta))\|}{\|\Delta\|} = 0.
+\]
+
+The operator $\nabla^2 h(x)$ is called the Hessian.  
+If it exists and is continuous, then $h \in C^2$.
+
+\section{Convexity}
+
+A function $f$ is linear if
+\[
+f(\lambda x) = \lambda f(x), \quad
+f(x+y) = f(x) + f(y),
+\quad \forall x,y \in E,\; \lambda \in \mathbb{R}.
+\]
+
+It is affine if
+\[
+f(\lambda x + (1-\lambda)y)
+= \lambda f(x) + (1-\lambda)f(y),
+\quad \forall x,y \in E,\; \lambda \in [0,1].
+\]
+
+A function $f$ is convex if
+\[
+f(\lambda x + (1-\lambda)y)
+\le \lambda f(x) + (1-\lambda)f(y),
+\quad \forall x,y \in E,\; \lambda \in [0,1].
+\]
+
+It is strictly convex if
+\[
+f(\lambda x + (1-\lambda)y)
+< \lambda f(x) + (1-\lambda)f(y),
+\quad \forall x \ne y,\; \lambda \in (0,1).
+\]
+
+A function is concave if the inequality is reversed.
+
+\medskip
+
+A set $Q \subseteq E$ is convex if
+\[
+\lambda x + (1-\lambda)y \in Q,
+\quad \forall x,y \in Q,\; \lambda \in [0,1].
+\]
+
+\subsection*{Example}
+
+\[
+f(x) = |x| - 1
+\]
+is convex but not strictly convex.
+
+\section{Families of Optimization Problems}
+
+\subsection{Quadratic Programs (QP)}
+
+Let $E = \mathbb{R}^n$. Consider $A \in \mathbb{R}^{m \times n}$, $b \in \mathbb{R}^m$, $c \in \mathbb{R}^n$, and $H \in \mathbb{R}^{n \times n}$ symmetric positive semidefinite.
+
+We study:
+\[
+\begin{aligned}
+\min \quad & c^T x + \tfrac{1}{2} x^T H x \\
+\text{s.t.} \quad & Ax = b \\
+& x \ge 0.
+\end{aligned}
+\]
+
+If $H \succeq 0$, then:
+\[
+v^T H v \ge 0 \quad \forall v \in \mathbb{R}^n
+\quad \Longleftrightarrow \quad
+H = G^T G,
+\]
+and the objective is convex.
+
+\paragraph{Example 1 (Projection)}
+Let $P = \{x \mid Ax = b,\; x \ge 0\}$. Given $\bar{x} \notin P$, the projection onto $P$ solves:
+\[
+\min_{x \in P} \tfrac{1}{2} \|x - \bar{x}\|_2^2.
+\]
+Expanding,
+\[
+\tfrac{1}{2}\|x\|^2 - \bar{x}^T x + \tfrac{1}{2}\|\bar{x}\|^2,
+\]
+which is a QP with $H = I$, $c = -\bar{x}$ (up to constants).
+
+\paragraph{Example 2 (LASSO)}
+\[
+\begin{aligned}
+\min \quad & \tfrac{1}{2}\|Ax - b\|_2^2 \\
+\text{s.t.} \quad & \|x\|_1 \le \lambda.
+\end{aligned}
+\]
+Equivalently,
+\[
+\tfrac{1}{2} x^T A^T A x - b^T A x + \tfrac{1}{2}\|b\|^2,
+\]
+with $H = A^T A$.
+
+\subsection{Second-Order Cone Programs (SOCP)}
+
+\[
+\begin{aligned}
+\min \quad & c^T x \\
+\text{s.t.} \quad & \|A_i x - b_i\|_2 \le f_i^T x + d_i, \quad i=1,\dots,k.
+\end{aligned}
+\]
+
+LPs are included by setting $A_i = 0$, $b_i = 0$.
+
+QPs can be embedded via epigraph reformulation:
+\[
+\min t \quad \text{s.t.} \quad t \ge c^T x + \tfrac{1}{2}x^T H x.
+\]
+
+Key representation:
+\[
+\|y\|_2 \le t \quad \Longleftrightarrow \quad (y,t) \in \mathcal{K}_{\text{soc}}.
+\]
+
+\paragraph{Example (LASSO revisited)}
+\[
+\min \|x\|_1 \quad \text{s.t.} \quad \|Ax - b\|_2 \le \gamma,
+\]
+which can be written as an SOCP using standard transformations.
+
+\subsection{Semidefinite Programs (SDP)}
+
+Let $E = \mathbb{S}^n$ be the space of symmetric matrices with inner product
+\[
+\langle X, Y \rangle = \operatorname{tr}(X^T Y).
+\]
+
+\[
+\begin{aligned}
+\min \quad & \langle C, X \rangle \\
+\text{s.t.} \quad & \mathcal{A}(X) = b \\
+& X \succeq 0,
+\end{aligned}
+\]
+where $\mathcal{A} : \mathbb{S}^n \to \mathbb{R}^m$ is linear.
+
+$X \succeq 0$ means $X$ is positive semidefinite.
+
+\paragraph{Connections}
+\begin{itemize}
+\item If $X$ is diagonal, SDP reduces to LP.
+\item SOCP constraints satisfy:
+\[
+\|x\|_2 \le t \quad \Longleftrightarrow \quad
+\begin{bmatrix}
+t I & x \\
+x^T & t
+\end{bmatrix} \succeq 0.
+\]
+\end{itemize}
+
+\subsection*{Example: Max-Cut Relaxation}
+
+The Max-Cut problem:
+\[
+\min x^T A x \quad \text{s.t.} \quad x \in \{\pm 1\}^n.
+\]
+
+Lift to matrix form:
+\[
+X = xx^T.
+\]
+
+Relaxation:
+\[
+\begin{aligned}
+\min \quad & \langle A, X \rangle \\
+\text{s.t.} \quad & \operatorname{diag}(X) = \mathbf{1} \\
+& X \succeq 0,
+\end{aligned}
+\]
+dropping the rank constraint.
+
+This is the Goemans--Williamson SDP relaxation.
+
+\subsection{Conic Programs}
+
+A conic program is
+\[
+\begin{aligned}
+\min \quad & \langle c, x \rangle \\
+\text{s.t.} \quad & Ax = b \\
+& x \in K,
+\end{aligned}
+\]
+for some $c \in E$, where $A : E \to \mathbb{R}^m$ is linear, and $K$ is a closed, convex cone in $E$.
+
+\medskip
+
+The cone of copositive matrices:
+\[
+K^{\mathrm{cop}} = \{ X \in \mathbb{R}^{n \times n} \mid v^T X v \ge 0 \;\; \forall v \ge 0 \}.
+\]
+
+Checking $X \in K^{\mathrm{cop}}$ is NP-hard.
+
+\medskip
+
+(Solve with interior point methods $\rightarrow$ tells us which $K$ are tractable.)
+
+\subsection{Convex Programs}
+
+\[
+\begin{aligned}
+\min \quad & f(x) \\
+\text{s.t.} \quad & g_i(x) \le 0, \quad i = 1,\dots,m,
+\end{aligned}
+\]
+where $f,g_i$ are closed, convex, proper (c.c.p.).
+
+\medskip
+
+$f$ is closed if
+\[
+\liminf_{x' \to x} f(x') = f(x), \quad \forall x \in E.
+\]
+
+$f$ is proper if
+\[
+\operatorname{dom}(f) = \{x \mid f(x) \in \mathbb{R} \} \text{ is nonempty.}
+\]
+
+\medskip
+
+Given any closed, convex, nonempty feasible region
+\[
+S = \{ x \mid Ax = b,\; x \in K \},
+\]
+claim:
+\[
+\operatorname{dist}_S(x) = \inf \{ \|x - x'\| \mid x' \in S \}
+\]
+is c.c.p.
+
+\medskip
+
+\[
+\begin{aligned}
+\min \quad & \langle c, x \rangle \\
+\text{s.t.} \quad & x \in S
+\end{aligned}
+\;\;\Longleftrightarrow\;\;
+\begin{aligned}
+\min \quad & \langle c, x \rangle \\
+\text{s.t.} \quad & \operatorname{dist}_S(x) \le 0.
+\end{aligned}
+\]
+
+\subsection*{Epigraph Reformulation}
+
+\[
+\begin{aligned}
+\min \quad & f(x) \\
+\text{s.t.} \quad & g_i(x) \le 0
+\end{aligned}
+\;\;=\;\;
+\min_{x \in E} h(x),
+\]
+where
+\[
+h(x) =
+\begin{cases}
+f(x) & \text{if } x \text{ is feasible}, \\
++\infty & \text{otherwise}.
+\end{cases}
+\]
+
+\medskip
+
+\[
+=
+\begin{aligned}
+\min \quad & t \\
+\text{s.t.} \quad & (x,t) \in \operatorname{epi}(h)
+\end{aligned}
+\]
+where
+\[
+\operatorname{epi}(h) = \{ (x,t) \mid h(x) \le t \}.
+\]
+
+\medskip
+
+\[
+=
+\begin{aligned}
+\min \quad & t \\
+\text{s.t.} \quad & (x,t,z) \in K^{\mathrm{epi}} \\
+& z = 1
+\end{aligned}
+\]
+where
+\[
+K^{\mathrm{epi}} = \left\{ (x,t,z) \;\middle|\; \left(\frac{x}{z}, \frac{t}{z}\right) \in \operatorname{epi}(h) \right\}.
+\]
+
+\medskip
+
+Thus:
+\begin{itemize}
+\item linear objective
+\item linear constraints
+\item one cone constraint
+\end{itemize}
+
+\[
+\Longrightarrow
+\begin{aligned}
+\min \quad & \langle c, x \rangle \\
+\text{s.t.} \quad & x \in K \\
+& Ax = b.
+\end{aligned}
+\]
+
+\section{Optimality Conditions}
+
+Consider
+\[
+\begin{aligned}
+\min \quad & f(x) \\
+\text{s.t.} \quad & x \in Q \subseteq E.
+\end{aligned}
+\]
+
+\subsection*{Definitions}
+
+$\bar{x} \in E$ is a \emph{local minimizer} if
+\[
+f(x) \ge f(\bar{x}) \quad \forall x \text{ in a neighborhood of } \bar{x} \text{ and feasible}.
+\]
+
+$\bar{x} \in E$ is a \emph{global minimizer} if
+\[
+f(x) \ge f(\bar{x}) \quad \forall x \in Q.
+\]
+
+\subsection*{Directional Derivative}
+
+Define the directional derivative of $f$ at $\bar{x}$ in direction $d$:
+\[
+f'(\bar{x}; d)
+=
+\lim_{t \to 0^+}
+\frac{f(\bar{x} + t d) - f(\bar{x})}{t}.
+\]
+
+If $f \in C^1$, then
+\[
+f'(\bar{x}; d) = \langle \nabla f(\bar{x}), d \rangle.
+\]
+
+\paragraph{Example}
+For $f(x) = |x|$ at $\bar{x} = 0$:
+\[
+f'(0;1) = 1, \quad f'(0;-1) = -1.
+\]
+
+\subsection*{Normal Cone}
+
+Define the normal cone of $Q$ at $\bar{x}$:
+\[
+N_Q(\bar{x})
+=
+\{ d \mid \langle d, x - \bar{x} \rangle \le 0 \;\; \forall x \in Q \}.
+\]
+
+\subsection{First-Order Necessary Condition}
+
+\begin{theorem}
+Suppose $Q$ is closed and convex and $\bar{x} \in Q$ is a local minimizer of $f$ over $Q$.
+
+If for any $x \in Q$, $f'(\bar{x}; x - \bar{x})$ exists, then
+\[
+f'(\bar{x}; x - \bar{x}) \ge 0.
+\]
+
+If $f$ is differentiable at $\bar{x}$, then
+\[
+\langle \nabla f(\bar{x}), x - \bar{x} \rangle \ge 0 \quad \forall x \in Q,
+\]
+equivalently,
+\[
+-\nabla f(\bar{x}) \in N_Q(\bar{x}).
+\]
+\end{theorem}
+
+\begin{proof}
+Suppose to the contrary that for some $x \in Q$,
+\[
+f'(\bar{x}; x - \bar{x}) < 0.
+\]
+
+Then for some $0 < t < \delta$,
+\[
+\frac{f(\bar{x} + t(x - \bar{x})) - f(\bar{x})}{t} < 0
+\;\Rightarrow\;
+f(\bar{x} + t(x - \bar{x})) < f(\bar{x}).
+\]
+
+But
+\[
+\bar{x} + t(x - \bar{x}) = t x + (1-t)\bar{x} \in Q
+\]
+by convexity, contradicting local optimality.
+\end{proof}
+
+\subsection{First-Order Sufficient Condition}
+
+\begin{theorem}
+Suppose $f$ and $Q$ are both closed and convex.
+
+If for all $x \in Q$,
+\[
+f'(\bar{x}; x - \bar{x}) \ge 0
+\]
+for some fixed $\bar{x} \in Q$, then $\bar{x}$ is a global minimizer.
+
+In particular, if $f$ is differentiable at $\bar{x}$,
+\[
+-\nabla f(\bar{x}) \in N_Q(\bar{x})
+\;\Longleftrightarrow\;
+\bar{x} \text{ is a global minimizer.}
+\]
+\end{theorem}
+
+\begin{proof}
+The key claim is that convexity implies
+\[
+t \mapsto \frac{f(\bar{x} + t(x - \bar{x})) - f(\bar{x})}{t}
+\]
+is nondecreasing for $t > 0$.
+
+Thus for any $x \in Q$,
+\[
+\lim_{t \to 0^+}
+\frac{f(\bar{x} + t(x - \bar{x})) - f(\bar{x})}{t}
+\ge 0.
+\]
+
+Taking $t = 1$,
+\[
+f(x) - f(\bar{x}) \ge 0
+\;\Rightarrow\;
+f(x) \ge f(\bar{x}),
+\]
+so $\bar{x}$ is globally optimal.
+\end{proof}
+
+\section{Algorithms}
+
+\subsection{Frank--Wolfe Method}
+
+Given
+\[
+\begin{aligned}
+\min \quad & f(x) \\
+\text{s.t.} \quad & x \in Q,
+\end{aligned}
+\]
+approximate by the linearized problem:
+\[
+\begin{aligned}
+\min \quad & f(x_k) + \langle \nabla f(x_k), x - x_k \rangle \\
+\text{s.t.} \quad & x \in Q.
+\end{aligned}
+\]
+
+\medskip
+
+If $Q$ is polyhedral, run simplex or enumerate BFS.
+
+If $Q = B(0,1)$, the solution is
+\[
+\bar{x} = \frac{-\nabla f(x_k)}{\|\nabla f(x_k)\|_2}.
+\]
+
+\medskip
+
+Iteration:
+\[
+\bar{x}_{k+1} = \arg\min_{x \in Q} \langle \nabla f(x_k), x \rangle,
+\]
+\[
+x_{k+1} = x_k + \beta_k (\bar{x}_{k+1} - x_k).
+\]
+
+Choose $\beta_k = \frac{1}{\sqrt{k+1}}$ or via line search:
+\[
+x_{k+1} \in \arg\min_{x \in [x_k, \bar{x}_{k+1}]} f(x).
+\]
+
+\medskip
+
+Define
+\[
+G_k = \langle \nabla f(x_k), x_k - \bar{x}_{k+1} \rangle \ge 0.
+\]
+
+Then
+\[
+f(x_{k+1}) = f(x_k + \beta_k (\bar{x}_{k+1} - x_k))
+\]
+\[
+\le f(x_k) + \langle \nabla f(x_k), x_{k+1} - x_k \rangle + \frac{L}{2} \|x_{k+1} - x_k\|_2^2
+\]
+\[
+= f(x_k) - \beta_k G_k + \frac{L}{2} \beta_k^2 \|\bar{x}_{k+1} - x_k\|_2^2.
+\]
+
+Assuming $\|\bar{x}_{k+1} - x_k\| \le 2D$:
+\[
+f(x_{k+1}) \le f(x_k) - \beta_k G_k + 2LD^2 \beta_k^2.
+\]
+
+Summing:
+\[
+f(x_0) - \min_{x \in Q} f(x)
+\ge \sum_{k=1}^T \beta_k G_k - 2LD^2 \sum_{k=1}^T \beta_k^2.
+\]
+
+Thus,
+\[
+\min_k G_k \le \frac{f(x_0) - p^* + 2LD^2 \log T}{\sqrt{T+1}}.
+\]
+
+\subsection{Projected Gradient Descent}
+
+\[
+\begin{aligned}
+\min \quad & f(x) \\
+\text{s.t.} \quad & x \in Q.
+\end{aligned}
+\]
+
+Iteration:
+\[
+x_{k+1} = \operatorname{proj}_Q(x_k - \beta_k \nabla f(x_k)),
+\]
+where
+\[
+\operatorname{proj}_Q(y)
+=
+\arg\min_{z \in Q} \frac{1}{2}\|z - y\|^2.
+\]
+
+\medskip
+
+\begin{lemma}
+If $z = \operatorname{proj}_Q(y)$, then
+\[
+y - z \in N_Q(z).
+\]
+\end{lemma}
+
+\begin{proof}
+\[
+-\nabla \left( \tfrac{1}{2}\|z - y\|^2 \right) \in N_Q(z)
+\;\;\Rightarrow\;\;
+-(z - y) \in N_Q(z).
+\]
+\end{proof}
+
+Thus,
+\[
+n_k = (x_k - \beta_k \nabla f(x_k)) - x_{k+1} \in N_Q(x_{k+1}),
+\]
+i.e.
+\[
+-\nabla f(x_k) + \frac{1}{\beta_k}(x_k - x_{k+1}) \in N_Q(x_{k+1}).
+\]
+
+If $x_k \to \bar{x}$, then
+\[
+-\nabla f(\bar{x}) \in N_Q(\bar{x}).
+\]
+
+\subsection{Proximal Point Method}
+
+\[
+\begin{aligned}
+\min \quad & f(x) \\
+\text{s.t.} \quad & x \in Q.
+\end{aligned}
+\]
+
+Iteration:
+\[
+x_{k+1} \in \arg\min_{x \in Q}
+\left\{
+f(x) + \frac{\rho}{2} \|x - x_k\|^2
+\right\}.
+\]
+
+Optimality condition:
+\[
+-\nabla \left( f(x) + \tfrac{\rho}{2}\|x - x_k\|^2 \right)\big|_{x=x_{k+1}}
+\in N_Q(x_{k+1}),
+\]
+i.e.
+\[
+-\nabla f(x_{k+1}) - \rho (x_{k+1} - x_k) \in N_Q(x_{k+1}).
+\]
+
+\section{Constrained Optimality Conditions}
+
+\begin{theorem}[Weierstrass]
+For any closed nonempty set $Q \subseteq E$, and closed $f:Q \to \mathbb{R}$ with bounded level sets
+\[
+\{x \mid f(x) \le \lambda\},
+\]
+there exists a global minimizer of $f$ over $Q$.
+\end{theorem}
+
+\begin{theorem}[Basic Separating Hyperplane Theorem]
+For any closed convex $Q \subseteq E$, and $y \notin Q$, there exist $a \in E$, $b \in \mathbb{R}$ such that
+\[
+\langle a,y \rangle > b \ge \langle a,x \rangle \quad \forall x \in Q.
+\]
+\end{theorem}
+
+\begin{proof}
+Consider $f(x) = \tfrac{1}{2}\|x - y\|_2^2$. Then $f$ has bounded level sets.
+
+By Weierstrass, there exists $\bar{x}$ minimizing $f$ over $Q$, hence
+\[
+-\nabla f(\bar{x}) \in N_Q(\bar{x}).
+\]
+
+Since $\nabla f(\bar{x}) = \bar{x} - y$, we get
+\[
+y - \bar{x} \in N_Q(\bar{x}),
+\]
+i.e.
+\[
+\langle y - \bar{x}, x - \bar{x} \rangle \le 0 \quad \forall x \in Q.
+\]
+
+Pick $a = y - \bar{x}$ and $b = \langle y - \bar{x}, \bar{x} \rangle$. Then
+\[
+\langle a,y \rangle > b \ge \langle a,x \rangle \quad \forall x \in Q.
+\]
+\end{proof}
+
+\begin{theorem}[Small Gradients Exist]
+If $f:E \to \mathbb{R}$ is $C^1$ and bounded below, then there exists a sequence $x_k \in E$ such that
+\[
+\nabla f(x_k) \to 0.
+\]
+\end{theorem}
+
+\begin{proof}
+Fix $\epsilon > 0$ and define
+\[
+h(x) = f(x) + \epsilon \|x\|.
+\]
+Then $h$ has bounded level sets, so it attains a global minimizer $x_\epsilon$.
+
+Let $d = -\nabla f(x_\epsilon)$. For small $t > 0$,
+\[
+\frac{f(x_\epsilon + t d) - f(x_\epsilon)}{t}
+=
+\frac{h(x_\epsilon + t d) - h(x_\epsilon)}{t}
+- \epsilon \frac{\|x_\epsilon + t d\| - \|x_\epsilon\|}{t}.
+\]
+
+Thus
+\[
+\langle \nabla f(x_\epsilon), d \rangle \ge -\epsilon \|d\|.
+\]
+
+Since $d = -\nabla f(x_\epsilon)$,
+\[
+-\|\nabla f(x_\epsilon)\|^2 \ge -\epsilon \|\nabla f(x_\epsilon)\|
+\;\;\Rightarrow\;\;
+\|\nabla f(x_\epsilon)\| \le \epsilon.
+\]
+\end{proof}
+
+\begin{theorem}[Gordan's Theorem of Alternatives]
+For any $a_1,\dots,a_m \in E$, exactly one of the following holds:
+\begin{enumerate}
+\item $\exists \lambda \ge 0$, $\sum_i \lambda_i = 1$ such that
+\[
+\sum_{i=1}^m \lambda_i a_i = 0,
+\]
+\item $\exists x \in E$ such that
+\[
+\langle a_i, x \rangle < 0 \quad \forall i.
+\]
+\end{enumerate}
+\end{theorem}
+
+\begin{lemma}[Farkas Lemma]
+For any $a_1,\dots,a_m \in E$, $c \in E$, exactly one holds:
+\begin{enumerate}
+\item $\exists \mu \ge 0$ such that
+\[
+\sum_{i=1}^m \mu_i a_i = c,
+\]
+\item $\exists x \in E$ such that
+\[
+\langle a_i, x \rangle \le 0 \quad \forall i,
+\quad \langle c,x \rangle > 0.
+\]
+\end{enumerate}
+\end{lemma}
+
+\subsection*{Constrained Optimality Conditions}
+
+Consider
+\[
+\begin{aligned}
+\min \quad & f(x) \\
+\text{s.t.} \quad & g_i(x) \le 0.
+\end{aligned}
+\]
+
+Assume $f,g_i \in C^1$, and let $\bar{x}$ satisfy $g_i(\bar{x}) \le 0$.
+
+Define the active set:
+\[
+I(\bar{x}) = \{ i \mid g_i(\bar{x}) = 0 \}.
+\]
+
+\subsection*{Lagrangian}
+
+For $\lambda \ge 0$, define
+\[
+L(x;\lambda) = f(x) + \sum_i \lambda_i g_i(x).
+\]
+
+We say $\lambda \ge 0$ is a Lagrange multiplier vector at $\bar{x}$ if:
+\begin{enumerate}
+\item $\bar{x}$ is a critical point of $L(\cdot;\lambda)$:
+\[
+\nabla_x L(\bar{x};\lambda) = 0,
+\]
+\item complementary slackness:
+\[
+\lambda_i g_i(\bar{x}) = 0 \quad \forall i.
+\]
+\end{enumerate}
+
+\begin{theorem}[Fritz John]
+If $\bar{x}$ is a local minimizer, then there exists $(\lambda_0,\lambda) \in \mathbb{R}_+ \times \mathbb{R}_+^m$, not all zero, such that
+\[
+\lambda_0 \nabla f(\bar{x}) + \sum_i \lambda_i \nabla g_i(\bar{x}) = 0,
+\]
+\[
+\lambda_i g_i(\bar{x}) = 0.
+\]
+\end{theorem}
+
+If $\lambda_0 > 0$, then $\lambda/\lambda_0$ is a Lagrange multiplier vector.
+
+\medskip
+
+To guarantee $\lambda_0 \neq 0$, we require that there is no $\lambda \ge 0$, not all zero, such that
+\[
+\sum_{i \in I(\bar{x})} \lambda_i \nabla g_i(\bar{x}) = 0.
+\]
+
+By Gordan's theorem, this is equivalent to the existence of $d \in E$ such that
+\[
+\langle \nabla g_i(\bar{x}), d \rangle < 0 \quad \forall i \in I(\bar{x}).
+\]
+
+Such a $d$ is a descent direction for all active constraints.
+
+\chapter{Duality}
+
+\begin{theorem}[Fritz--John]
+If $\bar{x}$ is a local minimizer of
+\[
+\min f(x) \quad \text{s.t. } g_i(x) \le 0 \;\; \forall i,
+\]
+and $f,g_i$ are differentiable at $\bar{x}$, then there exists $(\lambda_0,\lambda)\in \mathbb{R}_+\times \mathbb{R}_+^m$, not all zero, such that
+\[
+\lambda_0 \nabla f(\bar{x}) + \sum_i \lambda_i \nabla g_i(\bar{x}) = 0,
+\]
+\[
+\lambda_i g_i(\bar{x}) = 0 \quad \forall i.
+\]
+\end{theorem}
+
+We want to guarantee $\lambda_0 \neq 0$.
+
+\[
+\Longleftrightarrow \nexists \lambda \ge 0,\ \lambda \neq 0 \text{ such that } \sum_i \lambda_i \nabla g_i(\bar{x}) = 0,\ \lambda_i g_i(\bar{x}) = 0.
+\]
+
+\[
+\Longleftrightarrow \nexists \lambda \ge 0,\ \sum_{i\in I(\bar{x})} \lambda_i = 1,\ \sum_{i\in I(\bar{x})} \lambda_i \nabla g_i(\bar{x}) = 0.
+\]
+
+\[
+\Longleftrightarrow \exists d \in E \text{ such that } \langle \nabla g_i(\bar{x}), d \rangle < 0 \quad \forall i \in I(\bar{x}).
+\]
+
+\begin{theorem}[Karush--Kuhn--Tucker]
+Under the same conditions as Fritz--John, if MFCQ holds at $\bar{x}$, then there exists $\lambda \ge 0$ such that
+\[
+\nabla f(\bar{x}) + \sum_i \lambda_i \nabla g_i(\bar{x}) = 0,
+\]
+\[
+\lambda_i g_i(\bar{x}) = 0 \quad \forall i.
+\]
+\end{theorem}
+
+\begin{proof}
+Fritz--John gives $(\lambda_0,\lambda)$.  
+MFCQ implies $\lambda_0 \neq 0$.  
+Normalize to $(1, \lambda/\lambda_0)$.
+\end{proof}
+
+\section{Mangasarian--Fromovitz Constraint Qualification (MFCQ)}
+
+\begin{lemma}
+For convex $g_i \in C^1$, MFCQ holds at all $\bar{x}$ feasible iff there exists $x_s$ such that
+\[
+g_i(x_s) < 0 \quad \forall i.
+\]
+\end{lemma}
+
+\begin{proof}
+If MFCQ holds at $\bar{x}$, then $\bar{x} + t d$ is strictly feasible.
+
+If $x_s$ exists, then for any $\bar{x}$, let $d = x_s - \bar{x}$. For $t<1$,
+\[
+\frac{g_i(\bar{x} + t d) - g_i(\bar{x})}{t}
+\le \frac{g_i(x_s) - g_i(\bar{x})}{1} < 0.
+\]
+\end{proof}
+
+\begin{proof}[Proof of Fritz--John]
+Let
+\[
+h(x) = \max\{ f(x) - f(\bar{x}),\ g_i(x)\}_{i\in I(\bar{x})}.
+\]
+Then $\bar{x}$ is a local minimizer of $h$.
+
+\textbf{Claim:}
+\[
+h'(\bar{x};d) = \max\{ \langle \nabla f(\bar{x}), d \rangle,\ \langle \nabla g_i(\bar{x}), d \rangle \}_{i\in I(\bar{x})}.
+\]
+
+First-order optimality gives
+\[
+h'(\bar{x};d) \ge 0 \quad \forall d,
+\]
+i.e.
+\[
+\nexists d \text{ such that } 
+\begin{cases}
+\langle \nabla f(\bar{x}), d \rangle < 0,\\
+\langle \nabla g_i(\bar{x}), d \rangle < 0.
+\end{cases}
+\]
+
+Thus,
+\[
+\exists \lambda_0,\lambda \ge 0 \text{ such that }
+\lambda_0 \nabla f(\bar{x}) + \sum_i \lambda_i \nabla g_i(\bar{x}) = 0.
+\]
+\end{proof}
+
+\section{Lagrangian and Duality}
+
+Recall the Lagrangian:
+\[
+L(x;\lambda) = f(x) + \sum_{i=1}^m \lambda_i g_i(x)
+= f(x) + \lambda^T g(x).
+\]
+
+\textbf{Claim:}
+\[
+\sup_{\lambda \ge 0} L(x;\lambda)
+=
+\begin{cases}
+f(x) & \text{if } g_i(x) \le 0,\\
++\infty & \text{otherwise}.
+\end{cases}
+\]
+
+\textbf{Primal problem}
+\[
+p_* =
+\min f(x)
+\quad \text{s.t. } g_i(x) \le 0
+=
+\min_x \max_{\lambda \ge 0} L(x;\lambda).
+\]
+
+\textbf{Dual problem}
+\[
+d_* = \max_{\lambda \ge 0} \min_x L(x;\lambda)
+= \max_{\lambda \ge 0} \Phi(\lambda),
+\]
+where $\Phi(\lambda)$ is the dual function.
+
+\begin{theorem}[Weak Duality]
+For any $f,g_i: E \to \mathbb{R}\cup\{+\infty\}$,
+\[
+p_* \ge d_*.
+\]
+\end{theorem}
+
+\begin{proof}
+Let $\lambda^{(i)} \ge 0$ attaining $d_*$. For any feasible $\bar{x}$,
+\[
+f(\bar{x}) = \sup_{\lambda \ge 0} L(\bar{x};\lambda)
+\ge \limsup L(\bar{x};\lambda^{(i)})
+\ge \limsup \inf_x L(x;\lambda^{(i)})
+= d_*.
+\]
+\end{proof}
+
+\section{Value Function and Strong Duality}
+
+Define the value function:
+\[
+v(\Delta) = \min f(x)
+\quad \text{s.t. } g_i(x) \le \Delta_i.
+\]
+
+\begin{theorem}[Lagrangian Strong Duality]
+Suppose $v:\mathbb{R}^m \to \mathbb{R}\cup\{+\infty\}$ is convex and $v(0)=p_*$. Then
+\[
+p_* = d_*
+\quad \Longleftrightarrow \quad
+v \text{ is lower semicontinuous at } 0.
+\]
+\end{theorem}
+
+A function is lower semicontinuous at $\bar{x}$ if
+\[
+\liminf_{x\to\bar{x}} f(x) \ge f(\bar{x}).
+\]
+
+\textbf{Notes:}
+- If all $f,g_i$ are convex, then $v(\cdot)$ is convex.  
+- If there exists $x_s$ with $g_i(x_s) < 0$ (Slater), then $v$ is lower semicontinuous.
+
+\begin{theorem}[Strong Duality with Attainment]
+If $f,g_1,\dots,g_m$ are convex and there exists $x_s$ with $g_i(x_s)<0$, then
+\[
+p_* = d_*
+\]
+and the optimum is attained.
+\end{theorem}
+
+\textit{(Proof deferred: Fenchel duality)}
+
+\section*{Example: Linear Programming}
+
+\[
+\min -b^T y \quad \text{s.t. } A^T y - c \le 0
+\]
+
+\[
+= \min_y \max_{x \ge 0} \left(-b^T y + x^T(A^T y - c)\right)
+\ge \max_{x \ge 0} \min_y (\cdot)
+\]
+
+\[
+\Phi(x) = \min_y \left(-b^T y + x^T A^T y - x^T c \right)
+= -c^T x + \min_y (Ax - b)^T y
+\]
+
+\[
+=
+\begin{cases}
+-c^T x & Ax = b,\\
+-\infty & \text{otherwise}.
+\end{cases}
+\]
+
+\[
+\Rightarrow
+\max_{x \ge 0} \Phi(x)
+=
+\max -c^T x \quad \text{s.t. } Ax = b,\ x \ge 0.
+\]
+
+\section{Norm Optimization}
+
+Given a norm $\|\cdot\|$, the dual norm is
+\[
+\|v\|_* = \sup_{\|x\|=1} \langle v,x \rangle.
+\]
+
+\[
+p_* =
+\min \|x\|
+\quad \text{s.t. } Ax \le b.
+\]
+
+\[
+L(x;\lambda) = \|x\| + \lambda^T(Ax - b).
+\]
+
+\[
+\Phi(\lambda) =
+\begin{cases}
+-\langle b,\lambda \rangle & \|A^T \lambda\|_* \le 1,\\
++\infty & \text{otherwise}.
+\end{cases}
+\]
+
+\[
+d_* =
+\max -\langle b,\lambda \rangle
+\quad \text{s.t. } \|A^T \lambda\|_* \le 1,\ \lambda \ge 0.
+\]
+
+\section{Subgradient Calculus}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \end{document}
