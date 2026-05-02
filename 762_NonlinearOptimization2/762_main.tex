@@ -1869,16 +1869,1988 @@ d_* =
 
 \section{Subgradient Calculus}
 
+Consider $f : E \to \mathbb{R} \cup \{+\infty\}$.
 
+\textbf{Convex:}
+\[
+\forall x,y \in E,\ \lambda \in [0,1], \quad
+f(\lambda x + (1-\lambda)y) \le \lambda f(x) + (1-\lambda) f(y).
+\]
 
+\textbf{Proper:}
+\[
+\mathrm{dom}\, f = \{x \mid f(x) \in \mathbb{R}\} \neq \emptyset.
+\]
 
+\textbf{Closed:}
+$f$ is lower semicontinuous on $\mathrm{dom}\, f$, i.e.
+\[
+\forall x \in \mathrm{dom}\, f, \quad
+\liminf_{x' \to x} f(x') \ge f(x).
+\]
 
+\subsection{Subgradients}
 
+\textbf{Definition:}
+We say $\phi \in E$ is a subgradient of $f$ at $\bar{x} \in \mathrm{dom}\, f$ if
+\[
+\forall x \in E, \quad
+f(x) \ge f(\bar{x}) + \langle \phi, x - \bar{x} \rangle.
+\]
 
+\textbf{Subdifferential:}
+\[
+\partial f(\bar{x}) = \{\phi \mid \forall x,\ f(x) \ge f(\bar{x}) + \langle \phi, x - \bar{x} \rangle\}.
+\]
 
+\subsection{Basic Properties}
 
+If $f$ is $C^1$ and convex:
+\[
+\partial f(x) = \{\nabla f(x)\}.
+\]
 
+If
+\[
+f(x) = \max_{i=1,\dots,m} f_i(x), \quad f_i \in C^1 \text{ convex},
+\]
+then
+\[
+\partial f(x)
+=
+\left\{
+\sum_{i \in I(x)} \lambda_i \nabla f_i(x)
+\;\middle|\;
+\sum_{i \in I(x)} \lambda_i = 1,\ \lambda_i \ge 0
+\right\},
+\]
+where
+\[
+I(x) = \{i \mid f_i(x) = f(x)\}.
+\]
 
+\subsection*{Examples}
+
+\[
+f(x) = |x| = \max\{-x, x\}
+\]
+
+\[
+\partial f(x) =
+\begin{cases}
+\{1\} & x > 0, \\
+[-1,1] & x = 0, \\
+\{-1\} & x < 0.
+\end{cases}
+\]
+
+For a norm $f(x) = \|x\|$:
+\[
+\phi \in \partial f(0)
+\iff
+\forall x,\ \|x\| \ge \langle \phi, x \rangle
+\iff
+\|\phi\|_* \le 1.
+\]
+
+\[
+\Rightarrow \partial \|\cdot\|(0) = \{\phi \mid \|\phi\|_* \le 1\}.
+\]
+
+\subsection{Directional Derivatives}
+
+\begin{lemma}
+\[
+\phi \in \partial f(x)
+\iff
+\langle \phi, v \rangle \le f'(x;v)
+\quad \forall v \in E.
+\]
+\end{lemma}
+
+\begin{proof}
+Let $\phi \in \partial f(x)$.
+
+\[
+f'(x;v) = \lim_{t \downarrow 0} \frac{f(x+tv) - f(x)}{t}
+\ge \lim_{t \downarrow 0} \frac{f(x + t v) - f(x)}{t}
+\ge \langle \phi, v \rangle.
+\]
+\end{proof}
+
+By the lemma:
+\[
+f'(x;v) \ge \max_{\phi \in \partial f(x)} \langle \phi, v \rangle.
+\]
+
+We seek a subgradient attaining equality.
+
+\subsection*{Existence of Subgradients}
+
+Let $S = \mathrm{epi}\, f$.
+
+Pick $t_n \downarrow 0$ and define
+\[
+x_n = \bar{x} + t_n v, \quad
+f_n = f(\bar{x}) + t_n f'(\bar{x};v).
+\]
+
+Then
+\[
+f'( \bar{x}; v ) \le \frac{f(x_n) - f(\bar{x})}{t_n}
+\Rightarrow
+f(x_n) \ge f(\bar{x}) + t_n f'(\bar{x};v).
+\]
+
+Thus $(x_n,f_n)$ lies on or below the graph.
+
+By separating hyperplane theorem, there exists $(g_n,h_n)$ such that
+\[
+\langle (g_n,h_n), (x,t) - (x_n,f_n) \rangle \le 0
+\quad \forall (x,t) \in \mathrm{epi}\, f.
+\]
+
+Rescale so $h_n = -1$.
+
+Then
+\[
+\langle (g_n,-1), (x,f(x)) - (x_n,f_n) \rangle \le 0
+\]
+\[
+\iff
+f(x) \ge f_n + \langle g_n, x - x_n \rangle.
+\]
+
+Taking limits,
+\[
+f(x) \ge f(\bar{x}) + \langle \bar{g}, x - \bar{x} \rangle
+\quad \forall x,
+\]
+so
+\[
+\bar{g} \in \partial f(\bar{x}).
+\]
+
+\textbf{Conclusion:}
+\[
+\partial f(\bar{x}) \neq \emptyset
+\quad \text{for all } \bar{x} \in \mathrm{int}(\mathrm{dom}\, f).
+\]
+
+\subsection{Max Formula}
+
+\begin{theorem}[Max Formula]
+For any closed, convex, proper $f$ with $\bar{x} \in \mathrm{int}(\mathrm{dom}\, f)$, and any $v \in E$,
+\[
+f'(\bar{x};v)
+=
+\max_{\phi \in \partial f(\bar{x})} \langle \phi, v \rangle.
+\]
+\end{theorem}
+
+In particular,
+\[
+\partial f(\bar{x}) \neq \emptyset.
+\]
+
+\section{Duality of Points and Subgradients (Fenchel Duality)}
+
+Given $\bar{x} \in \mathrm{int}(\mathrm{dom}\,f)$, ask for $\phi \in \partial f(\bar{x})$.
+
+\textbf{Reverse question:} Given $\phi \in E$, find $\bar{x}$ such that $\phi \in \partial f(\bar{x})$.
+
+\textbf{Claim:}
+\[
+\bar{x} \text{ globally minimizes } f \quad \Longleftrightarrow \quad 0 \in \partial f(\bar{x}).
+\]
+
+\begin{proof}
+\[
+0 \in \partial f(\bar{x})
+\;\Longleftrightarrow\;
+\forall x,\ f(x) \ge f(\bar{x}) + \langle 0, x-\bar{x} \rangle
+= f(\bar{x})
+\;\Longleftrightarrow\;
+\bar{x} \text{ is a global minimizer.}
+\]
+\end{proof}
+
+\textbf{Reverse formulation:}
+\[
+\phi \in \partial f(\bar{x})
+\;\Longleftrightarrow\;
+0 \in \partial (f - \langle \phi, \cdot \rangle)(\bar{x})
+\]
+\[
+\Longleftrightarrow\;
+\bar{x} \text{ minimizes } f(x) - \langle \phi, x \rangle
+\]
+\[
+\Longleftrightarrow\;
+\bar{x} \text{ maximizes } \langle \phi, x \rangle - f(x).
+\]
+
+\subsection*{Fenchel Conjugate}
+
+This supremum is called the \textbf{Fenchel conjugate}:
+\[
+f^*(\phi) = \sup_{x \in E} \{\langle \phi, x \rangle - f(x)\}.
+\]
+
+\subsection*{Properties of $f^*$}
+
+\begin{itemize}
+\item[(1)] If $\bar{x}$ attains $\sup \langle \phi,x\rangle - f(x)$, then $\phi \in \partial f(\bar{x})$.
+\item[(2)] If $\phi \in \partial f(\bar{x})$, then $\bar{x}$ attains the supremum.
+\item[(3)] For all $x,\phi$:
+\[
+f^*(\phi) + f(x) \ge \langle \phi, x \rangle.
+\]
+\end{itemize}
+
+\textbf{(Fenchel--Young inequality)}
+\[
+f^*(\phi) + f(x) \ge \langle \phi, x \rangle,
+\]
+with equality iff $\phi \in \partial f(x)$.
+
+\begin{itemize}
+\item[(4)] $f^*$ is convex (regardless of $f$).
+\item[(5)] $f^*$ is closed.
+\item[(6)] $f^{**} = f$ iff $f$ is closed and convex.
+\end{itemize}
+
+\subsection*{Examples}
+
+\textbf{(1) Linear function}
+\[
+f(x) = \langle c,x\rangle
+\quad\Rightarrow\quad
+f^*(\phi) =
+\begin{cases}
+0 & \phi = c,\\
++\infty & \text{otherwise}.
+\end{cases}
+\]
+
+\textbf{(2) Indicator at a point}
+\[
+f(x) =
+\begin{cases}
+0 & x=c,\\
++\infty & \text{else},
+\end{cases}
+\quad\Rightarrow\quad
+f^*(\phi) = \langle c,\phi\rangle.
+\]
+
+\textbf{(3) Nonnegative indicator}
+\[
+f(x) =
+\begin{cases}
+0 & x \ge 0,\\
++\infty & \text{else},
+\end{cases}
+\quad\Rightarrow\quad
+f^*(\phi) =
+\begin{cases}
+0 & \phi \le 0,\\
++\infty & \text{else}.
+\end{cases}
+\]
+
+\textbf{(4) Power function}
+\[
+f(x) = \frac{1}{p}|x|^p
+\quad\Longleftrightarrow\quad
+f^*(\phi) = \frac{1}{q}|\phi|^q,
+\quad \frac{1}{p} + \frac{1}{q} = 1.
+\]
+
+\textbf{(5)}
+\[
+f(x) = \sqrt{1+x^2}
+\quad\Longleftrightarrow\quad
+f^*(\phi) =
+\begin{cases}
+-\sqrt{1-\phi^2} & |\phi| \le 1,\\
++\infty & \text{else}.
+\end{cases}
+\]
+
+\subsection*{Convexity of $f^*$}
+
+\[
+\lambda f^*(\phi) + (1-\lambda) f^*(\psi)
+\ge \langle \lambda \phi + (1-\lambda)\psi, x \rangle - f(x)
+\]
+\[
+\Rightarrow
+f^*(\lambda \phi + (1-\lambda)\psi)
+\le \lambda f^*(\phi) + (1-\lambda) f^*(\psi).
+\]
+
+\subsection*{Closedness of $f^*$}
+
+\[
+f^*(\phi_i) \ge \langle \phi_i, x \rangle - f(x)
+\]
+\[
+\Rightarrow
+\liminf f^*(\phi_i) \ge \langle \phi, x \rangle - f(x)
+\]
+\[
+\Rightarrow
+\liminf f^*(\phi_i) \ge \sup_x (\langle \phi,x\rangle - f(x))
+= f^*(\phi).
+\]
+
+\subsection*{Fenchel Duality}
+
+\begin{theorem}[Fenchel Duality]
+For $f:E\to(-\infty,\infty]$, $g:Y\to(-\infty,\infty]$, and linear $A:E\to Y$:
+
+\[
+p^* = \inf_{x\in E} \{f(x) + g(Ax)\},
+\]
+\[
+d^* = \sup_{\phi\in Y} \{-f^*(A^T \phi) - g^*(-\phi)\}.
+\]
+
+In general,
+\[
+p^* \ge d^*.
+\]
+
+If $f,g$ are convex and
+\[
+0 \in \mathrm{int}(\mathrm{dom}\,g - A\,\mathrm{dom}\,f),
+\]
+then
+\[
+p^* = d^*,
+\quad d^* \text{ attained.}
+\]
+\end{theorem}
+
+\begin{proof}
+By Fenchel--Young:
+\[
+f(x) + f^*(A^T\phi) \ge \langle x, A^T\phi\rangle = \langle Ax,\phi\rangle,
+\]
+\[
+g(Ax) + g^*(-\phi) \ge \langle Ax,-\phi\rangle.
+\]
+
+Summing:
+\[
+f(x)+g(Ax)+f^*(A^T\phi)+g^*(-\phi)\ge 0.
+\]
+
+Thus
+\[
+f(x)+g(Ax) \ge -f^*(A^T\phi)-g^*(-\phi).
+\]
+
+Taking inf over $x$ and sup over $\phi$:
+\[
+p^* \ge d^*.
+\]
+\end{proof}
+
+\subsection*{Perturbation View}
+
+Define
+\[
+h(u) = \inf_x \{f(x) + g(Ax + u)\}, \quad h(0)=p^*.
+\]
+
+Then $h$ is convex and
+\[
+\mathrm{dom}\,h = \mathrm{dom}\,g - A\,\mathrm{dom}\,f.
+\]
+
+There exists $-\phi \in \partial h(0)$, so
+\[
+h(0) \le h(u) + \langle \phi,u\rangle.
+\]
+
+\[
+\Rightarrow
+h(0) \le f(x) + g(Ax+u) + \langle \phi,u\rangle
+\]
+
+\[
+= f(x) - \langle A^T\phi,x\rangle + g(Ax+u) - \langle \phi,Ax+u\rangle.
+\]
+
+Taking inf:
+\[
+h(0) \le -f^*(A^T\phi) - g^*(-\phi) = d^* \le p^*.
+\]
+
+\section{Biconjugates and Lagrange Duality}
+
+\subsection{Stationarity via Subgradients}
+
+Recall
+\[
+f^*(\phi) = \sup_{x\in E} \{\langle \phi,x\rangle - f(x)\}.
+\]
+
+We want:
+\[
+0 \in \partial \big(f + g \circ A\big)(\bar{x}).
+\]
+
+Equivalently,
+\[
+\exists \ \psi \in \partial f(\bar{x}), \quad \phi \in \partial g(A\bar{x})
+\quad \text{s.t.} \quad
+\psi + A^T \phi = 0.
+\]
+
+Recall the dual:
+\[
+d^* = \sup_\phi \big( -f^*(A^T\phi) - g^*(-\phi) \big).
+\]
+
+\subsection{Fenchel--Young Symmetry}
+
+Suppose $f = f^{**}$.
+
+Then
+\[
+f^*(\phi) + f(\bar{x}) = \langle \phi,\bar{x} \rangle
+\quad \Longleftrightarrow \quad
+\phi \in \partial f(\bar{x}).
+\]
+
+Also
+\[
+f^{**}(\bar{x}) + f^*(\phi) = \langle \bar{x},\phi \rangle
+\quad \Longleftrightarrow \quad
+\bar{x} \in \partial f^*(\phi).
+\]
+
+If $f,f^*$ are $C^1$, then
+\[
+\phi = \nabla f(x)
+\quad \Longleftrightarrow \quad
+x = \nabla f^*(\phi),
+\]
+so
+\[
+\nabla f^* = (\nabla f)^{-1}.
+\]
+
+\subsection{Biconjugate Inequality}
+
+\begin{lemma}
+For any $h:E\to (-\infty,\infty]$,
+\[
+h^{**}(x) \le h(x), \quad \forall x.
+\]
+\end{lemma}
+
+\begin{proof}
+By Fenchel--Young:
+\[
+\langle x,\phi\rangle - h^*(\phi) \le h(x).
+\]
+
+Taking supremum over $\phi$:
+\[
+h^{**}(x) = \sup_\phi \{\langle x,\phi\rangle - h^*(\phi)\}
+\le h(x).
+\]
+\end{proof}
+
+\subsection{Biconjugate as Convex Envelope}
+
+The biconjugate $h^{**}$ is the largest closed convex lower bound of $h$.
+
+\[
+\mathrm{epi}\,h^{**} = \mathrm{cl}\big(\mathrm{conv}(\mathrm{epi}\,h)\big).
+\]
+
+\subsection{Affine Minorants}
+
+Let
+\[
+\alpha(x) = \langle \phi,x\rangle + c
+\]
+be an affine minorant of $h$ if $\alpha(x)\le h(x)$.
+
+\begin{theorem}
+For any $h:E\to(-\infty,\infty]$, the following are equivalent:
+\begin{itemize}
+\item[(i)] $h$ is closed and convex
+\item[(ii)] $h = h^{**}$
+\item[(iii)] $h(x) = \sup\{\alpha(x) \mid \alpha \text{ affine minorant of } h\}$
+\end{itemize}
+\end{theorem}
+
+\subsection{Lagrange Duality via Value Function}
+
+Recall the Lagrangian:
+\[
+L(x,\lambda) = f(x) + \sum_i \lambda_i g_i(x).
+\]
+
+\[
+p^* = \inf_x \sup_{\lambda\ge0} L(x,\lambda),
+\quad
+d^* = \sup_{\lambda\ge0} \inf_x L(x,\lambda).
+\]
+
+Define the value function:
+\[
+v(\Delta) =
+\inf_x \{ f(x) \mid g_i(x)\le \Delta_i \}.
+\]
+
+Then:
+\begin{itemize}
+\item[(1)] $p^* = v(0)$
+\item[(2)] $v^*(-\lambda) =
+\begin{cases}
+-\Phi(\lambda) & \lambda\ge0 \\
++\infty & \text{otherwise}
+\end{cases}$
+\item[(3)] $d^* = v^{**}(0)$
+\end{itemize}
+
+Thus weak duality follows from:
+\[
+v^{**} \le v.
+\]
+
+\subsection{Strong Duality via Regularity}
+
+If $f,g_i$ are convex, then $v$ is convex.
+
+We need:
+\[
+\liminf_{\Delta\to0} v(\Delta) \ge v(0)
+\]
+(lower semicontinuity at $0$).
+
+This is implied by existence of a strictly feasible point:
+\[
+\exists \ x_s \text{ such that } g_i(x_s) < 0 \quad \forall i.
+\]
+
+Then:
+\[
+0 \in \mathrm{int}(\mathrm{dom}\,v)
+\Rightarrow
+\exists \phi \in \partial v(0)
+\Rightarrow
+v \text{ is l.s.c. at } 0
+\Rightarrow
+v^{**}(0)=v(0).
+\]
+
+Hence:
+\[
+p^* = d^*.
+\]
+
+\chapter{Methods}
+
+\section{Subgradient and Bundle Methods}
+
+\subsection*{Basic Setup}
+
+\textbf{Problem:}
+\[
+\min_x f(x), \quad f:E \to \mathbb{R} \ \text{convex}.
+\]
+
+\textbf{Algorithm idea:}
+At each iteration compute
+\[
+g_k \in \partial f(x_k).
+\]
+
+(Note: not our choice.)
+
+\subsection*{Example}
+
+\[
+f(x) = \max_i \{\langle a_i,x\rangle + b_i\} + \tfrac{1}{2}\|x\|^2.
+\]
+
+Then
+\[
+\partial f(x) \ni a_i + x,
+\quad \text{for any } i \text{ attaining the maximum}.
+\]
+
+\subsection{Subgradient Method}
+
+\[
+x_{k+1} = x_k - \alpha_k g_k, \quad g_k \in \partial f(x_k).
+\]
+
+For $f \notin C^1$, it may happen that
+\[
+f(x_{k+1}) > f(x_k)
+\quad \text{for all } \alpha_k > 0.
+\]
+
+\subsection*{Proximal View}
+
+\[
+x_{k+1} = \arg\min_y \left\{ f(y) + \frac{1}{2\alpha_k}\|y-x_k\|^2 \right\}.
+\]
+
+Linearization:
+\[
+f(y) \approx f(x_k) + \langle g_k, y-x_k\rangle.
+\]
+
+Then
+\[
+x_{k+1} = \arg\min_y \left\{ f(x_k) + \langle g_k,y-x_k\rangle + \frac{1}{2\alpha_k}\|y-x_k\|^2 \right\}.
+\]
+
+Optimality:
+\[
+g_k + \frac{1}{\alpha_k}(y-x_k) = 0
+\quad \Longrightarrow \quad
+y = x_k - \alpha_k g_k.
+\]
+
+Interpretation:
+\[
+0 \in \partial f(x_k) \quad \text{(approximately)}.
+\]
+
+\subsection{Dual Averaging}
+
+Define
+\[
+\ell_k(x) =
+\frac{\sum_{i=1}^k \lambda_i \big(f(x_i) + \langle g_i, x-x_i\rangle\big)}
+{\sum_{i=1}^k \lambda_i},
+\quad g_i \in \partial f(x_i).
+\]
+
+Update:
+\[
+x_{k+1} = \arg\min_y \left\{ \ell_k(y) + \frac{\beta_k}{2\sum \lambda_i}\|y-x_0\|^2 \right\}.
+\]
+
+This gives:
+\[
+x_{k+1} = x_0 - \frac{\sum \lambda_i g_i}{\beta_k}
+= x_0 - \sum \alpha_i g_i.
+\]
+
+\subsection*{Stopping Criterion}
+
+\[
+f(x_k) - \ell_k(x_k) \le \varepsilon,
+\quad
+\|\nabla \ell_k(x_k)\| \le \varepsilon.
+\]
+
+\subsection*{Constrained Case}
+
+\[
+\min f(x) \quad \text{s.t. } x \in S.
+\]
+
+Projected subgradient method:
+\[
+x_{k+1} =
+\arg\min_{y\in S}
+\left\{
+f(x_k) + \langle g_k, y-x_k\rangle + \frac{1}{2\alpha_k}\|y-x_k\|^2
+\right\}
+\]
+
+\[
+= \mathrm{proj}_S(x_k - \alpha_k g_k).
+\]
+
+\subsection{Bundle Methods}
+
+Build model $m_k$:
+\[
+z_{k+1} = \arg\min_y \left\{ m_k(y) + \frac{1}{2\alpha_k}\|y-x_k\|^2 \right\}.
+\]
+
+\textbf{Descent step:}
+\[
+f(z_{k+1}) \le f(x_k) - \text{margin}
+\Rightarrow
+x_{k+1} = z_{k+1}.
+\]
+
+\textbf{Null step:}
+\[
+x_{k+1} = x_k,
+\]
+\[
+m_{k+1}(y) = \max \left\{
+m_k(y),
+f(z_{k+1}) + \langle g_{k+1}, y-z_{k+1}\rangle
+\right\},
+\quad g_{k+1}\in \partial f(z_{k+1}).
+\]
+
+\subsection*{Steepest Descent Direction}
+
+\[
+\min_{\|v\|\le1} f'(x_k;v)
+=
+\min_{\|v\|\le1} \max_{g\in\partial f(x_k)} \langle g,v\rangle.
+\]
+
+By strong duality:
+\[
+= \max_{g\in\partial f(x_k)} \min_{\|v\|\le1} \langle g,v\rangle.
+\]
+
+Inner minimization:
+\[
+\min_{\|v\|\le1} \langle g,v\rangle
+= -\|g\|,
+\quad \text{attained at } v = -\frac{g}{\|g\|}.
+\]
+
+Thus:
+\[
+= - \min_{g\in\partial f(x_k)} \|g\|.
+\]
+
+\subsection{Subgradient Method for Constraints}
+
+If $x_k$ feasible:
+\[
+x_{k+1} = x_k - \alpha_k \phi_k,
+\quad \phi_k \in \partial f(x_k).
+\]
+
+If infeasible:
+\[
+x_{k+1} = x_k - \alpha_k \phi_k,
+\quad \phi_k \in \partial g_i(x_k), \quad g_i(x_k)>0.
+\]
+
+Goal:
+\[
+f_{\text{best}}^{(k)} = \min_{j\le k,\ x_j \text{ feasible}} f(x_j)
+\to f(x^*).
+\]
+
+\subsection*{Step Size Assumptions}
+
+\[
+\alpha_k > 0,
+\quad \sum \alpha_k = \infty,
+\quad \sum \alpha_k^2 < \infty,
+\quad \alpha_k = \frac{1}{k}.
+\]
+
+Assume:
+\begin{itemize}
+\item $f,g_i$ convex
+\item bounded subgradients $\|g_k\|\le G$
+\item Slater point $\tilde{x}$ with $g_i(\tilde{x})<0$
+\end{itemize}
+
+Let
+\[
+R \ge \|x_0 - x^*\|, \ \|x_0 - \tilde{x}\|.
+\]
+
+\subsection*{Convergence Result}
+
+\[
+f_{\text{best}}^{(k)} \to f(x^*).
+\]
+
+\subsection*{Key Inequality}
+
+For feasible $x_k$:
+\[
+\phi_k^T (x_k - \tilde{x}) \ge f(x_k) - f(\tilde{x}).
+\]
+
+For infeasible:
+\[
+\phi_k^T (x_k - \tilde{x}) \ge g_i(x_k) - g_i(\tilde{x}) \ge \mu > 0.
+\]
+
+Thus:
+\[
+\|x_{k+1} - \tilde{x}\|^2
+\le
+\|x_k - \tilde{x}\|^2 - \delta \alpha_k + G^2 \alpha_k^2.
+\]
+
+Summing:
+\[
+0 \le R^2 - \delta \sum \alpha_k + G^2 \sum \alpha_k^2.
+\]
+
+\[
+\Rightarrow
+\delta \le \frac{R^2 + G^2 \sum \alpha_k^2}{\sum \alpha_k} \to 0.
+\]
+
+Contradiction $\Rightarrow$ convergence.
+
+\subsection*{Lagrangian Interpretation}
+
+\[
+\min_x \max_{\lambda \ge 0} \left\{ f(x) + \sum \lambda_i g_i(x) \right\}.
+\]
+
+Stopping when:
+\[
+\|\nabla f + \sum \lambda_i \nabla g_i\| \le \varepsilon.
+\]
+
+\section{Penalty and Lagrangian Methods}
+
+\subsection{Penalty Method}
+
+\[
+P_* \approx \min_x \left\{ f(x) + \rho \sum_{i=1}^m \max(0,g_i(x))^2 \right\}.
+\]
+
+If $f,g_i \in C^1$, then
+\[
+f(x) + \rho \sum_i \max(0,g_i(x))^2 \in C^1.
+\]
+
+Let
+\[
+\bar{x}(\rho) \in \arg\min \left\{ f(x) + \rho \sum_i \max(0,g_i(x))^2 \right\}.
+\]
+
+\begin{theorem}
+If $\bar{x}(\rho) \to x_*$ as $\rho \to \infty$, then $x_*$ globally minimizes $f$ over $\{g_i(x)\le0\}$.
+\end{theorem}
+
+\begin{proof}
+\[
+f(\bar{x}(\rho)) + \sum \rho \max(0,g_i(\bar{x}(\rho)))^2 \le P_*,
+\quad \Rightarrow \quad
+f(\bar{x}(\rho)) \le P_*.
+\]
+
+If for contradiction $g_i(\bar{x}(\rho)) \ge \varepsilon >0$, then
+\[
+f(\bar{x}(\rho)) + \rho \varepsilon^2 \to \infty,
+\]
+a contradiction.
+
+Thus $\bar{x}(\rho)$ must approach feasibility, and the result follows.
+\end{proof}
+
+\subsection*{Exact Penalization}
+
+\[
+\mathrm{dist}_C(x) = \min_{y\in C} \|y-x\|.
+\]
+
+\[
+\min f(x) \quad \text{s.t. } x\in C.
+\]
+
+Assume:
+\begin{itemize}
+\item $f$ is globally $M$-Lipschitz
+\item $\mathrm{dist}_C$ is tractable
+\end{itemize}
+
+Solve:
+\[
+\min \left\{ f(x) + M' \mathrm{dist}_C(x) \right\}, \quad M' > M.
+\]
+
+\begin{theorem}
+This problem admits minimizers with $x\in C$.
+\end{theorem}
+
+\begin{proof}
+Let $x\notin C$ and $y_i\to C$ with $\|y_i-x\|\to \mathrm{dist}_C(x)$.
+
+\[
+f(y_i) \le f(x) + M\|x-y_i\| < f(x) + M'\|x-y_i\|.
+\]
+
+Taking limits:
+\[
+\lim f(y_i) \le f(x) + M'\mathrm{dist}_C(x).
+\]
+
+Since $\mathrm{dist}_C(y_i)=0$, feasible points dominate.
+\end{proof}
+
+\subsection{Augmented Lagrangian Method}
+
+\[
+\min f(x) \quad \text{s.t. } Ax=b.
+\]
+
+\[
+\mathcal{L}_\rho(x,\lambda)
+=
+f(x) + \lambda^T(Ax-b) + \frac{\rho}{2}\|Ax-b\|^2.
+\]
+
+\[
+\min_x \max_\lambda \mathcal{L}_\rho(x,\lambda).
+\]
+
+\subsection*{Primal-Dual Iteration}
+
+\[
+z_k =
+\begin{bmatrix}
+x_k \\
+\lambda_k
+\end{bmatrix},
+\quad
+z_{k+1} = z_k - \alpha_k T(z_k),
+\]
+
+\[
+T(z_k) \in
+\begin{bmatrix}
+\partial f(x_k) + A^T\lambda_k + \rho A^T(Ax_k-b) \\
+b - Ax_k
+\end{bmatrix}.
+\]
+
+\subsection*{Convergence}
+
+\begin{theorem}
+Suppose $f$ is convex, $\|\phi_k\|\le G$, and iterates are bounded.  
+If
+\[
+\sum \gamma_k = \infty, \quad \sum \gamma_k^2 < \infty,
+\]
+with $\alpha_k = \gamma_k / \|T(z_k)\|$, then
+\[
+f(x_k) \to f(x_*), \quad \|Ax_k - b\| \to 0.
+\]
+\end{theorem}
+
+\begin{proof}
+\[
+\|z_{k+1} - z_*\|^2
+=
+\|z_k - z_*\|^2
+-2\gamma_k \frac{T(z_k)^T (z_k - z_*)}{\|T(z_k)\|}
++ \gamma_k^2.
+\]
+
+Summing yields boundedness and convergence once we show:
+\[
+T(z_k)^T (z_k - z_*) \ge 0.
+\]
+
+Compute:
+\[
+T(z_k)^T (z_k - z_*)
+=
+\phi_k^T(x_k-x_*)
++ \lambda_k^T(Ax_k-b)
++ \rho \|Ax_k-b\|^2
+- (Ax_k-b)^T(\lambda_k-\lambda_*).
+\]
+
+\[
+=
+\phi_k^T(x_k-x_*)
++ \lambda_*^T(Ax_k-b)
++ \rho \|Ax_k-b\|^2
+\]
+
+\[
+\ge f(x_k) - f(x_*) + \lambda_*^T(Ax_k-b) + \rho \|Ax_k-b\|^2
+\ge 0.
+\]
+
+Thus the claim holds and convergence follows.
+\end{proof}
+
+\section{Decomposition Methods}
+
+\subsection{Primal Decomposition}
+
+Consider
+\[
+\min_{x_1,x_2,y} f_1(x_1,y) + f_2(x_2,y).
+\]
+
+Rewrite:
+\[
+=
+\min_y \left( \inf_{x_1} f_1(x_1,y) \right)
++ \left( \inf_{x_2} f_2(x_2,y) \right).
+\]
+
+\begin{exercise}
+If $f_i$ is convex, then
+\[
+\phi_i(y) = \inf_{x_i} f_i(x_i,y)
+\]
+is convex.
+\end{exercise}
+
+\subsubsection*{Primal Decomposition Method}
+
+Solve in parallel:
+\begin{itemize}
+\item Find $x_1$ minimizing $\phi_1$-problem and $g_1 \in \partial \phi_1(y_k)$
+\item Find $x_2$ minimizing $\phi_2$-problem and $g_2 \in \partial \phi_2(y_k)$
+\end{itemize}
+
+Update:
+\[
+y_{k+1} = y_k - \alpha_k (g_1 + g_2).
+\]
+
+At runtime:
+\[
+\mathrm{OPT} \le f_1(x_1^*,y_k) + f_2(x_2^*,y_k).
+\]
+
+\subsection{Dual Decomposition}
+
+\[
+\min_{x_1,x_2,y} f_1(x_1,y) + f_2(x_2,y)
+\]
+
+\[
+=
+\min_{x_1,x_2,y_1,y_2} f_1(x_1,y_1) + f_2(x_2,y_2)
+\quad \text{s.t. } y_1 = y_2.
+\]
+
+Lagrangian:
+\[
+=
+\min_{x_i,y_i} \max_\lambda
+f_1(x_1,y_1) + f_2(x_2,y_2) + \lambda^T(y_1 - y_2).
+\]
+
+\subsubsection*{Dual Function}
+
+\[
+\Phi(\lambda)
+=
+\underbrace{\min_{x_1,y_1} \big(f_1(x_1,y_1) + \lambda^T y_1\big)}_{\Phi_1(\lambda)}
++
+\underbrace{\min_{x_2,y_2} \big(f_2(x_2,y_2) - \lambda^T y_2\big)}_{\Phi_2(\lambda)}.
+\]
+
+\[
+\Phi_1(\lambda) = -(f_1)^*(0,-\lambda),
+\quad
+\Phi_2(\lambda) = -(f_2)^*(0,\lambda).
+\]
+
+If $x_i,y_i$ minimize the subproblems:
+\[
+- y_1 \in \partial \Phi_1(\lambda),
+\quad
+y_2 \in \partial \Phi_2(\lambda),
+\]
+
+\[
+\Rightarrow
+y_2 - y_1 \in \partial(-\Phi_1 - \Phi_2)(\lambda).
+\]
+
+\subsubsection*{Dual Decomposition Method}
+
+Solve in parallel:
+\[
+x_1,y_1 = \arg\min f_1(x_1,y_1) + \lambda_k^T y_1,
+\]
+\[
+x_2,y_2 = \arg\min f_2(x_2,y_2) - \lambda_k^T y_2.
+\]
+
+Update:
+\[
+\lambda_{k+1} = \lambda_k - \alpha_k (y_2 - y_1),
+\quad
+(y_2 - y_1) \in \partial \Phi(\lambda_k).
+\]
+
+\[
+\mathrm{OPT} \ge \mathrm{Dual\ OPT} \ge \Phi_1(\lambda_k) + \Phi_2(\lambda_k).
+\]
+
+\subsection{ADMM (Alternating Direction Method of Multipliers)}
+
+\[
+\min f(x) + g(z)
+\quad \text{s.t. } Ax + Bz = c.
+\]
+
+Augmented Lagrangian:
+\[
+\mathcal{L}_\rho(x,y,z)
+=
+f(x) + g(z) + y^T(Ax + Bz - c)
++ \frac{\rho}{2}\|Ax + Bz - c\|^2.
+\]
+
+Updates:
+\[
+x_{k+1} \in \arg\min_x \mathcal{L}_\rho(x,y_k,z_k),
+\]
+\[
+z_{k+1} \in \arg\min_z \mathcal{L}_\rho(x_{k+1},y_k,z),
+\]
+\[
+y_{k+1} = y_k + \rho(Ax_{k+1} + Bz_{k+1} - c).
+\]
+
+\subsection{Applications}
+
+\subsubsection{Consensus Optimization}
+
+\[
+\min_x \sum_i f_i(x)
+=
+\min_{x_i,z} \sum_i f_i(x_i)
+\quad \text{s.t. } x_i = z.
+\]
+
+ADMM updates:
+\[
+x_i^{k+1}
+\in \arg\min
+f_i(x_i) + y_i^{kT}(x_i - z_k)
++ \frac{\rho}{2}\|x_i - z_k\|^2,
+\]
+
+\[
+z^{k+1} = \frac{1}{m} \sum_i \left(x_i^{k+1} + \frac{1}{\rho} y_i^k \right),
+\]
+
+\[
+y_i^{k+1} = y_i^k + \rho(x_i^{k+1} - z^{k+1}).
+\]
+
+\subsubsection{Exchange Optimization}
+
+\[
+\min \sum_i f_i(x_i)
+\quad \text{s.t. } \sum_i x_i = 0.
+\]
+
+\subsubsection{Example: Power System}
+
+Each $x_i$ is production at facility $i$:
+\[
+f_i(x_i) = \text{cost}.
+\]
+
+\[
+\min \sum_i f_i(x_i)
+\quad \text{s.t. } \sum_i x_i = \text{Target}.
+\]
+
+\[
+= \min_x \max_y \sum_i f_i(x_i) + y\left(\sum_i x_i - \text{Target}\right).
+\]
+
+\subsection{Network Flow Example}
+
+Directed graph with $p$ nodes and $n$ arcs.
+
+Let $x_j$ be flow on arc $j$:
+\[
+x_j > 0 \ \text{forward}, \quad x_j < 0 \ \text{reverse}.
+\]
+
+At node $i$:
+\[
+s_i > 0 \ \text{inflow}, \quad s_i < 0 \ \text{outflow}.
+\]
+
+Flow conservation:
+\[
+Ax + s = 0,
+\]
+where $A$ is the incidence matrix.
+
+\subsubsection*{Costs}
+
+Each arc has cost $\phi_j(x_j)$ (strictly convex).
+
+Example (M/M/1 queue):
+\[
+\phi_j(x_j) =
+\begin{cases}
+\frac{x_j}{c_j - x_j} & x_j \in [0,c_j) \\
++\infty & \text{otherwise}.
+\end{cases}
+\]
+
+\subsubsection*{Optimization Problem}
+
+\[
+\min \sum_j \phi_j(x_j)
+\quad \text{s.t. } Ax + s = 0.
+\]
+
+\subsubsection*{Dual Decomposition}
+
+\[
+\mathcal{L}(x,v)
+=
+\sum_j \phi_j(x_j) + v^T(Ax + s).
+\]
+
+\[
+= v^T s + \sum_j \left(\phi_j(x_j) + (A_j^T v)x_j \right).
+\]
+
+Let
+\[
+(\Delta v)_j = A_j^T v.
+\]
+
+Dual function:
+\[
+\Phi(v)
+=
+v^T s + \sum_j \inf_{x_j} \left(\phi_j(x_j) + (\Delta v)_j x_j \right).
+\]
+
+\[
+=
+v^T s - \sum_j \sup_{x_j} \left( -(\Delta v)_j x_j - \phi_j(x_j) \right).
+\]
+
+\[
+=
+v^T s - \sum_j \phi_j^*(-(\Delta v)_j).
+\]
+
+\subsubsection*{Dual Problem}
+
+\[
+\max_v \left\{ v^T s - \sum_j \phi_j^*(-(\Delta v)_j) \right\}.
+\]
+
+If $\phi_j$ strictly convex, then $\phi_j^*$ has unique maximizer.
+
+Let $x_j^*(v)$ denote it.
+
+Claim. \\
+
+\[
+-(Ax^*(\Delta v) + s) \in \partial(-\Phi)(v).
+\]
+
+\subsection{Special Case (LP)}
+
+\[
+\min f(x) + g(z)
+\quad \text{s.t. } Ax = z,
+\]
+
+\[
+f(x) =
+\begin{cases}
+\langle c,x\rangle & x \ge 0 \\
++\infty & \text{else},
+\end{cases}
+\quad
+g(z) =
+\begin{cases}
+0 & z = b \\
++\infty & \text{else}.
+\end{cases}
+\]
+
+\[
+\Longleftrightarrow
+\min \langle c,x\rangle
+\quad \text{s.t. } Ax = b, \ x \ge 0.
+\]
+
+\section{Interior Point and Newton Methods}
+
+\subsection{Barrier Method (LP Sketch)}
+
+Consider the linear program:
+\[
+P^\star =
+\min c^T x
+\quad \text{s.t. } Ax = b,\; x \ge 0.
+\]
+
+Introduce barrier:
+\[
+f(x) =
+\begin{cases}
+-\sum_{i=1}^n \log(x_i) & x > 0 \\
++\infty & \text{else}.
+\end{cases}
+\]
+
+Solve:
+\[
+x_\eta^\star \in
+\arg\min \; \eta \, c^T x + f(x)
+\quad \text{s.t. } Ax = b,
+\quad \eta > 0.
+\]
+
+Goal:
+\[
+x_\eta^\star \to x^\star \quad \text{as } \eta \to \infty.
+\]
+
+\subsubsection*{First-Order Optimality}
+
+\[
+\nabla(\eta c^T x + f(x))(x_\eta^\star)
+\perp \{x : Ax = b\}
+\]
+
+\[
+\Rightarrow
+\nabla(\eta c^T x + f(x))(x_\eta^\star)
+= A^T y_\eta^\star.
+\]
+
+\begin{theorem}
+\[
+b^T y_\eta^\star \ge c^T x_\eta^\star - \frac{n}{\eta}.
+\]
+\end{theorem}
+
+\noindent
+Thus large $\eta$ gives near-optimal solutions.
+
+\subsubsection*{Central Path}
+
+As $\eta$ increases, $x_\eta^\star$ traces the central path.
+
+\subsubsection*{Barrier Method Algorithm}
+
+Given $\eta_0 > 0$ and $x_0$ approximately solving:
+\[
+\min \eta_0 c^T x + f(x)
+\quad \text{s.t. } Ax = b,
+\]
+
+iterate:
+\[
+\eta_{k+1} = \alpha \eta_k, \quad \alpha > 1,
+\]
+
+\[
+x_{k+1} \approx \arg\min \eta_{k+1} c^T x + f(x)
+\quad \text{s.t. } Ax = b,
+\]
+
+using warm-start from $x_k$.
+
+Each stage uses a few Newton steps.
+
+\subsection*{Differentiability and Geometry}
+
+We work in Euclidean space $E$ with inner product:
+\[
+\langle x,y \rangle = x^T y.
+\]
+
+For matrices:
+\[
+\langle X,Y \rangle = \mathrm{tr}(X^T Y).
+\]
+
+\begin{definition}
+$f$ is (Fréchet) differentiable at $x$ if
+\[
+\lim_{\Delta \to 0}
+\frac{|f(x+\Delta) - (f(x) + \langle g,\Delta \rangle)|}{\|\Delta\|} = 0.
+\]
+\end{definition}
+
+\subsubsection*{Example: Log-Det Barrier}
+
+\[
+f(X) =
+\begin{cases}
+-\ln \det(X) & X \succ 0 \\
++\infty & \text{else}.
+\end{cases}
+\]
+
+\begin{theorem}
+\[
+\nabla f(X) = -X^{-1}.
+\]
+\end{theorem}
+
+\begin{proof}
+Using eigenvalues $\lambda_i$ of $X^{-1}\Delta$:
+\[
+f(X+\Delta) - f(X)
+= -\sum_i \ln(1+\lambda_i),
+\]
+and
+\[
+\langle -X^{-1}, \Delta \rangle = -\sum_i \lambda_i.
+\]
+
+Using $\ln(1+\lambda) \approx \lambda$ gives result.
+\end{proof}
+
+\subsection*{Inner Product Dependence}
+
+\begin{theorem}
+If $f$ is differentiable under $\langle \cdot,\cdot \rangle$ with gradient $g$, then under
+\[
+\langle x,y \rangle_S = \langle x, S y \rangle,
+\]
+the gradient is $S^{-1} g$.
+\end{theorem}
+
+\begin{proof}
+\[
+f(x+\Delta) - f(x) \approx \langle g,\Delta \rangle
+= \langle S^{-1} g, \Delta \rangle_S.
+\]
+\end{proof}
+
+\noindent
+Thus:
+\[
+\text{Differentiability is inner-product invariant, but gradients are not.}
+\]
+
+\subsection*{Hessian}
+
+\begin{definition}
+The Hessian $H(x)$ satisfies:
+\[
+\lim_{\Delta \to 0}
+\frac{\|g(x+\Delta) - (g(x) + H(x)\Delta)\|}{\|\Delta\|} = 0.
+\]
+\end{definition}
+
+\subsubsection*{Example}
+
+\[
+f(X) = -\ln \det(X)
+\Rightarrow
+\nabla^2 f(X)[\Delta] = X^{-1} \Delta X^{-1}.
+\]
+
+\subsection{Newton's Method}
+
+\begin{theorem}
+If $z$ minimizes $f$, then the Newton step $x^+ = x + n(x)$ satisfies:
+\[
+\|x^+ - z\|
+\le
+\|H(x)^{-1}\|
+\int_0^1
+\|H(x + t(z-x)) - H(x)\| dt
+\cdot \|x - z\|.
+\]
+\end{theorem}
+
+\begin{proof}
+Use $g(z)=0$ and the fundamental theorem:
+\[
+g(x) - g(z)
+= \int_0^1 H(x+t(z-x))(z-x)\,dt.
+\]
+Substitute into Newton update.
+\end{proof}
+
+\begin{theorem}
+If $H$ is $Q$-Lipschitz, then:
+\[
+\|x^+ - z\|
+\le
+\|H(x)^{-1}\| \frac{Q}{2} \|x-z\|^2.
+\]
+\end{theorem}
+
+\noindent
+Thus Newton has quadratic convergence.
+
+\subsection{Newton with Constraints}
+
+Let
+\[
+L = \{x : Ax = b\}.
+\]
+
+Optimality:
+\[
+-\nabla f(x) \in N_L(x)
+\quad \Longleftrightarrow \quad
+-\nabla f(x) = A^T y.
+\]
+
+Linearization:
+\[
+-\nabla f(x+\Delta)
+\approx
+-(\nabla f(x) + \nabla^2 f(x)\Delta)
+= A^T y.
+\]
+
+Solve:
+\[
+\min f(x) + \langle g(x),\Delta \rangle + \frac{1}{2}\langle \Delta, H(x)\Delta \rangle
+\quad \text{s.t. } A(x+\Delta)=b.
+\]
+
+\subsubsection*{Projected Form}
+
+Let projection onto $L$:
+\[
+g_L(x) = P_L g(x),
+\quad
+H_L(x) = P_L H(x).
+\]
+
+\begin{theorem}
+Newton direction:
+\[
+n_L(x) = -H_L(x)^{-1} g_L(x).
+\]
+\end{theorem}
+
+\subsection*{Intrinsic Geometry}
+
+\begin{definition}
+Define intrinsic inner product:
+\[
+\langle y,z \rangle_x = \langle y, H(x) z \rangle.
+\]
+
+Intrinsic norm:
+\[
+\|y\|_x = \sqrt{\langle y, H(x) y \rangle}.
+\]
+\end{definition}
+
+\noindent
+Then:
+\[
+g_x(x) = H(x)^{-1} g(x) = -n(x),
+\quad
+H_x(x) = I.
+\]
+
+\subsection{Self-Concordance}
+
+\begin{definition}
+Let
+\[
+B_x(y,r) = \{z : \|z-y\|_x \le r\}.
+\]
+
+$f$ is self-concordant if:
+\[
+B_x(x,1) \subset \mathrm{dom}\,f
+\]
+and for $y \in B_x(x,1)$:
+\[
+1 - \|y-x\|_x
+\le
+\frac{\|v\|_y}{\|v\|_x}
+\le
+\frac{1}{1-\|y-x\|_x}.
+\]
+\end{definition}
+
+\subsubsection*{Example}
+
+\[
+f(x) = -\sum_i \log x_i.
+\]
+
+\[
+g(x) =
+\begin{bmatrix}
+1/x_1 \\ \vdots \\ 1/x_n
+\end{bmatrix},
+\quad
+H(x) =
+\begin{bmatrix}
+1/x_1^2 & & \\
+& \ddots & \\
+& & 1/x_n^2
+\end{bmatrix}.
+\]
+
+For $y \in B_x(x,1)$:
+\[
+\sum_i \frac{(y_i-x_i)^2}{x_i^2} < 1
+\Rightarrow y_i > 0.
+\]
+
+Also:
+\[
+\|v\|_y^2
+\le
+\|v\|_x^2 \cdot \max_i \frac{x_i^2}{y_i^2}
+\le
+\frac{1}{(1-\|y-x\|_x)^2}.
+\]
+
+\subsection*{Self-Concordance and Newton Behavior}
+
+Recall the intrinsic geometry:
+\[
+\langle y,z \rangle_x = \langle y, H(x) z \rangle,
+\quad
+\|y\|_x = \sqrt{\langle y,y \rangle_x}.
+\]
+
+Then:
+\[
+g_x(x) = H(x)^{-1} g(x) = -n(x),
+\quad
+H_x(x) = I.
+\]
+
+\begin{definition}
+$f$ is self-concordant (SC) if for all $x \in dom f$:
+\begin{enumerate}
+\item $B_x(x,1) \subset dom f$
+\item For all $y \in B_x(x,1)$:
+\[
+1 - \|y-x\|_x
+\le
+\frac{\|v\|_y}{\|v\|_x}
+\le
+\frac{1}{1-\|y-x\|_x}
+\quad \forall v \ne 0.
+\]
+\end{enumerate}
+\end{definition}
+
+\begin{theorem}
+$f$ is SC iff for all $y \in B_x(x,1)$:
+\[
+\|H_x(y)\|_x, \;\|H_x(y)^{-1}\|_x
+\le \frac{1}{(1-\|y-x\|_x)^2}.
+\]
+\end{theorem}
+
+Equivalently:
+\[
+\|H_x(x) - H_x(y)\|_x
+\le
+\frac{1}{(1-\|y-x\|_x)^2} - 1.
+\]
+
+\begin{theorem}
+If $f \in \mathrm{SC}$ and $y \in B_x(x,1)$, then the second-order model satisfies:
+\[
+|f(y) - q_x(y)|
+\le
+\frac{\|y-x\|_x^3}{3(1-\|y-x\|_x)}.
+\]
+\end{theorem}
+
+\begin{proof}
+\[
+f(y) - q_x(y)
+=
+\int_0^1 \int_0^t
+\langle (H_x(x+s(y-x)) - I)(y-x), y-x \rangle_x ds dt.
+\]
+
+Use SC bounds:
+\[
+\|H_x(x+s(y-x)) - I\|_x
+\le
+\frac{1}{(1-s\|y-x\|_x)^2} - 1.
+\]
+
+Integrating gives the result.
+\end{proof}
+
+\subsubsection*{Newton Step Contraction}
+
+Let:
+\[
+x^+ = x + n(x).
+\]
+
+\begin{theorem}
+If $f \in \mathrm{SC}$ and $z$ is a minimizer with $z \in B_x(x,1)$, then:
+\[
+\|x^+ - z\|_x
+\le
+\frac{\|x-z\|_x^2}{1-\|x-z\|_x}.
+\]
+\end{theorem}
+
+\begin{proof}
+Apply previous Newton bound and SC control on Hessian variation.
+\end{proof}
+
+\begin{theorem}
+If $f \in \mathrm{SC}$ and $\|n(x)\|_x < 1$, then:
+\[
+\|n(x^+)\|_{x^+}
+\le
+\left(\frac{\|n(x)\|_x}{1-\|n(x)\|_x}\right)^2.
+\]
+\end{theorem}
+
+\begin{proof}
+Use:
+\[
+\|n(x^+)\|_{x^+}^2
+=
+\langle g_x(x^+), H_x(x^+)^{-1} g_x(x^+) \rangle_x,
+\]
+and bound via SC Hessian variation and integral representation of gradients.
+\end{proof}
+
+\begin{theorem}
+If $f \in \mathrm{SC}$ and
+\[
+\|n(x)\|_x \le \frac{1}{4},
+\]
+then $f$ has a minimizer $z \in B_x(x,1)$ and:
+\[
+\|z - x^+\|_x
+\le
+\frac{3\|n(x)\|_x^2}{(1-\|n(x)\|_x)^3}.
+\]
+\end{theorem}
+
+\begin{proof}
+Using model accuracy:
+\[
+f(y) \ge f(x) - \|n(x)\|_x \|y-x\|_x + \frac{1}{2}\|y-x\|_x^2 - \frac{1}{2}\|y-x\|_x^3.
+\]
+
+For $\|y-x\|_x \le \tfrac{1}{3}$:
+\[
+f(y) \ge f(x),
+\]
+so a minimizer exists in the ball.
+\end{proof}
+
+\subsection{Self-Concordant Barriers}
+
+\begin{definition}
+$f$ is a self-concordant barrier (SCB) if:
+\[
+f \in \mathrm{SC}
+\quad \text{and} \quad
+\nu_f := \sup_{x \in dom f} \|g_x(x)\|_x^2 < \infty.
+\]
+\end{definition}
+
+\subsubsection*{Example}
+
+\[
+f(x) = -\sum_i \log x_i
+\quad \Rightarrow \quad
+\nu_f = n.
+\]
+
+\subsubsection*{Closure Properties}
+
+\begin{lemma}
+If $f_1, f_2 \in \mathrm{SCB}$, then:
+\[
+f_1 + f_2 \in \mathrm{SCB},
+\quad
+\nu_{f_1+f_2} \le \nu_{f_1} + \nu_{f_2}.
+\]
+\end{lemma}
+
+\begin{lemma}
+If $f \in \mathrm{SCB}$, then:
+\[
+f(Ax-b) \in \mathrm{SCB},
+\]
+with same or smaller $\nu$.
+\end{lemma}
+
+\subsubsection{Barrier Constructions}
+
+\paragraph{Polytope}
+
+\[
+\min c^T x
+\quad \text{s.t. } Ax \le b,\; \|x\|_2 \le 1.
+\]
+
+Barrier:
+\[
+f(x)
+=
+-\sum_i \log(b_i - \langle a_i,x\rangle)
+- \log(1 - \|x\|_2^2).
+\]
+
+\[
+\nu_f = m + 1.
+\]
+
+\paragraph{Positive Orthant}
+
+\[
+x \ge 0
+\quad \Rightarrow \quad
+f(x) = -\sum_i \log x_i,
+\quad \nu_f = n.
+\]
+
+\paragraph{PSD Cone}
+
+\[
+X \succeq 0
+\quad \Rightarrow \quad
+f(X) = -\ln \det X,
+\quad \nu_f = n.
+\]
+
+If also entrywise positive:
+\[
+f(X) = -\ln \det X - \sum_{i,j} \log X_{ij},
+\quad \nu_f = n + n^2.
+\]
+
+\subsection{Interior Point Method}
+
+Solve:
+\[
+\min \langle c,x\rangle
+\quad \text{s.t. } x \in \overline{dom f}.
+\]
+
+Define:
+\[
+f_\eta(x) = \eta \langle c,x\rangle + f(x).
+\]
+
+Newton step:
+\[
+n_\eta(x)
+=
+-H(x)^{-1}(\eta c + g(x))
+=
+n(x) - \eta c.
+\]
+
+\subsubsection*{Short-Step Method}
+
+Initialize:
+\[
+\|n_{\eta_0}(x_0)\|_{x_0} \le \frac{1}{9}.
+\]
+
+Update:
+\[
+\eta_{k+1}
+=
+\left(1 + \frac{1}{8\sqrt{\nu_f}}\right)\eta_k,
+\quad
+x_{k+1} = x_k + n_{\eta_{k+1}}(x_k).
+\]
+
+\begin{theorem}
+If
+\[
+\|n_{\eta_k}(x_k)\|_{x_k} \le \frac{1}{9},
+\]
+then:
+\[
+\|n_{\eta_{k+1}}(x_{k+1})\|_{x_{k+1}} \le \frac{1}{9}.
+\]
+\end{theorem}
+
+\begin{proof}
+Decompose:
+\[
+n_{\eta_{k+1}}(x_k)
+=
+\frac{\eta_{k+1}}{\eta_k} n_{\eta_k}(x_k)
++
+\left(1 - \frac{\eta_{k+1}}{\eta_k}\right)n(x_k),
+\]
+and use SC bounds.
+\end{proof}
+
+\subsubsection*{Complexity}
+
+To reach $\eta_k \sim 1/\varepsilon$:
+\[
+k = O(\sqrt{\nu_f} \log(1/\varepsilon)).
+\]
+
+\subsubsection*{Alternative (Backward View)}
+
+Let $\tilde c = g(x)$.
+
+Then $x$ minimizes:
+\[
+\min \langle \tilde c, x\rangle + f(x),
+\]
+i.e., central path reversal.
+
+\subsubsection*{Long-Step / Predictor-Corrector}
+
+Practical improvements:
+\begin{itemize}
+\item Long-step: increase $\eta$ aggressively
+\item Multiple Newton corrections
+\item Predictor-corrector: jump + recenter
+\end{itemize}
+
+\subsection{Primal-Dual View}
+
+Barrier problem:
+\[
+\min f(x) + \langle c,x\rangle + B(x),
+\]
+with:
+\[
+\nabla B(x) = \sum_i \nabla g_i(x)\cdot \frac{1}{-g_i(x)}.
+\]
+
+KKT-like system:
+\[
+\begin{cases}
+\nabla f(x) + \nabla g(x)^T u + A^T y = 0 \\
+u_i g_i(x) = -\tfrac{1}{\eta} \\
+Ax = b \\
+u_i > 0,\; g_i(x) < 0
+\end{cases}
+\]
+
+\noindent
+Thus interior-point methods can be viewed as:
+\[
+\textbf{Newton applied to perturbed KKT conditions}.
+\]
 
 
 
