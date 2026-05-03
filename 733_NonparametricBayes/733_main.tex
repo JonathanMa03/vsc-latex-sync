@@ -183,7 +183,7 @@ Nonparametric Bayes (BNP) extends this by allowing unbounded/growing/infinite pa
 
 A theoretical motivation for nonparametric Bayesian methods comes from \emph{De Finetti's Theorem}.
 
-\subsection{Exchangeability}
+\subsection*{Exchangeability}
 
 A sequence $(X_n)_{n \ge 1}$ is \emph{infinitely exchangeable} if for every $N$ and every permutation $\sigma$ of $\{1,\ldots,N\}$,
 \[
@@ -192,7 +192,7 @@ p(X_1, \ldots, X_N) = p\bigl(X_{\sigma(1)}, \ldots, X_{\sigma(N)}\bigr).
 
 This means the joint distribution depends only on the multiset of observations, not their order.
 
-\subsection{De Finetti Representation}
+\subsection*{De Finetti Representation}
 
 \begin{theorem}[De Finetti (informal)]
 A sequence $X_1, X_2, \ldots$ is infinitely exchangeable if and only if, for all $N$, there exists a probability measure $P$ such that
@@ -208,7 +208,7 @@ X_n \mid \theta \;\stackrel{i.i.d.}{\sim}\; p(\cdot \mid \theta).
 
 Thus exchangeability implies a mixture-of-i.i.d.\ representation.
 
-\subsection{Implications}
+\subsection*{Implications}
 
 This representation motivates:
 \begin{itemize}
@@ -279,7 +279,7 @@ A class $\mathcal{P}$ of prior distributions is conjugate for a likelihood $p(x 
 \]
 \end{theorem}
 
-\subsection{Examples}
+\subsection*{Examples}
 
 \begin{itemize}
 \item If $x \mid \theta \sim \mathrm{Bin}(n,\theta)$ and $\theta \sim \mathrm{Beta}(a,b)$, then
@@ -310,7 +310,7 @@ An interval $(a,b)$ is a $(1-\alpha)100\%$ credible interval for $\theta$ if
 \]
 \end{theorem}
 
-\subsection{Quantile Construction}
+\subsection*{Quantile Construction}
 
 Choose $a,b$ such that
 \[
@@ -319,7 +319,7 @@ Choose $a,b$ such that
 \Pr(\theta > b \mid x) = \frac{\alpha}{2}.
 \]
 
-\subsection{Remark}
+\subsection*{Remark}
 
 Credible intervals quantify posterior uncertainty, unlike frequentist confidence intervals which are defined via repeated sampling.
 
@@ -335,7 +335,7 @@ Equivalently,
 \hat{\theta}_{\mathrm{MAP}} = \arg\max_{\theta} \left[ \log f(x \mid \theta) + \log \pi(\theta) \right].
 \]
 
-\subsection{Motivation}
+\subsection*{Motivation}
 
 \begin{itemize}
 \item Interpretable as a \emph{penalized likelihood} estimator.
@@ -359,7 +359,7 @@ P^{\pi}(\theta \in \Theta_0 \mid x),
 \]
 or alternatively on the \emph{Bayes factor}.
 
-\subsection{Definition}
+\subsection*{Definition}
 
 The Bayes factor comparing $\Theta_1$ to $\Theta_0$ is
 \[
@@ -369,7 +369,7 @@ B^{\pi}_{10}
 {P^{\pi}(\theta \in \Theta_1) / P^{\pi}(\theta \in \Theta_0)}.
 \]
 
-\subsection{Model Comparison Formulation}
+\subsection*{Model Comparison Formulation}
 
 For corresponding models $\mathcal{M}_1$ versus $\mathcal{M}_0$,
 \[
@@ -420,7 +420,7 @@ Statistical inference is based on the posterior distribution
 \frac{\pi(\theta) f(x \mid \theta)}{\int \pi(\theta) f(x \mid \theta)\, d\theta}.
 \]
 
-\subsection{Motivation}
+\subsection*{Motivation}
 
 \begin{itemize}
 \item In conjugate cases (e.g.\ normal-normal, binomial-beta), integrals can be computed analytically.
@@ -435,9 +435,9 @@ Statistical inference is based on the posterior distribution
 
 This motivates simulation-based methods.
 
-\section{The MCMC Principle}
+\subsection*{The MCMC Principle}
 
-\subsection{Definition}
+\subsection*{Definition}
 
 An \emph{MCMC method} for simulating from a distribution $\pi$ is any method that constructs an ergodic Markov chain $(X_n)$ whose stationary distribution is $\pi$.
 
@@ -446,7 +446,7 @@ Given an initial value $x^{(0)}$, the chain is generated via a transition kernel
 X_n \xrightarrow{d} X \sim \pi.
 \]
 
-\subsection{Construction}
+\subsection*{Construction}
 
 To build such a chain, common methods include:
 \begin{itemize}
@@ -456,9 +456,9 @@ To build such a chain, common methods include:
 
 There are also diagnostic methods to assess whether the chain has reached its stationary distribution.
 
-\section{Metropolis--Hastings Algorithm}
+\subsection*{Metropolis--Hastings Algorithm}
 
-\subsection{Algorithm}
+\subsubsection*{Algorithm}
 
 Given current state $x^{(t)}$:
 
@@ -482,7 +482,7 @@ where
 \]
 \end{itemize}
 
-\section{Remarks on Metropolis--Hastings}
+\subsection*{Remarks on Metropolis--Hastings}
 
 \begin{itemize}
 \item The quantity $\rho(x,y)$ is the \emph{acceptance ratio}.
@@ -496,7 +496,7 @@ where
 
 \section{Additional Remarks}
 
-\subsection{Acceptance Mechanism}
+\subsection*{Acceptance Mechanism}
 
 If
 \[
@@ -506,7 +506,7 @@ If
 \]
 the proposal is always accepted. Otherwise, it is accepted with probability $\rho$.
 
-\subsection{Invariance}
+\subsection*{Invariance}
 
 The algorithm depends only on ratios:
 \[
@@ -517,7 +517,7 @@ The algorithm depends only on ratios:
 
 Thus, normalizing constants cancel out, provided they do not depend on the conditioning variables.
 
-\subsection{Choice of Proposal}
+\subsection*{Choice of Proposal}
 
 The choice of proposal distribution $q$ strongly affects performance (efficiency and convergence).
 
@@ -541,14 +541,14 @@ The method is particularly useful for high-dimensional target distributions.
 
 The Gibbs sampler works by \emph{sequentially sampling from univariate conditional distributions} rather than attempting to sample directly from a multivariate distribution.
 
-\section{Two-Stage Gibbs Sampler}
+\subsection{Two-Stage Gibbs Sampler}
 
 Consider a bivariate posterior distribution
 \[
 \pi(\theta, \lambda \mid x).
 \]
 
-\subsection{Algorithm}
+\subsubsection*{Algorithm}
 
 \begin{itemize}
 \item \textbf{Initialization:} Start with an arbitrary value $\lambda^{(0)}$.
@@ -568,9 +568,9 @@ Consider a bivariate posterior distribution
 
 The joint distribution $\pi(\theta, \lambda \mid x)$ is a stationary distribution for this Markov chain.
 
-\section{Multi-Stage Gibbs Sampler}
+\subsection{Multi-Stage Gibbs Sampler}
 
-\subsection{General Form}
+\subsubsection*{General Form}
 
 For a joint distribution $\pi(\theta \mid x)$ with full conditionals $\pi_1, \ldots, \pi_p$, define the iterative scheme:
 
@@ -589,7 +589,7 @@ Then
 \theta^{(t)} \;\to\; \theta \sim \pi(\theta \mid x).
 \]
 
-\section{Remarks on Gibbs Sampling}
+\subsection{Remarks on Gibbs Sampling}
 
 \begin{itemize}
 \item The order of updates is not essential and can be changed without affecting validity.
@@ -598,7 +598,7 @@ Then
 \item The overall process defines a Markov chain, but the individual component sequences $\theta_i^{(t)}$ are generally not Markov.
 \end{itemize}
 
-\section{Convergence Diagnostics}
+\subsection{Convergence Diagnostics}
 
 An MCMC algorithm is said to have converged at iteration $T$ if for all $t > T$, the samples can be regarded as drawn from the stationary distribution.
 
@@ -608,7 +608,7 @@ An MCMC algorithm is said to have converged at iteration $T$ if for all $t > T$,
 \item Passing a diagnostic does \emph{not} guarantee stationarity.
 \end{itemize}
 
-\subsection{Common Diagnostics}
+\subsubsection*{Common Diagnostics}
 
 \begin{itemize}
 \item Geweke
@@ -619,7 +619,7 @@ An MCMC algorithm is said to have converged at iteration $T$ if for all $t > T$,
 
 See the \emph{R package CODA} for implementation.
 
-\section{Quick Checks of Convergence}
+\subsubsection*{Quick Checks of Convergence}
 
 \begin{itemize}
 \item A \emph{trace plot} of $\theta^{(t)}$ against $t$ provides a basic visual diagnostic.
@@ -629,13 +629,13 @@ See the \emph{R package CODA} for implementation.
 
 \section{Autocorrelation}
 
-\subsection{Mixing}
+\subsection*{Mixing}
 
 The speed at which the chain explores the parameter space is called \emph{mixing}.
 
 High autocorrelation implies slow mixing and slow convergence.
 
-\subsection{Autocorrelation Function}
+\subsection*{Autocorrelation Function}
 
 For a sequence $\{\theta^{(1)}, \ldots, \theta^{(T)}\}$, the lag-$t$ autocorrelation function is
 \[
@@ -648,7 +648,7 @@ For a sequence $\{\theta^{(1)}, \ldots, \theta^{(T)}\}$, the lag-$t$ autocorrela
 }.
 \]
 
-\subsection{Remarks}
+\subsection*{Remarks}
 
 \begin{itemize}
 \item Gibbs sampling offers limited control over correlation structure.
@@ -656,16 +656,16 @@ For a sequence $\{\theta^{(1)}, \ldots, \theta^{(T)}\}$, the lag-$t$ autocorrela
 \item Adaptive variants modify the proposal to improve mixing.
 \end{itemize}
 
-\subsection{Practical Implications}
+\subsection*{Practical Implications}
 
 \begin{itemize}
 \item High autocorrelation indicates slow convergence.
 \item Thinning may be used to reduce correlation between retained samples.
 \end{itemize}
 
-\section{Mixture Models and Bayesian Computation}
+\section{Reading: Mixture Models and Bayesian Computation}
 
-\subsection{Motivation for Mixtures}
+\subsection*{Motivation for Mixtures}
 
 Mixture models provide a flexible framework for modelling complex data distributions:
 \[
@@ -681,7 +681,7 @@ They serve two key roles:
 
 Thus, mixtures bridge parametric and nonparametric modeling.  
 
-\subsection{Latent Variable Representation}
+\subsection*{Latent Variable Representation}
 
 Introduce allocation variables
 \[
@@ -690,7 +690,7 @@ Z_i \sim \text{Multinomial}(1; p_1,\dots,p_k), \quad X_i \mid Z_i = j \sim f(x \
 
 This transforms the model into a \emph{complete-data formulation}, which is critical for computation.
 
-\subsection{Computational Challenge}
+\subsection*{Computational Challenge}
 
 The likelihood for $n$ observations is
 \[
@@ -701,7 +701,7 @@ Expanding this produces $k^n$ terms, making direct inference intractable.
 
 \textbf{Implication:} Closed-form Bayesian inference is generally impossible.
 
-\subsection{Combinatorial Explosion}
+\subsection*{Combinatorial Explosion}
 
 Posterior inference can be written as
 \[
@@ -719,7 +719,7 @@ where $z$ are allocation vectors.
 
 This motivates stochastic approximation methods (MCMC).  
 
-\subsection{EM vs Bayesian Computation}
+\subsection*{EM vs Bayesian Computation}
 
 The EM algorithm alternates:
 
@@ -740,7 +740,7 @@ While efficient for MLE, EM:
 \item MCMC: full posterior exploration
 \end{itemize}
 
-\subsection{Mixtures as Ill-Posed Problems}
+\subsection*{Mixtures as Ill-Posed Problems}
 
 Mixture inference is inherently unstable:
 
@@ -752,7 +752,7 @@ Mixture inference is inherently unstable:
 
 This is a classic \emph{inverse problem}.  
 
-\subsection{Label Switching and Identifiability}
+\subsection*{Label Switching and Identifiability}
 
 The likelihood is invariant under permutation:
 \[
@@ -769,7 +769,7 @@ Consequences:
 
 This is known as the \emph{label switching problem}.  
 
-\subsection{Prior Design in Mixtures}
+\subsection*{Prior Design in Mixtures}
 
 Improper priors are problematic:
 
@@ -792,7 +792,7 @@ Reason:
 \end{itemize}
 
 
-\subsection{Mixtures and Nonparametric Bayes}
+\subsection*{Mixtures and Nonparametric Bayes}
 
 Mixtures naturally connect to nonparametric Bayesian methods:
 
@@ -818,7 +818,7 @@ approximate arbitrary densities
 
 Thus, Bayesian nonparametrics can be viewed as \emph{mixtures with infinitely many components}.  
 
-\subsection{Key Takeaways for MCMC}
+\subsection*{Key Takeaways for MCMC}
 
 \begin{itemize}
 \item Mixture models are computationally intractable in closed form
@@ -830,7 +830,7 @@ Thus, Bayesian nonparametrics can be viewed as \emph{mixtures with infinitely ma
 
 \chapter{Dirichlet Process}
 
-\section{Bayesian Models Revisited}
+\section*{Bayesian Models Revisited}
 
 A Bayesian statistical model consists of:
 
@@ -850,7 +850,7 @@ Inference is based on the posterior distribution
 
 \section{Nonparametric Bayesian Priors}
 
-\subsection{Modeling Idea}
+\subsection*{Modeling Idea}
 
 A \emph{nonparametric Bayesian model} places a distribution on distributions.
 
@@ -873,7 +873,7 @@ Inference may target both $\theta$ and $G$.
 
 \section{Finite Mixture Model}
 
-\subsection{Generative Model (Two Components)}
+\subsection*{Generative Model (Two Components)}
 
 Consider a Gaussian mixture model with $K=2$:
 
@@ -899,7 +899,7 @@ x_n \mid z_n \sim \mathcal{N}(\mu_{z_n}, \Sigma),
 \]
 \end{itemize}
 
-\subsection{Inference Goal}
+\subsection*{Inference Goal}
 
 \begin{itemize}
 \item assign data points to clusters,
@@ -916,14 +916,14 @@ The Beta distribution is
 \rho_1^{a_1 - 1}(1 - \rho_1)^{a_2 - 1}.
 \]
 
-\subsection{Gamma Function}
+\subsection*{Gamma Function}
 
 \begin{itemize}
 \item For integer $m$: $\Gamma(m+1) = m!$
 \item For $x > 0$: $\Gamma(x+1) = x\Gamma(x)$
 \end{itemize}
 
-\subsection{Behavior}
+\subsection*{Behavior}
 
 \begin{itemize}
 \item $a_1 = a_2 \to 0$: mass near boundaries
@@ -931,7 +931,7 @@ The Beta distribution is
 \item $a_1 > a_2$: skew toward 1
 \end{itemize}
 
-\subsection{Conjugacy}
+\subsection*{Conjugacy}
 
 If
 \[
@@ -944,7 +944,7 @@ then
 
 \section{Dirichlet Distribution}
 
-\subsection{Definition}
+\subsection*{Definition}
 
 For $\rho_{1:K}$,
 \[
@@ -959,7 +959,7 @@ with
 \rho_k > 0, \quad \sum_{k=1}^K \rho_k = 1.
 \]
 
-\subsection{Construction via Gamma}
+\subsection*{Construction via Gamma}
 
 Let
 \[
@@ -975,14 +975,14 @@ Then
 (Y_1,\dots,Y_K) \sim \mathrm{Dirichlet}(a_1,\dots,a_K).
 \]
 
-\subsection{Special Case}
+\subsection*{Special Case}
 
 For $K=2$:
 \[
 \mathrm{Dirichlet}(a_1,a_2) = \mathrm{Beta}(a_1,a_2).
 \]
 
-\subsection{Moments}
+\subsection*{Moments}
 
 \[
 E(Y_j) = \frac{a_j}{\sum_{l=1}^K a_l},
@@ -995,13 +995,13 @@ For $i \neq j$:
 E(Y_i Y_j) = \frac{a_i a_j}{(\sum_l a_l)(1+\sum_l a_l)}.
 \]
 
-\subsection{Marginals}
+\subsection*{Marginals}
 
 \[
 Y_j \sim \mathrm{Beta}\left(a_j,\; \sum_{i \neq j} a_i\right).
 \]
 
-\subsection{Conjugacy}
+\subsection*{Conjugacy}
 
 If
 \[
@@ -1040,21 +1040,21 @@ x_n \mid z_n \sim \mathcal{N}(\mu_{z_n}, \Sigma).
 
 \section{When $K > N$}
 
-\subsection{Interpretation}
+\subsection*{Interpretation}
 
 \begin{itemize}
 \item $K$: number of possible latent groups (components)
 \item clusters: number of components actually represented in the data
 \end{itemize}
 
-\subsection{Key Observations}
+\subsection*{Key Observations}
 
 \begin{itemize}
 \item Number of clusters is random and typically less than $K$
 \item Number of clusters grows with sample size $N$
 \end{itemize}
 
-\subsection{Motivation}
+\subsection*{Motivation}
 
 Choosing a finite $K$ is difficult:
 \begin{itemize}
@@ -1065,7 +1065,7 @@ Choosing a finite $K$ is difficult:
 
 \section{Choosing $K = \infty$}
 
-\subsection{Motivation}
+\subsection*{Motivation}
 
 In mixture models, choosing a finite $K$ is difficult:
 
@@ -1080,7 +1080,7 @@ This motivates considering the limit
 K = \infty.
 \]
 
-\subsection{Infinite Mixing Weights}
+\subsection*{Infinite Mixing Weights}
 
 We seek a sequence of strictly positive weights
 \[
@@ -1089,7 +1089,7 @@ We seek a sequence of strictly positive weights
 \sum_{k=1}^\infty \rho_k = 1.
 \]
 
-\subsection{Dirichlet Decomposition}
+\subsection*{Dirichlet Decomposition}
 
 From the finite Dirichlet:
 \[
@@ -1167,7 +1167,7 @@ This defines a random probability distribution over a countably infinite set.
 
 \section{Interpretation}
 
-\subsection{Hierarchy of Distributions}
+\subsection*{Hierarchy of Distributions}
 
 \begin{itemize}
 \item Beta: random distribution over $\{1,2\}$
@@ -1175,7 +1175,7 @@ This defines a random probability distribution over a countably infinite set.
 \item GEM / stick-breaking: random distribution over $\{1,2,\ldots\}$
 \end{itemize}
 
-\subsection{Key Properties}
+\subsection*{Key Properties}
 
 \begin{itemize}
 \item Infinitely many components
@@ -1183,7 +1183,7 @@ This defines a random probability distribution over a countably infinite set.
 \item Number of active components grows with $N$
 \end{itemize}
 
-\subsection{Conceptual Insight}
+\subsection*{Conceptual Insight}
 
 \begin{itemize}
 \item Parameters: infinite mixture components
@@ -1192,7 +1192,7 @@ This defines a random probability distribution over a countably infinite set.
 
 \section{Readings: Foundations of the Dirichlet Process}
 
-\subsection{Dirichlet Process as a Distribution over Distributions}
+\subsection*{Dirichlet Process as a Distribution over Distributions}
 
 A Dirichlet process defines a \emph{random probability measure} $P$ on a measurable space $(\mathcal{X}, \mathcal{B})$.
 
@@ -1211,7 +1211,7 @@ For any measurable partition $(B_1, \dots, B_k)$,
 
 where $a$ is a finite base measure.
 
-\subsection{Interpretation of the Base Measure}
+\subsection*{Interpretation of the Base Measure}
 
 Let
 \[
@@ -1232,7 +1232,7 @@ E[P(B)] = \beta(B)
 
 Thus, the Dirichlet process is centered around $\beta$.
 
-\subsection{Discrete Nature of the Dirichlet Process}
+\subsection*{Discrete Nature of the Dirichlet Process}
 
 A fundamental property:
 
@@ -1253,7 +1253,7 @@ This is crucial:
 \item explains repeated parameter values
 \end{itemize}
 
-\subsection{Posterior Conjugacy}
+\subsection*{Posterior Conjugacy}
 
 If
 \[
@@ -1272,7 +1272,7 @@ P \mid X_{1:n} \sim \mathrm{DP}\left(a + \sum_{i=1}^n \delta_{X_i}\right).
 
 This is the infinite-dimensional analogue of Dirichlet conjugacy.
 
-\subsection{Constructive Representation (Stick-Breaking)}
+\subsection*{Constructive Representation (Stick-Breaking)}
 
 A constructive definition of $P$ is:
 
@@ -1296,7 +1296,7 @@ V_n \sim \mathrm{Beta}(1, \alpha)
 
 This gives an explicit generative construction of the random measure.
 
-\subsection{Distributional Fixed-Point Property}
+\subsection*{Distributional Fixed-Point Property}
 
 The Dirichlet process satisfies the distributional equation:
 \[
@@ -1312,7 +1312,7 @@ where:
 
 This recursive structure underlies stick-breaking.
 
-\subsection{Connection to Bayesian Nonparametrics}
+\subsection*{Connection to Bayesian Nonparametrics}
 
 The Dirichlet process enables:
 
@@ -1327,7 +1327,7 @@ Instead of fixing $K$, we obtain:
 K = \infty \quad \text{but effective clusters } < \infty.
 \]
 
-\subsection{Practical Insight}
+\subsection*{Practical Insight}
 
 \begin{itemize}
 \item Only finitely many atoms receive non-negligible mass
@@ -1340,7 +1340,7 @@ This resolves the key issue:
 \text{Unknown number of clusters} \Rightarrow \text{handled probabilistically}.
 \]
 
-\subsection{Distributions Hierarchy Interpretation}
+\subsection*{Distributions Hierarchy Interpretation}
 
 We can view the progression:
 
@@ -1370,7 +1370,7 @@ Thus:
 
 \subsection{Dirichlet Process Mixture Model (DPMM)}
 
-\subsubsection{Gaussian mixture case}
+\subsubsection*{Gaussian mixture case}
 
 \begin{itemize}
 \item Weights:
@@ -1403,7 +1403,7 @@ Observations:
 x_n \mid \mu_n^* \sim \mathcal{N}(\mu_n^*, \Sigma)
 \]
 
-\subsubsection{General formulation}
+\subsubsection*{General formulation}
 
 More generally:
 
@@ -1429,7 +1429,7 @@ z_n \sim \mathrm{Categorical}(\rho),
 x_n \mid \theta_n \sim F(\theta_n)
 \]
 
-\subsection{Dirichlet Process Definition}
+\subsection*{Dirichlet Process Definition}
 
 Let $(\mathcal{Y}, \mathcal{B}(\mathcal{Y}))$ be a measurable space.
 
@@ -1449,9 +1449,9 @@ Key implication:
 p(F) \text{ is well-defined via Kolmogorov consistency.}
 \]
 
-\subsection{Properties of the Dirichlet Process}
+\subsection*{Properties of the Dirichlet Process}
 
-\subsubsection{Moments}
+\subsubsection*{Moments}
 
 For any measurable $A$:
 \[
@@ -1460,7 +1460,7 @@ E[F(A)] = H(A),
 \mathrm{Var}(F(A)) = \frac{H(A)(1-H(A))}{1+\alpha}.
 \]
 
-\subsubsection{Self-similarity}
+\subsubsection*{Self-similarity}
 
 For $B$ such that $H(B)>0$:
 \[
@@ -1468,7 +1468,7 @@ F_B \sim DP(\alpha, H_B),
 \]
 where $F_B$ is the restriction of $F$ to $B$.
 
-\subsubsection{Conjugacy}
+\subsubsection*{Conjugacy}
 
 If
 \[
@@ -1487,14 +1487,14 @@ E[F(A)\mid y] =
 \frac{\alpha}{\alpha+n} H(A).
 \]
 
-\subsubsection{Richness}
+\subsubsection*{Richness}
 
 \begin{itemize}
 \item Full support over distributions absolutely continuous w.r.t. $H$
 \item Can approximate arbitrary distributions
 \end{itemize}
 
-\subsection{Stick-Breaking Theorem}
+\subsection*{Stick-Breaking Theorem}
 
 \begin{theorem}(Sethuraman)
 Let
@@ -1512,7 +1512,7 @@ Then
 \]
 \end{theorem}
 
-\subsection{Posterior Stick-Breaking Interpretation}
+\subsection*{Posterior Stick-Breaking Interpretation}
 
 Given
 \[
@@ -1533,7 +1533,7 @@ V \sim \mathrm{Beta}(1,\alpha),
 
 where $G'$ is the residual measure.
 
-\subsection{Recursive Property of the DP}
+\subsection*{Recursive Property of the DP}
 
 For a partition $(\theta, A_1,\dots,A_K)$:
 
@@ -1550,7 +1550,7 @@ G' \sim DP(\alpha, H),
 
 showing the \emph{self-similar recursive structure} of the Dirichlet process.
 
-\subsection{Key Insight}
+\subsection*{Key Insight}
 
 The Dirichlet process can be understood as:
 
@@ -1567,7 +1567,7 @@ This structure is what enables:
 \text{infinite mixture models} \quad \Longleftrightarrow \quad \text{finite data-driven clustering}.
 \]
 
-\subsection{Stick-Breaking Expansion}
+\subsection*{Stick-Breaking Expansion}
 
 We can recursively expand the Dirichlet process draw:
 \[
@@ -1596,7 +1596,7 @@ V_k \sim \mathrm{Beta}(1,\alpha),
 \theta_k^* \sim H.
 \]
 
-\subsection{Interpretation}
+\subsection*{Interpretation}
 
 \begin{itemize}
 \item Draws from a DP are \emph{discrete} measures
@@ -1604,7 +1604,7 @@ V_k \sim \mathrm{Beta}(1,\alpha),
 \item Atoms $\theta_k^*$ are drawn from the base distribution $H$
 \end{itemize}
 
-\subsection{Marginalizing the Weights}
+\subsection*{Marginalizing the Weights}
 
 Consider a simple case:
 \[
@@ -1641,7 +1641,7 @@ Then:
 \stackrel{d}{=} \mathrm{Beta}(a_{\text{orange}}, a_{\text{green}}).
 \]
 
-\subsection{Multivariate Extension}
+\subsection*{Multivariate Extension}
 
 For
 \[
@@ -1673,7 +1673,7 @@ G \sim DP(\alpha, H), \quad \theta_i \mid G \sim G.
 
 Then:
 
-\subsubsection{First sample}
+\subsubsection*{First sample}
 
 \[
 \theta_1 \sim H,
@@ -1681,7 +1681,7 @@ Then:
 G \mid \theta_1 \sim DP\left(\alpha + 1, \frac{\alpha H + \delta_{\theta_1}}{\alpha + 1}\right).
 \]
 
-\subsubsection{Second sample}
+\subsubsection*{Second sample}
 
 \[
 \theta_2 \mid \theta_1
@@ -1689,7 +1689,7 @@ G \mid \theta_1 \sim DP\left(\alpha + 1, \frac{\alpha H + \delta_{\theta_1}}{\al
 \frac{\alpha H + \delta_{\theta_1}}{\alpha + 1}.
 \]
 
-\subsubsection{General step}
+\subsubsection*{General step}
 
 \[
 \theta_n \mid \theta_{1:n-1}
@@ -1697,7 +1697,7 @@ G \mid \theta_1 \sim DP\left(\alpha + 1, \frac{\alpha H + \delta_{\theta_1}}{\al
 \frac{\alpha H + \sum_{i=1}^{n-1} \delta_{\theta_i}}{\alpha + n - 1}.
 \]
 
-\subsection{Urn Interpretation}
+\subsection*{Urn Interpretation}
 
 \begin{itemize}
 \item With probability proportional to $\alpha$, draw a new value from $H$
@@ -1712,7 +1712,7 @@ Equivalently:
 \item Otherwise, reinforce the existing color
 \end{itemize}
 
-\subsection{Key Insight}
+\subsection*{Key Insight}
 
 This produces a sequence:
 \[
@@ -1728,7 +1728,7 @@ with:
 
 \section{Chinese Restaurant Process (CRP)}
 
-\subsection{Construction}
+\subsection*{Construction}
 
 The Chinese Restaurant Process provides an equivalent formulation of the Dirichlet process clustering mechanism.
 
@@ -1750,7 +1750,7 @@ p(z_n = k \mid z_{1:n-1}) =
 \end{cases}
 \]
 
-\subsection{Partition Interpretation}
+\subsection*{Partition Interpretation}
 
 Let $\Pi_N$ denote the partition of $\{1,\dots,N\}$ induced by assignments $z_1,\dots,z_N$.
 
@@ -1767,7 +1767,7 @@ z_4 = 3
 
 A partition consists of mutually exclusive and exhaustive subsets of $\{1,\dots,N\}$.
 
-\subsection{Probability of a Seating Arrangement}
+\subsection*{Probability of a Seating Arrangement}
 
 Let $K_N$ be the number of tables and let $C \in \Pi_N$ denote a cluster.
 
@@ -1778,7 +1778,7 @@ Then:
 \frac{\alpha^{K_N} \prod_{C \in \Pi_N} (|C|-1)!}{\alpha(\alpha+1)\cdots(\alpha+N-1)}.
 \]
 
-\subsection{Exchangeability}
+\subsection*{Exchangeability}
 
 The probability of a partition does not depend on the order of customers:
 \[
@@ -1788,7 +1788,7 @@ The probability of a partition does not depend on the order of customers:
 
 Thus, the CRP is \emph{exchangeable}.
 
-\subsection{Conditional Assignment Rule}
+\subsection*{Conditional Assignment Rule}
 
 Given $\Pi_{N,-n}$ (partition without customer $n$):
 \[
@@ -1799,7 +1799,7 @@ p(\Pi_N \mid \Pi_{N,-n}) =
 \end{cases}
 \]
 
-\section{Representations of the Dirichlet Process}
+\section*{Representations of the Dirichlet Process}
 
 The Dirichlet process admits several equivalent representations:
 
@@ -1840,7 +1840,7 @@ G = \sum_{k=1}^{\infty} \pi_k \delta_{\theta_k^*}
 \]
 \end{itemize}
 
-\section{Exchangeability and Joint Distribution}
+\section*{Exchangeability and Joint Distribution}
 
 From the predictive rule:
 \[
@@ -1939,5 +1939,283 @@ where $C_n(k)$ are unsigned Stirling numbers of the first kind.
 \end{itemize}
 
 \chapter{Sampling Techniques}
+
+\section{Sampling Techniques for DP Mixture Models}
+
+\subsection*{Gaussian Likelihood Setup}
+
+Assume:
+\[
+y \sim \mathcal{N}(\mu, \sigma^2),
+\quad
+p(y \mid \mu,\sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{1}{2\sigma^2}(y-\mu)^2\right).
+\]
+
+For i.i.d. data $y = (y_1,\dots,y_n)$:
+\[
+L(\mu,\sigma^2)
+\propto
+\left(\frac{1}{\sigma^2}\right)^{n/2}
+\exp\left(-\frac{1}{2\sigma^2}\sum_i (y_i-\mu)^2\right).
+\]
+
+We focus on:
+\[
+p(\mu,\sigma^2 \mid y) = p(\mu \mid \sigma^2, y)\, p(\sigma^2 \mid y).
+\]
+
+\subsection*{Semi-Conjugate Prior}
+
+Assume independent priors:
+\[
+\pi(\mu,\sigma^2) = \pi(\mu)\pi(\sigma^2),
+\]
+
+\[
+\mu \sim \mathcal{N}(\mu_0,\sigma_0^2),
+\quad
+\sigma^2 \sim IG\left(\frac{\nu_0}{2}, \frac{\delta_0}{2}\right).
+\]
+
+Then:
+\[
+\mu \mid \sigma^2, y \sim \mathcal{N}(\mu_n, \tau_n^2),
+\]
+
+\[
+\mu_n =
+\frac{\mu_0/\sigma_0^2 + \bar{y}\, n/\sigma^2}{1/\sigma_0^2 + n/\sigma^2},
+\quad
+\tau_n^2 = \frac{1}{1/\sigma_0^2 + n/\sigma^2}.
+\]
+
+\[
+\sigma^2 \mid y \text{ not in closed form}, \quad
+\sigma^2 \mid y,\mu \sim IG.
+\]
+
+\subsection{Finite Mixture Models}
+
+A flexible density:
+\[
+f(y) = \sum_{k=1}^K \tau_k f(y \mid \theta_k),
+\]
+
+where:
+\[
+\tau_k \in (0,1), \quad \sum_k \tau_k = 1.
+\]
+
+\subsection{Bayesian Mixture Model}
+
+\[
+y_i \mid \tau,\theta \sim \sum_{k=1}^K \tau_k f(y_i \mid \theta_k),
+\]
+
+\[
+\tau \sim \mathrm{Dir}(\alpha,\dots,\alpha),
+\quad
+\theta_k \sim \pi_k(\theta_k),
+\quad
+K \sim \pi(K).
+\]
+
+\subsection{Gibbs Sampling (Finite Case)}
+
+For fixed $K$:
+
+\begin{itemize}
+\item Assignment:
+\[
+P(z_i^{(t)} = k \mid \cdot)
+\propto
+\tau_k^{(t-1)} f(y_i \mid \theta_k^{(t-1)}).
+\]
+
+\item Weights:
+\[
+\tau \mid z \sim \mathrm{Dir}(\alpha_1 + \hat n_1,\dots,\alpha_K + \hat n_K),
+\]
+
+where $\hat n_k = \sum_i \mathbf{1}(z_i = k)$.
+
+\item Parameters:
+\[
+p(\theta_k \mid \cdot)
+\propto
+\pi_k(\theta_k)\prod_{i:z_i=k} f(y_i \mid \theta_k).
+\]
+\end{itemize}
+
+\section{CRP Mixture Model}
+
+\subsection*{Generative Model}
+
+\[
+\Pi_N \sim CRP(N,\alpha),
+\]
+
+\[
+\forall C \in \Pi_N,\quad \phi_C \overset{i.i.d.}{\sim} G_0,
+\]
+
+\[
+x_n \mid \phi_C \sim F(\phi_C), \quad n \in C.
+\]
+
+\subsection*{Inference Goal}
+
+\[
+p(\Pi_N \mid x_{1:N}).
+\]
+
+\subsection*{Gibbs Sampler (Collapsed)}
+
+\[
+p(\Pi_N \mid \Pi_{N,-n}, x)
+=
+\begin{cases}
+\frac{|C|}{\alpha+N-1}\, p(x_{C \cup \{n\}} \mid x_C), & \text{join } C, \\
+\frac{\alpha}{\alpha+N-1}\, p(x_n), & \text{new cluster}.
+\end{cases}
+\]
+
+For Gaussian case:
+\[
+p(x_{C \cup \{n\}} \mid x_C)
+=
+\mathcal{N}(\tilde m,\tilde \Sigma + \Sigma),
+\]
+
+\[
+\tilde \Sigma^{-1} = \Sigma_0^{-1} + |C|\Sigma^{-1},
+\quad
+\tilde m = \tilde \Sigma\left(\Sigma^{-1}\sum_{m\in C} x_m + \Sigma_0^{-1}\mu_0\right).
+\]
+
+\section{DP Mixture Model (DPM)}
+
+\[
+y_i \sim \int p(y_i \mid \theta) G(d\theta),
+\quad
+G \sim DP(M,G_0).
+\]
+
+Example:
+\[
+y_i \sim \int \mathcal{N}(y_i \mid \mu,\sigma^2) G(d\mu).
+\]
+
+\section{Alternative Representations}
+
+\subsection{Stick-Breaking Form}
+
+\[
+y_i \mid (w_h,\tilde\theta_h)
+\sim
+\sum_{h=1}^{\infty} w_h p(y_i \mid \tilde\theta_h),
+\]
+
+\[
+\tilde\theta_h \sim G_0,
+\quad
+w_h = v_h \prod_{k<h}(1-v_k),
+\quad
+v_h \sim \mathrm{Beta}(1,M).
+\]
+
+\subsection{Clustering Representation}
+
+\[
+y_i \mid \theta_i \sim p(y_i \mid \theta_i),
+\quad
+\theta_i \mid G \sim G,
+\quad
+G \sim DP(M,G_0).
+\]
+
+Integrating out $G$:
+\[
+(\theta_1,\dots,\theta_n) \sim \text{CRP-induced distribution}.
+\]
+
+Predictive:
+\[
+p(\theta_{n+1} \mid \theta_{1:n})
+\propto
+\sum_{j=1}^{k_n} n_j \delta_{\theta_j^*} + M G_0.
+\]
+
+\section{Collapsed Gibbs Sampling}
+
+\subsection{Conditional for Parameters}
+
+\[
+\theta_i \mid \theta_{-i}, y
+\propto
+\sum_{j=1}^{k^-} n_j^- p(y_i \mid \theta_j^*) \delta_{\theta_j^*}
++
+M p(y_i \mid \theta_i) G_0(\theta_i).
+\]
+
+Posterior:
+\[
+p(\theta_i \mid y_i, G_0)
+=
+\frac{p(y_i \mid \theta_i)G_0(\theta_i)}{\int p(y_i \mid \theta)G_0(d\theta)}.
+\]
+
+\subsection{Cluster Assignment Update}
+
+\[
+p(s_i = j \mid s^{-}, y)
+\propto
+\begin{cases}
+n_j^- \int p(y_i \mid \theta_j^*) d p(\theta_j^* \mid y_j^-), & j \le k^-, \\
+M \int p(y_i \mid \theta) dG_0(\theta), & j = k^-+1.
+\end{cases}
+\]
+
+\subsection{Cluster Parameter Update}
+
+\[
+p(\theta_j^* \mid s,y)
+\propto
+G_0(\theta_j^*) \prod_{i:s_i=j} p(y_i \mid \theta_j^*).
+\]
+
+\section{Gaussian DPM Example}
+
+\[
+p(y_i \mid \theta_i) = \mathcal{N}(\theta_i,\sigma^2),
+\quad
+G_0 = \mathcal{N}(m,B).
+\]
+
+\[
+\int p(y_i \mid \theta)dG_0(\theta)
+=
+\mathcal{N}(y_i \mid m, B+\sigma^2).
+\]
+
+Cluster predictive:
+\[
+\int p(y_i \mid \theta_j^*) d p(\theta_j^* \mid y_j^-)
+=
+\mathcal{N}(y_i \mid m_j^-, V_j^- + \sigma^2),
+\]
+
+\[
+V_j^- = \left(\frac{1}{B} + \frac{n_j^-}{\sigma^2}\right)^{-1},
+\quad
+m_j^- = V_j^- \left(\frac{m}{B} + \frac{1}{\sigma^2}\sum_{h\in S_j^-} y_h \right).
+\]
+
+Posterior:
+\[
+p(\theta_j^* \mid y)
+=
+\mathcal{N}(m_j, V_j).
+\]
 
 \end{document}
