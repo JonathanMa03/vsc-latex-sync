@@ -2218,4 +2218,2040 @@ p(\theta_j^* \mid y)
 \mathcal{N}(m_j, V_j).
 \]
 
+\section{Reading: Mixture of Dirichlet Process Models}
+
+\subsection*{Model Representation}
+
+The Dirichlet process mixture model is
+\[
+y_i \mid \theta_i \sim F(\theta_i), \quad \theta_i \sim G, \quad G \sim DP(\alpha, G_0)
+\]
+
+Integrating out $G$ gives
+\[
+\theta_i \mid \theta_{1:i-1}
+=
+\sum_{j<i} \frac{1}{i-1+\alpha}\delta_{\theta_j}
++
+\frac{\alpha}{i-1+\alpha} G_0
+\]
+
+This induces clustering through repeated values of $\theta_i$.
+
+\subsection*{Partition View}
+
+Let $c_i$ denote cluster assignments. Then
+\[
+P(c_i = c \mid c_{-i})
+=
+\begin{cases}
+\frac{n_{-i,c}}{n-1+\alpha} \\
+\frac{\alpha}{n-1+\alpha}
+\end{cases}
+\]
+
+and
+\[
+y_i \mid c_i = c \sim F(\theta_c)
+\]
+
+Thus inference reduces to learning
+\[
+(\Pi_n, \{\theta_c\})
+\]
+
+\subsection*{Non-Conjugate Difficulty}
+
+Key terms required in Gibbs sampling are
+\[
+\int F(y_i \mid \theta)\, dG_0(\theta)
+\quad \text{and} \quad
+p(\theta \mid y_i) \propto F(y_i \mid \theta)G_0(\theta)
+\]
+
+These are not available in closed form in general.
+
+\subsection*{No-Gaps Representation}
+
+Clusters are indexed as $1,\dots,k$ with no empty labels. This avoids redundant representations of the same partition and simplifies computation.
+
+\subsection*{Augmented Sampling Idea}
+
+Introduce auxiliary parameters
+\[
+\theta_1^*, \dots, \theta_m^* \sim G_0
+\]
+
+Then approximate the new cluster term via
+\[
+\alpha \int F(y_i \mid \theta)\, dG_0(\theta)
+\approx
+\frac{\alpha}{m} \sum_{j=1}^m F(y_i \mid \theta_j^*)
+\]
+
+\subsection*{Gibbs Updates}
+
+Cluster assignments are updated via
+\[
+P(c_i = c \mid \cdot)
+\propto
+\begin{cases}
+n_{-i,c} F(y_i \mid \theta_c) \\
+\frac{\alpha}{m} F(y_i \mid \theta_c^*)
+\end{cases}
+\]
+
+Cluster parameters are updated via
+\[
+\theta_c \mid y_c \sim p(\theta_c \mid y_c)
+\]
+
+\subsection*{Main Insight}
+
+Non-conjugacy can be handled by expanding the state space and performing Gibbs updates in the augmented model, avoiding direct evaluation of intractable integrals.
+
+
+
+\section{Reading: Sampling Methods for Dirichlet Process Mixtures}
+
+\subsection*{Dirichlet Process Mixture Representation}
+
+The model is
+\[
+y_i \mid \theta_i \sim F(\theta_i), \quad \theta_i \sim G, \quad G \sim DP(\alpha, G_0)
+\]
+
+which implies
+\[
+\theta_i \mid \theta_{1:i-1}
+=
+\sum_{j<i} \frac{1}{i-1+\alpha}\delta_{\theta_j}
++
+\frac{\alpha}{i-1+\alpha} G_0
+\]
+
+This is equivalent to a Chinese restaurant process on cluster assignments.
+
+\subsection*{Collapsed Gibbs Sampling}
+
+If conjugate, integrate out $\theta_c$:
+\[
+P(c_i = c \mid c_{-i}, y)
+\propto
+n_{-i,c} \cdot p(y_i \mid y_{c,-i})
+\]
+
+For a new cluster:
+\[
+\propto
+\alpha \int F(y_i \mid \theta)\, dG_0(\theta)
+\]
+
+\subsection*{Failure Under Non-Conjugacy}
+
+The integral
+\[
+\int F(y_i \mid \theta)\, dG_0(\theta)
+\]
+is not tractable, so collapsed Gibbs cannot be used.
+
+\subsection*{Metropolis-Hastings Update}
+
+Propose
+\[
+\theta^* \sim G_0
+\]
+
+Accept with probability
+\[
+\rho = \min\left(1, \frac{F(y_i \mid \theta^*)}{F(y_i \mid \theta_i)}\right)
+\]
+
+The prior cancels, so no integral is needed.
+
+\subsection*{Auxiliary Gibbs Sampling}
+
+Introduce auxiliary draws
+\[
+\theta_1^*, \dots, \theta_m^* \sim G_0
+\]
+
+Update assignments via
+\[
+P(c_i = c \mid \cdot)
+\propto
+\begin{cases}
+n_{-i,c} F(y_i \mid \theta_c) \\
+\frac{\alpha}{m} F(y_i \mid \theta_c^*)
+\end{cases}
+\]
+
+\subsection*{Mixing Behavior}
+
+Standard Gibbs updates one observation at a time:
+\[
+c_i \to c_i'
+\]
+
+This leads to slow exploration of partitions and difficulty in splitting or merging clusters.
+
+\subsection*{Conceptual Summary}
+
+Posterior inference is over
+\[
+p(\Pi_n, \{\theta_c\} \mid y)
+\]
+
+Key challenges are
+\[
+\text{non-conjugacy} \quad \text{and} \quad \text{infinite mixture structure}
+\]
+
+Efficient sampling requires combining
+\[
+\text{Gibbs}, \quad \text{Metropolis-Hastings}, \quad \text{augmentation}
+\]
+
+\section{Sampling Techniques: Slice Sampling for DP Mixtures}
+
+\subsection*{Hyperpriors for Base Measure}
+
+Assume the base measure is parameterized as $\phi = (m,B)$ with priors
+\[
+m \sim \mathcal{N}(m_0, D), \quad B \sim IGamma(a,b)
+\]
+
+Given cluster parameters $\{\theta_j^*\}_{j=1}^k$, the posterior for $m$ is
+\[
+m \mid \cdots \sim \mathcal{N}(m_1, D_1),
+\quad
+D_1^{-1} = \frac{1}{D} + \frac{k}{B},
+\quad
+m_1 = D_1\left(\frac{m_0}{D} + \frac{1}{B}\sum_{j=1}^k \theta_j^*\right)
+\]
+
+The posterior for $B$ is
+\[
+B \mid \cdots \sim IGamma(a_1, b_1),
+\quad
+a_1 = a + \frac{k}{2},
+\quad
+b_1 = b + \frac{1}{2}\sum_{j=1}^k (\theta_j^* - m)^2
+\]
+
+\subsection*{Sampling the Concentration Parameter}
+
+We use the marginal:
+\[
+p(k \mid M) \propto M^k \frac{\Gamma(M)}{\Gamma(M+n)}
+\]
+
+Introduce auxiliary variable:
+\[
+\eta \mid M,k \sim Beta(M+1, n)
+\]
+
+If prior $M \sim Gamma(c,d)$, then:
+\[
+M \mid \eta,k \sim
+\pi \cdot Gamma(c+k, d - \log \eta)
++
+(1-\pi) \cdot Gamma(c+k-1, d - \log \eta)
+\]
+
+where mixing weight depends on $(k,n,\eta)$.
+
+\subsection*{No-Gaps Algorithm}
+
+Clusters are labeled consecutively:
+\[
+c_i \in \{1,\dots,k\}
+\]
+
+with relabeling applied whenever clusters become empty.
+
+For each observation $i$, remove $y_i$ and define:
+\[
+k^- = \text{\# clusters without } i, \quad n_j^- = \sum_{\ell \neq i} \mathbf{1}(c_\ell = j)
+\]
+
+If $y_i$ is not a singleton:
+\[
+P(c_i = j \mid \cdot) \propto
+\begin{cases}
+n_j^- p(y_i \mid \theta_j^*) & j \le k^- \\
+\frac{M}{k^- + 1} p(y_i \mid \theta_{k^-+1}^*) & j = k^- + 1
+\end{cases}
+\]
+
+If $y_i$ is a singleton:
+\[
+P(\text{keep } c_i) = \frac{k^- - 1}{k^-}, \quad
+P(\text{resample}) = \frac{1}{k^-}
+\]
+
+\subsection*{Updating Cluster Parameters}
+
+Given assignments $\{c_i\}$:
+\[
+p(\theta_j^* \mid y) \propto G_0(\theta_j^*) \prod_{i:c_i=j} p(y_i \mid \theta_j^*)
+\]
+
+If non-conjugate, sample via Metropolis-Hastings.
+
+New cluster candidates:
+\[
+\theta_{k+1}^* \sim G_0
+\]
+
+\subsection*{Slice Sampling Idea}
+
+Target density:
+\[
+\pi(x) = \frac{f(x)}{Z}, \quad Z = \int f(s)\,ds
+\]
+
+Introduce auxiliary variable $u$:
+\[
+u \sim Uniform(0, f(x))
+\]
+
+Define joint:
+\[
+p(x,u) = \frac{1}{Z} \mathbf{1}(0 < u < f(x))
+\]
+
+Marginalizing:
+\[
+p(x) = \int_0^{f(x)} \frac{1}{Z} du = \frac{f(x)}{Z}
+\]
+
+\subsection*{Slice Sampling Updates}
+
+Sample:
+\[
+u_t \sim Uniform(0, f(x_t))
+\]
+
+Define slice:
+\[
+S(u) = \{x : f(x) \ge u\}
+\]
+
+Then update:
+\[
+x_{t+1} \sim Uniform(S(u_t))
+\]
+
+\subsection*{Slice Sampling for DP Mixtures}
+
+Likelihood:
+\[
+p(y_i \mid \{w_h\}, \{\tilde{\theta}_h\}) = \sum_{h=1}^\infty w_h p(y_i \mid \tilde{\theta}_h)
+\]
+
+Introduce slice variable:
+\[
+u_i \sim Uniform(0, w_{z_i})
+\]
+
+Augmented likelihood:
+\[
+p(y_i, u_i) = \sum_{h=1}^\infty \mathbf{1}(u_i < w_h) p(y_i \mid \tilde{\theta}_h)
+\]
+
+Key property:
+\[
+u_i > 0 \Rightarrow \text{only finitely many } w_h > u_i
+\]
+
+Thus:
+\[
+\sum_{h=1}^\infty \rightarrow \sum_{h: w_h > u_i}
+\]
+
+which is finite.
+
+\subsection*{Marginalization Check}
+
+\[
+\int p(y_i, u_i) du_i
+=
+\sum_{h=1}^\infty p(y_i \mid \tilde{\theta}_h) \int_0^{w_h} du_i
+=
+\sum_{h=1}^\infty w_h p(y_i \mid \tilde{\theta}_h)
+\]
+
+Thus the original model is recovered.
+
+\subsection*{Key Insight}
+
+Slice sampling converts:
+\[
+\text{infinite mixture} \quad \rightarrow \quad \text{finite active components per iteration}
+\]
+
+by introducing auxiliary variables $\{u_i\}$.
+
+This enables exact inference without truncation.
+
+\subsection*{Slice Sampler: Component Indicators}
+
+Introduce latent indicators $r_i \in \{1,2,\dots\}$ such that
+\[
+r_i = h \quad \Longleftrightarrow \quad y_i \text{ is generated from } \tilde{\theta}_h
+\]
+
+The augmented likelihood becomes
+\[
+p(y_i, u_i, r_i \mid \{w_h\}, \{\tilde{\theta}_h\})
+=
+\mathbf{1}(u_i < w_{r_i}) \, p(y_i \mid \tilde{\theta}_{r_i})
+\]
+
+Marginalizing out $r_i$:
+\[
+\sum_{h=1}^\infty \mathbf{1}(u_i < w_h) p(y_i \mid \tilde{\theta}_h)
+\]
+recovers the slice-augmented likelihood.
+
+The full joint:
+\[
+p(y, u, r \mid \{w_h\}, \{\tilde{\theta}_h\})
+=
+\prod_{i=1}^n \mathbf{1}(u_i < w_{r_i}) p(y_i \mid \tilde{\theta}_{r_i})
+\]
+
+\subsection*{Slice Sampler: Conditional Updates}
+
+\textbf{Slice variables:}
+\[
+u_i \mid r_i, \{w_h\} \sim Uniform(0, w_{r_i})
+\]
+
+\textbf{Component indicators:}
+\[
+P(r_i = h \mid u_i, y_i, \{\tilde{\theta}_h\})
+\propto
+\mathbf{1}(w_h > u_i)\, p(y_i \mid \tilde{\theta}_h)
+\]
+
+Only components with $w_h > u_i$ are considered.
+
+\textbf{Component parameters:}
+\[
+p(\tilde{\theta}_h \mid \{y_i : r_i = h\})
+\propto
+G_0(\tilde{\theta}_h) \prod_{i:r_i=h} p(y_i \mid \tilde{\theta}_h)
+\]
+
+\textbf{Stick-breaking weights:}
+
+Let
+\[
+w_h = v_h \prod_{k<h} (1 - v_k)
+\]
+
+Then
+\[
+v_h \mid \{r_i\}
+\sim
+Beta\left(1 + n_h,\; M + \sum_{k>h} n_k\right),
+\quad
+n_h = \sum_i \mathbf{1}(r_i = h)
+\]
+
+\subsection*{Finite Approximation to DP}
+
+Instead of infinite mixtures:
+\[
+G = \sum_{h=1}^\infty w_h \delta_{\tilde{\theta}_h}
+\]
+
+approximate with finite truncation:
+\[
+G_H = \sum_{h=1}^H w_h \delta_{\tilde{\theta}_h}
+\]
+
+The marginal distributions are close:
+\[
+\| p_\infty - p_H \|_1 \le 4n e^{-(H-1)/M}
+\]
+
+Thus small $H$ can suffice when $M$ is moderate.
+
+\subsection*{Finite DP Posterior Structure}
+
+Joint posterior:
+\[
+p(\{r_i\}, \{\tilde{\theta}_h\}, \{v_h\} \mid y)
+\propto
+\prod_{i=1}^n p(y_i \mid \tilde{\theta}_{r_i})
+\prod_{i=1}^n p(r_i \mid \{v_h\})
+\prod_{h=1}^H dG_0(\tilde{\theta}_h)
+\prod_{h=1}^{H-1} p(v_h \mid M)
+\]
+
+Conditionals:
+
+\[
+p(\tilde{\theta}_h \mid \cdot)
+\propto
+G_0(\tilde{\theta}_h) \prod_{i:r_i=h} p(y_i \mid \tilde{\theta}_h)
+\]
+
+\[
+v_h \mid \cdot \sim Beta\left(1 + n_h,\; M + \sum_{k>h} n_k\right)
+\]
+
+\[
+P(r_i = h \mid \cdot)
+\propto
+w_h p(y_i \mid \tilde{\theta}_h)
+\]
+
+\subsection*{Key Comparison}
+
+\begin{itemize}
+\item Slice sampler: exact, dynamically truncates via $\{u_i\}$
+\item Finite DP: fixed truncation level $H$
+\item Both reduce infinite mixture to finite computation per iteration
+\end{itemize}
+
+\section{Reading: Gibbs Sampling for Stick-Breaking Priors}
+
+\subsection*{Stick-Breaking Random Measures}
+
+A general stick-breaking prior can be written as
+\[
+G = \sum_{k=1}^{\infty} p_k \delta_{Z_k}
+\]
+where
+\[
+p_1 = V_1, \quad p_k = V_k \prod_{l<k}(1 - V_l), \quad V_k \sim Beta(a_k, b_k)
+\]
+
+The atoms satisfy
+\[
+Z_k \overset{iid}{\sim} H
+\]
+
+This defines a broad class of random probability measures including DP and Pitman–Yor.
+
+\subsection*{Finite vs Infinite Construction}
+
+Finite case:
+\[
+\sum_{k=1}^N p_k = 1 \quad \text{with } V_N = 1
+\]
+
+Infinite case requires
+\[
+\sum_{k=1}^\infty \mathbb{E}[\log(1 - V_k)] = -\infty
+\]
+
+to ensure weights sum to 1 almost surely.
+
+\subsection*{Dirichlet Process Special Case}
+
+DP corresponds to
+\[
+V_k \sim Beta(1, \alpha)
+\]
+
+giving
+\[
+G \sim DP(\alpha, H)
+\]
+
+This provides a constructive definition equivalent to Ferguson’s original formulation.
+
+\subsection*{Generalized Gibbs Sampling}
+
+Two main approaches:
+
+\textbf{Pólya urn Gibbs:}
+\[
+\theta_{n+1} \mid \theta_{1:n}
+\sim
+\frac{\alpha}{\alpha+n} H + \sum_{k} \frac{n_k}{\alpha+n} \delta_{\theta_k^*}
+\]
+
+\textbf{Blocked Gibbs:}
+Directly sample
+\[
+\{V_k\}, \{Z_k\}, \{p_k\}
+\]
+
+This avoids marginalization and improves mixing.
+
+\subsection*{Pitman–Yor Extension}
+
+Stick-breaking form:
+\[
+V_k \sim Beta(1-a, b + ka)
+\]
+
+This yields richer clustering behavior than DP.
+
+\subsection*{Key Insight}
+
+Stick-breaking provides:
+
+\begin{itemize}
+\item explicit construction of random measures
+\item direct sampling schemes
+\item flexibility beyond Dirichlet process
+\end{itemize}
+
+\section{Reading: Slice Sampling Mixture Models}
+
+\subsection*{Dirichlet Process Mixture Model}
+
+The model:
+\[
+f(y) = \int K(y \mid \phi)\, dP(\phi), \quad P \sim DP(M, P_0)
+\]
+
+Stick-breaking form:
+\[
+P = \sum_{j=1}^\infty w_j \delta_{\phi_j}, \quad w_j = z_j \prod_{l<j}(1-z_l), \quad z_j \sim Beta(1,M)
+\]
+
+\subsection*{Slice Sampling Idea}
+
+Introduce auxiliary variable:
+\[
+u_i \sim Uniform(0, w_{d_i})
+\]
+
+Joint:
+\[
+p(y_i, u_i) = \sum_{j=1}^\infty \mathbf{1}(u_i < w_j) K(y_i \mid \phi_j)
+\]
+
+This restricts to finite set:
+\[
+A_u = \{j: w_j > u_i\}
+\]
+
+\subsection*{Latent Component Indicator}
+
+Introduce
+\[
+d_i \in A_u
+\]
+
+Then
+\[
+p(y_i, u_i, d_i) = \mathbf{1}(u_i < w_{d_i}) K(y_i \mid \phi_{d_i})
+\]
+
+This converts infinite mixture into finite conditional problem.
+
+\subsection*{Gibbs Updates}
+
+\[
+\phi_j \mid \cdot \propto p_0(\phi_j)\prod_{i:d_i=j} K(y_i \mid \phi_j)
+\]
+
+\[
+z_j \sim Beta\left(1 + \sum_i \mathbf{1}(d_i=j),\; M + \sum_i \mathbf{1}(d_i > j)\right)
+\]
+
+\[
+u_i \sim Uniform(0, w_{d_i})
+\]
+
+\[
+P(d_i = k) \propto \mathbf{1}(w_k > u_i) K(y_i \mid \phi_k)
+\]
+
+\subsection*{Key Insight}
+
+Slice variables ensure:
+
+\begin{itemize}
+\item only finitely many components active per iteration
+\item exact inference without truncation
+\item easy extension to general stick-breaking priors
+\end{itemize}
+
+\section{Reading: Bayesian Density Estimation via DP Mixtures}
+
+\subsection*{Model Setup}
+
+Data:
+\[
+y_i \mid \theta_i \sim N(\mu_i, V_i)
+\]
+
+Prior:
+\[
+\theta_i \sim G, \quad G \sim DP(\alpha G_0)
+\]
+
+\subsection*{Clustering Property}
+
+Conditional distribution:
+\[
+\theta_i \mid \theta_{-i}
+\sim
+\frac{\alpha}{\alpha+n-1} G_0 + \sum_{j\neq i} \frac{1}{\alpha+n-1} \delta_{\theta_j}
+\]
+
+Leads to clustering (ties among $\theta_i$).
+
+\subsection*{Posterior Predictive}
+
+\[
+y_{n+1} \mid y_{1:n}
+\sim
+\frac{\alpha}{\alpha+n} \int K(y \mid \theta) dG_0(\theta)
++
+\sum_{k} \frac{n_k}{\alpha+n} K(y \mid \theta_k^*)
+\]
+
+\subsection*{Interpretation}
+
+\begin{itemize}
+\item mixture of new component (prior) and existing clusters
+\item adaptive smoothing depending on data
+\item connects to kernel density estimation
+\end{itemize}
+
+\subsection*{Gibbs Sampling Strategy}
+
+Update each $\theta_i$:
+\[
+p(\theta_i \mid \theta_{-i}, y)
+\propto
+\alpha p(y_i \mid \theta_i) G_0(\theta_i)
++
+\sum_{j\neq i} p(y_i \mid \theta_j) \delta_{\theta_j}
+\]
+
+This forms basis for CRP-based samplers.
+
+\subsection*{Key Insight}
+
+DP mixtures provide:
+
+\begin{itemize}
+\item flexible density estimation
+\item automatic clustering
+\item uncertainty quantification on number of components
+\end{itemize}
+
+\section{Advanced MCMC Methods}
+
+\subsection*{Metropolis--Hastings Algorithm}
+
+Given current state $x^{(t)}$:
+
+\[
+Y_t \sim q(y \mid x^{(t)})
+\]
+
+Accept with probability
+\[
+\rho(x,y) = \min\left\{ \frac{\pi(y)\,q(x \mid y)}{\pi(x)\,q(y \mid x)}, 1 \right\}
+\]
+
+Update:
+\[
+x^{(t+1)} =
+\begin{cases}
+Y_t & \text{with prob } \rho(x^{(t)}, Y_t) \\
+x^{(t)} & \text{otherwise}
+\end{cases}
+\]
+
+\subsection*{Random Walk Metropolis--Hastings (RWMH)}
+
+Proposal:
+\[
+Y_t = x^{(t)} + Z_t, \quad Z_t \sim g
+\]
+
+Thus
+\[
+q(y \mid x) = g(y - x)
+\]
+
+Common choices:
+\[
+Z_t \sim N(0, \sigma^2 I_d)
+\]
+
+\subsection*{Scaling of the Proposal}
+
+Tradeoff:
+\[
+\sigma \text{ small} \Rightarrow \text{slow exploration}
+\]
+\[
+\sigma \text{ large} \Rightarrow \text{high rejection}
+\]
+
+Goal: balance via acceptance rate.
+
+\subsection*{Optimal Acceptance Rates}
+
+For high dimension $d$:
+\[
+\text{Optimal rate} \approx 0.234
+\]
+
+For $d=1$:
+\[
+\text{Optimal rate} \approx 0.44
+\]
+
+\subsection*{Problems with MH}
+
+\subsection*{Local Trap}
+
+Example:
+\[
+\pi(x) = \frac{1}{3} N(\mu_1,\Sigma) + \frac{2}{3} N(\mu_2,\Sigma)
+\]
+
+Chains may remain in one mode:
+\[
+P(\text{jump between modes}) \approx \text{small}
+\]
+
+\subsection*{Intractable Normalizing Constants}
+
+Target:
+\[
+f(x) \propto c(x)\psi(x)
+\]
+
+Acceptance ratio requires:
+\[
+\frac{c(y)}{c(x)}
+\]
+
+If $c(x)$ unknown $\Rightarrow$ MH not feasible.
+
+\subsection*{Metropolis Adjusted Langevin Algorithm (MALA)}
+
+Continuous-time:
+\[
+dX_t = dB_t + \frac{1}{2} \nabla \log \pi(X_t)
+\]
+
+Discrete proposal:
+\[
+Y_t \sim N\left(x^{(t)} + \frac{\sigma^2}{2} \nabla \log \pi(x^{(t)}), \sigma^2 I_d \right)
+\]
+
+\subsection*{Properties of MALA}
+
+\[
+\text{Optimal acceptance rate} \approx 0.574
+\]
+
+Advantages:
+\[
+\text{Uses gradient information} \Rightarrow \text{faster mixing}
+\]
+
+Limitation:
+\[
+\nabla \log \pi(x) \text{ must be computable}
+\]
+
+\subsection*{Implementation Issues}
+
+Convergence diagnostics:
+\[
+\text{Need full exploration of support}
+\]
+
+Autocorrelation:
+\[
+\text{Low autocorrelation} \Rightarrow \text{efficient sampling}
+\]
+
+\subsection*{Multiple Chains vs Single Chain}
+
+Multiple chains:
+\[
+\{x^{(m)}_t\}_{m=1}^M
+\]
+
+Single chain:
+\[
+x_1, x_2, \dots
+\]
+
+Goal:
+\[
+\text{independent samples} \approx \text{low autocorrelation}
+\]
+
+\subsection*{Thinning}
+
+Keep every $k$-th sample:
+\[
+\{x_k, x_{2k}, \dots\}
+\]
+
+\subsection*{Reparametrization}
+
+Problem:
+\[
+\text{High posterior correlation}
+\]
+
+Example:
+\[
+y_{ij} = \mu + \alpha_i + e_{ij}
+\]
+
+\[
+\alpha_i \sim N(0, \tau^2), \quad e_{ij} \sim N(0,\sigma^2)
+\]
+
+Posterior correlations:
+\[
+\text{Cor}(\mu,\alpha_i) \approx -\left(1 + \frac{\sigma^2/n}{\tau^2/m}\right)^{-1/2}
+\]
+
+Reparametrize:
+\[
+\beta_i = \mu + \alpha_i
+\]
+
+Leads to reduced correlation and improved mixing.
+
+\subsection*{Blocking}
+
+Group parameters:
+\[
+\theta = (\theta_1,\dots,\theta_k)
+\]
+
+Instead of scalar updates:
+\[
+\theta_j \mid \theta_{-j}
+\]
+
+Use block updates:
+\[
+(\theta_{i_1}, \dots, \theta_{i_k}) \mid \theta_{-(i_1,\dots,i_k)}
+\]
+
+Benefit:
+\[
+\text{Better exploration in correlated directions}
+\]
+
+\subsection*{Collapsing}
+
+Marginalize variables:
+\[
+p(x,y) \rightarrow p(x)
+\]
+
+Example:
+\[
+(X_1,X_2,X_3) \rightarrow (X_1,X_2)
+\]
+
+Then sample:
+\[
+X_3 \mid X_1,X_2
+\]
+
+Benefit:
+\[
+\text{Lower variance, faster convergence}
+\]
+
+\subsection*{Auxiliary Variable Methods}
+
+Introduce $u$:
+\[
+p(x) = \int p(x,u)\,du
+\]
+
+Goal:
+\[
+\text{simplify sampling or avoid intractable terms}
+\]
+
+Examples:
+\[
+\text{Slice sampling}
+\]
+
+Key principle:
+\[
+\text{augment state space to simplify conditionals}
+\]
+
+\subsection*{Key Takeaways}
+
+\[
+\text{Efficiency depends on proposal design and parameterization}
+\]
+
+\[
+\text{Use gradients (MALA), blocking, collapsing, or augmentation}
+\]
+
+\[
+\text{Avoid local traps and high autocorrelation}
+\]
+
+\section{Auxiliary Variable Methods and Hybrid MCMC}
+
+\subsection*{Cauchy--Normal Model via Data Augmentation}
+
+\[
+X_i \stackrel{iid}{\sim} \text{Cauchy}(\mu,1)
+\]
+
+Likelihood:
+\[
+L(\mu \mid x_{1:n}) = \prod_{i=1}^n \frac{1}{\pi(1 + (x_i - \mu)^2)}
+\]
+
+Prior:
+\[
+\mu \sim N(0,10)
+\]
+
+Posterior:
+\[
+\pi(\mu \mid x) \propto e^{-\mu^2/20} \prod_{i=1}^n \frac{1}{1 + (x_i - \mu)^2}
+\]
+
+Introduce latent variables:
+\[
+\frac{1}{1 + (x_i - \mu)^2}
+=
+\int_0^\infty e^{-\omega_i(1 + (x_i - \mu)^2)} d\omega_i
+\]
+
+Augmented posterior:
+\[
+\pi(\mu, \omega \mid x)
+\propto
+e^{-\mu^2/20}
+\prod_{i=1}^n e^{-\omega_i(1 + (x_i - \mu)^2)}
+\]
+
+Gibbs updates:
+\[
+\omega_i \mid \mu \sim \text{Exp}(1 + (x_i - \mu)^2)
+\]
+
+\[
+\mu \mid \omega \sim N\left(
+\frac{\sum_i \omega_i x_i}{\sum_i \omega_i + 1/20},
+\frac{1}{2\sum_i \omega_i + 1/10}
+\right)
+\]
+
+\subsection*{Metropolis-within-Gibbs}
+
+When a full conditional is not tractable:
+
+\[
+\theta_j \mid \theta_{-j} \quad \text{sampled via MH}
+\]
+
+Procedure:
+\[
+Y \sim q(\cdot \mid \theta_j)
+\]
+
+\[
+\text{accept with prob } \min\left\{
+\frac{\pi(Y \mid \theta_{-j}) q(\theta_j \mid Y)}
+{\pi(\theta_j \mid \theta_{-j}) q(Y \mid \theta_j)}, 1
+\right\}
+\]
+
+Key idea:
+\[
+\text{Replace difficult Gibbs steps with MH steps}
+\]
+
+\subsection*{Adaptive Gibbs Samplers}
+
+Goal:
+\[
+\text{improve efficiency by learning during sampling}
+\]
+
+Selection probabilities:
+\[
+\alpha_n = (\alpha_{n,1}, \dots, \alpha_{n,d})
+\]
+
+Update rule:
+\[
+\alpha_n = R_n(\alpha_{n-1}, X_{n-1}, \dots)
+\]
+
+Transition:
+\[
+X_n \sim P_{\alpha_n}(X_{n-1}, \cdot)
+\]
+
+Key condition (diminishing adaptation):
+\[
+|\alpha_n - \alpha_{n-1}| \to 0
+\]
+
+Ensures:
+\[
+\text{ergodicity under suitable conditions}
+\]
+
+\subsection*{Random Scan Gibbs Sampler}
+
+State:
+\[
+X = (X_1, \dots, X_d)
+\]
+
+At each step:
+\[
+i \sim \text{Categorical}(\alpha_1,\dots,\alpha_d)
+\]
+
+\[
+X_i \sim \pi(\cdot \mid X_{-i})
+\]
+
+Kernel:
+\[
+P_\alpha = \sum_{i=1}^d \alpha_i P_i
+\]
+
+\subsection*{Adaptive Random Scan Gibbs}
+
+Update:
+\[
+\alpha_n = R_n(\alpha_{n-1}, X_{0:n-1})
+\]
+
+Then:
+\[
+X_n \sim P_{\alpha_n}(X_{n-1}, \cdot)
+\]
+
+Key result:
+\[
+|\alpha_n - \alpha_{n-1}| \to 0
+\quad \Rightarrow \quad \text{ergodicity (under conditions)}
+\]
+
+\subsection*{Metropolis-within-Gibbs (Adaptive)}
+
+If conditional unavailable:
+\[
+X_i \sim Q_{x_{-i}}(X_i,\cdot)
+\]
+
+Accept:
+\[
+\min\left\{
+1,
+\frac{\pi(Y \mid x_{-i}) q(Y, X_i)}
+{\pi(X_i \mid x_{-i}) q(X_i, Y)}
+\right\}
+\]
+
+Adaptive version:
+\[
+\gamma_n \text{ controls proposal}
+\]
+
+\[
+Q_{n} = Q_{\gamma_n}
+\]
+
+Condition:
+\[
+\|Q_{n+1} - Q_n\| \to 0
+\]
+
+\subsection*{Ergodicity Conditions (Key Structure)}
+
+Two critical requirements:
+
+Diminishing adaptation:
+\[
+\|P_n - P_{n-1}\| \to 0
+\]
+
+Containment:
+\[
+\text{chain does not escape to infinity}
+\]
+
+Together imply:
+\[
+X_n \xrightarrow{d} \pi
+\]
+
+\subsection*{Failure of Naive Adaptation}
+
+Even if:
+\[
+\alpha_n \to \alpha
+\]
+
+Chain may still be:
+\[
+\text{non-ergodic (transient)}
+\]
+
+Hence:
+\[
+\text{adaptation must be controlled carefully}
+\]
+
+\subsection*{Adaptive Metropolis-within-Gibbs (Full)}
+
+Updates both:
+\[
+\alpha_n \quad \text{and} \quad \gamma_n
+\]
+
+Algorithm:
+\[
+\alpha_n = R_n(\cdot), \quad \gamma_n = R'_n(\cdot)
+\]
+
+Then:
+\[
+X_n \sim P_{\alpha_n,\gamma_n}(X_{n-1}, \cdot)
+\]
+
+\subsection*{Slice Sampling (Revisited)}
+
+Joint:
+\[
+p(x,u) = \frac{1}{Z} \mathbf{1}(0 < u < f(x))
+\]
+
+Gibbs steps:
+\[
+u \mid x \sim \text{Unif}(0, f(x))
+\]
+
+\[
+x \mid u \sim \text{Unif}(\{x: f(x) \ge u\})
+\]
+
+For DP mixtures:
+\[
+u_i < w_{r_i}
+\Rightarrow \text{finite truncation}
+\]
+
+\subsection*{Key Insight Across Methods}
+
+All methods aim to:
+
+\[
+\text{improve mixing}
+\]
+
+via:
+\[
+\text{better proposals}, \quad \text{reparameterization}, \quad \text{augmentation}
+\]
+
+Unifying principle:
+\[
+\text{modify the Markov kernel while preserving } \pi
+\]
+
+\subsection*{Takeaways}
+
+\[
+\text{Gibbs: simple but may mix slowly}
+\]
+
+\[
+\text{MH: flexible but sensitive to tuning}
+\]
+
+\[
+\text{MALA: uses gradients}
+\]
+
+\[
+\text{Adaptive MCMC: learns structure, but requires care}
+\]
+
+\[
+\text{Auxiliary variables: turn hard problems into easy conditionals}
+\]
+
+\section{Pitman--Yor Process (PYP)}
+
+\subsection*{Motivation: Limitations of the Dirichlet Process}
+
+\begin{itemize}
+\item DP mixture model:
+\begin{itemize}
+\item standard Bayesian nonparametric clustering model
+\item exchangeable partitions
+\item flexible number of clusters
+\end{itemize}
+
+\item Key limitations:
+\begin{itemize}
+\item cluster weights decay exponentially
+\item number of clusters grows slowly:
+\[
+\mathbb{E}[K_n] \sim \alpha \log n
+\]
+\end{itemize}
+
+\item Consequence:
+\begin{itemize}
+\item underestimates many small clusters
+\item not suitable for heavy-tailed cluster structures
+\end{itemize}
+\end{itemize}
+
+\subsection*{Idea of the Pitman--Yor Process}
+
+\begin{itemize}
+\item Goal:
+\begin{itemize}
+\item minimal extension of DP
+\item preserve exchangeability
+\item maintain tractable inference
+\end{itemize}
+
+\item Key modification:
+\begin{itemize}
+\item introduce discount parameter $d$
+\item decouple:
+\begin{itemize}
+\item reinforcement (rich-get-richer)
+\item tail behavior of cluster sizes
+\end{itemize}
+\end{itemize}
+
+\item Result:
+\begin{itemize}
+\item exponential decay $\rightarrow$ power-law decay
+\item heavier tails in cluster sizes
+\end{itemize}
+\end{itemize}
+
+\subsection*{Definition: Stick-Breaking Representation}
+
+\begin{itemize}
+\item Random measure:
+\[
+G = \sum_{k=1}^\infty \pi_k \delta_{\phi_k}, \quad \phi_k \stackrel{iid}{\sim} G_0
+\]
+
+\item Weights:
+\[
+\pi_k = v_k \prod_{\ell < k} (1 - v_\ell)
+\]
+
+\item Stick-breaking variables:
+\[
+v_k \sim \text{Beta}(1 - d, \alpha + k d)
+\]
+
+\item Parameter constraints:
+\[
+0 \le d < 1, \quad \alpha > -d
+\]
+
+\item Special case:
+\[
+d = 0 \Rightarrow \text{Dirichlet Process}
+\]
+\end{itemize}
+
+\subsection*{Pitman--Yor via Discounted CRP}
+
+\begin{itemize}
+\item Let:
+\begin{itemize}
+\item $K_n$ = number of clusters
+\item $n_k$ = size of cluster $k$
+\end{itemize}
+
+\item Assignment probabilities:
+\[
+\mathbb{P}(z_{n+1} = k \mid z_{1:n}) =
+\begin{cases}
+\frac{n_k - d}{n + \alpha}, & k = 1, \dots, K_n \\
+\frac{\alpha + d K_n}{n + \alpha}, & \text{new cluster}
+\end{cases}
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item reduced reinforcement: $n_k - d$ instead of $n_k$
+\item increased innovation: $\alpha + d K_n$
+\end{itemize}
+\end{itemize}
+
+\subsection*{Key Properties}
+
+\begin{itemize}
+\item Discounted reinforcement:
+\begin{itemize}
+\item weakens "rich-get-richer"
+\item small clusters survive longer
+\end{itemize}
+
+\item Cluster-dependent innovation:
+\begin{itemize}
+\item more clusters $\Rightarrow$ higher probability of new cluster
+\end{itemize}
+
+\item Balance:
+\begin{itemize}
+\item prevents dominance of large clusters
+\item encourages diversity
+\end{itemize}
+\end{itemize}
+
+\subsection*{Power-Law Behavior of Weights}
+
+\begin{itemize}
+\item Expected weight:
+\[
+\mathbb{E}[\pi_k] = \mathbb{E}[v_k] \prod_{\ell<k} \mathbb{E}[1 - v_\ell]
+\]
+
+\item Moments:
+\[
+\mathbb{E}[v_k] = \frac{1 - d}{\alpha + kd + 1 - d}
+\]
+
+\[
+\mathbb{E}[1 - v_\ell] = \frac{\alpha + \ell d}{\alpha + \ell d + 1 - d}
+\]
+
+\item Asymptotics:
+\[
+\mathbb{E}[\pi_k] \sim C_{\alpha,d} \, k^{-1/d}
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item polynomial decay (heavy tail)
+\item larger $d$ $\Rightarrow$ heavier tail
+\end{itemize}
+\end{itemize}
+
+\subsection*{Growth of Number of Clusters}
+
+\begin{itemize}
+\item New cluster probability:
+\[
+\mathbb{P}(z_{n+1} = \text{new}) = \frac{\alpha + d K_n}{n + \alpha}
+\]
+
+\item Let $m_n = \mathbb{E}[K_n]$, then:
+\[
+m_{n+1} = m_n + \frac{\alpha + d m_n}{n + \alpha}
+\]
+
+\item Asymptotic approximation:
+\[
+\frac{dm_n}{dn} \approx \frac{d m_n}{n}
+\]
+
+\item Solve:
+\[
+\log m_n \approx d \log n
+\quad \Rightarrow \quad
+m_n \sim C n^d
+\]
+
+\item Compare:
+\begin{itemize}
+\item DP: $\mathbb{E}[K_n] \sim \log n$
+\item PYP: $\mathbb{E}[K_n] \sim n^d$
+\end{itemize}
+\end{itemize}
+
+\subsection*{Takeaways}
+
+\begin{itemize}
+\item PYP generalizes DP with one extra parameter $d$
+\item introduces power-law cluster sizes
+\item supports many small clusters
+\item better fits real-world heavy-tailed data
+\item retains tractable CRP-style inference
+\end{itemize}
+
+\chapter{Extensions of the Dirichlet Process}
+
+\section{Pitman--Yor Process: Inference and Applications}
+
+\subsection*{Inference under Pitman--Yor Process}
+
+\begin{itemize}
+\item Model:
+\[
+G \sim \text{PYP}(\alpha, d, G_0), \quad \theta_i \mid G \sim G, \quad y_i \mid \theta_i \sim F(\theta_i)
+\]
+
+\item Integrating out $G$ yields a collapsed Gibbs sampler similar to DP mixtures
+
+\item Cluster assignment update:
+\[
+\mathbb{P}(z_i = k \mid z_{-i}, y) \propto
+\begin{cases}
+(n_{k,-i} - d)\, p(y_i \mid y_{k,-i}), & k \le K_{-i} \\
+(\alpha + d K_{-i})\, p(y_i \mid G_0), & k = \text{new}
+\end{cases}
+\]
+
+\item Same structure as DP mixture:
+\begin{itemize}
+\item only prior weights differ
+\item likelihood terms unchanged
+\end{itemize}
+
+\item Computational cost:
+\begin{itemize}
+\item comparable to DP inference
+\end{itemize}
+\end{itemize}
+
+\subsection*{DP vs PYP: Key Differences}
+
+\begin{itemize}
+\item Parameters:
+\[
+\text{DP: } \alpha > 0, \quad \text{PYP: } \alpha > -d,\; 0 \le d < 1
+\]
+
+\item Stick-breaking:
+\[
+\text{DP: } v_k \sim \text{Beta}(1,\alpha), \quad
+\text{PYP: } v_k \sim \text{Beta}(1-d,\alpha+kd)
+\]
+
+\item Weight decay:
+\[
+\text{DP: exponential}, \quad \text{PYP: power-law}
+\]
+
+\item Cluster growth:
+\[
+\mathbb{E}[K_n] \sim \log n \quad \text{(DP)}, \qquad \mathbb{E}[K_n] \sim n^d \quad \text{(PYP)}
+\]
+
+\item Reinforcement:
+\[
+\text{DP: } n_k, \quad \text{PYP: } n_k - d
+\]
+
+\item New cluster probability:
+\[
+\text{DP: } \frac{\alpha}{n+\alpha}, \quad
+\text{PYP: } \frac{\alpha + dK_n}{n+\alpha}
+\]
+\end{itemize}
+
+\subsection*{When to Use Pitman--Yor}
+
+\begin{itemize}
+\item DP assumptions:
+\begin{itemize}
+\item new clusters quickly become unlikely
+\item tail mass decays exponentially
+\item small clusters disappear
+\end{itemize}
+
+\item Use PYP when:
+\begin{itemize}
+\item persistent rare categories
+\item heavy-tailed cluster sizes
+\item continual discovery of new types
+\end{itemize}
+
+\item Applications:
+\begin{itemize}
+\item genetics (rare alleles)
+\item text modeling (long-tail words)
+\item ecology (species abundance)
+\item social networks (degree distributions)
+\end{itemize}
+\end{itemize}
+
+\subsection*{Case Study: Genetics}
+
+\begin{itemize}
+\item Setup:
+\begin{itemize}
+\item $n$ individuals, each with allele at a locus
+\item $K_n$ distinct alleles, counts $n_k$
+\end{itemize}
+
+\item Empirical pattern:
+\begin{itemize}
+\item few common alleles
+\item many rare alleles
+\end{itemize}
+
+\item Model:
+\[
+G \sim \text{PYP}(\alpha, d, G_0), \quad z_i \mid G \sim G
+\]
+
+\item Benefit:
+\begin{itemize}
+\item heavy-tailed cluster sizes preserve rare alleles
+\end{itemize}
+\end{itemize}
+
+\subsection*{Case Study: Topic Modeling}
+
+\begin{itemize}
+\item Topic distributions:
+\[
+\phi_k = (\phi_{k,1}, \phi_{k,2}, \dots), \quad \sum_v \phi_{k,v} = 1
+\]
+
+\item Word generation:
+\[
+w_i \mid z_i = k \sim \text{Categorical}(\phi_k)
+\]
+
+\item Empirical observation:
+\begin{itemize}
+\item few very frequent words
+\item many rare words
+\end{itemize}
+
+\item Model:
+\[
+\phi_k \sim \text{PYP}(\alpha, d, G_0)
+\]
+
+\item Effect:
+\begin{itemize}
+\item heavy-tailed word distributions
+\item preserves rare words
+\end{itemize}
+\end{itemize}
+
+\section{Hierarchical Dirichlet Process (HDP)}
+
+\subsection*{Motivation: Multiple Related Groups}
+
+\begin{itemize}
+\item Data partitioned into groups:
+\[
+\{x_{ji}\}, \quad j=1,\dots,J,\; i=1,\dots,n_j
+\]
+
+\item Within each group:
+\begin{itemize}
+\item observations are exchangeable
+\item each group has its own mixture distribution
+\end{itemize}
+
+\item Goal:
+\begin{itemize}
+\item unknown number of components
+\item components shared across groups
+\item group-specific weights
+\end{itemize}
+\end{itemize}
+
+\subsection*{Why Sharing Matters}
+
+\begin{itemize}
+\item Unknown number of clusters:
+\begin{itemize}
+\item parametric models require fixing $K$
+\item nonparametric models allow growth with data
+\end{itemize}
+
+\item Shared components:
+\begin{itemize}
+\item groups are not independent
+\item large groups inform small ones
+\end{itemize}
+
+\item Different weights:
+\begin{itemize}
+\item prevalence varies across groups
+\end{itemize}
+\end{itemize}
+
+\subsection*{Failure of Naive Construction}
+
+\begin{itemize}
+\item Attempt:
+\[
+G_j \sim \text{DP}(\alpha_j, G_0(\tau)), \quad \tau \sim p(\tau)
+\]
+
+\item Conditional independence:
+\[
+G_j \perp G_{j'} \mid \tau
+\]
+
+\item Problem:
+\begin{itemize}
+\item if $G_0(\tau)$ is continuous:
+\[
+\mathbb{P}(\theta_{jk} = \theta_{j'k'}) = 0
+\]
+\item no shared atoms
+\end{itemize}
+
+\item Conclusion:
+\begin{itemize}
+\item sharing parameter $\tau$ is insufficient
+\item need discrete base measure
+\end{itemize}
+\end{itemize}
+
+\subsection*{HDP Model Definition}
+
+\begin{itemize}
+\item Global measure:
+\[
+G_0 \mid \gamma, H \sim \text{DP}(\gamma, H)
+\]
+
+\item Group-specific measures:
+\[
+G_j \mid \alpha_0, G_0 \sim \text{DP}(\alpha_0, G_0)
+\]
+
+\item Observations:
+\[
+\theta_{ji} \mid G_j \sim G_j, \quad x_{ji} \mid \theta_{ji} \sim F(\theta_{ji})
+\]
+
+\item Key property:
+\begin{itemize}
+\item $G_0$ is discrete
+\item atoms are shared across all $G_j$
+\end{itemize}
+\end{itemize}
+
+\section{Hierarchical Dirichlet Process: Constructions and Inference}
+
+\subsection*{Graphical Interpretation and Limitation of Naive Model}
+
+\begin{itemize}
+\item Naive construction:
+\[
+G_j \sim \text{DP}(\alpha_j, G_0(\tau)), \quad \tau \sim p(\tau)
+\]
+
+\item Conditional independence:
+\[
+G_j \perp G_{j'} \mid \tau
+\]
+
+\item Even with shared hyperparameter $\tau$, atoms differ across groups:
+\begin{itemize}
+\item $G_j$ are independent draws
+\item no shared support
+\end{itemize}
+
+\item Conclusion:
+\begin{itemize}
+\item no sharing of mixture components
+\item motivates hierarchical construction
+\end{itemize}
+\end{itemize}
+
+\subsection*{Stick-Breaking Construction of HDP}
+
+\begin{itemize}
+\item Global stick-breaking:
+\[
+G_0 = \sum_{k=1}^{\infty} \beta_k \delta_{\phi_k}, \quad \phi_k \overset{iid}{\sim} H, \quad \beta \sim \text{GEM}(\gamma)
+\]
+
+\item Group-level measures:
+\[
+G_j \mid G_0 \sim \text{DP}(\alpha_0, G_0)
+\]
+
+\item Since $G_0$ is discrete, all $G_j$ share atoms $\{\phi_k\}$:
+\[
+G_j = \sum_{k=1}^{\infty} \pi_{jk} \delta_{\phi_k}
+\]
+
+\item Goal:
+\begin{itemize}
+\item derive stick-breaking form for $\pi_{jk}$
+\end{itemize}
+\end{itemize}
+
+\subsection*{Finite-Dimensional Marginals}
+
+\begin{itemize}
+\item For partition $(A_1,\dots,A_r)$:
+\[
+(G_j(A_1),\dots,G_j(A_r)) \sim \text{Dir}(\alpha_0 G_0(A_1),\dots,\alpha_0 G_0(A_r))
+\]
+
+\item Using decomposition:
+\[
+G_j(A_\ell) = \sum_{k \in K_\ell} \pi_{jk}, \quad G_0(A_\ell) = \sum_{k \in K_\ell} \beta_k
+\]
+
+\item Leads to:
+\[
+\left(\sum_{k \in K_1} \pi_{jk}, \dots, \sum_{k \in K_r} \pi_{jk} \right)
+\sim \text{Dir}\left(\alpha_0 \sum_{k \in K_1} \beta_k, \dots \right)
+\]
+\end{itemize}
+
+\subsection*{Stick-Breaking for Group Weights}
+
+\begin{itemize}
+\item Representation:
+\[
+\pi_{jk} = \pi'_{jk} \prod_{\ell<k} (1 - \pi'_{j\ell})
+\]
+
+\item Where:
+\[
+\pi'_{jk} \sim \text{Beta}\left(\alpha_0 \beta_k,\; \alpha_0 \sum_{\ell>k} \beta_\ell \right)
+\]
+
+\item Derived using:
+\begin{itemize}
+\item Dirichlet aggregation
+\item renormalization properties
+\end{itemize}
+\end{itemize}
+
+\subsection*{Chinese Restaurant Franchise (CRF)}
+
+\begin{itemize}
+\item Hierarchical model:
+\[
+G_0 \sim \text{DP}(\gamma, H), \quad G_j \sim \text{DP}(\alpha_0, G_0)
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item each group = restaurant
+\item observations = customers
+\item tables = local clusters
+\item dishes = global clusters
+\end{itemize}
+\end{itemize}
+
+\subsection*{CRF Variables}
+
+\begin{itemize}
+\item Global dishes:
+\[
+\phi_k \sim H
+\]
+
+\item Table-level assignments:
+\[
+\psi_{jt} = \phi_{k_{jt}}
+\]
+
+\item Customer-level:
+\[
+\theta_{ji} = \psi_{j,t_{ji}}
+\]
+
+\item Observations:
+\[
+x_{ji} \sim F(\theta_{ji})
+\]
+\end{itemize}
+
+\subsection*{Predictive Distribution for Customers}
+
+\begin{itemize}
+\item Integrating out $G_j$:
+\[
+\theta_{ji} \mid \theta_{j,1:i-1} \sim \sum_{t=1}^{m_j} \frac{n_{jt}}{i-1+\alpha_0}\delta_{\psi_{jt}} + \frac{\alpha_0}{i-1+\alpha_0} G_0
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item join existing table with prob $\propto n_{jt}$
+\item start new table with prob $\propto \alpha_0$
+\end{itemize}
+\end{itemize}
+
+\subsection*{Predictive Distribution for Tables}
+
+\begin{itemize}
+\item Integrating out $G_0$:
+\[
+\psi_{jt} \mid \{\psi\}_{-jt} \sim \sum_{k=1}^{K} \frac{m_k}{m_{\cdot}+\gamma}\delta_{\phi_k} + \frac{\gamma}{m_{\cdot}+\gamma} H
+\]
+
+\item Where:
+\begin{itemize}
+\item $m_k$ = number of tables serving dish $k$
+\item $m_{\cdot} = \sum_k m_k$
+\end{itemize}
+
+\item Interpretation:
+\begin{itemize}
+\item reuse global dish with prob $\propto m_k$
+\item create new dish with prob $\propto \gamma$
+\end{itemize}
+\end{itemize}
+
+\subsection*{Index-Based Sampling View}
+
+\begin{itemize}
+\item Customer $\rightarrow$ table:
+\[
+\mathbb{P}(t_{ji} = t \mid \cdot) =
+\begin{cases}
+\frac{n_{jt}}{i-1+\alpha_0}, & t \le m_j \\
+\frac{\alpha_0}{i-1+\alpha_0}, & t = m_j+1
+\end{cases}
+\]
+
+\item Table $\rightarrow$ dish:
+\[
+\mathbb{P}(k_{jt} = k \mid \cdot) =
+\begin{cases}
+\frac{m_k}{m_{\cdot}+\gamma}, & k \le K \\
+\frac{\gamma}{m_{\cdot}+\gamma}, & k = K+1
+\end{cases}
+\]
+\end{itemize}
+
+\subsection*{Collapsed Gibbs Sampling: Table Assignment Update}
+
+\begin{itemize}
+\item For customer $i$ in group $j$, the table assignment update has the Gibbs form
+\[
+p(t_{ji}=t \mid \text{rest}, x)
+\propto
+p(t_{ji}=t \mid \text{rest}) \,
+p(x_{ji} \mid t_{ji}=t,\text{rest})
+\]
+
+\item The prior term comes from the CRP within group $j$:
+\[
+p(t_{ji}=t \mid t^{-ji})
+\propto
+\begin{cases}
+n_{jt}^{-ji}, & \text{if table } t \text{ exists}, \\
+\alpha_0, & \text{if table } t \text{ is new}.
+\end{cases}
+\]
+
+\item The likelihood term is collapsed by integrating out the dish parameter $\phi_k$.
+\end{itemize}
+
+\subsection*{Collapsed Predictive Density}
+
+Define the collapsed predictive density
+\[
+f_k^{-x_{ji}}(x_{ji})
+=
+p(x_{ji} \mid \{x_{j'i'} : z_{j'i'}=k,\; (j',i') \neq (j,i)\}).
+\]
+
+Using Bayes' rule,
+\[
+f_k^{-x_{ji}}(x_{ji})
+=
+\frac{
+\int f(x_{ji}\mid \phi_k)
+\prod_{j'i'\neq ji,\; z_{j'i'}=k}
+f(x_{j'i'}\mid \phi_k)
+h(\phi_k)\,d\phi_k
+}{
+\int
+\prod_{j'i'\neq ji,\; z_{j'i'}=k}
+f(x_{j'i'}\mid \phi_k)
+h(\phi_k)\,d\phi_k
+}.
+\]
+
+\begin{itemize}
+\item $h$ is the density of the base measure $H$.
+
+\item The denominator is the marginal likelihood of observations currently assigned to global cluster $k$, excluding $x_{ji}$.
+
+\item The numerator is the marginal likelihood if $x_{ji}$ were added to cluster $k$.
+
+\item If $h(\phi)$ is conjugate to $f(x\mid \phi)$, this predictive density is available in closed form.
+\end{itemize}
+
+\subsection*{Collapsed Gibbs Sampling: Dish Assignment Update}
+
+\begin{itemize}
+\item For a newly created table $t$ in group $j$, the dish assignment update is
+\[
+p(k_{jt}=k \mid \text{rest}, x)
+\propto
+p(k_{jt}=k \mid \text{rest})\,
+p(x_{jt} \mid k_{jt}=k,\text{rest}).
+\]
+
+\item The prior term comes from the global CRP:
+\[
+p(k_{jt}=k \mid k^{-jt})
+\propto
+\begin{cases}
+m_{\cdot k}, & \text{if dish } k \text{ exists}, \\
+\gamma, & \text{if dish } k \text{ is new}.
+\end{cases}
+\]
+
+\item The likelihood term is collapsed over $\phi_k$. If table $t$ is assigned dish $k$, all customers at that table share parameter $\phi_k$:
+\[
+p(x_{jt}\mid k,\text{rest})
+=
+\prod_{i:t_{ji}=t}
+f_k^{-x_{ji}}(x_{ji}).
+\]
+
+\item Since the table was just created, it contains the single customer that triggered the new table:
+\[
+\prod_{i:t_{ji}=t} f_k^{-x_{ji}}(x_{ji})
+=
+f_k^{-x_{ji}}(x_{ji}).
+\]
+
+\item Therefore:
+\[
+p(k_{jt}=k \mid \cdot)
+\propto
+\begin{cases}
+m_{\cdot k}\, f_k^{-x_{ji}}(x_{ji}), & \text{existing dish } k, \\
+\gamma\, f_{\text{new}}^{-x_{ji}}(x_{ji}), & \text{new dish}.
+\end{cases}
+\]
+\end{itemize}
+
+
+
+
 \end{document}
