@@ -4251,7 +4251,1980 @@ m_{\cdot k}\, f_k^{-x_{ji}}(x_{ji}), & \text{existing dish } k, \\
 \]
 \end{itemize}
 
+\subsection*{Case Study: BNP Modeling of Marathon Data}
 
+\begin{itemize}
+\item Context:
+\begin{itemize}
+\item Marathon finishing times depend on age, gender, and race conditions.
+\item Traditional grading methods rely on top records and coarse adjustments.
+\item Goal: data-driven comparison using latent structure.
+\end{itemize}
+
+\item Problem:
+\begin{itemize}
+\item Discover latent \emph{running patterns} (pace profiles across race segments).
+\item Cluster runners within each age/gender group.
+\item Share patterns across groups using an HDP.
+\end{itemize}
+
+\item Setup:
+\begin{itemize}
+\item Groups indexed by $j$ (age/gender).
+\item Runner $i$ in group $j$ represented by:
+\[
+x_{ji} = (\text{fraction of time spent in each segment}).
+\]
+\end{itemize}
+
+\item HDP model:
+\begin{itemize}
+\item Global distribution:
+\[
+G_0 \sim \text{DP}(\gamma, H)
+\]
+
+\item Group-level:
+\[
+G_j \sim \text{DP}(\alpha, G_0), \quad
+G_j = \sum_k \pi_{jk} \delta_{\phi_k}
+\]
+
+\item Likelihood:
+\[
+x_{ji} \mid z_{ji}=k \sim \text{Dirichlet}(\tau \phi_k)
+\]
+\end{itemize}
+
+\item Interpretation:
+\begin{itemize}
+\item $\phi_k$ = global pace pattern
+\item $\pi_{jk}$ = prevalence of pattern in group $j$
+\end{itemize}
+
+\item Data:
+\begin{itemize}
+\item NYC Marathon (2007--2011)
+\item $\sim 194{,}000$ runners
+\end{itemize}
+
+\item Outcome:
+\begin{itemize}
+\item $\sim 46$ latent pace clusters discovered
+\item Examples:
+\begin{itemize}
+\item fast-start then slow-down
+\item steady pace
+\end{itemize}
+\end{itemize}
+
+\item Insight:
+\begin{itemize}
+\item Groups differ in mixture weights but share global patterns
+\item Enables prediction of finishing time from partial race data
+\end{itemize}
+\end{itemize}
+
+\section{Dependent Dirichlet Processes (DDP)}
+
+\subsection*{Motivation}
+
+\begin{itemize}
+\item Standard DP assumes a single distribution:
+\[
+G \sim \text{DP}(\alpha, H)
+\]
+
+\item In regression:
+\[
+y_i = f(x_i) + \epsilon_i
+\]
+
+\item Need distributions that vary with $x$:
+\[
+G_x \quad \text{depends on } x
+\]
+\end{itemize}
+
+\subsection*{DDP Construction}
+
+\begin{itemize}
+\item Define a collection:
+\[
+\mathcal{G} = \{G_x : x \in \mathcal{X}\}
+\]
+
+\item Marginals:
+\[
+G_x \sim \text{DP}(\cdot,\cdot)
+\]
+
+\item Stick-breaking representation:
+\[
+G_x = \sum_h p_h \delta_{m_h(x)}
+\]
+
+\item Key idea:
+\begin{itemize}
+\item weights $p_h$ may be shared
+\item atoms $m_h(x)$ vary with $x$
+\end{itemize}
+\end{itemize}
+
+\subsection*{Types of Dependence}
+
+\begin{itemize}
+\item Common weights, dependent atoms:
+\[
+p_h \text{ fixed}, \quad m_h(x) \text{ varies with } x
+\]
+
+\item Common atoms, dependent weights
+
+\item Both dependent
+
+\item Partial sharing via discrete base measure
+\end{itemize}
+
+\subsection*{Example: Health Outcomes}
+
+\begin{itemize}
+\item Variables:
+\begin{itemize}
+\item $Y$ = health outcome
+\item $x_1$ = exposure
+\item $x_2,\dots,x_p$ = covariates
+\end{itemize}
+
+\item Interest:
+\[
+\text{distribution of } Y \mid x
+\]
+
+\item Motivation:
+\begin{itemize}
+\item effects may appear in tails
+\item avoid dichotomizing outcomes
+\end{itemize}
+\end{itemize}
+
+\subsection*{DDE and Preterm Birth Example}
+
+\begin{itemize}
+\item Logistic model:
+\[
+\log \Pr(y_i=1 \mid x_i,\beta)
+=
+\beta_0 + \sum_{h=1}^4 \beta_h\, dde_{hi} + z_i^\top \alpha
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item exposure categories modeled via indicators $dde_{hi}$
+\item $z_i$ = confounders
+\end{itemize}
+
+\item Results:
+\begin{itemize}
+\item increasing odds ratios across exposure levels
+\item strong evidence of dose-response relationship
+\end{itemize}
+\end{itemize}
+
+\subsection*{Key Insight of DDP}
+
+\begin{itemize}
+\item Instead of modeling only the mean:
+\[
+\mathbb{E}[Y \mid x]
+\]
+
+\item Model full conditional distribution:
+\[
+Y \mid x \sim G_x
+\]
+
+\item Allows:
+\begin{itemize}
+\item heteroskedasticity
+\item multimodality
+\item tail effects
+\end{itemize}
+\end{itemize}
+
+\subsection{Mixture Models and Regression Extensions}
+
+\subsubsection*{Basic Mixture Model}
+\begin{itemize}
+\item Let $y_i$ denote gestational age for individual $i$.
+\item Model density as a mixture:
+\[
+f(y_i) = \int \mathcal{N}(y_i; \mu, \sigma^2)\, dG(\mu, \sigma^2)
+\]
+\item Finite mixture approximation:
+\[
+G = \sum_{h=1}^k p_h \delta_{\theta_h}, \quad \theta_h = (\mu_h, \sigma_h^2)
+\]
+\item Mixtures of Gaussians can approximate flexible densities.
+\end{itemize}
+
+\subsubsection*{Mixtures of Regression Models}
+\begin{itemize}
+\item Incorporate predictors $x_i$ (e.g., DDE):
+\[
+f(y_i \mid x_i) = \sum_{h=1}^k p_h \mathcal{N}(y_i; x_i'\beta_h, \sigma_h^2)
+\]
+\item Hierarchical mixture of experts (HME):
+\begin{itemize}
+\item Replace weights $p_h$ with $p_h(x_i)$
+\item Allows predictor-dependent clustering
+\end{itemize}
+\item Typically estimated via EM:
+\begin{itemize}
+\item Can overfit
+\item Requires choosing $k$
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Infinite Mixtures Motivation}
+\begin{itemize}
+\item Avoid fixing number of components $k$
+\item Introduce nonparametric prior:
+\[
+G_x = \{G_x : x \in \mathcal{X}\}
+\]
+\item If $G$ is global, use:
+\[
+G \sim \mathrm{DP}(\alpha G_0)
+\]
+\end{itemize}
+
+\subsection{Dependent Dirichlet Processes (DDP)}
+
+\subsubsection*{General Form}
+\begin{itemize}
+\item Define predictor-dependent random measure:
+\[
+G_x = \sum_{h=1}^\infty p_h \delta_{\theta_h(x)}
+\]
+\item Atoms vary with $x$:
+\[
+\theta_h(\cdot) \sim \text{Gaussian Process}
+\]
+\item Weights may be:
+\begin{itemize}
+\item shared across $x$
+\item or predictor-dependent
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Key Idea}
+\begin{itemize}
+\item Introduce dependence across $x$ through:
+\begin{itemize}
+\item weights $p_h(x)$, or
+\item locations $\theta_h(x)$
+\end{itemize}
+\item Goal: flexible conditional distributions $f(y \mid x)$
+\end{itemize}
+
+\subsection{Weighted Mixture of Dirichlet Processes}
+
+\begin{itemize}
+\item Construct local DPs at knots $x_j^*$:
+\[
+G_j^* \sim \mathrm{DP}(M, G_0)
+\]
+\item Define:
+\[
+G_x(B) = \sum_{j=1}^J \frac{K(x, x_j^*)}{\sum_\ell K(x, x_\ell^*)} G_j^*(B)
+\]
+\item Interpretation:
+\begin{itemize}
+\item Nearby knots receive higher weight
+\item Smooth variation across predictor space
+\end{itemize}
+\end{itemize}
+
+\subsection{Kernel Stick-Breaking Process (KSBP)}
+
+\subsubsection*{Construction}
+\begin{itemize}
+\item Define:
+\[
+G_x = \sum_{h=1}^\infty \left[ V_h K(x, \Gamma_h) \prod_{\ell<h}(1 - V_\ell K(x, \Gamma_\ell)) \right] G_h^*
+\]
+\item Components:
+\begin{itemize}
+\item $V_h \sim \text{Beta}(a_h, b_h)$
+\item $\Gamma_h \sim H$ (locations)
+\item $G_h^* \sim \mathrm{DP}(\alpha G_0)$
+\end{itemize}
+\item $K(x,\Gamma_h)$ is a bounded kernel
+\end{itemize}
+
+\subsubsection*{Interpretation}
+\begin{itemize}
+\item Weights depend on distance between $x$ and $\Gamma_h$
+\item Nearby components get larger weights
+\item Induces smooth dependence across predictors
+\end{itemize}
+
+\subsubsection*{Special Cases}
+\begin{itemize}
+\item If $K(x,\Gamma_h)=1$:
+\begin{itemize}
+\item recovers standard DP or Pitman--Yor (depending on $V_h$)
+\end{itemize}
+\item If $K(x,\Gamma_h)=\exp(-\psi\|x-\Gamma_h\|)$:
+\begin{itemize}
+\item weights decay with distance
+\end{itemize}
+\end{itemize}
+
+\subsection{Predictor-Dependent Clustering}
+
+\begin{itemize}
+\item Marginal predictive:
+\[
+(\phi_i \mid \phi^{(i)}, X)
+=
+\frac{\alpha}{\alpha + w_i} G_0
++
+\sum_{j \neq i} \frac{w_{ij}}{\alpha + w_i} \delta_{\phi_j}
+\]
+\item Weights $w_{ij}$ depend on similarity in predictors
+\item Key difference from DP:
+\begin{itemize}
+\item clustering depends on $x$
+\end{itemize}
+\end{itemize}
+
+\subsection{Hierarchical Dirichlet Process (HDP) Revisited}
+
+\begin{itemize}
+\item Model:
+\[
+G_0 \sim \mathrm{DP}(\gamma, H), \quad G_j \mid G_0 \sim \mathrm{DP}(\alpha, G_0)
+\]
+\item Interpretation:
+\begin{itemize}
+\item $G_0$ defines global atoms
+\item $G_j$ selects subsets with group-specific weights
+\end{itemize}
+\item Enables sharing across groups without explicit regression
+\end{itemize}
+
+\subsection{Example: Information Retrieval}
+
+\begin{itemize}
+\item Words:
+\[
+x_i \sim G_j
+\]
+\item $G_j$: document-specific distribution
+\item $G_0$: global vocabulary distribution
+\item Topics shared across documents
+\end{itemize}
+
+\subsection{Nested Dirichlet Process}
+
+\begin{itemize}
+\item Model:
+\begin{itemize}
+\item $G_j$ themselves are clustered
+\item $G_j \sim Q$, where $Q$ is a DP over distributions
+\end{itemize}
+\item Two levels:
+\begin{itemize}
+\item clustering of groups (e.g., states)
+\item clustering within groups (e.g., hospitals)
+\end{itemize}
+\item Allows discovery of higher-level structure
+\end{itemize}
+
+\subsection{ANOVA Dependent Dirichlet Process (ANOVA-DDP)}
+
+\subsubsection*{Model Construction}
+\begin{itemize}
+\item Consider categorical predictors:
+\[
+x_j = (v, w)
+\]
+(e.g., row/column effects in ANOVA)
+
+\item Introduce dependence across $x$ via ANOVA structure:
+\[
+m_{xh} = \mu_h + \alpha_{h,v} + \beta_{h,w}
+\]
+
+\item Each mixture component varies with factor levels while sharing global structure.
+\end{itemize}
+
+\subsubsection*{Equivalent Representation}
+\begin{itemize}
+\item Random measure:
+\[
+G_x(\theta) = \sum_h w_h \delta_{m_{xh}}
+\]
+
+\item Can be written as:
+\[
+\theta_{xi} = \Phi_i' d_x
+\]
+
+\item Where:
+\begin{itemize}
+\item $d_x$ = design vector (ANOVA encoding)
+\item $M_h = (\mu_h, \alpha_{1,h}, \ldots, \alpha_{V,h}, \beta_{1,h}, \ldots, \beta_{W,h})$
+\end{itemize}
+
+\item Interpretation:
+\begin{itemize}
+\item ANOVA-DDP = DP mixture of ANOVA models
+\end{itemize}
+\end{itemize}
+
+\subsection{Problem Setting for BNP Regression}
+
+\begin{itemize}
+\item Data:
+\[
+\{(y_i, x_i)\}_{i=1}^n, \quad x_i \in \mathbb{R}^Q
+\]
+
+\item Model:
+\[
+y_i = f(x_i) + \epsilon_i, \quad \epsilon_i \sim \mathcal{N}(0,\sigma^2)
+\]
+
+\item Objective:
+\begin{itemize}
+\item Learn a distribution over functions $p(f)$
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Applications}
+\begin{itemize}
+\item Regression (curve fitting, smoothing)
+\item Classification (categorical outputs)
+\item Prediction (generalization)
+\end{itemize}
+
+\subsection{Gaussian Process (GP)}
+
+\subsubsection*{Definition}
+\begin{itemize}
+\item A Gaussian process is a distribution over functions:
+\[
+f \sim \mathrm{GP}(m(x), K(x,x'))
+\]
+
+\item Any finite collection $\{f(x_1), \ldots, f(x_n)\}$ is jointly Gaussian.
+\end{itemize}
+
+\subsubsection*{Covariance Structure}
+\begin{itemize}
+\item Covariance matrix:
+\[
+K_{ij} = K(x_i, x_j)
+\]
+
+\item Interpretation:
+\[
+K(x_i, x_j) = \mathbb{E}[f(x_i) f(x_j)]
+\]
+
+\item Must be positive semidefinite.
+\end{itemize}
+
+\subsection{Common Covariance Functions}
+
+\subsubsection*{Squared Exponential (SE)}
+\begin{itemize}
+\item Kernel:
+\[
+K(x,x') = \sigma_0^2 \exp\left(-\frac{1}{2}\left(\frac{x-x'}{\lambda}\right)^2\right)
+\]
+
+\item Properties:
+\begin{itemize}
+\item Smooth (infinitely differentiable)
+\item Stationary
+\end{itemize}
+
+\item Hyperparameters:
+\begin{itemize}
+\item $\lambda$: lengthscale
+\item $\sigma_0$: amplitude
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Matérn Class}
+\begin{itemize}
+\item Kernel:
+\[
+K(x,x') =
+\frac{2^{1-\nu}}{\Gamma(\nu)}
+\left(\frac{\sqrt{2\nu}|x-x'|}{\lambda}\right)^\nu
+K_\nu\left(\frac{\sqrt{2\nu}|x-x'|}{\lambda}\right)
+\]
+
+\item Controls smoothness:
+\begin{itemize}
+\item $\nu \to \infty$: SE kernel
+\item $\nu = 1/2$: exponential kernel
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Other Kernels}
+\begin{itemize}
+\item Linear:
+\[
+K(x,x') = \sigma_0^2 + x x'
+\]
+
+\item Brownian motion:
+\[
+K(x,x') = \min(x,x')
+\]
+
+\item Periodic:
+\[
+K(x,x') = \exp\left(-\frac{2\sin^2((x-x')/2)}{\lambda^2}\right)
+\]
+\end{itemize}
+
+\subsection{Combining Kernels}
+
+\begin{itemize}
+\item Sum:
+\[
+K = K_1 + K_2
+\]
+
+\item Product:
+\[
+K = K_1 K_2
+\]
+
+\item Convolution:
+\[
+K(x,x') = \int h(x,z) K(z,z') h(x',z')\, dz\, dz'
+\]
+\end{itemize}
+
+\subsection{GP Regression}
+
+\begin{itemize}
+\item Prior:
+\[
+f \sim \mathrm{GP}(m, K)
+\]
+
+\item Likelihood:
+\[
+y \mid f \sim \mathcal{N}(f(X), \sigma^2 I)
+\]
+
+\item Posterior:
+\[
+f \mid y \sim \mathrm{GP}(m_p, K_p)
+\]
+
+\item Posterior mean:
+\[
+m_p(x) = m(x) + K(X,x)^T (K + \sigma^2 I)^{-1}(y - m(X))
+\]
+
+\item Posterior covariance:
+\[
+K_p(x,x') = K(x,x') - K(X,x)^T (K + \sigma^2 I)^{-1} K(X,x')
+\]
+\end{itemize}
+
+\subsection{Prediction (Multi-step)}
+
+\begin{itemize}
+\item Joint Gaussian:
+\[
+\begin{bmatrix} y \\ y^* \end{bmatrix}
+\sim \mathcal{N}
+\left(
+\begin{bmatrix} \mu_1 \\ \mu_2 \end{bmatrix},
+\begin{bmatrix} \Sigma_{11} & \Sigma_{12} \\ \Sigma_{21} & \Sigma_{22} \end{bmatrix}
+\right)
+\]
+
+\item Conditional mean:
+\[
+\mathbb{E}[y^* \mid y] = \mu_2 + \Sigma_{21}\Sigma_{11}^{-1}(y - \mu_1)
+\]
+
+\item Conditional variance:
+\[
+\mathrm{Var}(y^* \mid y) = \Sigma_{22} - \Sigma_{21}\Sigma_{11}^{-1}\Sigma_{12}
+\]
+\end{itemize}
+
+\subsection{Learning Hyperparameters}
+
+\begin{itemize}
+\item Marginal likelihood:
+\[
+p(y \mid X, \theta) = \mathcal{N}(0, K_\theta + \sigma^2 I)
+\]
+
+\item Log marginal likelihood:
+\[
+\log p(y \mid X, \theta)
+=
+-\frac{1}{2}\log |K_\theta + \sigma^2 I|
+-\frac{1}{2} y^T (K_\theta + \sigma^2 I)^{-1} y
++ \text{const}
+\]
+
+\item Estimation:
+\begin{itemize}
+\item Maximum likelihood
+\item Fully Bayesian (e.g., HMC)
+\end{itemize}
+\end{itemize}
+
+\subsection{Remarks}
+
+\begin{itemize}
+\item GPs:
+\begin{itemize}
+\item handle uncertainty via averaging
+\item learn kernel structure from data
+\item avoid manual feature engineering
+\end{itemize}
+
+\item Compared to SVM:
+\begin{itemize}
+\item probabilistic (uncertainty quantification)
+\item automatic regularization
+\end{itemize}
+\end{itemize}
+
+\subsection{Feature Selection}
+
+\begin{itemize}
+\item Model selection problem:
+\[
+m \in \{0,1\}^D
+\]
+
+\item Ideal solution:
+\[
+\hat{m} = \arg\max_m p(D \mid m)
+\]
+
+\item Challenges:
+\begin{itemize}
+\item combinatorial ($2^D$ models)
+\item overfitting
+\end{itemize}
+
+\item Bayesian solution:
+\begin{itemize}
+\item average over models instead of selecting one
+\end{itemize}
+\end{itemize}
+
+\subsection{Feature Selection in Bayesian Models}
+
+\begin{itemize}
+\item Key questions:
+\begin{itemize}
+\item Why perform feature selection?
+\item What is the cost of including all features?
+\end{itemize}
+
+\item Important distinction:
+\begin{itemize}
+\item Overfitting is less relevant in fully Bayesian methods (no point estimation)
+\item Bayesian averaging already regularizes models
+\end{itemize}
+
+\item Feature selection is justified when:
+\begin{itemize}
+\item Measurement cost is high
+\item Prediction with many features is computationally expensive
+\end{itemize}
+
+\item Empirical note:
+\begin{itemize}
+\item Bayesian methods can perform well using all features
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Automatic Relevance Determination (ARD)}
+
+\begin{itemize}
+\item Kernel with dimension-specific lengthscales:
+\[
+K(x_n, x_{n'}) = \nu \exp\left(-\frac{1}{2} \sum_{d=1}^D \left(\frac{x_n^{(d)} - x_{n'}^{(d)}}{r_d}\right)^2\right)
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item $r_d$ controls variation along dimension $d$
+\item $r_d \to \infty$ $\Rightarrow$ dimension becomes irrelevant
+\end{itemize}
+
+\item Learning $\{r_d\}_{d=1}^D$ enables automatic feature selection.
+\end{itemize}
+
+\subsection{Limitations of Gaussian Processes}
+
+\begin{itemize}
+\item Computational cost:
+\[
+\mathcal{O}(n^3)
+\]
+due to matrix inversion
+
+\item Poor handling of:
+\begin{itemize}
+\item discontinuities
+\item sharp structural changes
+\end{itemize}
+
+\item Smooth kernels (e.g., RBF) may be overly restrictive.
+\end{itemize}
+
+\subsection{Scalable Gaussian Processes}
+
+\subsubsection*{Global Approximations}
+
+\begin{itemize}
+\item Use subset of size $m \ll n$:
+\begin{itemize}
+\item random subsampling
+\item clustering (e.g., centroids)
+\item active learning selection
+\end{itemize}
+
+\item Low-rank approximation:
+\[
+K_{nn} \approx K_{nm} K_{mm}^{-1} K_{mn}
+\]
+\end{itemize}
+
+\subsubsection*{Sparse Kernels}
+
+\begin{itemize}
+\item Compact support kernels:
+\[
+K(x_i, x_j) = 0 \quad \text{if } \|x_i - x_j\| > c
+\]
+
+\item Challenges:
+\begin{itemize}
+\item maintain positive semidefiniteness
+\end{itemize}
+
+\item Complexity:
+\[
+\mathcal{O}(\alpha n^3)
+\]
+with sparsity factor $\alpha$.
+\end{itemize}
+
+\subsubsection*{Sparse GP (Inducing Points)}
+
+\begin{itemize}
+\item Introduce $M \ll N$ inducing points
+
+\item Approximate prior:
+\[
+p(f) \approx \mathcal{N}(0, K_{NM} K_{MM}^{-1} K_{MN} + \Lambda)
+\]
+
+\item Benefits:
+\begin{itemize}
+\item Faster inversion:
+\[
+\mathcal{O}(M^2 N) \ll \mathcal{O}(N^3)
+\]
+\item Efficient prediction:
+\[
+\mathcal{O}(M) \text{ mean}, \quad \mathcal{O}(M^2) \text{ variance}
+\]
+\end{itemize}
+\end{itemize}
+
+\subsection{CART: Regression Trees}
+
+\begin{itemize}
+\item Motivation:
+\begin{itemize}
+\item Simple global models fail on complex data
+\end{itemize}
+
+\item Idea:
+\begin{itemize}
+\item Partition input space
+\item Fit simple models locally
+\end{itemize}
+
+\item Implementation:
+\begin{itemize}
+\item Recursive binary splits
+\item Optimize fit subject to complexity constraints
+\end{itemize}
+\end{itemize}
+
+\subsection{Bayesian Regression Trees}
+
+\begin{itemize}
+\item Model:
+\[
+y(x) = g(x; T, M) + \epsilon, \quad \epsilon \sim \mathcal{N}(0,\sigma^2)
+\]
+
+\item Parameters:
+\begin{itemize}
+\item $T$: tree structure
+\item $M$: leaf parameters
+\end{itemize}
+
+\item Prior factorization:
+\[
+\pi(T, M, \sigma^2) = \pi(M \mid T, \sigma^2)\pi(T \mid \sigma^2)\pi(\sigma^2)
+\]
+\end{itemize}
+
+\subsection{Bayesian Additive Regression Trees (BART)}
+
+\begin{itemize}
+\item Model:
+\[
+y(x) = \sum_{j=1}^m g(x; T_j, M_j) + \epsilon
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item Ensemble of weak learners
+\item Each tree captures partial structure
+\end{itemize}
+
+\item Prior:
+\[
+\pi((T_1,M_1),\ldots,(T_m,M_m),\sigma^2)
+=
+\prod_{j=1}^m \pi(M_j \mid T_j,\sigma^2)\pi(T_j \mid \sigma^2)\pi(\sigma^2)
+\]
+\end{itemize}
+
+\subsection{Regression Tree Representation}
+
+\begin{itemize}
+\item Tree defines mapping:
+\[
+g(x;T,M) \mapsto \mu(x)
+\]
+
+\item Leaf parameters:
+\[
+M = (\mu_1,\ldots,\mu_b)
+\]
+
+\item Possible leaf models:
+\begin{itemize}
+\item Constant
+\item Linear
+\item Gaussian process
+\end{itemize}
+\end{itemize}
+
+\subsection{MCMC for Tree Models}
+
+\begin{itemize}
+\item Sampling scheme:
+\begin{itemize}
+\item Sample tree structure $T$ via MH
+\item Sample leaf parameters $M$ via Gibbs
+\item Sample variance $\sigma^2$ via Gibbs
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Tree Proposals (MH)}
+
+\begin{itemize}
+\item Grow: split a terminal node
+\item Prune: collapse a subtree
+\item Change: modify split rule
+\item Swap: exchange split rules
+\end{itemize}
+
+\begin{itemize}
+\item Ensures reversibility of the Markov chain.
+\end{itemize}
+
+\subsection{Pros and Cons}
+
+\subsubsection*{Advantages}
+\begin{itemize}
+\item Highly flexible function approximation
+\item Handles mixed data types naturally
+\item Scales via parallel MCMC
+\end{itemize}
+
+\subsubsection*{Limitations}
+\begin{itemize}
+\item Poor mixing (due to discrete tree moves)
+\item Limited interpretability
+\item Can underrepresent uncertainty
+\end{itemize}
+
+\section{Random Partition Models}
+
+\subsection{Random Probability Measures and Clustering}
+
+\begin{itemize}
+\item In Bayesian nonparametrics, we place priors on random distributions:
+\[
+F \sim p(F), \quad F = \sum_{h=1}^{\infty} w_h \delta_{m_h}
+\]
+
+\item Many such priors (e.g., DP) are discrete $\Rightarrow$ induce ties.
+
+\item Implied clustering:
+\begin{itemize}
+\item Draw $\theta_i \sim F$, i.i.d.
+\item Positive probability that $\theta_i = \theta_{i'}$
+\item This defines clusters via shared values
+\end{itemize}
+
+\item Partition:
+\[
+S_j = \{i : \theta_i = \theta_j^*\}, \quad j = 1,\dots,k
+\]
+
+\item Applications:
+\begin{itemize}
+\item Text: words grouped into topics
+\item Biostatistics: patients grouped into subpopulations
+\end{itemize}
+\end{itemize}
+
+\subsection{Inference on Partitions}
+
+\begin{itemize}
+\item If $F$ is not of direct interest:
+\[
+\rho = \{S_1,\dots,S_k\}
+\]
+
+\item Prefer specifying a prior directly on partitions:
+\[
+p(\rho)
+\]
+\end{itemize}
+
+\subsection{Notation for Random Partitions}
+
+\begin{itemize}
+\item Units: $i \in S = \{1,\dots,n\}$
+
+\item Partition:
+\[
+\rho_n = \{S_1,\dots,S_k\}, \quad S = \bigcup_{j=1}^k S_j
+\]
+
+\item Cluster sizes:
+\[
+n_j = |S_j|
+\]
+
+\item Allocation representation:
+\[
+s_i = j \iff i \in S_j
+\]
+
+\item Covariate-dependent partitions:
+\[
+p(\rho_n \mid x)
+\]
+\end{itemize}
+
+\subsection{Sampling Model}
+
+\begin{itemize}
+\item Conditional on partition:
+\[
+p(y^n \mid \rho, \theta)
+=
+\prod_{j=1}^k \prod_{i \in S_j} p(y_i \mid \theta_j)
+\]
+
+\item Components:
+\begin{itemize}
+\item Cluster parameters $\theta_j$
+\item Prior on $\theta_j$: often conjugate
+\item Prior on $\rho$: defines clustering structure
+\end{itemize}
+\end{itemize}
+
+\subsection{Product Partition Model (PPM)}
+
+\begin{itemize}
+\item Partition prior:
+\[
+p(\rho_n) \propto \prod_{j=1}^k c(S_j)
+\]
+
+\item $c(S_j)$: cohesion function measuring cluster strength
+
+\item Examples:
+\begin{itemize}
+\item Dirichlet process:
+\[
+c(S_j) = \alpha (n_j - 1)!
+\]
+
+\item Contiguity (changepoint models):
+\[
+c(S_j) = p^{n_j - 1}(1-p)\mathbf{1}\{S_j \text{ contiguous}\}
+\]
+\end{itemize}
+
+\item Conjugacy:
+\begin{itemize}
+\item Posterior remains PPM with updated cohesion
+\end{itemize}
+\end{itemize}
+
+\subsection{Species Sampling Models (SSM)}
+
+\begin{itemize}
+\item Partition probability depends only on cluster sizes:
+\[
+p(\rho_n) = p(|S_1|,\dots,|S_k|)
+\]
+
+\item Exchangeable partition probability function (EPPF)
+
+\item Predictive characterization (PPF):
+\[
+p(s_{i+1} = j \mid s_1,\dots,s_i)
+\]
+
+\item Must satisfy consistency conditions for exchangeability
+\end{itemize}
+
+\subsection{Polya Urn (Dirichlet Process)}
+
+\begin{itemize}
+\item Let $k_i$ be number of clusters among first $i$ observations
+
+\item Predictive rule:
+\[
+p(s_{i+1} =
+\begin{cases}
+j & \text{existing cluster} \\
+k_i + 1 & \text{new cluster}
+\end{cases})
+=
+\begin{cases}
+\frac{n_j}{M + i} \\
+\frac{M}{M + i}
+\end{cases}
+\]
+
+\item Equivalent to:
+\begin{itemize}
+\item DP prior on $G$
+\item Special case of PPM and SSM
+\end{itemize}
+\end{itemize}
+
+\subsection{Model-Based Clustering}
+
+\begin{itemize}
+\item Mixture model:
+\[
+p(y_i \mid k,\theta,\pi) = \sum_{j=1}^k \pi_j f_j(y_i \mid \theta_j)
+\]
+
+\item Latent assignment:
+\[
+p(y_i \mid s_i = j, \theta) = f_j(y_i \mid \theta_j), \quad \Pr(s_i=j)=\pi_j
+\]
+
+\item Induces partition via latent variables $s_i$
+\end{itemize}
+
+\subsection{Covariate-Dependent Clustering}
+
+\subsubsection*{Motivation}
+
+\begin{itemize}
+\item Clustering should depend on covariates $x_i$
+\item Similar $x_i$ $\Rightarrow$ more likely to co-cluster
+\end{itemize}
+
+\subsubsection*{Example 1: Sarcoma Trial}
+
+\begin{itemize}
+\item 12 cancer subtypes
+\item Covariate: prognosis category
+\item Goal: estimate success probabilities
+\end{itemize}
+
+Issues:
+\begin{itemize}
+\item Separate analysis: too little data
+\item Full pooling: oversmoothing
+\item Regression: insufficient flexibility
+\end{itemize}
+
+Solution:
+\begin{itemize}
+\item Cluster subtypes
+\item Share strength within clusters
+\item Let data determine clustering
+\end{itemize}
+
+\subsubsection*{Example 2: Patient Clustering}
+
+\begin{itemize}
+\item Cluster patients by response trajectories
+
+\item Challenge:
+\begin{itemize}
+\item Want clustering informed by covariates
+\item But also predictive for new observations
+\end{itemize}
+\end{itemize}
+
+\subsection{Augmented Response Approach}
+
+\begin{itemize}
+\item Define augmented response:
+\[
+\tilde{y}_i = (y_i, x_i)
+\]
+
+\item Issues:
+\begin{itemize}
+\item Complex likelihood construction
+\item Incorrect modeling of covariate influence
+\end{itemize}
+
+\item Better:
+\begin{itemize}
+\item Model partition directly via $p(\rho \mid x)$
+\end{itemize}
+\end{itemize}
+
+\subsection{Mixtures with Covariate-Dependent Weights}
+
+\begin{itemize}
+\item Model:
+\[
+y_i \mid x_i \sim \sum_{j} \pi_j(x_i) f_j(y_i \mid \theta_j)
+\]
+
+\item Properties:
+\begin{itemize}
+\item Partition induced via latent $s_i$
+\item Dependence enters through $\pi_j(x)$
+\end{itemize}
+
+\item Limitation:
+\begin{itemize}
+\item Fixed number of components (typically)
+\end{itemize}
+\end{itemize}
+
+\subsection{Dependent Dirichlet Process (DDP)}
+
+\begin{itemize}
+\item Define predictor-indexed random measures:
+\[
+G_x = \sum_h \pi_h(x)\delta_{\theta_h}
+\]
+
+\item Features:
+\begin{itemize}
+\item Shared atoms $\theta_h$
+\item Predictor-dependent weights $\pi_h(x)$
+\end{itemize}
+
+\item Induces covariate-dependent partitions
+\end{itemize}
+
+\subsection{DDP-like Constructions}
+
+\subsubsection*{Probit Stick-Breaking Process}
+
+\begin{itemize}
+\item Weights:
+\[
+\pi_h(x) = \Phi(\eta_h(x)) \prod_{\ell<h} \{1 - \Phi(\eta_\ell(x))\}
+\]
+
+\item $\eta_h(x)$ controls dependence on covariates
+\end{itemize}
+
+\subsubsection*{Weighted Mixture of DPs}
+
+\begin{itemize}
+\item Combine local DPs:
+\[
+G_x(B) = \sum_{l=1}^L \frac{\gamma_l f(x,x_l^*)}{\sum_{l'} \gamma_{l'} f(x,x_{l'}^*)} G_l^*(B)
+\]
+
+\item Shared atoms, location-dependent weights
+\end{itemize}
+
+\subsection{Product Partition with Covariates}
+
+\begin{itemize}
+\item Modify cohesion:
+\[
+p(\rho) \propto \prod_{j=1}^k c(S_j) \exp\{t \cdot g(S_j)\}
+\]
+
+\item $g(S_j)$ measures similarity within cluster
+
+\item Example:
+\[
+g(S_j) =
+\frac{2}{|S_j|(|S_j|-1)}
+\sum_{i<i'} \left(1 - \frac{d_{ii'}}{(1+\epsilon)d^*}\right)
+\]
+
+\item Encourages clustering of nearby points
+\end{itemize}
+
+\subsection{Summary}
+
+\begin{itemize}
+\item Random partitions provide a direct way to model clustering
+
+\item Key frameworks:
+\begin{itemize}
+\item PPM: cohesion-based
+\item SSM: size-based
+\item DP: Polya urn
+\item Model-based: latent mixtures
+\end{itemize}
+
+\item Extensions:
+\begin{itemize}
+\item Covariate-dependent partitions
+\item Dependent random measures
+\item Attraction-based clustering
+\end{itemize}
+\end{itemize}
+
+\subsection{Item Allocation and Attraction-Based Clustering}
+
+\begin{itemize}
+\item Modify predictive probability function (PPF):
+\[
+p(s_{i+1} \mid s_1,\dots,s_i)
+=
+\begin{cases}
+j & \propto \frac{1}{M+i} \, q(i+1, S_j) \\
+k_i+1 & \propto \frac{M}{M+i}
+\end{cases}
+\]
+
+\item Attraction function:
+\[
+q(i, S) = \sum_{\ell \in S} a_{i\ell}
+\]
+
+\item Define similarity weights:
+\begin{itemize}
+\item Distance $d_{ij}$ between items
+\item $a_{ij} \propto [(1+\epsilon)d^* - d_{ij}]^T$
+\item Normalize: $\sum_{j \neq i} a_{ij} = n-1$
+\end{itemize}
+
+\item Result:
+\begin{itemize}
+\item Encourages clustering of nearby points
+\item Induces ergodic Markov chain (irreducible, aperiodic, recurrent)
+\end{itemize}
+\end{itemize}
+
+\subsection{PPM with Covariates (PPMx)}
+
+\begin{itemize}
+\item Goal:
+\[
+p(\rho) \rightarrow p(\rho \mid x)
+\]
+
+\item Partition prior:
+\[
+p(\rho_n \mid x^n) \propto \prod_{j=1}^k g(x_j^*) \, c(S_j)
+\]
+
+\item $g(x_j^*)$: similarity function for cluster $S_j$
+
+\item Construction:
+\[
+g(x_j^*) = \int \prod_{i \in S_j} q(x_i \mid \xi_j) q(\xi_j)\, d\xi_j
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item Measures within-cluster covariate homogeneity
+\item Penalizes heterogeneous clusters
+\end{itemize}
+\end{itemize}
+
+\subsection{Properties of PPMx}
+
+\begin{itemize}
+\item Symmetry:
+\[
+p(\rho_n \mid x^*) \text{ invariant to permutations}
+\]
+
+\item Coherence across $n$:
+\[
+p(\rho_n \mid x^n)
+=
+\sum_{s_{n+1}} \int p(\rho_{n+1} \mid x^{n+1}) q(x_{n+1} \mid x^n)\, dx_{n+1}
+\]
+
+\item Requires:
+\[
+q(x_{n+1} \mid x^n) = \frac{g_{n+1}(x^{n+1})}{g_n(x^n)}
+\]
+\end{itemize}
+
+\subsection{Choice of Similarity Models}
+
+\begin{itemize}
+\item Continuous covariates:
+\[
+q(x_i \mid \xi_j) = \mathcal{N}(\xi_j, V)
+\]
+
+\item Categorical:
+\begin{itemize}
+\item Multinomial likelihood
+\item Dirichlet prior
+\end{itemize}
+
+\item Ordinal:
+\begin{itemize}
+\item Multinomial probit models
+\end{itemize}
+
+\item Count data:
+\[
+q(x_i \mid \xi_j) = \text{Poisson}(\xi_j), \quad q(\xi_j)=\text{Gamma}(a,b)
+\]
+\end{itemize}
+
+\subsection{Posterior Inference under PPMx}
+
+\begin{itemize}
+\item Augmented model:
+\[
+q(y^n, x^n, \theta, \xi, \rho_n)
+=
+\prod_j \prod_{i \in S_j}
+p(y_i \mid \theta_j, x_i)
+q(x_i \mid \xi_j)
+\, p(\theta_j)\, q(\xi_j)\, c(S_j)
+\]
+
+\item Posterior:
+\[
+p(\rho_n \mid x^n, y^n) \propto p(y^n, x^n \mid \rho_n)
+\]
+
+\item Computation:
+\begin{itemize}
+\item Reduces to standard clustering after augmentation
+\item Straightforward Gibbs updates
+\end{itemize}
+
+\item Warning:
+\begin{itemize}
+\item Joint modeling of $(x,y)$ is not equivalent to PPMx
+\end{itemize}
+\end{itemize}
+
+\subsection{Example: Mixed Effects Model}
+
+\begin{itemize}
+\item Data:
+\begin{itemize}
+\item $n=47$ patients
+\item repeated measures $y_{ij}$
+\item covariate $x_i$ (dose)
+\end{itemize}
+
+\item Model:
+\begin{itemize}
+\item Cluster patients
+\item Share parameters within clusters
+\end{itemize}
+
+\item Sampling:
+\[
+p(y_i \mid \theta_j^*, \rho_n) = \mathcal{N}(\theta_j^*, \Sigma)
+\]
+
+\item Partition prior:
+\[
+p(\rho_n \mid x^n) \propto \prod_j c(S_j) g(x_j^*)
+\]
+
+\item Similarity:
+\begin{itemize}
+\item Multivariate normal model
+\end{itemize}
+\end{itemize}
+
+\subsection{Covariate-Based vs Augmented Response}
+
+\begin{itemize}
+\item Augmented approach:
+\begin{itemize}
+\item Treat $(x,y)$ jointly
+\item Clustering influenced by both
+\end{itemize}
+
+\item Covariate-based clustering:
+\begin{itemize}
+\item Partition depends only on $x$
+\item Response modeled conditionally
+\end{itemize}
+
+\item Key difference:
+\begin{itemize}
+\item Augmented models distort similarity structure
+\item PPMx preserves interpretability of clustering
+\end{itemize}
+\end{itemize}
+
+\chapter{Latent Feature Models and the Indian Buffet Process (IBP)}
+
+\section{Infinite Limit Construction}
+
+\subsection{Key Idea: Used vs Unused Features}
+
+\begin{itemize}
+\item Partition columns into:
+\begin{itemize}
+\item Used: $m_k > 0$
+\item Unused: $m_k = 0$
+\end{itemize}
+
+\item Define:
+\[
+K_+ = \text{number of used features}
+\]
+
+\item Reorder columns so:
+\[
+m_k > 0 \text{ for } k \le K_+, \quad m_k = 0 \text{ for } k > K_+
+\]
+
+\item Factorization:
+\begin{itemize}
+\item Product over unused columns repeats
+\item Product over used columns carries structure
+\end{itemize}
+\end{itemize}
+
+\subsection{Algebraic Simplification}
+
+\begin{itemize}
+\item Using Gamma identities:
+\[
+\frac{\Gamma(N+1+\alpha/K)}{\Gamma(1+\alpha/K)}
+=
+\prod_{j=1}^N \left(j + \frac{\alpha}{K}\right)
+\]
+
+\item And:
+\[
+\frac{\Gamma(m_k+\alpha/K)}{\Gamma(\alpha/K)}
+=
+\left(\frac{\alpha}{K}\right)\prod_{j=1}^{m_k-1}\left(j+\frac{\alpha}{K}\right)
+\]
+\end{itemize}
+
+\subsection{Limiting Distribution ($K \to \infty$)}
+
+\begin{itemize}
+\item Harmonic number:
+\[
+H_N = \sum_{j=1}^N \frac{1}{j}
+\]
+
+\item Limit:
+\[
+P([Z])
+=
+\frac{\alpha^{K_+}}{\prod_h K_h!}
+e^{-\alpha H_N}
+\prod_{k=1}^{K_+}
+\frac{(N-m_k)!(m_k-1)!}{N!}
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item $\alpha^{K_+}$ rewards new features
+\item $e^{-\alpha H_N}$ controls total growth
+\item Exchangeable distribution
+\end{itemize}
+\end{itemize}
+
+\section{Indian Buffet Process (IBP)}
+
+\begin{itemize}
+\item Infinite buffet interpretation:
+
+\item Customer 1:
+\[
+K_1 \sim \text{Poisson}(\alpha)
+\]
+
+\item Customer $i$:
+\begin{itemize}
+\item Chooses existing feature $k$ with probability:
+\[
+\frac{m_k}{i}
+\]
+
+\item Draws new features:
+\[
+\text{Poisson}\left(\frac{\alpha}{i}\right)
+\]
+\end{itemize}
+
+\item Result:
+\begin{itemize}
+\item Infinite features available
+\item Finite number active per observation
+\end{itemize}
+\end{itemize}
+
+\section{Posterior Inference}
+
+\begin{itemize}
+\item Finite model:
+\[
+P(z_{ik}=1 \mid Z_{-i,k}, X)
+\propto
+P(z_{ik}=1 \mid Z_{-i,k}) P(X \mid Z)
+\]
+
+\item Beta-Bernoulli marginal:
+\[
+P(z_{ik}=1 \mid Z_{-i,k})
+=
+\frac{m_{-i,k} + \alpha/K}{N + \alpha/K}
+\]
+
+\item Infinite limit:
+\[
+P(z_{ik}=1 \mid Z_{-i,k})
+=
+\frac{m_{-i,k}}{N}
+\]
+
+\item New features:
+\[
+\text{Poisson}(\alpha/N)
+\]
+\end{itemize}
+
+\section{Properties of IBP}
+
+\begin{itemize}
+\item Exchangeable over observations
+
+\item Row sums:
+\[
+\# \text{features per observation} \sim \text{Poisson}(\alpha)
+\]
+
+\item Total number of nonzeros:
+\[
+\sim \text{Poisson}(N\alpha)
+\]
+
+\item Number of active features:
+\[
+K_+ \sim \text{Poisson}(\alpha H_N)
+\]
+\end{itemize}
+
+\section{Two-Parameter Extension}
+
+\begin{itemize}
+\item Extension introduces $\beta$:
+
+\[
+\pi_k \sim \text{Beta}\left(\frac{\alpha \beta}{K}, \beta\right)
+\]
+
+\item Predictive rule:
+\begin{itemize}
+\item Existing features:
+\[
+\frac{m_k}{\beta + i - 1}
+\]
+
+\item New features:
+\[
+\text{Poisson}\left(\frac{\alpha \beta}{\beta + i - 1}\right)
+\]
+\end{itemize}
+
+\item Effect:
+\begin{itemize}
+\item $\beta$ controls sparsity and feature reuse
+\end{itemize}
+\end{itemize}
+
+\section{Beta Process Connection}
+
+\begin{itemize}
+\item Beta process:
+\[
+B \sim \text{BP}(c, B_0)
+\]
+
+\item Generates weights:
+\[
+B = \sum p_i \delta_{\omega_i}
+\]
+
+\item Bernoulli process:
+\[
+X \sim \text{BeP}(B)
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item Beta process generates feature probabilities
+\item Bernoulli process generates binary matrix $Z$
+\end{itemize}
+\end{itemize}
+
+\section{Stick-Breaking Construction for Beta Process}
+
+\begin{itemize}
+\item Generate:
+\[
+\mu_k \sim \text{Beta}(\alpha,1)
+\]
+
+\item Define weights:
+\[
+\pi_k = \prod_{j=1}^k \mu_j
+\]
+
+\item Differences from DP:
+\begin{itemize}
+\item Weights do NOT sum to 1
+\item Features are independent
+\end{itemize}
+\end{itemize}
+
+\section{Conjugacy}
+
+\begin{itemize}
+\item Model:
+\[
+B \sim \text{BP}(c, B_0), \quad X_i \sim \text{BeP}(B)
+\]
+
+\item Posterior:
+\[
+B \mid X_{1:n}
+\sim
+\text{BP}\left(c+n, \frac{c}{c+n}B_0 + \frac{1}{c+n}\sum_{i=1}^n X_i\right)
+\]
+\end{itemize}
+
+\section{IBP from the Beta--Bernoulli Process}
+
+\begin{itemize}
+\item Let:
+\[
+B \sim \text{BP}(c, B_0), \quad X_i \mid B \sim \text{BeP}(B)
+\]
+
+\item Predictive distribution:
+\[
+X_{n+1} \mid X_{1:n}
+\sim
+\text{BeP}\left(
+\frac{c}{c+n} B_0 + \frac{1}{c+n}\sum_{i=1}^n X_i
+\right)
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item Existing feature $j$ selected with probability:
+\[
+\frac{m_{n,j}}{c+n}
+\]
+
+\item New features:
+\[
+\text{Poisson}\left(\frac{c\gamma}{c+n}\right)
+\]
+\end{itemize}
+
+\item This recovers the IBP predictive rule.
+\end{itemize}
+
+\section{Hierarchical Beta Process}
+
+\begin{itemize}
+\item Model:
+\[
+B \sim \text{BP}(c, B_0), \quad A_j \sim \text{BP}(c', B), \quad X_{ij} \sim \text{BeP}(A_j)
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item Global feature pool: $B$
+\item Group-specific features: $A_j$
+\item Observations draw from group-level features
+\end{itemize}
+
+\item Enables:
+\begin{itemize}
+\item Sharing features across groups
+\item Group-specific variability
+\end{itemize}
+\end{itemize}
+
+\section{Completely Random Measures (CRM)}
+
+\begin{itemize}
+\item A random measure $\mu$ assigns random mass:
+\[
+\mu(A) \ge 0, \quad A \subset \Theta
+\]
+
+\item Completely random if:
+\[
+A_1 \cap A_2 = \emptyset \Rightarrow \mu(A_1) \perp \mu(A_2)
+\]
+\end{itemize}
+
+\subsection{Lévy--Khintchine Representation}
+
+\begin{itemize}
+\item Any CRM can be written as:
+\[
+\mu = \sum_{k=1}^\infty w_k \delta_{\theta_k}
+\]
+
+\item $(w_k, \theta_k)$ arise from a Poisson point process with Lévy measure:
+\[
+\nu(dw, d\theta)
+\]
+\end{itemize}
+
+\section{Poisson Point Process}
+
+\begin{itemize}
+\item Number of points in region $A$:
+\[
+N(A) \sim \text{Poisson}(\nu(A))
+\]
+
+\item Independence:
+\[
+A_1 \cap A_2 = \emptyset \Rightarrow N(A_1) \perp N(A_2)
+\]
+
+\item Conditional distribution:
+\begin{itemize}
+\item Given $N(A)=k$, points are i.i.d. in $A$
+\end{itemize}
+\end{itemize}
+
+\section{Gamma Process}
+
+\begin{itemize}
+\item Definition:
+\[
+\mu \sim \text{GaP}(cH, b)
+\]
+
+\item Lévy measure:
+\[
+\nu(dw, d\theta) = c w^{-1} e^{-bw} dw \, H(d\theta)
+\]
+
+\item Key idea:
+\begin{itemize}
+\item Produces positive weights
+\item Infinite number of atoms
+\end{itemize}
+\end{itemize}
+
+\subsection{Connection to Dirichlet Process}
+
+\begin{itemize}
+\item Normalize:
+\[
+G = \frac{\mu}{\mu(\Theta)}
+\]
+
+\item Then:
+\[
+G \sim \text{DP}(\alpha, H)
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item Gamma process → unnormalized measure
+\item Normalization → probability measure
+\end{itemize}
+\end{itemize}
+
+\section{Beta Process}
+
+\begin{itemize}
+\item Definition:
+\[
+B \sim \text{BP}(c, H)
+\]
+
+\item Lévy measure:
+\[
+\nu(dw, d\theta) = c w^{-1}(1-w)^{c-1} dw \, H(d\theta)
+\]
+
+\item Properties:
+\begin{itemize}
+\item $w_k \in (0,1)$
+\item Interpreted as feature probabilities
+\end{itemize}
+\end{itemize}
+
+\section{Beta Process $\rightarrow$ Bernoulli Process $\rightarrow$ IBP}
+
+\begin{itemize}
+\item Given:
+\[
+B = \sum_{k=1}^\infty w_k \delta_{\theta_k}
+\]
+
+\item Generate features:
+\[
+z_{ik} \mid B \sim \text{Bernoulli}(w_k)
+\]
+
+\item Feature vector:
+\[
+X_i = \sum_k z_{ik} \delta_{\theta_k}
+\]
+
+\item Marginalizing $B$:
+\begin{itemize}
+\item induces IBP over $Z$
+\end{itemize}
+\end{itemize}
+
+\section{Interpretation Across Processes}
+
+\begin{itemize}
+\item Gamma process:
+\begin{itemize}
+\item weights on $(0,\infty)$
+\item normalized → Dirichlet process
+\end{itemize}
+
+\item Beta process:
+\begin{itemize}
+\item weights on $(0,1)$
+\item used as feature probabilities
+\end{itemize}
+
+\item Bernoulli process:
+\begin{itemize}
+\item generates binary features
+\end{itemize}
+
+\item IBP:
+\begin{itemize}
+\item marginal distribution over binary matrix $Z$
+\end{itemize}
+\end{itemize}
+
+\section{Posterior Inference for IBP Models}
+
+\begin{itemize}
+\item Conditional update:
+\[
+P(z_{ik}=1 \mid Z_{-i,k}, X)
+\propto
+\frac{m_{-i,k}}{N} \cdot P(X \mid Z)
+\]
+
+\item New features:
+\[
+\text{Poisson}(\alpha/N)
+\]
+
+\item Structure:
+\begin{itemize}
+\item Columns independent
+\item Rows exchangeable
+\end{itemize}
+\end{itemize}
+
+\section{Example: Linear Gaussian Latent Feature Model}
+
+\begin{itemize}
+\item Data:
+\[
+x_i \in \mathbb{R}^d
+\]
+
+\item Model:
+\[
+x_i \sim \mathcal{N}(z_i A, \sigma^2 I)
+\]
+
+\item Where:
+\begin{itemize}
+\item $z_i$ binary feature vector
+\item $A$ feature loading matrix
+\end{itemize}
+
+\item Matrix form:
+\[
+X = ZA + \epsilon
+\]
+
+\item Remains well-defined as $K \to \infty$
+\end{itemize}
+
+\section{Key Properties of IBP Models}
+
+\begin{itemize}
+\item Infinite-dimensional feature space
+\item Finite features per observation
+\item Exchangeable rows
+\item Flexible latent representation
+\end{itemize}
 
 
 \end{document}
