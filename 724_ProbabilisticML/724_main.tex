@@ -179,8 +179,709 @@
 \tableofcontents
 
 \newpage
-\section{Introduction}
+\chapter{Introduction}
 
-The goal is to make models with uncertainty quantification
+\section{Probabilistic Modeling and Learning}
+
+\subsection{Classical vs.\ Modern Methods}
+
+Classical probabilistic models (e.g.\ graphical models) and modern deep generative models differ primarily in how structure is specified.
+
+\begin{itemize}
+\item \textbf{Classical approaches}
+\begin{itemize}
+\item Leverage domain knowledge to specify model structure.
+\item Work well when the model is correctly specified.
+\item Provide interpretable probabilistic quantities and uncertainty quantification.
+\end{itemize}
+
+\item \textbf{Modern approaches}
+\begin{itemize}
+\item Learn highly complex distributions directly from data.
+\item Require large datasets.
+\item Often lack interpretability.
+\end{itemize}
+
+\item \textbf{Goal}
+\[
+\text{combine structured probabilistic modeling with flexible function approximation.}
+\]
+\end{itemize}
+
+
+\subsection{Learning a Function}
+
+Model:
+\[
+y = f(x) + \varepsilon, \quad \E[\varepsilon | x] = 0.
+\]
+
+Given data $\{(x_i,y_i)\}_{i=1}^N$, choose $f_\theta$.
+
+\[
+\hat{\theta} = \argmin_\theta \frac{1}{N}\sum_{i=1}^N L(f_\theta(x_i),y_i).
+\]
+
+
+\subsection{Maximum Likelihood Interpretation}
+
+Assume:
+\[
+\varepsilon \sim \Normal(0,I).
+\]
+
+Then:
+\[
+p(y_i | x_i,\theta)
+\propto \exp\left(-\frac{1}{2}\norm{y_i - f_\theta(x_i)}^2\right).
+\]
+
+\begin{proposition}
+Minimizing squared loss is equivalent to maximum likelihood estimation.
+\[
+\argmax_\theta p(y_{1:N} | x_{1:N})
+=
+\argmin_\theta \sum_{i=1}^N \norm{y_i - f_\theta(x_i)}^2.
+\]
+\end{proposition}
+
+
+\subsection{Learning a Distribution}
+
+Given $x_1,\dots,x_N \iid \Prob$:
+
+\[
+\hat{\theta} = \argmax_\theta \sum_{i=1}^N \log p_\theta(x_i)
+=
+\argmin_\theta \frac{1}{N}\sum_{i=1}^N -\log p_\theta(x_i).
+\]
+
+
+\section{Measure-Theoretic Foundations}
+
+\subsection{Discrete and Continuous Probability}
+
+\begin{itemize}
+\item Discrete:
+\[
+\Prob(A) = \sum_{x \in A} p(x)
+\]
+
+\item Continuous:
+\[
+\Prob(A) = \int_A p(x)\,\dd x
+\]
+\end{itemize}
+
+Unified via:
+\[
+\Prob(A) = \int_A p(x)\,\lambda(\dd x).
+\]
+
+
+\subsection{Probability Spaces}
+
+\begin{definition}
+A measurable space is $(\Omega,\mathcal{F})$.
+\end{definition}
+
+\begin{definition}
+A probability measure $\Prob$ satisfies:
+\begin{itemize}
+\item $\Prob(A) \ge 0$
+\item $\Prob(\Omega) = 1$
+\item countable additivity
+\end{itemize}
+\end{definition}
+
+If a density exists:
+\[
+\Prob(A) = \int_A p(x)\,\lambda(\dd x).
+\]
+
+
+\subsection{Expectation}
+
+\[
+\E[f] = \int f(x)\,\Prob(\dd x)
+\]
+
+If density exists:
+\[
+\E[f] = \int f(x)p(x)\,\lambda(\dd x).
+\]
+
+
+\subsection{Radon--Nikodym Derivative}
+
+\begin{definition}
+$\Prob \ll Q$ if $Q(A)=0 \Rightarrow \Prob(A)=0$.
+\end{definition}
+
+\begin{theorem}[Radon--Nikodym]
+If $\Prob \ll Q$, then
+\[
+\int f \dd \Prob = \int f \frac{\dd \Prob}{\dd Q} \dd Q.
+\]
+\end{theorem}
+
+If densities exist:
+\[
+\frac{\dd \Prob}{\dd Q}(x) = \frac{p(x)}{q(x)}.
+\]
+
+
+\subsection{Random Variables}
+
+\begin{definition}
+A random variable is a measurable function $X:\Omega \to \R$.
+\end{definition}
+
+Distribution:
+\[
+\Prob_X(A) = \Prob(X \in A).
+\]
+
+
+\subsection{Conditional Probability}
+
+\[
+\Prob(A | B) = \frac{\Prob(A \cap B)}{\Prob(B)}
+\]
+
+\[
+p(x|y) = \frac{p(x,y)}{p(y)}
+\]
+
+\[
+p(x|y) = \frac{p(x)p(y|x)}{p(y)}
+\]
+
+
+\subsection{Beta-Binomial Model}
+
+\[
+\theta \sim \BetaDist(\alpha,\beta), \quad X|\theta \sim \Bin(m+n,\theta).
+\]
+
+Posterior:
+\[
+\theta | X \sim \BetaDist(\alpha+m,\beta+n).
+\]
+
+
+\subsection{Conditional Independence}
+
+\begin{definition}
+$X \perp Y | Z$ if
+\[
+p(x,y|z) = p(x|z)p(y|z).
+\]
+\end{definition}
+
+
+\section{Divergences and Information}
+
+\subsection{Total Variation}
+
+\begin{definition}
+\[
+\mathrm{TV}(\Prob,Q) = \frac{1}{2}\int |p-q|\,\lambda(\dd x).
+\]
+\end{definition}
+
+\begin{proposition}
+\[
+\mathrm{TV}(\Prob,Q) = \max_{A} |\Prob(A)-Q(A)|.
+\]
+\end{proposition}
+
+
+\subsection{$f$-Divergence}
+
+\begin{definition}
+\[
+D_f(\Prob \| Q)
+=
+\E_Q\left[f\left(\frac{p}{q}\right)\right].
+\]
+\end{definition}
+
+\[
+\mathrm{KL}(\Prob \| Q)
+=
+\int p\log\frac{p}{q}.
+\]
+
+
+\subsection{Non-Negativity}
+
+\begin{theorem}[Jensen]
+\[
+\E[f(X)] \ge f(\E[X]).
+\]
+\end{theorem}
+
+\begin{proposition}
+\[
+D_f(\Prob \| Q) \ge 0.
+\]
+\end{proposition}
+
+\begin{proof}
+\[
+\E_Q f\left(\frac{p}{q}\right)
+\ge
+f\left(\E_Q \frac{p}{q}\right)
+= f(1)=0.
+\]
+\end{proof}
+
+
+\subsection{Entropy and KL}
+
+\begin{definition}
+\[
+H(\Prob) = -\int p\log p.
+\]
+\end{definition}
+
+\[
+\mathrm{KL}(\Prob \| Q)
+=
+-H(\Prob) - \E_\Prob[\log q].
+\]
+
+
+\subsection{MLE and KL}
+
+\begin{proposition}
+\[
+\E_\Prob[-\log p_\theta(x)]
+=
+\mathrm{KL}(\Prob \| \Prob_\theta) + H(\Prob).
+\]
+\end{proposition}
+
+\[
+\Rightarrow
+\text{MLE} = \argmin_\theta \mathrm{KL}(\Prob \| \Prob_\theta).
+\]
+
+
+\subsection{KL Direction}
+
+\[
+\mathrm{KL}(\Prob \| Q) \quad \text{mass-covering}
+\]
+
+\[
+\mathrm{KL}(Q \| \Prob) \quad \text{mode-seeking}
+\]
+
+
+\subsection{Invariance}
+
+\begin{proposition}
+For invertible $g$:
+\[
+D_f(\Prob \| Q)
+=
+D_f(g_\#\Prob \| g_\# Q).
+\]
+\end{proposition}
+
+\section{Optimal Transport and Integral Probability Metrics}
+
+\subsection{Couplings and Wasserstein Distance}
+
+\begin{definition}
+Let $(\Omega,\mathcal{F})$ be a measurable space with metric $d$, and let $\mu,\nu$ be probability measures on $\Omega$.
+
+A \emph{coupling} of $\mu$ and $\nu$ is a probability measure $\gamma$ on $\Omega \times \Omega$ such that:
+\[
+\gamma(A \times \Omega) = \mu(A), \quad
+\gamma(\Omega \times A) = \nu(A).
+\]
+\end{definition}
+
+Interpretation: a coupling specifies a joint distribution $(X,Y)$ with marginals $X \sim \mu$, $Y \sim \nu$.
+
+\begin{definition}
+The Wasserstein-$p$ distance is defined as
+\[
+W_p(\mu,\nu)
+=
+\left(
+\inf_{\gamma \in \Gamma(\mu,\nu)}
+\E_{(X,Y)\sim \gamma}[d(X,Y)^p]
+\right)^{1/p},
+\]
+where $\Gamma(\mu,\nu)$ is the set of all couplings of $\mu,\nu$.
+\end{definition}
+
+\begin{remark}
+$W_1$ is often called the \emph{earth mover's distance}, since it measures the minimal cost of transporting mass from $\mu$ to $\nu$.
+\end{remark}
+
+
+\subsection{Integral Probability Metrics}
+
+\begin{definition}
+Let $\mathcal{F}$ be a class of functions $f : \Omega \to \R$. The integral probability metric (IPM) is
+\[
+d_{\mathcal{F}}(\nu,\mu)
+=
+\sup_{f \in \mathcal{F}}
+\left|
+\E_\nu[f] - \E_\mu[f]
+\right|.
+\]
+\end{definition}
+
+\begin{lemma}
+Let $\mathcal{F} = \{f : \norm{f}_{\infty} \le 1\}$. Then
+\[
+\mathrm{TV}(\mu,\nu) = \frac{1}{2} d_{\mathcal{F}}(\nu,\mu).
+\]
+\end{lemma}
+
+\begin{proof}
+For any $f$ with $\norm{f}_{\infty} \le 1$,
+\[
+|\E_\nu[f] - \E_\mu[f]|
+=
+\left| \int f(x)(\nu - \mu)(\dd x) \right|
+\le \int |f(x)|\,|\nu - \mu|(\dd x)
+\le \int |\nu - \mu|(\dd x).
+\]
+
+Taking the supremum gives
+\[
+d_{\mathcal{F}}(\nu,\mu) \le 2\,\mathrm{TV}(\mu,\nu).
+\]
+
+Equality is achieved by choosing
+\[
+f(x) = \mathrm{sign}(p(x) - q(x)),
+\]
+which yields
+\[
+\E_\nu[f] - \E_\mu[f] = \int |p(x)-q(x)| \dd x.
+\]
+\end{proof}
+
+
+\subsection{Kantorovich--Rubinstein Duality}
+
+\begin{theorem}[Kantorovich--Rubinstein]
+Let $\mathcal{F}$ be the set of 1-Lipschitz functions on $\R^d$. Then
+\[
+W_1(\mu,\nu) = d_{\mathcal{F}}(\nu,\mu).
+\]
+\end{theorem}
+
+\begin{proof}[Sketch]
+For any coupling $\gamma$ and any 1-Lipschitz $f$,
+\[
+|f(x) - f(y)| \le d(x,y).
+\]
+
+Thus
+\[
+\E_\nu[f] - \E_\mu[f]
+=
+\E_\gamma[f(Y) - f(X)]
+\le \E_\gamma[d(X,Y)].
+\]
+
+Taking infimum over $\gamma$ gives
+\[
+d_{\mathcal{F}}(\nu,\mu) \le W_1(\mu,\nu).
+\]
+
+The reverse inequality follows by constructing an optimal dual potential.
+\end{proof}
+
+
+\subsection{Remarks on Metrics vs Divergences}
+
+\begin{itemize}
+\item Total variation and Wasserstein are \emph{metrics}.
+\item $f$-divergences (e.g.\ KL) are not metrics:
+\begin{itemize}
+\item not symmetric
+\item do not satisfy triangle inequality
+\end{itemize}
+\item IPMs provide a unifying view of distances via function classes.
+\end{itemize}
+
+\section{Maximum Entropy and Exponential Families}
+
+\subsection{Maximum Entropy Principle}
+
+Let $P$ be an unknown distribution on $\Omega$. Suppose we are given moment constraints:
+\[
+\E_P[\phi_i(X)] = \mu_i, \quad i = 1,\dots,d,
+\]
+or equivalently
+\[
+\E_P[\phi(X)] = \mu \in \R^d,
+\]
+where $\phi : \Omega \to \R^d$.
+
+\begin{remark}
+These constraints alone do not uniquely determine $P$.
+\end{remark}
+
+A natural principle is to choose the \emph{least informative} distribution satisfying the constraints.
+
+\begin{definition}
+The maximum entropy distribution (with respect to a reference measure $\nu$) is
+\[
+\argmax_{P}
+\; H_\nu(P)
+\quad \text{s.t.} \quad \E_P[\phi] = \mu,
+\]
+where
+\[
+H_\nu(P) = -\int p(x)\log p(x)\,\nu(\dd x).
+\]
+\end{definition}
+
+
+\subsection{Derivation via Lagrange Multipliers}
+
+Assume $\Omega$ is finite for simplicity, and write $p(x) = P(X=x)$.
+
+We maximize
+\[
+-\sum_{x \in \Omega} p(x)\log p(x)
+\]
+subject to:
+\[
+\sum_x p(x) = 1, \quad
+\sum_x p(x)\phi_i(x) = \mu_i.
+\]
+
+Define the Lagrangian:
+\[
+\mathcal{L}(p,\lambda_0,\lambda)
+=
+-\sum_x p(x)\log p(x)
++ \lambda_0\left(\sum_x p(x)-1\right)
++ \sum_{i=1}^d \lambda_i\left(\sum_x p(x)\phi_i(x)-\mu_i\right).
+\]
+
+Taking derivatives:
+\[
+\frac{\partial \mathcal{L}}{\partial p(x)}
+=
+-\log p(x) - 1 + \lambda_0 + \sum_{i=1}^d \lambda_i \phi_i(x).
+\]
+
+Setting to zero:
+\[
+\log p(x)
+=
+\lambda_0 - 1 + \sum_{i=1}^d \lambda_i \phi_i(x).
+\]
+
+Thus
+\[
+p(x)
+\propto
+\exp\left(\sum_{i=1}^d \lambda_i \phi_i(x)\right)
+=
+\exp(\langle \theta, \phi(x)\rangle),
+\]
+where $\theta = (\lambda_1,\dots,\lambda_d)$.
+
+This gives the exponential family form.
+
+
+\subsection{Exponential Family}
+
+\begin{definition}
+Let $(\mathcal{X},\nu)$ be a measure space and $\phi : \mathcal{X} \to \R^d$.
+
+The exponential family is
+\[
+p_\theta(x)
+=
+\frac{\exp(\langle \theta,\phi(x)\rangle)}{Z(\theta)}
+=
+\exp\big(\langle \theta,\phi(x)\rangle - A(\theta)\big),
+\]
+where
+\[
+Z(\theta) = \int \exp(\langle \theta,\phi(x)\rangle)\,\nu(\dd x),
+\quad
+A(\theta) = \log Z(\theta).
+\]
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item $\theta$ is the natural parameter
+\item $\phi(x)$ are sufficient statistics
+\item $A(\theta)$ is the log-partition function
+\end{itemize}
+\end{remark}
+
+
+\subsection{Example: Gaussian from Exponential Family}
+
+Let $\phi(x) = (x, x^2)$ on $\R$.
+
+Then
+\[
+p_\theta(x)
+\propto
+\exp(\theta_1 x + \theta_2 x^2).
+\]
+
+Completing the square:
+\[
+\theta_1 x + \theta_2 x^2
+=
+\theta_2 \left(x + \frac{\theta_1}{2\theta_2}\right)^2
+- \frac{\theta_1^2}{4\theta_2}.
+\]
+
+For $\theta_2 < 0$, this is a Gaussian:
+\[
+p_\theta(x) = \Normal(\mu,\sigma^2),
+\quad
+\mu = -\frac{\theta_1}{2\theta_2},
+\quad
+\sigma^2 = -\frac{1}{2\theta_2}.
+\]
+
+
+\subsection{Maximum Entropy Characterization}
+
+\begin{theorem}
+If there exists $\theta$ such that
+\[
+\E_{p_\theta}[\phi(X)] = \mu,
+\]
+then $p_\theta$ is the maximum entropy distribution among all distributions satisfying the moment constraints.
+\end{theorem}
+
+\begin{proof}
+Let $P$ satisfy $\E_P[\phi]=\mu$. Then
+\[
+\mathrm{KL}(P \| p_\theta)
+=
+\E_P[\log p(x) - \log p_\theta(x)] \ge 0.
+\]
+
+Rearranging:
+\[
+-H(P) \ge \E_P[\log p_\theta(x)].
+\]
+
+Using exponential family form:
+\[
+\E_P[\log p_\theta(x)]
+=
+\E_P[\langle \theta,\phi(x)\rangle - A(\theta)]
+=
+\langle \theta, \mu\rangle - A(\theta).
+\]
+
+Thus
+\[
+H(P)
+\le
+A(\theta) - \langle \theta,\mu\rangle
+=
+H(p_\theta),
+\]
+so $p_\theta$ maximizes entropy.
+\end{proof}
+
+
+\subsection{Mean Parameter Mapping}
+
+Define the mapping
+\[
+\nabla A(\theta) = \E_{p_\theta}[\phi(X)].
+\]
+
+\begin{definition}
+Let
+\[
+\mathcal{M}
+=
+\{\mu \in \R^d : \exists P \text{ such that } \E_P[\phi(X)] = \mu\}
+\]
+be the set of achievable mean parameters.
+\end{definition}
+
+\begin{definition}
+The statistics $\{\phi_i\}_{i=1}^d$ are \emph{minimal} if
+\[
+\{1,\phi_1,\dots,\phi_d\}
+\text{ are linearly independent}.
+\]
+\end{definition}
+
+\begin{proposition}
+If $\phi$ is minimal, then:
+\begin{itemize}
+\item $\nabla A : \Theta \to \mathcal{M}$ is injective
+\item $\nabla A : \Theta \to \mathcal{M}^\circ$ is surjective (onto the interior)
+\end{itemize}
+\end{proposition}
+
+\begin{proof}[Sketch]
+If $\phi$ is minimal, then $A(\theta)$ is strictly convex:
+\[
+\nabla^2 A(\theta) = \mathrm{Cov}_{p_\theta}(\phi(X)) \succ 0.
+\]
+
+Strict convexity implies injectivity of $\nabla A$.
+
+Surjectivity onto the interior follows from convex duality and properties of cumulant generating functions.
+\end{proof}
+
+
+\subsection{Convexity and Geometry}
+
+\begin{proposition}
+The log-partition function satisfies:
+\[
+\nabla^2 A(\theta) = \mathrm{Cov}_{p_\theta}(\phi(X)) \succeq 0.
+\]
+\end{proposition}
+
+\begin{remark}
+\begin{itemize}
+\item $A(\theta)$ is convex
+\item strictly convex if $\phi$ is minimal
+\item exponential families form a convex dual pair:
+\[
+\theta \leftrightarrow \mu = \nabla A(\theta)
+\]
+\end{itemize}
+\end{remark}
+
+
+\subsection{Non-Minimal Case}
+
+If $\phi$ is not minimal, then there exists $v \neq 0$ such that
+\[
+\langle v, \phi(x)\rangle = c \quad \forall x.
+\]
+
+Then
+\[
+p_{\theta + t v}(x)
+=
+p_\theta(x),
+\]
+so the parametrization is not identifiable, and $\nabla A$ is not injective.
 
 \end{document}
