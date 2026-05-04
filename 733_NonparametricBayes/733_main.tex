@@ -1143,7 +1143,7 @@ and construct weights:
 \rho_k = \left(\prod_{j=1}^{k-1} (1 - V_j)\right) V_k.
 \]
 
-\section{GEM Distribution}
+\subsection{GEM Distribution}
 
 A special case of stick-breaking is:
 
@@ -2718,9 +2718,9 @@ w_h p(y_i \mid \tilde{\theta}_h)
 \item Both reduce infinite mixture to finite computation per iteration
 \end{itemize}
 
-\section{Reading: Gibbs Sampling for Stick-Breaking Priors}
+\subsection{Reading: Gibbs Sampling for Stick-Breaking Priors}
 
-\subsection*{Stick-Breaking Random Measures}
+\subsubsection*{Stick-Breaking Random Measures}
 
 A general stick-breaking prior can be written as
 \[
@@ -2738,7 +2738,7 @@ Z_k \overset{iid}{\sim} H
 
 This defines a broad class of random probability measures including DP and Pitman–Yor.
 
-\subsection*{Finite vs Infinite Construction}
+\subsubsection*{Finite vs Infinite Construction}
 
 Finite case:
 \[
@@ -2752,7 +2752,7 @@ Infinite case requires
 
 to ensure weights sum to 1 almost surely.
 
-\subsection*{Dirichlet Process Special Case}
+\subsubsection*{Dirichlet Process Special Case}
 
 DP corresponds to
 \[
@@ -2766,7 +2766,7 @@ G \sim DP(\alpha, H)
 
 This provides a constructive definition equivalent to Ferguson’s original formulation.
 
-\subsection*{Generalized Gibbs Sampling}
+\subsubsection*{Generalized Gibbs Sampling}
 
 Two main approaches:
 
@@ -2785,7 +2785,7 @@ Directly sample
 
 This avoids marginalization and improves mixing.
 
-\subsection*{Pitman–Yor Extension}
+\subsubsection*{Pitman–Yor Extension}
 
 Stick-breaking form:
 \[
@@ -2794,7 +2794,7 @@ V_k \sim Beta(1-a, b + ka)
 
 This yields richer clustering behavior than DP.
 
-\subsection*{Key Insight}
+\subsubsection*{Key Insight}
 
 Stick-breaking provides:
 
@@ -2967,7 +2967,7 @@ x^{(t)} & \text{otherwise}
 \end{cases}
 \]
 
-\subsection*{Random Walk Metropolis--Hastings (RWMH)}
+\subsection{Random Walk Metropolis--Hastings (RWMH)}
 
 Proposal:
 \[
@@ -3036,7 +3036,7 @@ Acceptance ratio requires:
 
 If $c(x)$ unknown $\Rightarrow$ MH not feasible.
 
-\subsection*{Metropolis Adjusted Langevin Algorithm (MALA)}
+\subsection{Metropolis Adjusted Langevin Algorithm (MALA)}
 
 Continuous-time:
 \[
@@ -3283,7 +3283,7 @@ Key idea:
 \text{Replace difficult Gibbs steps with MH steps}
 \]
 
-\subsection*{Adaptive Gibbs Samplers}
+\subsection{Adaptive Gibbs Samplers}
 
 Goal:
 \[
@@ -3315,7 +3315,7 @@ Ensures:
 \text{ergodicity under suitable conditions}
 \]
 
-\subsection*{Random Scan Gibbs Sampler}
+\subsection{Random Scan Gibbs Sampler}
 
 State:
 \[
@@ -3420,7 +3420,7 @@ Hence:
 \text{adaptation must be controlled carefully}
 \]
 
-\subsection*{Adaptive Metropolis-within-Gibbs (Full)}
+\subsection{Adaptive Metropolis-within-Gibbs (Full)}
 
 Updates both:
 \[
@@ -3704,7 +3704,7 @@ m_n \sim C n^d
 
 \section{Pitman--Yor Process: Inference and Applications}
 
-\subsection*{Inference under Pitman--Yor Process}
+\subsection{Inference under Pitman--Yor Process}
 
 \begin{itemize}
 \item Model:
@@ -3797,7 +3797,7 @@ G \sim \text{PYP}(\alpha, d, G_0), \quad \theta_i \mid G \sim G, \quad y_i \mid 
 \end{itemize}
 \end{itemize}
 
-\subsection*{Case Study: Genetics}
+\subsection{Case Study: Genetics}
 
 \begin{itemize}
 \item Setup:
@@ -3823,7 +3823,7 @@ G \sim \text{PYP}(\alpha, d, G_0), \quad z_i \mid G \sim G
 \end{itemize}
 \end{itemize}
 
-\subsection*{Case Study: Topic Modeling}
+\subsection{Case Study: Topic Modeling}
 
 \begin{itemize}
 \item Topic distributions:
@@ -3981,7 +3981,7 @@ G_j \perp G_{j'} \mid \tau
 \end{itemize}
 \end{itemize}
 
-\subsection*{Stick-Breaking Construction of HDP}
+\subsection{Stick-Breaking Construction of HDP}
 
 \begin{itemize}
 \item Global stick-breaking:
@@ -4045,7 +4045,7 @@ G_j(A_\ell) = \sum_{k \in K_\ell} \pi_{jk}, \quad G_0(A_\ell) = \sum_{k \in K_\e
 \end{itemize}
 \end{itemize}
 
-\subsection*{Chinese Restaurant Franchise (CRF)}
+\subsection{Chinese Restaurant Franchise (CRF)}
 
 \begin{itemize}
 \item Hierarchical model:
@@ -4251,7 +4251,7 @@ m_{\cdot k}\, f_k^{-x_{ji}}(x_{ji}), & \text{existing dish } k, \\
 \]
 \end{itemize}
 
-\subsection*{Case Study: BNP Modeling of Marathon Data}
+\subsection{Case Study: BNP Modeling of Marathon Data}
 
 \begin{itemize}
 \item Context:
@@ -4452,7 +4452,7 @@ Y \mid x \sim G_x
 \end{itemize}
 \end{itemize}
 
-\subsection{Mixture Models and Regression Extensions}
+\subsection*{Mixture Models and Regression Extensions}
 
 \subsubsection*{Basic Mixture Model}
 \begin{itemize}
@@ -4600,7 +4600,7 @@ G_x = \sum_{h=1}^\infty \left[ V_h K(x, \Gamma_h) \prod_{\ell<h}(1 - V_\ell K(x,
 \end{itemize}
 \end{itemize}
 
-\subsection{Hierarchical Dirichlet Process (HDP) Revisited}
+\subsection*{Hierarchical Dirichlet Process (HDP) Revisited}
 
 \begin{itemize}
 \item Model:
@@ -5182,7 +5182,7 @@ M = (\mu_1,\ldots,\mu_b)
 
 \section{Random Partition Models}
 
-\subsection{Random Probability Measures and Clustering}
+\subsection*{Random Probability Measures and Clustering}
 
 \begin{itemize}
 \item In Bayesian nonparametrics, we place priors on random distributions:
@@ -5225,7 +5225,7 @@ p(\rho)
 \]
 \end{itemize}
 
-\subsection{Notation for Random Partitions}
+\subsection*{Notation for Random Partitions}
 
 \begin{itemize}
 \item Units: $i \in S = \{1,\dots,n\}$
@@ -5316,7 +5316,7 @@ p(s_{i+1} = j \mid s_1,\dots,s_i)
 \item Must satisfy consistency conditions for exchangeability
 \end{itemize}
 
-\subsection{Polya Urn (Dirichlet Process)}
+\subsection*{Polya Urn (Dirichlet Process)}
 
 \begin{itemize}
 \item Let $k_i$ be number of clusters among first $i$ observations
@@ -5342,7 +5342,7 @@ k_i + 1 & \text{new cluster}
 \end{itemize}
 \end{itemize}
 
-\subsection{Model-Based Clustering}
+\subsection*{Model-Based Clustering}
 
 \begin{itemize}
 \item Mixture model:
@@ -5367,7 +5367,7 @@ p(y_i \mid s_i = j, \theta) = f_j(y_i \mid \theta_j), \quad \Pr(s_i=j)=\pi_j
 \item Similar $x_i$ $\Rightarrow$ more likely to co-cluster
 \end{itemize}
 
-\subsubsection*{Example 1: Sarcoma Trial}
+\subsubsection{Example 1: Sarcoma Trial}
 
 \begin{itemize}
 \item 12 cancer subtypes
@@ -5389,7 +5389,7 @@ Solution:
 \item Let data determine clustering
 \end{itemize}
 
-\subsubsection*{Example 2: Patient Clustering}
+\subsubsection{Example 2: Patient Clustering}
 
 \begin{itemize}
 \item Cluster patients by response trajectories
@@ -5401,7 +5401,7 @@ Solution:
 \end{itemize}
 \end{itemize}
 
-\subsection{Augmented Response Approach}
+\subsection*{Augmented Response Approach}
 
 \begin{itemize}
 \item Define augmented response:
@@ -5421,7 +5421,7 @@ Solution:
 \end{itemize}
 \end{itemize}
 
-\subsection{Mixtures with Covariate-Dependent Weights}
+\subsection*{Mixtures with Covariate-Dependent Weights}
 
 \begin{itemize}
 \item Model:
@@ -5441,7 +5441,7 @@ y_i \mid x_i \sim \sum_{j} \pi_j(x_i) f_j(y_i \mid \theta_j)
 \end{itemize}
 \end{itemize}
 
-\subsection{Dependent Dirichlet Process (DDP)}
+\subsection*{Dependent Dirichlet Process (DDP)}
 
 \begin{itemize}
 \item Define predictor-indexed random measures:
@@ -5482,7 +5482,7 @@ G_x(B) = \sum_{l=1}^L \frac{\gamma_l f(x,x_l^*)}{\sum_{l'} \gamma_{l'} f(x,x_{l'
 \item Shared atoms, location-dependent weights
 \end{itemize}
 
-\subsection{Product Partition with Covariates}
+\subsection*{Product Partition with Covariates}
 
 \begin{itemize}
 \item Modify cohesion:
@@ -5502,7 +5502,7 @@ g(S_j) =
 \item Encourages clustering of nearby points
 \end{itemize}
 
-\subsection{Summary}
+\subsection*{Summary}
 
 \begin{itemize}
 \item Random partitions provide a direct way to model clustering
@@ -5582,7 +5582,7 @@ g(x_j^*) = \int \prod_{i \in S_j} q(x_i \mid \xi_j) q(\xi_j)\, d\xi_j
 \end{itemize}
 \end{itemize}
 
-\subsection{Properties of PPMx}
+\subsubsection*{Properties of PPMx}
 
 \begin{itemize}
 \item Symmetry:
@@ -5603,7 +5603,7 @@ q(x_{n+1} \mid x^n) = \frac{g_{n+1}(x^{n+1})}{g_n(x^n)}
 \]
 \end{itemize}
 
-\subsection{Choice of Similarity Models}
+\subsubsection*{Choice of Similarity Models}
 
 \begin{itemize}
 \item Continuous covariates:
@@ -5628,7 +5628,7 @@ q(x_i \mid \xi_j) = \text{Poisson}(\xi_j), \quad q(\xi_j)=\text{Gamma}(a,b)
 \]
 \end{itemize}
 
-\subsection{Posterior Inference under PPMx}
+\subsubsection*{Posterior Inference under PPMx}
 
 \begin{itemize}
 \item Augmented model:
@@ -5690,7 +5690,7 @@ p(\rho_n \mid x^n) \propto \prod_j c(S_j) g(x_j^*)
 \end{itemize}
 \end{itemize}
 
-\subsection{Covariate-Based vs Augmented Response}
+\subsection*{Covariate-Based vs Augmented Response}
 
 \begin{itemize}
 \item Augmented approach:
@@ -5716,7 +5716,7 @@ p(\rho_n \mid x^n) \propto \prod_j c(S_j) g(x_j^*)
 
 \section{Infinite Limit Construction}
 
-\subsection{Key Idea: Used vs Unused Features}
+\subsection*{Key Idea: Used vs Unused Features}
 
 \begin{itemize}
 \item Partition columns into:
@@ -5742,7 +5742,7 @@ m_k > 0 \text{ for } k \le K_+, \quad m_k = 0 \text{ for } k > K_+
 \end{itemize}
 \end{itemize}
 
-\subsection{Algebraic Simplification}
+\subsection*{Algebraic Simplification}
 
 \begin{itemize}
 \item Using Gamma identities:
@@ -5760,7 +5760,7 @@ m_k > 0 \text{ for } k \le K_+, \quad m_k = 0 \text{ for } k > K_+
 \]
 \end{itemize}
 
-\subsection{Limiting Distribution ($K \to \infty$)}
+\subsection*{Limiting Distribution ($K \to \infty$)}
 
 \begin{itemize}
 \item Harmonic number:
@@ -5816,7 +5816,7 @@ K_1 \sim \text{Poisson}(\alpha)
 \end{itemize}
 \end{itemize}
 
-\section{Posterior Inference}
+\subsection{Posterior Inference}
 
 \begin{itemize}
 \item Finite model:
@@ -5846,7 +5846,7 @@ P(z_{ik}=1 \mid Z_{-i,k})
 \]
 \end{itemize}
 
-\section{Properties of IBP}
+\subsection{Properties of IBP}
 
 \begin{itemize}
 \item Exchangeable over observations
@@ -5895,7 +5895,7 @@ K_+ \sim \text{Poisson}(\alpha H_N)
 \end{itemize}
 \end{itemize}
 
-\section{Beta Process Connection}
+\section*{Beta Process Connection}
 
 \begin{itemize}
 \item Beta process:
@@ -5920,7 +5920,7 @@ X \sim \text{BeP}(B)
 \end{itemize}
 \end{itemize}
 
-\section{Stick-Breaking Construction for Beta Process}
+\section*{Stick-Breaking Construction for Beta Process}
 
 \begin{itemize}
 \item Generate:
@@ -5940,7 +5940,7 @@ X \sim \text{BeP}(B)
 \end{itemize}
 \end{itemize}
 
-\section{Conjugacy}
+\section*{Conjugacy}
 
 \begin{itemize}
 \item Model:
@@ -6118,7 +6118,7 @@ B \sim \text{BP}(c, H)
 \end{itemize}
 \end{itemize}
 
-\section{Beta Process $\rightarrow$ Bernoulli Process $\rightarrow$ IBP}
+\section*{Beta Process $\rightarrow$ Bernoulli Process $\rightarrow$ IBP}
 
 \begin{itemize}
 \item Given:
@@ -6168,7 +6168,7 @@ X_i = \sum_k z_{ik} \delta_{\theta_k}
 \end{itemize}
 \end{itemize}
 
-\section{Posterior Inference for IBP Models}
+\section*{Posterior Inference for IBP Models}
 
 \begin{itemize}
 \item Conditional update:
@@ -6217,7 +6217,7 @@ X = ZA + \epsilon
 \item Remains well-defined as $K \to \infty$
 \end{itemize}
 
-\section{Key Properties of IBP Models}
+\section*{Key Properties of IBP Models}
 
 \begin{itemize}
 \item Infinite-dimensional feature space
@@ -6225,6 +6225,1532 @@ X = ZA + \epsilon
 \item Exchangeable rows
 \item Flexible latent representation
 \end{itemize}
+
+\section*{Extension: Feature Modeling across multiple groups}
+
+Suppose we collect articles from multiple outlets and each article may contain multiple latent topics (politics, tech, sports). The goal is to automatically discover
+\begin{itemize}
+    \item What topics exist
+    \item Which topics appear in each article
+    \item how topic usage differs across news sources
+\end{itemize}
+We do this by using the Beta Process and IBP framework 
+\[
+    B \sim BP(c, H), \quad B=\sum_{k=1}^\infty w_k \delta_{\theta_k}
+\]
+Where $\theta_k$ is the latent topic and $w_k$ is the probability that the topic appears. Each article independently chooses which topics it uses based on
+\[
+    z_{ik} \sim \Bern(w_k)
+\]
+where $z_{ik}=1$ if article $i$ uses topic $k$ and 0 otherwise.
+
+\subsection*{Limitation of the Vanilla Beta Process}
+Under the standard model 
+\[
+    P(z_{ik}=1)=w_k \quad \forall i
+\]
+All articles share the same topic probabilities, which implies that CNN articles use the same topic frequencies as BBC articles, and this is unrealistic as different news outlets ephasize different topics. We want a model with a \emph{shared global pool of topics} but a group-specific topic probability:
+\begin{itemize}
+    \item \emph{Global feature measure} defines a shared collection of latent topics
+    \[
+        B_0 \sim BP(c_0,H) \quad 
+        B_0 = \sum_{k=1}^\infty p_k \delta_{\theta_k}
+    \]
+    \item \emph{Group specific feature measures}: Each news source $j$ gets its own topic probabilities
+    \[
+        B_j | B_0 \sim BP(c_1, B_0) \quad
+        B_j = \sum_{k=1}^\infty w_{jk} \delta_{\theta_k}, w_{jk}\sim \BetaDist(c_1 p_k, c_1 (1-p_k))
+    \]
+    \item \emph{Data Generation}: set of topics appearing in article $i$ from news source $j$
+    \[
+        X_{ji} | B_j \sim BeP(B_j) \quad z_{jik} | B_j \sim \text{Bernoulli}(B_j)
+    \]
+\end{itemize}
+
+\section{From IBP to Count-Valued Feature Models}
+
+\begin{itemize}
+\item Recall Beta--Bernoulli construction:
+\[
+B \sim \text{BP}(c, H), \quad X_i \mid B \sim \text{BeP}(B)
+\]
+
+\item Produces binary feature usage:
+\[
+z_{ik} \in \{0,1\}
+\]
+
+\item Limitation:
+\begin{itemize}
+\item Many real datasets are count-valued (not binary)
+\end{itemize}
+
+\item Example:
+\begin{itemize}
+\item Gene expression (RNA-seq)
+\item Counts of mRNA transcripts per cell
+\end{itemize}
+
+\item Motivation:
+\begin{itemize}
+\item Need models that extend IBP to count data
+\end{itemize}
+\end{itemize}
+
+\section{Negative Binomial Factor Analysis (NBFA)}
+
+\begin{itemize}
+\item Data:
+\[
+X_{vj} = \text{count of gene } v \text{ in cell } j
+\]
+
+\item Model:
+\[
+X_{vj} \sim \text{NB}\left( \sum_k \phi_{vk} \theta_{kj}, \; p_j \right)
+\]
+
+\item Components:
+\begin{itemize}
+\item $\phi_{vk}$: gene loading for factor $k$
+\item $\theta_{kj}$: activity of factor $k$ in sample $j$
+\item $p_j$: dispersion parameter
+\end{itemize}
+
+\item Interpretation:
+\begin{itemize}
+\item Counts arise from multiple latent factors
+\end{itemize}
+
+\item Augmentation:
+\[
+X_{vj} = \sum_k X_{vjk}, \quad X_{vjk} \sim \text{NB}(\phi_{vk}\theta_{kj}, p_j)
+\]
+\end{itemize}
+
+\section{Double Feature Allocation (DFA)}
+
+\begin{itemize}
+\item Goal:
+\begin{itemize}
+\item Model relationships between two sets (e.g., patients and symptoms)
+\end{itemize}
+
+\item Idea:
+\begin{itemize}
+\item Allow overlapping clusters in both dimensions
+\end{itemize}
+
+\item Application:
+\begin{itemize}
+\item Electronic health records
+\item Phenotyping
+\end{itemize}
+\end{itemize}
+
+\section{Latent Disease Interpretation}
+
+\begin{itemize}
+\item Latent disease:
+\begin{itemize}
+\item Unobserved condition generating symptoms
+\end{itemize}
+
+\item Structure:
+\begin{itemize}
+\item Patient--disease relationships
+\item Disease--symptom relationships
+\end{itemize}
+
+\item Observed data:
+\begin{itemize}
+\item Patient symptom matrix
+\end{itemize}
+\end{itemize}
+
+\section{Patient--Disease (PD) Model}
+
+\begin{itemize}
+\item Feature allocation via IBP:
+\[
+A = (\alpha_{ik}) \in \{0,1\}^{n \times \infty} \sim \text{IBP}(m)
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item Column $k$ = latent disease
+\item $\alpha_{ik}=1$ means patient $i$ has disease $k$
+\end{itemize}
+
+\item Properties:
+\begin{itemize}
+\item Finite number of active diseases for finite $n$
+\end{itemize}
+\end{itemize}
+
+\section{Symptom--Disease (SD) Model}
+
+\begin{itemize}
+\item Conditional on PD model:
+\[
+C = (\gamma_{lk}) \in \{-1,0,1\}^{p \times K}
+\]
+
+\item Prior:
+\[
+C \sim \text{Categorical}(\pi), \quad \pi \sim \text{Dirichlet}(\phi)
+\]
+
+\item Interpretation:
+\[
+\gamma_{lk} =
+\begin{cases}
+-1 & \text{disease } k \text{ decreases symptom } l \\
+0 & \text{no relation} \\
++1 & \text{disease } k \text{ increases symptom } l
+\end{cases}
+\]
+\end{itemize}
+
+\section{Sampling Model}
+
+\begin{itemize}
+\item Data:
+\[
+y_{il} \in \{-1,0,+1\}
+\]
+
+\item Model:
+\[
+y_{il} \sim \text{Categorical}\left(
+M e^{\alpha_i^\top W^- \gamma_l^- + \eta_l^-},
+\; M,
+\; M e^{\alpha_i^\top W^+ \gamma_l^+ + \eta_l^+}
+\right)
+\]
+
+\item Components:
+\begin{itemize}
+\item $W^-, W^+$: weight matrices
+\item $\eta^- , \eta^+$: noise terms
+\item $M$: normalization constant
+\end{itemize}
+\end{itemize}
+
+\section{Scalability Challenges}
+
+\begin{itemize}
+\item MCMC inference:
+\begin{itemize}
+\item Sequential updates of $A$
+\item Slow convergence
+\end{itemize}
+
+\item Large $n$:
+\begin{itemize}
+\item Many rows (patients)
+\item Many features (columns)
+\item High memory cost
+\end{itemize}
+\end{itemize}
+
+\section{Consensus Monte Carlo}
+
+\begin{itemize}
+\item Idea:
+\begin{enumerate}
+\item Split data into subsets
+\item Run MCMC independently
+\item Combine posterior samples
+\end{enumerate}
+
+\item Limitation for IBP:
+\begin{itemize}
+\item Feature labels are not aligned across subsets
+\item Cannot average discrete feature matrices
+\end{itemize}
+\end{itemize}
+
+\section{Modified Consensus Monte Carlo}
+
+\begin{itemize}
+\item Fix:
+\begin{enumerate}
+\item Introduce overlapping subsets (anchors)
+\item Align features across subsets
+\item Combine via anchor comparison
+\end{enumerate}
+
+\item Result:
+\begin{itemize}
+\item More scalable IBP inference
+\end{itemize}
+\end{itemize}
+
+\chapter{Polya Tree Priors}
+
+\section{Prior Construction}
+
+\begin{itemize}
+\item So far we have introduced:
+\begin{itemize}
+\item Dirichlet process (DP): prior on random probability measures for clustering
+\item Indian buffet process (IBP): prior on binary latent feature matrices
+\end{itemize}
+
+\item Alternative approach: construct priors via recursive partitioning (Polya tree)
+
+\item Intuition:
+\begin{itemize}
+\item A histogram approximates a distribution via bins
+\item Fixed partitions are too rigid
+\item Polya tree recursively refines partitions
+\end{itemize}
+\end{itemize}
+
+\section{Ingredients of a Polya Tree}
+
+A Polya tree requires:
+
+\begin{itemize}
+\item Recursive partition of the sample space
+\item Random branching probabilities at each split
+\item Path rule defining bin probabilities
+\end{itemize}
+
+\section{Recursive Partition Tree}
+
+\begin{itemize}
+\item Let $(\Omega, \mathcal{B})$ be a measurable space
+
+\item Define a sequence of partitions:
+\[
+\Pi = \{\pi_m : m = 0,1,2,\dots\}
+\]
+
+\item Properties:
+\begin{itemize}
+\item $\pi_0 = \{\Omega\}$
+\item $\pi_{m+1}$ refines $\pi_m$
+\item Each set splits into two disjoint children
+\end{itemize}
+\end{itemize}
+
+\subsection{Binary Indexing}
+
+\begin{itemize}
+\item Let:
+\[
+E = \{0,1\}, \quad E^m = \underbrace{E \times \cdots \times E}_{m\text{ times}}, \quad E^* = \bigcup_{m=0}^\infty E^m
+\]
+
+\item Each node indexed by binary string $\epsilon \in E^m$
+
+\item Partition:
+\[
+\pi_m = \{ B_\epsilon : \epsilon \in E^m \}
+\]
+
+\item Tree structure:
+\[
+B_\epsilon = B_{\epsilon 0} \cup B_{\epsilon 1}, \quad B_{\epsilon 0} \cap B_{\epsilon 1} = \emptyset
+\]
+\end{itemize}
+
+\section{Polya Tree Definition}
+
+\begin{itemize}
+\item Define branching probabilities:
+\[
+Y_\epsilon := G(B_{\epsilon 0} \mid B_\epsilon)
+\]
+
+\item Then:
+\[
+G(B_{\epsilon 0}) = G(B_\epsilon) Y_\epsilon, \quad
+G(B_{\epsilon 1}) = G(B_\epsilon)(1 - Y_\epsilon)
+\]
+
+\item Prior:
+\[
+Y_\epsilon \sim \text{Beta}(\alpha_{\epsilon 0}, \alpha_{\epsilon 1})
+\]
+
+\item Probability of node:
+\[
+G(B_\epsilon) = \prod_{j=1}^m
+Y_{\epsilon_1\cdots\epsilon_{j-1}}^{1-\epsilon_j}
+(1 - Y_{\epsilon_1\cdots\epsilon_{j-1}})^{\epsilon_j}
+\]
+\end{itemize}
+
+\section{Tailfree Processes}
+
+\begin{itemize}
+\item Define conditional probabilities:
+\[
+Y_\epsilon = \frac{G(B_{\epsilon 0})}{G(B_\epsilon)}
+\]
+
+\item A prior is \textbf{tailfree} if:
+\begin{itemize}
+\item collections at each level are independent:
+\[
+\{Y_\emptyset\}, \{Y_0,Y_1\}, \{Y_{00},Y_{01},Y_{10},Y_{11}\}, \dots
+\]
+\end{itemize}
+
+\item Polya tree is tailfree
+\end{itemize}
+
+\section{Dirichlet Process as a Special Case}
+
+\begin{itemize}
+\item Suppose:
+\[
+Y_\epsilon \sim \text{Beta}(\alpha_{\epsilon 0}, \alpha_{\epsilon 1})
+\]
+
+\item With:
+\[
+\alpha_\epsilon = \alpha_{\epsilon 0} + \alpha_{\epsilon 1}, \quad
+\alpha_\epsilon = c\,H(B_\epsilon)
+\]
+
+\item Then:
+\[
+G \sim \text{DP}(cH)
+\]
+\end{itemize}
+
+\subsection{Consistency Property}
+
+\begin{itemize}
+\item If:
+\[
+\alpha_0 = \alpha_{00} + \alpha_{01}, \quad
+\alpha_1 = \alpha_{10} + \alpha_{11}
+\]
+
+\item Then:
+\[
+(G(B_{00}), G(B_{01}), G(B_{10}), G(B_{11}))
+\sim
+\text{Dirichlet}(\alpha_{00}, \alpha_{01}, \alpha_{10}, \alpha_{11})
+\]
+
+\item By induction:
+\[
+(G(B_\epsilon) : |\epsilon| = m)
+\sim
+\text{Dirichlet}(\alpha_\epsilon : |\epsilon|=m)
+\]
+\end{itemize}
+
+\section{Interpretation}
+
+\begin{itemize}
+\item Polya tree = distribution over distributions
+\item Built via recursive Beta splits
+\item Provides more local control than DP
+\item Can encode prior beliefs about regions of $\Omega$
+\end{itemize}
+
+\section{Absolute Continuity of Polya Trees}
+
+\begin{itemize}
+\item Absolute continuity result (Kraft, 1964):
+
+If the concentration parameters grow quadratically,
+\[
+\alpha_{\epsilon_1 \cdots \epsilon_m} = c m^2,
+\]
+then the Polya tree measure $G$ is absolutely continuous with probability one.
+
+\item Intuition:
+
+At level $m$,
+\[
+Y_\epsilon \sim \text{Beta}(\alpha_m, \alpha_m), \quad \alpha_m = c m^2
+\]
+
+\begin{itemize}
+\item Mean: $1/2$
+\item Variance: $\mathcal{O}(1/\alpha_m)$
+\end{itemize}
+
+\item As $m \to \infty$:
+\begin{itemize}
+\item Splits become increasingly balanced
+\item Mass divides proportionally to region size
+\item Density emerges in the limit
+\end{itemize}
+
+\item Contrast:
+
+Dirichlet process:
+\[
+G = \sum_{k=1}^\infty \pi_k \delta_{\theta_k}
+\quad \Rightarrow \quad \text{discrete}
+\]
+
+Polya tree (with growing $\alpha$): continuous.
+\end{itemize}
+
+\section{Effect of Parameters}
+
+\begin{itemize}
+\item $c$ controls variability around base measure $G_0$:
+
+\begin{itemize}
+\item $c \uparrow$ $\Rightarrow$ tighter around $G_0$
+\item $c \downarrow$ $\Rightarrow$ rougher, more variable draws
+\end{itemize}
+\end{itemize}
+
+\section{Prior Centering}
+
+A Polya tree prior is:
+\[
+G \sim PT(\Pi, \mathcal{A})
+\]
+
+\begin{itemize}
+\item $\Pi$: recursive partition
+\item $\mathcal{A} = \{(\alpha_{\epsilon 0}, \alpha_{\epsilon 1})\}$: Beta parameters
+\end{itemize}
+
+\textbf{Goal:}
+\[
+\mathbb{E}[G] = G_0
+\]
+
+\section{Centering Method 1: Quantile Partition}
+
+\begin{itemize}
+\item Use symmetric splits:
+\[
+\alpha_{\epsilon 0} = \alpha_{\epsilon 1}
+\]
+
+\item Define $\Pi$ using quantiles of $G_0$:
+
+\begin{itemize}
+\item Split at median: $G_0^{-1}(1/2)$
+\item Then quartiles: $G_0^{-1}(1/4), G_0^{-1}(3/4)$
+\item Continue recursively
+\end{itemize}
+
+\item Ensures structure aligns with $G_0$
+\end{itemize}
+
+\section{Centering Method 2: Match Split Probabilities}
+
+\begin{itemize}
+\item Fix partition $\Pi$
+
+\item Choose parameters such that:
+\[
+\frac{\alpha_{\epsilon 0}}{\alpha_{\epsilon 0} + \alpha_{\epsilon 1}}
+=
+G_0(B_{\epsilon 0} \mid B_\epsilon)
+\]
+
+\item Equivalent:
+\[
+\alpha_{\epsilon 0} \propto G_0(B_{\epsilon 0} \mid B_\epsilon), \quad
+\alpha_{\epsilon 1} \propto G_0(B_{\epsilon 1} \mid B_\epsilon)
+\]
+\end{itemize}
+
+\section{Why This Centers the Prior}
+
+\begin{itemize}
+\item By definition:
+\[
+Y_\epsilon = \frac{G(B_{\epsilon 0})}{G(B_\epsilon)}
+\]
+
+\item Then:
+\[
+G(B_{\epsilon 0}) = G(B_\epsilon) Y_\epsilon
+\]
+
+\item Taking expectation:
+\[
+\mathbb{E}[G(B_{\epsilon 0}) \mid G(B_\epsilon)]
+= G(B_\epsilon) \mathbb{E}[Y_\epsilon]
+\]
+
+\item Since:
+\[
+\mathbb{E}[Y_\epsilon] = \frac{\alpha_{\epsilon 0}}{\alpha_{\epsilon 0} + \alpha_{\epsilon 1}}
+= G_0(B_{\epsilon 0} \mid B_\epsilon)
+\]
+
+\item We get:
+\[
+\mathbb{E}[G(B_{\epsilon 0}) \mid G(B_\epsilon)]
+= G(B_\epsilon) G_0(B_{\epsilon 0} \mid B_\epsilon)
+\]
+
+\item Recursively:
+\[
+\mathbb{E}[G(B_{\epsilon_1 \cdots \epsilon_m})]
+= G_0(B_{\epsilon_1 \cdots \epsilon_m})
+\]
+\end{itemize}
+
+\section{Posterior Inference}
+
+\begin{itemize}
+\item Data:
+\[
+x_1,\dots,x_n \mid G \stackrel{iid}{\sim} G
+\]
+
+\item At node $\epsilon$:
+\[
+Y_\epsilon \sim \text{Beta}(\alpha_{\epsilon 0}, \alpha_{\epsilon 1})
+\]
+
+\item Count data:
+\[
+n_{\epsilon 0} = \#\{x_i \in B_{\epsilon 0}\}, \quad
+n_{\epsilon 1} = \#\{x_i \in B_{\epsilon 1}\}
+\]
+
+\item Posterior:
+\[
+Y_\epsilon \mid x_{1:n}
+\sim
+\text{Beta}(\alpha_{\epsilon 0} + n_{\epsilon 0}, \alpha_{\epsilon 1} + n_{\epsilon 1})
+\]
+\end{itemize}
+
+\section{Posterior Predictive Sampling}
+
+\begin{itemize}
+\item To sample $x_{n+1}$:
+
+\item Step 1: traverse tree
+
+\begin{itemize}
+\item At node $\epsilon$, sample:
+\[
+Y_\epsilon \mid x_{1:n} \sim \text{Beta}(\alpha_{\epsilon 0}^*, \alpha_{\epsilon 1}^*)
+\]
+\item Choose left/right branch
+\end{itemize}
+
+\item Step 2: stop at a leaf and sample:
+\[
+x_{n+1} \sim G_0(\cdot \mid B_\epsilon)
+\]
+\end{itemize}
+
+\section{Marginal Distribution}
+
+\begin{itemize}
+\item Goal:
+\[
+p(x_1,\dots,x_n) = \int \prod_{i=1}^n G(x_i)\, dP(G)
+\]
+
+\item Key structure:
+
+\begin{itemize}
+\item Each $x_i$ follows a path down the tree
+\item Contribution depends on shared path with previous points
+\end{itemize}
+
+\item Leads to tractable likelihood via Beta-Binomial recursion
+\end{itemize}
+
+\section{Polya Tree: Marginal Distribution}
+
+\begin{itemize}
+\item The marginal density after integrating out $G$:
+\[
+p(x_1,\dots,x_n)
+=
+\prod_{i=1}^n G_0(x_i)
+\prod_{j=2}^n
+\prod_{m=1}^{m^*(x_j)}
+\frac{\alpha_{\epsilon_m(x_j)}^*}{\alpha_{\epsilon_m(x_j)}}
+\cdot
+\frac{\alpha_{\epsilon_m 0(x_j)} + \alpha_{\epsilon_m 1(x_j)}}
+{\alpha_{\epsilon_m 0(x_j)}^* + \alpha_{\epsilon_m 1(x_j)}^*}
+\]
+
+\item Notation:
+\begin{itemize}
+\item $\epsilon_m(x_j)$: index of level-$m$ cell containing $x_j$
+\item $m^*(x_j)$: first level where $x_j$ is isolated
+\item $\alpha^*$: posterior-updated parameters
+\end{itemize}
+
+\item Interpretation:
+\begin{itemize}
+\item Base contribution: $\prod_i G_0(x_i)$
+\item Correction: depends on shared paths in the tree
+\end{itemize}
+\end{itemize}
+
+\section{Mixture of Polya Trees (MPT)}
+
+\begin{itemize}
+\item Issue: single PT produces rough densities (non-differentiable)
+
+\item Fix: introduce mixture over centering measures:
+\[
+G \mid \theta \sim PT(\mathcal{A}, G_{0,\theta}), \quad \theta \sim p(\theta)
+\]
+
+\item Effect:
+\begin{itemize}
+\item Smooths discontinuities
+\item Produces continuous predictive densities
+\end{itemize}
+
+\item Key idea: averaging over $\theta$ removes boundary artifacts
+\end{itemize}
+
+\section{Motivation: Joint Modeling}
+
+\begin{itemize}
+\item Goal:
+\[
+[T, Y] = \text{(time-to-event, longitudinal response)}
+\]
+
+\item Challenge:
+\begin{itemize}
+\item heterogeneous populations
+\item multiple treatments
+\item parametric assumptions too restrictive
+\end{itemize}
+
+\item Traditional:
+\[
+[T, Y] = [Y][T \mid Y]
+\]
+
+\item Alternative:
+\[
+[T, Y] = [T][Y \mid T]
+\]
+
+\begin{itemize}
+\item $[T]$: nonparametric (Polya tree)
+\item $[Y \mid T]$: regression model
+\end{itemize}
+\end{itemize}
+
+\section{Multivariate Polya Tree}
+
+\begin{itemize}
+\item Centering:
+\[
+G_0 = \mathcal{N}_p(\mu, \Sigma), \quad \Sigma = UU^\top
+\]
+
+\item Construction:
+
+\begin{itemize}
+\item Step 1: dyadic partition in $\mathbb{R}$
+\[
+B_0(m,k) = (\Phi^{-1}((k-1)/2^m), \Phi^{-1}(k/2^m)]
+\]
+
+\item Step 2: form rectangles in $\mathbb{R}^p$
+\[
+B_0(m,\mathbf{k}) = \prod_{j=1}^p B_0(m,k_j)
+\]
+
+\item Step 3: affine transform
+\[
+B(m,\mathbf{k}) = \{\mu + Uz : z \in B_0(m,\mathbf{k})\}
+\]
+\end{itemize}
+
+\item Result:
+\begin{itemize}
+\item recursive partition aligned with Gaussian geometry
+\item partitions $\mathbb{R}^p$ into $2^{mp}$ cells at level $m$
+\end{itemize}
+\end{itemize}
+
+\section{Rubbery Polya Tree}
+
+\begin{itemize}
+\item Problem: standard PT has independent splits $\Rightarrow$ discontinuities
+
+\item Idea: introduce dependence across splits
+
+\item Construction (finite example):
+\[
+Y_{00} \sim \text{Beta}(\alpha_2,\alpha_2), \quad
+Z_{00} \mid Y_{00} \sim \text{Binomial}(\delta_{00}, Y_{00})
+\]
+\[
+Y_{10} \mid Z_{00} \sim \text{Beta}(\alpha_2 + Z_{00}, \alpha_2 + \delta_{00} - Z_{00})
+\]
+
+\item Effect:
+\begin{itemize}
+\item neighboring splits positively correlated
+\item smoother densities
+\end{itemize}
+\end{itemize}
+
+\section{Linear Dependent Tailfree Process (LDTP)}
+
+\begin{itemize}
+\item Goal: regression version of PT
+
+\item Replace fixed splits with covariate-dependent splits:
+\[
+G_x(B_{e0} \mid B_e) = Y_{x,e0}
+\]
+
+\item Model:
+\[
+Y_{x,e0}
+=
+\frac{\exp(x^\top \beta_{e0})}{1 + \exp(x^\top \beta_{e0})}
+\]
+
+\item Result:
+\begin{itemize}
+\item distribution varies smoothly with $x$
+\item predictor affects entire shape of density
+\end{itemize}
+\end{itemize}
+
+\section{Why LDTP Helps}
+
+\begin{itemize}
+\item Standard regression:
+\[
+Y_i \mid x_i \sim \mathcal{N}(\mu(x_i), \sigma^2(x_i))
+\]
+
+\item Limitation:
+\begin{itemize}
+\item only mean/variance change
+\item shape fixed (Gaussian)
+\end{itemize}
+
+\item LDTP:
+\[
+Y_i \mid x_i \sim G_{x_i}
+\]
+
+\item Advantage:
+\begin{itemize}
+\item full distribution adapts with $x$
+\item captures skewness, multimodality, tail behavior
+\end{itemize}
+\end{itemize}
+
+\section{LDTP Case Study: Growth Curve Analysis}
+
+\begin{itemize}
+\item Data:
+\[
+Y_i = \text{immunoglobulin concentration}, \quad x_i = \text{age}
+\]
+
+\item Objective:
+\[
+Y_i \mid x_i
+\]
+
+\item Issue:
+\begin{itemize}
+\item distribution shape evolves with $x$
+\item skewness, tails, modality change
+\end{itemize}
+
+\item Model:
+\[
+Y_i = m(x_i) + \epsilon_i, \quad \epsilon_i \sim G_{x_i}
+\]
+
+\item $G_x$: LDTP prior
+
+\item Advantage:
+\begin{itemize}
+\item models full conditional distribution
+\item allows shape to vary with $x$
+\end{itemize}
+\end{itemize}
+
+\section{Dependent Multivariate Polya Trees}
+
+\begin{itemize}
+\item Goal:
+\[
+\mathcal{G} = \{G_x : x \in \mathcal{X}\}
+\]
+
+\item Requirement:
+\begin{itemize}
+\item each $G_x$ is marginally a PT
+\item dependence across $x$
+\end{itemize}
+
+\item Replace scalar split:
+\[
+Y_\epsilon \rightarrow \{Y_{\epsilon,x} : x \in \mathcal{X}\}
+\]
+
+\item Constraint:
+\[
+Y_{\epsilon,x} \sim \text{Beta}(\alpha_\epsilon,\alpha_\epsilon)
+\]
+
+\item Construction:
+\[
+\{Y_{\epsilon,x}\}_{x \in \mathcal{X}} \sim \text{MBP}(\alpha_0,\alpha_1,Q)
+\]
+
+\item $Q$: controls dependence across covariates
+\end{itemize}
+
+\section{Multivariate Beta Process (MBP)}
+
+\begin{itemize}
+\item Goal:
+\[
+\{Y_x : x \in \mathcal{X}\}
+\]
+
+\item Properties:
+\begin{itemize}
+\item $Y_x \sim \text{Beta}(\alpha_0,\alpha_1)$
+\item dependence across nearby $x$
+\end{itemize}
+
+\item Key idea:
+\begin{itemize}
+\item share Gamma components
+\end{itemize}
+
+\item Representation:
+\[
+Y = \frac{G^0}{G^0 + G^1}, \quad G^0,G^1 \sim \Gamma
+\]
+
+\item Dependence:
+\begin{itemize}
+\item overlapping Gamma terms $\Rightarrow$ correlation
+\end{itemize}
+\end{itemize}
+
+\section{MBP Construction}
+
+\begin{itemize}
+\item Gamma process on augmented space
+
+\item Kernel:
+\[
+Q = \{q_x : x \in \mathcal{X}\}
+\]
+
+\item Regions:
+\[
+S_x^0 = \{(t,y): 0 < y < \alpha_0 q_x(t)\}, \quad
+S_x^1 = \{(t,y): -\alpha_1 q_x(t) < y < 0\}
+\]
+
+\item Define:
+\[
+Y_x = \frac{G(S_x^0)}{G(S_x^0) + G(S_x^1)}
+\]
+
+\item Properties:
+\begin{itemize}
+\item marginal Beta
+\item dependence via overlap of $S_x^0, S_x^1$
+\end{itemize}
+\end{itemize}
+
+\section{Finite-Dimensional Representation for MCMC}
+
+\begin{itemize}
+\item Introduce:
+\[
+Z_i \mid Y_{x_i} \sim \text{Bernoulli}(Y_{x_i})
+\]
+
+\item Representation:
+\[
+(\xi_{ij}, \zeta_{ij}) \sim \text{DP}(\nu_{x_1,\dots,x_m})
+\]
+
+\item Sampling:
+\begin{itemize}
+\item search first atom in region $S_{x_i}$
+\item set $Z_i = \mathbb{I}(\zeta_{ij} > 0)$
+\end{itemize}
+
+\item Key result:
+\begin{itemize}
+\item MBP reduces to DP-based Polya urn
+\item tractable MCMC
+\end{itemize}
+\end{itemize}
+
+\section{Mixture of Polya Trees Revisited}
+
+\begin{itemize}
+\item Model:
+\[
+G \mid \theta \sim PT(\mathcal{A}, G_{0,\theta}), \quad \theta \sim p(\theta)
+\]
+
+\item Effect:
+\begin{itemize}
+\item smooth densities
+\item removes partition artifacts
+\end{itemize}
+\end{itemize}
+
+\section{Polya Trees in Joint Modeling}
+
+\begin{itemize}
+\item Goal:
+\[
+[T,Y]
+\]
+
+\item Model:
+\[
+[T,Y] = [T][Y \mid T]
+\]
+
+\item Specification:
+\begin{itemize}
+\item $T$: PT prior
+\item $Y \mid T$: regression
+\end{itemize}
+
+\item Advantage:
+\begin{itemize}
+\item avoids restrictive parametric survival models
+\item captures heterogeneous populations
+\end{itemize}
+\end{itemize}
+
+\section{Summary of Extensions}
+
+\begin{itemize}
+\item Standard PT:
+\begin{itemize}
+\item independent splits
+\item rough densities
+\end{itemize}
+
+\item MPT:
+\begin{itemize}
+\item mixture over centering measures
+\item smoother densities
+\end{itemize}
+
+\item LDTP:
+\begin{itemize}
+\item predictor-dependent splits
+\item full conditional density regression
+\end{itemize}
+
+\item Dependent PT:
+\begin{itemize}
+\item preserves Beta marginals
+\item uses MBP for dependence
+\end{itemize}
+
+\item MBP:
+\begin{itemize}
+\item induces dependence via shared Gamma processes
+\item enables DP-based computation
+\end{itemize}
+\end{itemize}
+
+\section{Alternative Construction via MCMC}
+
+\begin{itemize}
+\item Goal: introduce branching indicators at a node
+\[
+Z_i \in \{0,1\}, \quad i=1,\dots,m
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item $Z_i = 1$ $\Rightarrow$ left child
+\item $Z_i = 0$ $\Rightarrow$ right child
+\end{itemize}
+
+\item Given split probability at $x_i$:
+\[
+Z_i \mid Y_{x_i} \sim \text{Bernoulli}(Y_{x_i})
+\]
+
+\item Instead of sampling $Y_{x_i}$ directly:
+\begin{itemize}
+\item sample induced branching variables
+\[
+Z = (Z_1,\dots,Z_m)
+\]
+\item sufficient for tree recursion
+\end{itemize}
+\end{itemize}
+
+\section{DP Representation}
+
+\begin{itemize}
+\item Define region:
+\[
+S = \bigcup_{i=1}^m S_{x_i}, \quad S_{x_i} = S_{x_i}^0 \cup S_{x_i}^1
+\]
+
+\item Draw:
+\[
+D_{x_1,\dots,x_m} \sim DP(\nu_{x_1,\dots,x_m})
+\]
+
+\item Generate latent points:
+\[
+(\xi_{ij}, \zeta_{ij}) \in S, \quad
+(\xi_{ij}, \zeta_{ij}) \mid D \overset{iid}{\sim} D_{x_1,\dots,x_m}
+\]
+\end{itemize}
+
+\section{Polya Urn Sampling}
+
+\begin{itemize}
+\item Let $w_r = (\xi,\zeta)$
+
+\item Polya urn update:
+\[
+w_r \mid w_1,\dots,w_{r-1}
+\sim
+\frac{\nu(S)}{\nu(S)+r-1}\nu
++
+\frac{1}{\nu(S)+r-1}\sum_{\ell=1}^{r-1}\delta_{w_\ell}
+\]
+
+\item For each observation $i$:
+\[
+j_i = \inf \{ j : (\xi_{ij}, \zeta_{ij}) \in S_{x_i} \}
+\]
+
+\item Define indicator:
+\[
+Z_i = \mathbb{I}(\zeta_{ij_i} > 0)
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item hit in $S_{x_i}^0$ $\Rightarrow Z_i=1$
+\item hit in $S_{x_i}^1$ $\Rightarrow Z_i=0$
+\end{itemize}
+\end{itemize}
+
+\section{Take-Home Message}
+
+\begin{itemize}
+\item MBP / LDTP sampling reduces to:
+\begin{itemize}
+\item DP-based Polya urn
+\item sampling latent points instead of split probabilities
+\end{itemize}
+
+\item Key advantage:
+\begin{itemize}
+\item avoids direct sampling of $\{Y_{x_i}\}$
+\item enables scalable MCMC
+\end{itemize}
+\end{itemize}
+
+\chapter{Bayesian Nonparametric Survival Analysis}
+
+\section{Survival Analysis: Setup}
+
+\begin{itemize}
+\item Time-to-event data: model the random event time $T$.
+
+\item Observations (with censoring):
+\[
+Y_i = \min(T_i, C_i), \quad
+\delta_i = \mathbb{I}(T_i < C_i)
+\]
+
+\item Likelihood (independent censoring):
+\[
+\prod_{i=1}^n f(T_i)^{\delta_i} S(C_i)^{1-\delta_i}
+\]
+
+\item Key quantities:
+\[
+S(t) = \Pr(T > t), \quad
+\lambda(t) = \frac{f(t)}{S(t)}, \quad
+\Lambda(t) = \int_0^t \lambda(u)\,du
+\]
+\end{itemize}
+
+\section{Semiparametric Survival Models}
+
+\subsection{Proportional Hazards (PH)}
+
+\[
+\lambda_x(t) = \lambda_0(t)\exp(x^\top \beta)
+\]
+
+\begin{itemize}
+\item $\lambda_0(t)$: baseline hazard (nonparametric)
+\item $\exp(x^\top \beta)$: multiplicative covariate effect
+\item Hazard ratio:
+\[
+\frac{\lambda_{x_1}(t)}{\lambda_{x_2}(t)} = \exp((x_1 - x_2)^\top \beta)
+\]
+\end{itemize}
+
+\subsection{Accelerated Failure Time (AFT)}
+
+\[
+\log T = x^\top \beta + \epsilon
+\]
+
+\begin{itemize}
+\item Covariates rescale time:
+\[
+S_x(t) = S_0(\exp(-x^\top \beta)t)
+\]
+\item BNP extension: place a DPM prior on $\epsilon$
+\end{itemize}
+
+\subsection{Proportional Odds (PO)}
+
+\[
+\frac{S_x(t)}{1 - S_x(t)} =
+\frac{S_0(t)}{1 - S_0(t)} \exp(-x^\top \beta)
+\]
+
+\begin{itemize}
+\item Allows time-varying hazard ratios
+\end{itemize}
+
+\section{Bayesian Semiparametric PH Models}
+
+\begin{itemize}
+\item Place BNP prior on baseline hazard:
+\[
+\lambda_0(t) \quad \text{or} \quad \Lambda_0(t)
+\]
+
+\item Common priors:
+\begin{itemize}
+\item Gamma process (continuous hazard)
+\item Beta process (discrete jumps)
+\item Piecewise exponential models
+\end{itemize}
+
+\item Advantage:
+\begin{itemize}
+\item full posterior over survival curve
+\end{itemize}
+\end{itemize}
+
+\section{Neutral-to-the-Right (NTR) Processes}
+
+\begin{itemize}
+\item A random CDF $F$ is NTR if
+\[
+1 - F(t_1), \;
+\frac{1 - F(t_2)}{1 - F(t_1)}, \dots
+\]
+are independent.
+
+\item Equivalent representation:
+\[
+F(t) = 1 - \exp\{-Y(t)\}
+\]
+where $Y(t)$ has independent increments.
+
+\item Interpretation:
+\[
+Y(t) = \Lambda(t)
+\]
+(cumulative hazard)
+
+\item Key property:
+\begin{itemize}
+\item conjugacy under censoring
+\end{itemize}
+
+\item Special case:
+\begin{itemize}
+\item Dirichlet process $\subset$ NTR
+\end{itemize}
+\end{itemize}
+
+\section{Fully Nonparametric Survival Regression}
+
+\begin{itemize}
+\item Goal: model full conditional family
+\[
+\{ S(t \mid x) : x \in \mathcal{X} \}
+\]
+
+\item No restriction to:
+\begin{itemize}
+\item proportional hazards
+\item log-linear time scaling
+\end{itemize}
+\end{itemize}
+
+\subsection{ANCOVA-DDP}
+
+\begin{itemize}
+\item Model:
+\[
+y_i = \log T_i = x_i^\top \beta + \epsilon_i
+\]
+
+\item Error distribution:
+\[
+\epsilon_i \sim G_{x_i}
+\]
+
+\item $\{G_x\}$ follows a dependent Dirichlet process
+
+\item Interpretation:
+\begin{itemize}
+\item full distribution shape varies with $x$
+\item borrowing strength across nearby covariates
+\end{itemize}
+\end{itemize}
+
+\subsection{Linear Dependent Tailfree Process (LDTP)}
+
+\begin{itemize}
+\item Replace PT splits with covariate-dependent ones:
+\[
+G_x(B_{e0} \mid B_e)
+=
+\frac{\exp(x^\top \beta_{e0})}{1 + \exp(x^\top \beta_{e0})}
+\]
+
+\item Produces:
+\[
+G = \{G_x : x \in \mathcal{X}\}
+\]
+
+\item Key property:
+\begin{itemize}
+\item full conditional density changes shape with $x$
+\end{itemize}
+\end{itemize}
+
+\section{Why BNP Survival Models}
+
+\begin{itemize}
+\item Parametric models:
+\begin{itemize}
+\item too rigid
+\end{itemize}
+
+\item Semiparametric models:
+\begin{itemize}
+\item restrict covariate effects to $\beta$
+\end{itemize}
+
+\item BNP models:
+\begin{itemize}
+\item allow
+\begin{itemize}
+\item multimodality
+\item skewness
+\item time-varying effects
+\end{itemize}
+\end{itemize}
+\end{itemize}
+
+\section{Fully Nonparametric Survival Regression: LDTP (Interpretation)}
+
+\subsection{Interpretation I}
+
+\begin{itemize}
+\item \textbf{Why fully nonparametric:}
+\begin{itemize}
+\item Separate parameter $\beta_{e0}$ at each node $e$ of the infinite tree
+\item Covariate effect is distributed across infinitely many parameters
+\item The family $\{G_x\}$ can represent arbitrarily complex conditional distributions
+\end{itemize}
+
+\item \textbf{How covariates enter:}
+\[
+G_x(B_{e0} \mid B_e) = \frac{\exp(x^\top \beta_{e0})}{1 + \exp(x^\top \beta_{e0})}
+\]
+
+\begin{itemize}
+\item Covariates act locally at each resolution level
+\item Can reshape distribution differently across the support
+\item Allows asymmetric effects (e.g., left vs right tail)
+\end{itemize}
+\end{itemize}
+
+\subsection{Interpretation II}
+
+\begin{itemize}
+\item \textbf{Prior on coefficients:}
+\[
+\beta_{e0} \sim \mathcal{N}\left(0, g(X^\top X)^{-1}\right),
+\quad g = \frac{2n}{c}
+\]
+
+\begin{itemize}
+\item Shrinks toward zero $\Rightarrow$ equal splits (regularization)
+\item Prevents overfitting at deep tree levels
+\end{itemize}
+
+\item \textbf{Comparison with ANCOVA-DDP:}
+\begin{itemize}
+\item Both define $\{G_x\}$ fully nonparametrically
+\item ANCOVA-DDP:
+\begin{itemize}
+\item mixture of Gaussians
+\item smooth density
+\end{itemize}
+\item LDTP:
+\begin{itemize}
+\item tree-based partition
+\item exact (non-mixture) representation
+\end{itemize}
+\item Different computation and theoretical properties
+\end{itemize}
+\end{itemize}
+
+\section{Alternative BNP Construction: DDP-GP}
+
+\subsection{Model Construction}
+
+\begin{itemize}
+\item Replace linear mean with a Gaussian process:
+\[
+\theta_h(Z) \sim \mathcal{GP}(\mu_h, C)
+\]
+
+\[
+\mu_h(Z_i; \beta_h) = Z_i^\top \beta_h
+\]
+
+\item Covariance kernel:
+\[
+C(Z_i, Z_\ell) =
+\sigma_0^2 \exp\left(-\sum_{d=1}^D \frac{(Z_{id} - Z_{\ell d})^2}{\lambda_d^2}\right)
++ \delta_{i\ell} J^2
+\]
+\end{itemize}
+
+\subsection{Interpretation}
+
+\begin{itemize}
+\item Similar covariates $\Rightarrow$ similar function values
+\item $\lambda_d$: length-scale controls smoothness
+\item $J^2$: jitter for numerical stability
+\end{itemize}
+
+\section{DDP-GP Model for Survival Data}
+
+\begin{itemize}
+\item Data:
+\begin{itemize}
+\item $Y_i = \log(T_i)$
+\item $Z_i$: covariates
+\item $\delta_i$: censoring indicator
+\end{itemize}
+
+\item Model:
+\[
+p(y_i \mid Z_i, F) = F_{Z_i}(y_i)
+\]
+
+\item Prior:
+\[
+\{F_Z\} \sim \text{DDP-GP}
+\]
+
+\item Likelihood (right censoring):
+\[
+\mathcal{L}(\theta \mid D_n)
+=
+\prod_{i=1}^n
+\left\{ f_{Z_i}(Y_i \mid \theta)^{\delta_i}
+\left[1 - F_{Z_i}(Y_i \mid \theta)\right]^{1-\delta_i} \right\}
+\]
+
+\item Interpretation:
+\begin{itemize}
+\item Observed events $\Rightarrow$ density contribution
+\item Censored observations $\Rightarrow$ survival contribution
+\end{itemize}
+\end{itemize}
+
+\section{Comparison of BNP Survival Models}
+
+\begin{itemize}
+\item \textbf{ANCOVA-DDP}
+\begin{itemize}
+\item Mixture-based
+\item Smooth densities
+\item Clustering interpretation
+\end{itemize}
+
+\item \textbf{LDTP}
+\begin{itemize}
+\item Tree-based
+\item Explicit control of distribution shape
+\item Highly flexible local structure
+\end{itemize}
+
+\item \textbf{DDP-GP}
+\begin{itemize}
+\item Function-based dependence
+\item Smooth variation over covariates
+\item Strong geometric interpretation via kernels
+\end{itemize}
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 \end{document}
