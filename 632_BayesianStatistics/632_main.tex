@@ -1086,6 +1086,2839 @@ The Poisson model assumes:
 If variance exceeds the mean, a negative binomial model may be more appropriate.
 \end{remark}
 
+\chapter{Monte Carlo Methods}
 
+\section{Motivation}
+
+\begin{remark}
+In many Bayesian models, posterior quantities cannot be computed analytically. Instead, we approximate expectations using simulation methods.
+\end{remark}
+
+\begin{definition}
+We are often interested in computing:
+$$
+\E[f(\theta)] = \int f(\theta)p(\theta)\,d\theta
+$$
+\end{definition}
+
+\begin{remark}
+Monte Carlo methods approximate this integral using random samples.
+\end{remark}
+
+\section{Monte Carlo Estimation}
+
+\begin{definition}
+Let $\theta^{(1)},\dots,\theta^{(S)} \sim p(\theta)$ be i.i.d. samples. Then:
+$$
+\hat{\mu} = \frac{1}{S}\sum_{s=1}^S f(\theta^{(s)})
+$$
+\end{definition}
+
+\begin{proposition}
+By the Law of Large Numbers:
+$$
+\hat{\mu} \to \E[f(\theta)] \quad \text{as } S \to \infty
+$$
+\end{proposition}
+
+\subsection{Variance and Error}
+
+\begin{definition}
+Monte Carlo variance:
+$$
+\widehat{\Var} = \frac{1}{S-1}\sum_{s=1}^S \left(f(\theta^{(s)}) - \hat{\mu}\right)^2
+$$
+\end{definition}
+
+\begin{definition}
+Monte Carlo standard error:
+$$
+\text{MCSE} = \sqrt{\frac{\widehat{\Var}}{S}}
+$$
+\end{definition}
+
+\begin{definition}
+Monte Carlo interval:
+$$
+\hat{\mu} \pm 2 \cdot \text{MCSE}
+$$
+\end{definition}
+
+\section{Importance Sampling}
+
+\begin{remark}
+Direct sampling from $p(\theta)$ is often difficult. Instead, we sample from an easier distribution $g(\theta)$.
+\end{remark}
+
+\begin{definition}
+Rewrite the expectation:
+$$
+\E[f(\theta)]
+=
+\int f(\theta)\frac{p(\theta)}{g(\theta)}g(\theta)\,d\theta
+$$
+\end{definition}
+
+\begin{definition}
+Define weights:
+$$
+w(\theta) = \frac{p(\theta)}{g(\theta)}
+$$
+\end{definition}
+
+\subsection{Estimators}
+
+\begin{itemize}
+\item Unnormalized:
+$$
+\hat{\mu}^* = \frac{1}{S}\sum_{s=1}^S f(\theta^{(s)})w^*(\theta^{(s)})
+$$
+
+\item Normalized:
+$$
+\hat{\mu} =
+\sum_{s=1}^S f(\theta^{(s)})w(\theta^{(s)})
+$$
+where:
+$$
+w(\theta^{(s)}) = \frac{w^*(\theta^{(s)})}{\sum_{j=1}^S w^*(\theta^{(j)})}
+$$
+\end{itemize}
+
+\subsection{Effective Sample Size}
+
+\begin{definition}
+Effective sample size (ESS):
+$$
+\text{ESS} \approx \frac{S}{1 + \Var(w^*)}
+$$
+\end{definition}
+
+\begin{remark}
+High variance in weights reduces efficiency.
+\end{remark}
+
+\section{Accept-Reject Sampling}
+
+\begin{definition}
+Suppose we want to sample from $p(x)$ using proposal $g(x)$ such that:
+$$
+p(x) \leq M g(x)
+$$
+\end{definition}
+
+\subsection{Algorithm}
+
+\begin{enumerate}
+\item Sample $X \sim g(x)$
+\item Sample $U \sim \text{Uniform}(0,1)$
+\item Accept if:
+$$
+U \leq \frac{p(X)}{M g(X)}
+$$
+\item Otherwise reject and repeat
+\end{enumerate}
+
+\begin{remark}
+Efficiency depends on choosing $M$ as small as possible.
+\end{remark}
+
+\section{Limitations of Direct Methods}
+
+\begin{remark}
+Monte Carlo methods require:
+\begin{itemize}
+\item ability to sample from target distribution
+\item tractable density evaluation
+\end{itemize}
+\end{remark}
+
+\begin{remark}
+When this is not possible, we use Markov Chain Monte Carlo (MCMC).
+\end{remark}
+
+\section{Markov Chains}
+
+\begin{definition}
+A Markov chain satisfies:
+$$
+P(X_{n+1} \mid X_n,\dots,X_0) = P(X_{n+1} \mid X_n)
+$$
+\end{definition}
+
+\begin{definition}
+A stationary distribution $\pi$ satisfies:
+$$
+\pi = \pi P
+$$
+\end{definition}
+
+\begin{remark}
+We construct chains whose stationary distribution is the posterior $p(\theta|y)$.
+\end{remark}
+
+\section{Markov Chain Monte Carlo (MCMC)}
+
+\begin{definition}
+MCMC methods generate dependent samples $\theta^{(1)},\dots,\theta^{(S)}$ such that:
+$$
+\theta^{(s)} \sim p(\theta \mid y) \quad \text{as } s \to \infty
+$$
+\end{definition}
+
+\begin{proposition}
+Ergodic theorem:
+$$
+\frac{1}{S}\sum_{s=1}^S f(\theta^{(s)}) \to \E[f(\theta \mid y)]
+$$
+\end{proposition}
+
+\begin{remark}
+Samples are no longer independent, which affects variance.
+\end{remark}
+
+\section{Metropolis-Hastings Algorithm}
+
+\begin{definition}
+Given proposal $q(\theta^* \mid \theta)$, define acceptance probability:
+$$
+\alpha(\theta, \theta^*)
+=
+\min\left\{
+\frac{p(\theta^* \mid y) q(\theta \mid \theta^*)}
+{p(\theta \mid y) q(\theta^* \mid \theta)}, 1
+\right\}
+$$
+\end{definition}
+
+\subsection{Algorithm}
+
+\begin{enumerate}
+\item Initialize $\theta^{(0)}$
+\item Propose $\theta^* \sim q(\cdot \mid \theta^{(t-1)})$
+\item Accept with probability $\alpha$
+\item Otherwise keep $\theta^{(t)} = \theta^{(t-1)}$
+\end{enumerate}
+
+\begin{remark}
+If $q$ is symmetric, the ratio simplifies.
+\end{remark}
+
+\section{Random Walk Metropolis}
+
+\begin{definition}
+Proposal:
+$$
+\theta^* = \theta^{(t-1)} + \epsilon
+$$
+\end{definition}
+
+\begin{remark}
+Common choices for $\epsilon$:
+\begin{itemize}
+\item Normal
+\item Student-t
+\item Uniform
+\end{itemize}
+\end{remark}
+
+\section{Gibbs Sampling}
+
+\begin{definition}
+Instead of sampling jointly, we sample from conditionals:
+$$
+\theta_1 \sim p(\theta_1 \mid \theta_2, y), \quad
+\theta_2 \sim p(\theta_2 \mid \theta_1, y)
+$$
+\end{definition}
+
+\begin{remark}
+This is especially useful in high-dimensional problems.
+\end{remark}
+
+\section{Burn-in and Convergence}
+
+\begin{definition}
+Burn-in: discard first $B$ samples:
+$$
+\{\theta^{(B+1)},\dots,\theta^{(B+S)}\}
+$$
+\end{definition}
+
+\begin{remark}
+Early samples depend on initialization and may not represent the target distribution.
+\end{remark}
+
+\section{Autocorrelation and Efficiency}
+
+\begin{definition}
+Autocorrelation at lag $t$:
+$$
+\rho_t =
+\frac{\sum_{s=1}^{S-t} (\theta_s - \bar{\theta})(\theta_{s+t} - \bar{\theta})}
+{\sum_{s=1}^S (\theta_s - \bar{\theta})^2}
+$$
+\end{definition}
+
+\begin{remark}
+High autocorrelation implies slow mixing and inefficient sampling.
+\end{remark}
+
+\section{Diagnostics}
+
+\begin{itemize}
+\item Trace plots
+\item Gelman-Rubin statistic
+\item Geweke test
+\item Effective sample size
+\end{itemize}
+
+\begin{remark}
+No diagnostic guarantees convergence—only detects problems.
+\end{remark}
+
+\section{Summary}
+
+\begin{itemize}
+\item Monte Carlo approximates integrals using random sampling
+\item Importance sampling improves flexibility
+\item Accept-reject enables indirect sampling
+\item MCMC handles complex posterior distributions
+\item Efficiency depends on mixing and autocorrelation
+\end{itemize}
+
+\chapter{Normal Model}
+
+\section{The Normal Sampling Model}
+
+\begin{definition}
+A random variable $Y$ follows a normal distribution if:
+$$
+Y \mid \theta, \sigma^2 \sim \Normal(\theta, \sigma^2)
+$$
+with density:
+$$
+p(y \mid \theta, \sigma^2)
+=
+\frac{1}{\sqrt{2\pi \sigma^2}}
+\exp\left(-\frac{1}{2\sigma^2}(y - \theta)^2\right)
+$$
+\end{definition}
+
+\begin{proposition}
+For $Y \sim \Normal(\theta, \sigma^2)$:
+$$
+\E[Y] = \theta, \quad \Var(Y) = \sigma^2
+$$
+\end{proposition}
+
+\begin{remark}
+The normal distribution is symmetric with mean = median = mode, and approximately 95\% of mass lies within $\theta \pm 1.96\sigma$.
+\end{remark}
+
+\section{Likelihood Function}
+
+Let $Y_1,\dots,Y_n \iid \Normal(\theta, \sigma^2)$. Then:
+$$
+p(y \mid \theta, \sigma^2)
+=
+(2\pi\sigma^2)^{-n/2}
+\exp\left(
+-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i - \theta)^2
+\right)
+$$
+
+\begin{remark}
+Inference can be separated into:
+\begin{itemize}
+\item inference on $\theta$ given $\sigma^2$
+\item inference on $\sigma^2$
+\end{itemize}
+\end{remark}
+
+\section{Known Variance: Conjugate Analysis}
+
+\subsection{Prior}
+
+\begin{definition}
+Assume:
+$$
+\theta \sim \Normal(\mu_0, \tau_0^2)
+$$
+\end{definition}
+
+\subsection{Posterior}
+
+\begin{theorem}
+If $Y_i \iid \Normal(\theta, \sigma^2)$ and $\theta \sim \Normal(\mu_0, \tau_0^2)$, then:
+$$
+\theta \mid y \sim \Normal(\mu_n, \tau_n^2)
+$$
+where:
+$$
+\frac{1}{\tau_n^2} = \frac{1}{\tau_0^2} + \frac{n}{\sigma^2}
+$$
+$$
+\mu_n =
+\frac{\frac{1}{\tau_0^2}\mu_0 + \frac{n}{\sigma^2}\bar{y}}
+{\frac{1}{\tau_0^2} + \frac{n}{\sigma^2}}
+$$
+\end{theorem}
+
+\begin{proof}
+Posterior:
+$$
+p(\theta \mid y) \propto p(\theta)\cdot p(y \mid \theta)
+$$
+
+Combine exponent terms:
+$$
+-\frac{1}{2\tau_0^2}(\theta - \mu_0)^2
+-
+\frac{1}{2\sigma^2}\sum (y_i - \theta)^2
+$$
+
+Expand and collect quadratic terms in $\theta$, yielding a normal kernel.
+\end{proof}
+
+\subsection{Interpretation}
+
+\begin{remark}
+The posterior mean is a weighted average:
+$$
+\mu_n =
+\frac{\kappa_0}{\kappa_0 + n}\mu_0
++
+\frac{n}{\kappa_0 + n}\bar{y}
+$$
+where $\kappa_0 = \sigma^2/\tau_0^2$.
+\end{remark}
+
+\begin{remark}
+Precision (inverse variance) is additive:
+$$
+\text{precision}_{posterior}
+=
+\text{precision}_{prior}
++
+\text{precision}_{data}
+$$
+\end{remark}
+
+\section{Unknown Variance: Joint Inference}
+
+\begin{remark}
+When $\sigma^2$ is unknown, we introduce a prior on variance.
+\end{remark}
+
+\subsection{Prior Specification}
+
+\begin{definition}
+Use:
+$$
+\theta \mid \sigma^2 \sim \Normal(\mu_0, \sigma^2/\kappa_0)
+$$
+$$
+\sigma^2 \sim \InvGam\left(\frac{\nu_0}{2}, \frac{\nu_0\sigma_0^2}{2}\right)
+$$
+\end{definition}
+
+\subsection{Posterior Updates}
+
+\begin{proposition}
+Posterior parameters:
+$$
+\kappa_n = \kappa_0 + n
+$$
+$$
+\mu_n =
+\frac{\kappa_0 \mu_0 + n\bar{y}}{\kappa_n}
+$$
+$$
+\nu_n = \nu_0 + n
+$$
+$$
+\sigma_n^2 =
+\frac{1}{\nu_n}
+\left[
+\nu_0\sigma_0^2
++
+(n-1)s^2
++
+\frac{\kappa_0 n}{\kappa_n}(\bar{y} - \mu_0)^2
+\right]
+$$
+\end{proposition}
+
+\begin{remark}
+This is often summarized as:
+``posterior sum of squares = prior sum + data sum + correction term.''
+\end{remark}
+
+\section{Conditional Posteriors}
+
+\begin{proposition}
+$$
+\theta \mid \sigma^2, y \sim \Normal(\mu_n, \sigma^2/\kappa_n)
+$$
+$$
+\sigma^2 \mid y \sim \InvGam\left(\frac{\nu_n}{2}, \frac{\nu_n\sigma_n^2}{2}\right)
+$$
+\end{proposition}
+
+\section{Marginal Posterior for the Mean}
+
+\begin{theorem}
+The marginal posterior of $\theta$ is:
+$$
+\frac{\theta - \mu_n}{\sigma_n / \sqrt{\kappa_n}}
+\sim t_{\nu_n}
+$$
+\end{theorem}
+
+\begin{remark}
+The $t$-distribution arises from integrating out uncertainty in $\sigma^2$.
+\end{remark}
+
+\section{Example: Midge Wing Length}
+
+\begin{example}
+Data:
+$$
+y = (1.64, 1.70, 1.72, 1.74, 1.82, 1.82, 1.82, 1.90, 2.08)
+$$
+
+Summary:
+$$
+\bar{y} = 1.804, \quad s^2 \approx 0.017
+$$
+
+Using prior $\mu_0 = 1.9$, $\kappa_0 = 1$, we obtain:
+$$
+\mu_n \approx 1.814, \quad \sigma_n^2 \approx 0.015
+$$
+\end{example}
+
+\section{Sampling from the Posterior}
+
+\begin{remark}
+We can sample from the joint posterior using:
+\begin{enumerate}
+\item Sample $\sigma^2 \sim \InvGam$
+\item Sample $\theta \sim \Normal$
+\end{enumerate}
+\end{remark}
+
+\section{Bias and Mean Squared Error}
+
+\begin{definition}
+Bias:
+$$
+\text{Bias}(\hat{\theta}) = \E[\hat{\theta}] - \theta
+$$
+\end{definition}
+
+\begin{definition}
+Mean Squared Error:
+$$
+\text{MSE}(\hat{\theta})
+=
+\Var(\hat{\theta}) + \text{Bias}^2
+$$
+\end{definition}
+
+\begin{remark}
+Bayesian estimators are typically biased but can have lower MSE due to shrinkage.
+\end{remark}
+
+\section{Exponential Family Representation}
+
+\begin{proposition}
+The normal distribution belongs to the exponential family:
+$$
+p(y \mid \theta, \sigma^2)
+=
+\exp\left(
+\frac{\theta}{\sigma^2}y
+-
+\frac{1}{2\sigma^2}y^2
+- A(\theta,\sigma^2)
+\right)
+$$
+\end{proposition}
+
+\begin{remark}
+Sufficient statistics:
+$$
+t(y) = (y, y^2)
+$$
+\end{remark}
+
+\section{Summary}
+
+\begin{itemize}
+\item Normal model is central to Bayesian data analysis
+\item Conjugate priors yield closed-form posteriors
+\item Posterior mean is a weighted average of prior and data
+\item Unknown variance leads to $t$-distributed marginal posterior
+\item Joint inference handled via conditional distributions
+\end{itemize}
+
+\chapter{Multinomial Model, Bayes Factors, and Indirect Methods}
+
+\section{Multinomial Model}
+
+\subsection{Model Setup}
+
+\begin{definition}
+Let:
+$$
+x = (x_1, \dots, x_k), \quad \sum_{j=1}^k x_j = n
+$$
+
+Then the multinomial model is:
+$$
+p(x \mid \theta)
+=
+\prod_{j=1}^k \theta_j^{x_j}
+$$
+where:
+$$
+\theta = (\theta_1, \dots, \theta_k), \quad \sum_{j=1}^k \theta_j = 1
+$$
+\end{definition}
+
+\begin{remark}
+This generalizes the binomial model to $k$ categories.  
+\end{remark}
+
+\subsection{Dirichlet Prior}
+
+\begin{definition}
+The conjugate prior is:
+$$
+\theta \sim \Dir(\alpha)
+$$
+with density:
+$$
+\pi(\theta)
+=
+\frac{1}{B(\alpha)}
+\prod_{j=1}^k \theta_j^{\alpha_j - 1}
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item $\alpha_j$ acts like prior counts
+\item $\alpha_j = 1$ gives a uniform prior
+\item when $k=2$, Dirichlet reduces to Beta
+\end{itemize}
+\end{remark}
+
+\subsection{Posterior}
+
+\begin{theorem}
+Given data $x$, the posterior is:
+$$
+\theta \mid x \sim \Dir(\alpha + x)
+$$
+\end{theorem}
+
+\begin{proof}
+$$
+p(\theta \mid x)
+\propto
+\prod_{j=1}^k \theta_j^{x_j}
+\cdot
+\prod_{j=1}^k \theta_j^{\alpha_j - 1}
+=
+\prod_{j=1}^k \theta_j^{x_j + \alpha_j - 1}
+$$
+\end{proof}
+
+\subsection{Interpretation}
+
+\begin{remark}
+Posterior = prior counts + observed counts:
+$$
+\alpha_j \rightarrow \alpha_j + x_j
+$$
+\end{remark}
+
+\begin{remark}
+Dirichlet provides a natural Bayesian smoothing for categorical probabilities.
+\end{remark}
+
+\section{Bayes Factors}
+
+\subsection{Definition}
+
+\begin{definition}
+Given two models $M_1$ and $M_2$:
+$$
+\text{BF}
+=
+\frac{p(M_1 \mid x)}{p(M_2 \mid x)}
+\cdot
+\frac{p(M_2)}{p(M_1)}
+=
+\frac{p(x \mid M_1)}{p(x \mid M_2)}
+$$
+\end{definition}
+
+\begin{remark}
+Bayes factor compares how well each model explains the data.
+\end{remark}
+
+\subsection{Marginal Likelihood}
+
+\begin{definition}
+$$
+p(x \mid M)
+=
+\int p(x \mid \theta, M)\pi(\theta \mid M)\, d\theta
+$$
+\end{definition}
+
+\begin{remark}
+This integrates out parameter uncertainty.
+\end{remark}
+
+\subsection{Interpretation}
+
+\begin{remark}
+Typical interpretation scales (Jeffreys):
+
+\begin{itemize}
+\item $1 \le BF < 3$: weak evidence
+\item $3 \le BF < 10$: substantial
+\item $10 \le BF < 100$: strong
+\item $BF \ge 100$: decisive
+\end{itemize}
+\end{remark}
+
+
+\subsection{Important Caveats}
+
+\begin{remark}
+\begin{itemize}
+\item Bayes factors require \textbf{proper priors}
+\item If prior is improper $\Rightarrow$ marginal likelihood undefined
+\item Sensitive to prior specification
+\end{itemize}
+\end{remark}
+
+\subsection{Frequentist vs Bayesian Testing}
+
+\begin{remark}
+\begin{itemize}
+\item Frequentist: reject/not reject (no strength)
+\item Bayesian: provides strength of evidence via BF
+\end{itemize}
+\end{remark}
+
+\section{Indirect Methods (Monte Carlo)}
+
+\subsection{Motivation}
+
+\begin{remark}
+We often need to compute:
+$$
+\E[f(\theta)] = \int f(\theta)p(\theta)\, d\theta
+$$
+but cannot evaluate the integral analytically.  
+\end{remark}
+
+\section{Importance Sampling}
+
+\subsection{Core Idea}
+
+\begin{definition}
+Rewrite expectation using proposal $g(x)$:
+$$
+\E[h(x)]
+=
+\int h(x) f(x)\, dx
+=
+\int h(x)\frac{f(x)}{g(x)} g(x)\, dx
+$$
+\end{definition}
+
+\subsection{Estimator}
+
+\begin{definition}
+Unnormalized:
+$$
+\hat{\mu}^*
+=
+\frac{1}{n}
+\sum_{i=1}^n h(X_i)\frac{f(X_i)}{g(X_i)}
+$$
+
+Normalized:
+$$
+\hat{\mu}
+=
+\sum_{i=1}^n h(X_i) w_i
+$$
+where:
+$$
+w_i =
+\frac{f(X_i)/g(X_i)}{\sum_j f(X_j)/g(X_j)}
+$$
+\end{definition}
+
+\subsection{Effective Sample Size}
+
+\begin{definition}
+$$
+\text{ESS}
+=
+\frac{n}{1 + \widehat{\Var}(w^*)}
+$$
+\end{definition}
+
+\begin{remark}
+High variance weights $\Rightarrow$ low efficiency.
+\end{remark}
+
+\section{Accept-Reject Sampling}
+
+\subsection{Algorithm}
+
+\begin{algorithm}
+\begin{enumerate}
+\item Choose proposal $g(x)$ and constant $M$ such that:
+$$
+f(x) \le M g(x)
+$$
+\item Sample $X \sim g(x)$
+\item Sample $U \sim \text{Uniform}(0,1)$
+\item Accept if:
+$$
+U \le \frac{f(X)}{M g(X)}
+$$
+\end{enumerate}
+\end{algorithm}
+
+\subsection{Remarks}
+
+\begin{itemize}
+\item Smaller $M$ $\Rightarrow$ higher efficiency
+\item $g$ must be easy to sample
+\end{itemize}
+
+\section{Monte Carlo Approximation}
+
+\begin{definition}
+Given samples $\theta^{(1)}, \dots, \theta^{(S)}$:
+$$
+\hat{\theta}
+=
+\frac{1}{S}
+\sum_{s=1}^S \theta^{(s)}
+$$
+\end{definition}
+
+\begin{definition}
+Monte Carlo variance:
+$$
+\widehat{\Var}
+=
+\frac{1}{S-1}
+\sum (\theta^{(s)} - \bar{\theta})^2
+$$
+\end{definition}
+
+\begin{remark}
+Accuracy improves with $S$ by law of large numbers.  
+\end{remark}
+
+\section{Summary}
+
+\begin{itemize}
+\item Multinomial + Dirichlet gives clean conjugate updates
+\item Bayes factors compare models via marginal likelihoods
+\item Indirect methods approximate integrals when closed forms fail
+\item Importance sampling and AR are foundational tools before MCMC
+\end{itemize}
+
+\chapter{Markov Chain Monte Carlo, Gibbs Sampling, and Diagnostics}
+
+\section{Motivation}
+
+\begin{remark}
+In many Bayesian models, the posterior
+$$
+p(\theta \mid y)
+$$
+cannot be computed in closed form.
+
+We instead approximate expectations:
+$$
+\E[h(\theta) \mid y] = \int h(\theta)p(\theta \mid y)\, d\theta
+$$
+using simulation methods.
+\end{remark}
+
+\section{Markov Chains}
+
+\subsection{Definition}
+
+\begin{definition}
+A sequence $\{X_t\}$ is a Markov chain if:
+$$
+\Prob(X_{t+1} \mid X_t, \dots, X_0) = \Prob(X_{t+1} \mid X_t)
+$$
+\end{definition}
+
+\subsection{Key Properties}
+
+\begin{itemize}
+\item Irreducibility: all states communicate
+\item Aperiodicity: returns do not occur in fixed cycles
+\item Positive recurrence: expected return time is finite
+\end{itemize}
+
+\begin{definition}
+A chain satisfying these properties is called ergodic.
+\end{definition}
+
+\subsection{Stationary Distribution}
+
+\begin{definition}
+A distribution $\pi$ is stationary if:
+$$
+\pi = \pi P
+$$
+\end{definition}
+
+\begin{remark}
+MCMC constructs a Markov chain whose stationary distribution is the posterior:
+$$
+\pi(\theta) = p(\theta \mid y)
+$$
+\end{remark}
+
+\section{Markov Chain Monte Carlo}
+
+\begin{definition}
+MCMC generates dependent samples:
+$$
+\theta^{(1)}, \theta^{(2)}, \dots
+$$
+such that:
+$$
+\theta^{(t)} \xrightarrow{d} p(\theta \mid y)
+$$
+\end{definition}
+
+\begin{proposition}
+For an ergodic chain:
+$$
+\E[h(\theta) \mid y]
+\approx
+\frac{1}{T}\sum_{t=1}^T h(\theta^{(t)})
+$$
+\end{proposition}
+
+\section{Metropolis-Hastings Algorithm}
+
+\begin{definition}
+Given a proposal $q(\theta^* \mid \theta)$, define:
+$$
+\alpha(\theta,\theta^*)
+=
+\min\left\{
+\frac{p(\theta^* \mid y)q(\theta \mid \theta^*)}
+{p(\theta \mid y)q(\theta^* \mid \theta)}, 1
+\right\}
+$$
+\end{definition}
+
+\begin{algorithm}
+\begin{enumerate}
+\item Initialize $\theta^{(0)}$
+\item For $t=1,\dots,T$:
+\begin{enumerate}
+\item Sample $\theta^* \sim q(\cdot \mid \theta^{(t-1)})$
+\item Accept with probability $\alpha$
+\item Otherwise set $\theta^{(t)} = \theta^{(t-1)}$
+\end{enumerate}
+\end{enumerate}
+\end{algorithm}
+
+\begin{remark}
+If $q$ is symmetric, the ratio simplifies to:
+$$
+\alpha = \min\left\{\frac{p(\theta^* \mid y)}{p(\theta \mid y)}, 1\right\}
+$$
+\end{remark}
+
+\section{Random Walk Metropolis}
+
+\begin{definition}
+A common proposal is:
+$$
+\theta^* = \theta^{(t-1)} + \epsilon
+$$
+\end{definition}
+
+\begin{remark}
+The choice of proposal variance determines:
+\begin{itemize}
+\item step size
+\item acceptance rate
+\item efficiency
+\end{itemize}
+\end{remark}
+
+\section{Gibbs Sampling}
+
+\subsection{Definition}
+
+\begin{definition}
+Let $\theta = (\theta_1, \dots, \theta_k)$. Gibbs sampling iteratively samples:
+\begin{align*}
+\theta_1^{(t)} &\sim p(\theta_1 \mid \theta_2^{(t-1)}, \dots, \theta_k^{(t-1)}, y) \\
+\theta_2^{(t)} &\sim p(\theta_2 \mid \theta_1^{(t)}, \dots, \theta_k^{(t-1)}, y) \\
+&\vdots \\
+\theta_k^{(t)} &\sim p(\theta_k \mid \theta_1^{(t)}, \dots, \theta_{k-1}^{(t)}, y)
+\end{align*}
+\end{definition}
+
+\begin{remark}
+Gibbs sampling avoids rejection by sampling directly from full conditional distributions.
+\end{remark}
+
+\subsection{Example: Normal Model}
+
+\begin{itemize}
+\item $\theta \mid \sigma^2, y \sim \Normal(\mu_n, \sigma^2/\kappa_n)$
+\item $\sigma^2 \mid \theta, y \sim \InvGam(\cdot)$
+\end{itemize}
+
+\begin{remark}
+Alternating these steps produces samples from the joint posterior.
+\end{remark}
+
+\section{Burn-in}
+
+\begin{definition}
+Discard the first $B$ samples:
+$$
+\{\theta^{(B+1)}, \dots, \theta^{(T)}\}
+$$
+\end{definition}
+
+\begin{remark}
+Initial samples depend on the starting value and may not represent the posterior.
+\end{remark}
+
+\section{Autocorrelation}
+
+\begin{definition}
+Lag-$k$ autocorrelation:
+$$
+\rho_k =
+\frac{\sum_{t=1}^{T-k} (\theta^{(t)} - \bar{\theta})(\theta^{(t+k)} - \bar{\theta})}
+{\sum_{t=1}^T (\theta^{(t)} - \bar{\theta})^2}
+$$
+\end{definition}
+
+\begin{remark}
+High autocorrelation implies slow exploration of the parameter space.
+\end{remark}
+
+\section{Effective Sample Size}
+
+\begin{definition}
+$$
+\text{ESS}
+=
+\frac{T}{1 + 2\sum_{k=1}^{\infty} \rho_k}
+$$
+\end{definition}
+
+\begin{remark}
+ESS measures the number of independent samples equivalent to the correlated chain.
+\end{remark}
+
+\section{Trace Plots}
+
+\begin{remark}
+Plotting $\theta^{(t)}$ against $t$ provides a visual diagnostic:
+\begin{itemize}
+\item stable band indicates convergence
+\item trends or clustering indicate poor mixing
+\end{itemize}
+\end{remark}
+
+\section{Formal Diagnostics}
+
+\begin{itemize}
+\item Geweke diagnostic: compares early and late means
+\item Gelman-Rubin: compares multiple chains
+\item Heidelberger-Welch: tests stationarity
+\item Raftery-Lewis: estimates required sample size
+\end{itemize}
+
+\begin{remark}
+Diagnostics can detect lack of convergence but cannot guarantee convergence.
+\end{remark}
+
+\section{Mixing}
+
+\begin{definition}
+Mixing describes how quickly the chain explores the parameter space.
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item fast mixing: low autocorrelation
+\item slow mixing: high autocorrelation
+\end{itemize}
+\end{remark}
+
+\section{Improving MCMC Performance}
+
+\begin{itemize}
+\item run longer chains
+\item tune proposal distributions
+\item reparameterize the model
+\item block correlated variables
+\item introduce auxiliary variables
+\end{itemize}
+
+\section{Summary}
+
+\begin{itemize}
+\item MCMC approximates posterior expectations using dependent samples
+\item Metropolis-Hastings is general-purpose
+\item Gibbs sampling uses conditional structure
+\item diagnostics are essential for assessing convergence
+\item efficiency depends on mixing and autocorrelation
+\end{itemize}
+
+\chapter{Multivariate Normal Model}
+
+\section{Multivariate Normal Distribution}
+
+\begin{definition}
+A random vector $Y \in \R^p$ follows a multivariate normal distribution if:
+$$
+Y \mid \theta, \Sigma \sim \Normal_p(\theta, \Sigma)
+$$
+with density:
+$$
+p(y \mid \theta, \Sigma)
+=
+\frac{1}{(2\pi)^{p/2} |\Sigma|^{1/2}}
+\exp\left(
+-\frac{1}{2}(y - \theta)^\top \Sigma^{-1} (y - \theta)
+\right)
+$$
+\end{definition}
+
+\begin{proposition}
+$$
+\E[Y] = \theta, \quad \Var(Y) = \Sigma
+$$
+\end{proposition}
+
+\begin{remark}
+The covariance matrix $\Sigma$ must be symmetric positive definite.
+\end{remark}
+
+\section{Sampling Model}
+
+Let $Y_1, \dots, Y_n \iid \Normal_p(\theta, \Sigma)$.
+
+\begin{proposition}
+The likelihood is:
+$$
+p(y \mid \theta, \Sigma)
+\propto
+|\Sigma|^{-n/2}
+\exp\left(
+-\frac{1}{2}
+\sum_{i=1}^n (y_i - \theta)^\top \Sigma^{-1} (y_i - \theta)
+\right)
+$$
+\end{proposition}
+
+\begin{remark}
+The sufficient statistics are:
+$$
+\bar{y} = \frac{1}{n}\sum y_i, \quad
+S = \sum (y_i - \bar{y})(y_i - \bar{y})^\top
+$$
+\end{remark}
+
+\section{Known Covariance Matrix}
+
+\subsection{Prior}
+
+\begin{definition}
+$$
+\theta \sim \Normal_p(\mu_0, \Lambda_0)
+$$
+\end{definition}
+
+\subsection{Posterior}
+
+\begin{theorem}
+$$
+\theta \mid y, \Sigma \sim \Normal_p(\mu_n, \Lambda_n)
+$$
+where:
+$$
+\Lambda_n = \left(\Lambda_0^{-1} + n \Sigma^{-1}\right)^{-1}
+$$
+$$
+\mu_n = \Lambda_n \left(\Lambda_0^{-1}\mu_0 + n \Sigma^{-1}\bar{y}\right)
+$$
+\end{theorem}
+
+\begin{remark}
+Posterior precision:
+$$
+\Lambda_n^{-1} = \Lambda_0^{-1} + n \Sigma^{-1}
+$$
+\end{remark}
+
+\begin{remark}
+Posterior mean is a weighted average of prior mean and sample mean.
+\end{remark}
+
+\section{Unknown Covariance Matrix}
+
+\subsection{Inverse-Wishart Prior}
+
+\begin{definition}
+$$
+\Sigma \sim \text{Inv-Wishart}(\nu_0, S_0)
+$$
+\end{definition}
+
+\begin{remark}
+This is the multivariate analogue of the inverse-gamma distribution.
+\end{remark}
+
+\subsection{Joint Prior}
+
+\begin{definition}
+$$
+\theta \mid \Sigma \sim \Normal_p(\mu_0, \Sigma / \kappa_0)
+$$
+$$
+\Sigma \sim \text{Inv-Wishart}(\nu_0, S_0)
+$$
+\end{definition}
+
+\section{Posterior Distribution}
+
+\begin{proposition}
+Posterior parameters:
+$$
+\kappa_n = \kappa_0 + n
+$$
+$$
+\mu_n = \frac{\kappa_0 \mu_0 + n \bar{y}}{\kappa_n}
+$$
+$$
+\nu_n = \nu_0 + n
+$$
+$$
+S_n =
+S_0
++
+\sum_{i=1}^n (y_i - \bar{y})(y_i - \bar{y})^\top
++
+\frac{\kappa_0 n}{\kappa_n}(\bar{y} - \mu_0)(\bar{y} - \mu_0)^\top
+$$
+\end{proposition}
+
+\begin{proposition}
+$$
+\theta \mid \Sigma, y \sim \Normal_p(\mu_n, \Sigma / \kappa_n)
+$$
+$$
+\Sigma \mid y \sim \text{Inv-Wishart}(\nu_n, S_n)
+$$
+\end{proposition}
+
+\section{Gibbs Sampling for MVN Model}
+
+\begin{algorithm}
+\begin{enumerate}
+\item Initialize $\theta^{(0)}, \Sigma^{(0)}$
+\item For $t=1,\dots,T$:
+\begin{enumerate}
+\item Sample:
+$$
+\theta^{(t)} \sim \Normal_p(\mu_n, \Sigma^{(t-1)} / \kappa_n)
+$$
+\item Sample:
+$$
+\Sigma^{(t)} \sim \text{Inv-Wishart}(\nu_n, S_n(\theta^{(t)}))
+$$
+\end{enumerate}
+\end{enumerate}
+\end{algorithm}
+
+\begin{remark}
+This alternates between conditional distributions, producing samples from the joint posterior.
+\end{remark}
+
+\section{Wishart Distribution}
+
+\begin{definition}
+The Wishart distribution is:
+$$
+W \sim \text{Wishart}_p(\nu, \Sigma)
+$$
+\end{definition}
+
+\begin{proposition}
+$$
+\E[W] = \nu \Sigma
+$$
+\end{proposition}
+
+\begin{remark}
+The Wishart distribution is the distribution of a sample covariance matrix.
+\end{remark}
+
+\section{Inverse-Wishart Distribution}
+
+\begin{proposition}
+If $\Sigma \sim \text{Inv-Wishart}(\nu, S)$:
+$$
+\E[\Sigma] = \frac{S}{\nu - p - 1}
+$$
+\end{proposition}
+
+\begin{remark}
+Defined only when $\nu > p + 1$.
+\end{remark}
+
+\section{Multivariate t-Distribution}
+
+\begin{proposition}
+Marginalizing $\Sigma$ yields:
+$$
+\theta \mid y \sim t_{\nu_n - p + 1}(\mu_n, S_n)
+$$
+\end{proposition}
+
+\begin{remark}
+The multivariate $t$ distribution accounts for uncertainty in covariance estimation.
+\end{remark}
+
+\section{Simulation of MVN}
+
+\begin{proposition}
+If $Z \sim \Normal_p(0, I)$ and $\Sigma = LL^\top$, then:
+$$
+Y = \theta + LZ \sim \Normal_p(\theta, \Sigma)
+$$
+\end{proposition}
+
+\section{Summary}
+
+\begin{itemize}
+\item Multivariate normal generalizes the normal model to vector-valued data
+\item Mean becomes a vector, variance becomes a covariance matrix
+\item Conjugate prior: Normal-Inverse-Wishart
+\item Posterior updates mirror univariate case using matrix algebra
+\item Gibbs sampling alternates between mean and covariance updates
+\end{itemize}
+
+\chapter{Group Comparisons and Hierarchical Models}
+
+\section{Motivation}
+
+\begin{remark}
+Many datasets are naturally grouped:
+\begin{itemize}
+\item Students within schools
+\item Patients within hospitals
+\item Firms within industries
+\end{itemize}
+\end{remark}
+
+\begin{remark}
+We want to model:
+\begin{itemize}
+\item Within-group variability
+\item Between-group variability
+\end{itemize}
+\end{remark}
+
+\section{Two-Group Comparison Model}
+
+\subsection{Model Specification}
+
+\begin{definition}
+For two groups:
+$$
+Y_{i,1} = \mu + \delta + \epsilon_{i,1}
+$$
+$$
+Y_{i,2} = \mu - \delta + \epsilon_{i,2}
+$$
+$$
+\epsilon_{i,j} \sim \Normal(0, \sigma^2)
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item $\mu$ = overall mean
+\item $\delta$ = group difference
+\item $\sigma^2$ = shared variance
+\end{itemize}
+\end{remark}
+
+\section{Priors}
+
+\begin{definition}
+$$
+\mu \sim \Normal(\mu_0, \gamma_0^2)
+$$
+$$
+\delta \sim \Normal(\delta_0, \tau_0^2)
+$$
+$$
+\sigma^2 \sim \text{Inv-Gamma}(\nu_0/2, \nu_0\sigma_0^2/2)
+$$
+\end{definition}
+
+\section{Posterior Conditionals}
+
+\subsection{Posterior of $\mu$}
+
+\begin{proposition}
+$$
+\mu \mid \delta, \sigma^2, y
+\sim
+\Normal(\mu_n, \gamma_n^2)
+$$
+
+$$
+\gamma_n^2 =
+\left(
+\frac{1}{\gamma_0^2} + \frac{n_1 + n_2}{\sigma^2}
+\right)^{-1}
+$$
+
+$$
+\mu_n =
+\gamma_n^2
+\left[
+\frac{\mu_0}{\gamma_0^2}
++
+\frac{\sum (y_{i,1} - \delta)}{\sigma^2}
++
+\frac{\sum (y_{i,2} + \delta)}{\sigma^2}
+\right]
+$$
+\end{proposition}
+
+\subsection{Posterior of $\delta$}
+
+\begin{proposition}
+$$
+\delta \mid \mu, \sigma^2, y
+\sim
+\Normal(\delta_n, \tau_n^2)
+$$
+
+$$
+\tau_n^2 =
+\left(
+\frac{1}{\tau_0^2} + \frac{n_1 + n_2}{\sigma^2}
+\right)^{-1}
+$$
+
+$$
+\delta_n =
+\tau_n^2
+\left[
+\frac{\delta_0}{\tau_0^2}
++
+\frac{\sum (y_{i,1} - \mu)}{\sigma^2}
+-
+\frac{\sum (y_{i,2} - \mu)}{\sigma^2}
+\right]
+$$
+\end{proposition}
+
+\subsection{Posterior of $\sigma^2$}
+
+\begin{proposition}
+$$
+\sigma^2 \mid \mu, \delta, y
+\sim
+\text{Inv-Gamma}\left(\frac{\nu_n}{2}, \frac{\nu_n \sigma_n^2}{2}\right)
+$$
+
+$$
+\nu_n = \nu_0 + n_1 + n_2
+$$
+
+$$
+\nu_n \sigma_n^2 =
+\nu_0 \sigma_0^2
++
+\sum (y_{i,1} - (\mu + \delta))^2
++
+\sum (y_{i,2} - (\mu - \delta))^2
+$$
+\end{proposition}
+
+\section{Gibbs Sampling Algorithm}
+
+\begin{algorithm}
+\begin{enumerate}
+\item Initialize $\mu^{(0)}, \delta^{(0)}, \sigma^{2(0)}$
+\item For $t = 1, \dots, T$:
+\begin{enumerate}
+\item Sample:
+$$
+\mu^{(t)} \sim p(\mu \mid \delta^{(t-1)}, \sigma^{2(t-1)}, y)
+$$
+\item Sample:
+$$
+\delta^{(t)} \sim p(\delta \mid \mu^{(t)}, \sigma^{2(t-1)}, y)
+$$
+\item Sample:
+$$
+\sigma^{2(t)} \sim p(\sigma^2 \mid \mu^{(t)}, \delta^{(t)}, y)
+$$
+\end{enumerate}
+\end{enumerate}
+\end{algorithm}
+
+\section{Exchangeability}
+
+\begin{definition}
+A sequence $Y_1, \dots, Y_n$ is exchangeable if:
+$$
+p(y_1, \dots, y_n)
+=
+p(y_{\pi(1)}, \dots, y_{\pi(n)})
+$$
+for any permutation $\pi$.
+\end{definition}
+
+\begin{remark}
+Exchangeability justifies modeling observations as conditionally IID.
+\end{remark}
+
+\section{Hierarchical Normal Model}
+
+\subsection{Model Structure}
+
+\begin{definition}
+\textbf{Within-group model:}
+$$
+Y_{ij} \mid \theta_j, \sigma^2 \sim \Normal(\theta_j, \sigma^2)
+$$
+
+\textbf{Between-group model:}
+$$
+\theta_j \mid \mu, \tau^2 \sim \Normal(\mu, \tau^2)
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item $\theta_j$ = group-specific mean
+\item $\mu$ = global mean
+\item $\tau^2$ = between-group variance
+\end{itemize}
+\end{remark}
+
+\section{Interpretation}
+
+\begin{remark}
+This model induces \textbf{partial pooling}:
+\begin{itemize}
+\item Estimates are shrunk toward the global mean
+\item Amount of shrinkage depends on $\tau^2$
+\end{itemize}
+\end{remark}
+
+\section{Shrinkage Effect}
+
+\begin{proposition}
+Posterior mean of $\theta_j$ is:
+$$
+\E[\theta_j \mid y]
+=
+w_j \bar{y}_j + (1 - w_j)\mu
+$$
+\end{proposition}
+
+\begin{remark}
+\begin{itemize}
+\item If $\tau^2$ is small $\rightarrow$ strong pooling
+\item If $\tau^2$ is large $\rightarrow$ weak pooling
+\end{itemize}
+\end{remark}
+
+\section{Why Hierarchical Models Matter}
+
+\begin{itemize}
+\item Avoid overfitting small groups
+\item Borrow strength across groups
+\item Naturally quantify uncertainty
+\item Handle missing data via latent variables
+\end{itemize}
+
+\section{Summary}
+
+\begin{itemize}
+\item Group comparison extends normal models to structured data
+\item Parameters become layered (data $\rightarrow$ group $\rightarrow$ population)
+\item Conjugacy enables efficient Gibbs sampling
+\item Hierarchical models introduce shrinkage and improve estimation stability
+\end{itemize}
+
+\chapter{Bayesian Linear Models}
+
+\section{Model Setup}
+
+\begin{definition}
+The Bayesian linear model is:
+$$
+y = X\beta + \epsilon
+$$
+$$
+\epsilon \sim \Normal(0, \sigma^2 I_n)
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item $y \in \mathbb{R}^n$
+\item $X \in \mathbb{R}^{n \times p}$
+\item $\beta \in \mathbb{R}^p$
+\item $\sigma^2$ = noise variance
+\end{itemize}
+\end{remark}
+
+\section{Likelihood}
+
+\begin{proposition}
+$$
+p(y \mid \beta, \sigma^2)
+\propto
+(\sigma^2)^{-n/2}
+\exp\left(
+-\frac{1}{2\sigma^2}(y - X\beta)^\top (y - X\beta)
+\right)
+$$
+\end{proposition}
+
+\section{Conjugate Prior}
+
+\begin{definition}
+Normal–Inverse-Gamma prior:
+$$
+\beta \mid \sigma^2 \sim \Normal(\beta_0, \sigma^2 V_0)
+$$
+$$
+\sigma^2 \sim \text{Inv-Gamma}\left(\frac{\nu_0}{2}, \frac{\nu_0 \sigma_0^2}{2}\right)
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item Prior scales with $\sigma^2$
+\item Enables closed-form posterior
+\end{itemize}
+\end{remark}
+
+\section{Posterior Distribution}
+
+\subsection{Posterior of $\beta$}
+
+\begin{proposition}
+$$
+\beta \mid \sigma^2, y
+\sim
+\Normal(\beta_n, \sigma^2 V_n)
+$$
+
+$$
+V_n = (V_0^{-1} + X^\top X)^{-1}
+$$
+
+$$
+\beta_n =
+V_n (V_0^{-1}\beta_0 + X^\top y)
+$$
+\end{proposition}
+
+\subsection{Posterior of $\sigma^2$}
+
+\begin{proposition}
+$$
+\sigma^2 \mid y
+\sim
+\text{Inv-Gamma}\left(\frac{\nu_n}{2}, \frac{\nu_n \sigma_n^2}{2}\right)
+$$
+
+$$
+\nu_n = \nu_0 + n
+$$
+
+$$
+\nu_n \sigma_n^2 =
+\nu_0 \sigma_0^2
++
+(y - X\beta_n)^\top (y - X\beta_n)
++
+(\beta_n - \beta_0)^\top V_0^{-1} (\beta_n - \beta_0)
+$$
+\end{proposition}
+
+\section{Marginal Posterior of $\beta$}
+
+\begin{proposition}
+$$
+\beta \mid y \sim t_{\nu_n}(\beta_n, \sigma_n^2 V_n)
+$$
+\end{proposition}
+
+\begin{remark}
+\begin{itemize}
+\item arises from integrating out $\sigma^2$
+\item heavier tails than normal
+\end{itemize}
+\end{remark}
+
+\section{Posterior Predictive Distribution}
+
+\begin{proposition}
+For a new observation $y^\ast$ with covariate $x^\ast$:
+$$
+y^\ast \mid y
+\sim
+t_{\nu_n}
+\left(
+x^{\ast \top} \beta_n,
+\sigma_n^2 (1 + x^{\ast \top} V_n x^\ast)
+\right)
+$$
+\end{proposition}
+
+\section{Interpretation}
+
+\begin{remark}
+Posterior mean:
+$$
+\beta_n =
+(V_0^{-1} + X^\top X)^{-1}
+(V_0^{-1}\beta_0 + X^\top y)
+$$
+\end{remark}
+
+\begin{remark}
+This is a weighted average of:
+\begin{itemize}
+\item Prior information ($\beta_0$)
+\item Data information ($X^\top y$)
+\end{itemize}
+\end{remark}
+
+\section{Connection to OLS}
+
+\begin{proposition}
+If prior is diffuse:
+$$
+V_0^{-1} \to 0
+$$
+then:
+$$
+\beta_n \to (X^\top X)^{-1} X^\top y
+$$
+\end{proposition}
+
+\begin{remark}
+Bayesian estimator reduces to OLS.
+\end{remark}
+
+\section{Shrinkage Interpretation}
+
+\begin{remark}
+Bayesian regression performs shrinkage:
+\begin{itemize}
+\item pulls estimates toward $\beta_0$
+\item strength depends on $V_0$
+\end{itemize}
+\end{remark}
+
+\section{Special Case: Ridge Regression}
+
+\begin{proposition}
+If:
+$$
+\beta \sim \Normal(0, \lambda^{-1} I)
+$$
+then:
+$$
+\beta_n = (X^\top X + \lambda I)^{-1} X^\top y
+$$
+\end{proposition}
+
+\begin{remark}
+Bayesian interpretation of ridge regression.
+\end{remark}
+
+\section{Gibbs Sampling}
+
+\begin{algorithm}
+\begin{enumerate}
+\item Initialize $\beta^{(0)}, \sigma^{2(0)}$
+\item For $t = 1, \dots, T$:
+\begin{enumerate}
+\item Sample:
+$$
+\beta^{(t)} \sim p(\beta \mid \sigma^{2(t-1)}, y)
+$$
+\item Sample:
+$$
+\sigma^{2(t)} \sim p(\sigma^2 \mid \beta^{(t)}, y)
+$$
+\end{enumerate}
+\end{enumerate}
+\end{algorithm}
+
+\section{Summary}
+
+\begin{itemize}
+\item Linear model extends normal model to multivariate predictors
+\item Conjugate priors give closed-form posterior
+\item Posterior is Normal–Inverse-Gamma
+\item Marginal posterior is Student-t
+\item Includes OLS and ridge as special cases
+\end{itemize}
+
+\chapter{Generalized Linear Models (GLMs)}
+
+\section{Motivation}
+
+\begin{remark}
+Linear models assume:
+\begin{itemize}
+\item Gaussian noise
+\item Constant variance
+\item Unbounded response
+\end{itemize}
+
+These assumptions fail for:
+\begin{itemize}
+\item Binary data
+\item Count data
+\item Skewed / non-Gaussian responses
+\end{itemize}
+\end{remark}
+
+\section{GLM Structure}
+
+\begin{definition}
+A generalized linear model consists of:
+
+\begin{enumerate}
+\item Random component:
+$$
+y_i \sim \text{Exponential Family}
+$$
+
+\item Systematic component:
+$$
+\eta_i = x_i^\top \beta
+$$
+
+\item Link function:
+$$
+g(\mu_i) = \eta_i
+$$
+\end{enumerate}
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item $\mu_i = \mathbb{E}[y_i \mid x_i]$
+\item $g(\cdot)$ connects mean to linear predictor
+\end{itemize}
+\end{remark}
+
+\section{Exponential Family Form}
+
+\begin{definition}
+$$
+p(y \mid \theta)
+=
+h(y)\exp\{ \phi(\theta)t(y) - A(\theta) \}
+$$
+\end{definition}
+
+\begin{remark}
+GLMs arise because many common distributions (Bernoulli, Poisson, Normal) belong to this family  
+\end{remark}
+
+\section{Canonical Link}
+
+\begin{definition}
+A canonical link satisfies:
+$$
+\eta = \phi(\theta)
+$$
+\end{definition}
+
+\begin{remark}
+This simplifies likelihood and inference.
+\end{remark}
+
+\section{Common GLMs}
+
+\subsection{Logistic Regression (Binary Data)}
+
+\begin{definition}
+$$
+y_i \sim \text{Bernoulli}(p_i)
+$$
+
+$$
+\log\left(\frac{p_i}{1 - p_i}\right)
+=
+x_i^\top \beta
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item Models probabilities in $(0,1)$
+\item Uses logit link
+\end{itemize}
+\end{remark}
+
+\begin{proposition}
+Likelihood:
+$$
+p(y \mid \beta)
+=
+\prod_i
+p_i^{y_i}(1 - p_i)^{1 - y_i}
+$$
+\end{proposition}
+
+\begin{remark}
+Appears in your notes as:
+$$
+\text{logit}(p_i) = \alpha + \beta x_i
+$$  
+\end{remark}
+
+\subsection{Poisson Regression (Count Data)}
+
+\begin{definition}
+$$
+y_i \sim \text{Poisson}(\lambda_i)
+$$
+
+$$
+\log(\lambda_i) = x_i^\top \beta
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item Ensures $\lambda_i > 0$
+\item Natural for count data
+\end{itemize}
+\end{remark}
+
+\subsection{Gaussian GLM}
+
+\begin{definition}
+$$
+y_i \sim \Normal(x_i^\top \beta, \sigma^2)
+$$
+\end{definition}
+
+\begin{remark}
+This reduces to the standard linear model.
+\end{remark}
+
+\section{Bayesian GLMs}
+
+\subsection{Prior}
+
+\begin{definition}
+$$
+\beta \sim \Normal(\beta_0, \Sigma_0)
+$$
+\end{definition}
+
+\section{Posterior}
+
+\begin{proposition}
+$$
+p(\beta \mid y)
+\propto
+p(y \mid \beta) p(\beta)
+$$
+\end{proposition}
+
+\begin{remark}
+\begin{itemize}
+\item No closed form (non-conjugate)
+\item Requires numerical methods
+\end{itemize}
+\end{remark}
+
+\section{Inference Methods}
+
+\subsection{Laplace Approximation}
+
+\begin{definition}
+Approximate posterior by Gaussian around mode:
+$$
+p(\beta \mid y) \approx \Normal(\hat{\beta}, H^{-1})
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item $\hat{\beta}$ = MAP estimate
+\item $H$ = Hessian of log posterior
+\end{itemize}
+\end{remark}
+
+\subsection{Metropolis-Hastings}
+
+\begin{algorithm}
+\begin{enumerate}
+\item Propose $\beta^\ast \sim q(\cdot \mid \beta^{(t)})$
+\item Accept with probability:
+$$
+\min\left(1,
+\frac{p(y \mid \beta^\ast)p(\beta^\ast)}
+     {p(y \mid \beta^{(t)})p(\beta^{(t)})}
+\right)
+$$
+\end{enumerate}
+\end{algorithm}
+
+\begin{remark}
+Used when posterior cannot be sampled directly  
+\end{remark}
+
+\subsection{Gibbs Sampling (Augmentation)}
+
+\begin{remark}
+\begin{itemize}
+\item Introduce latent variables
+\item Convert model into conditionally conjugate form
+\end{itemize}
+\end{remark}
+
+\section{Interpretation}
+
+\begin{remark}
+\begin{itemize}
+\item Coefficients act on transformed mean
+\item Interpretation depends on link function
+\end{itemize}
+\end{remark}
+
+\subsection{Logistic Regression}
+
+\begin{proposition}
+$$
+\beta_j = \text{log-odds change per unit increase in } x_j
+$$
+\end{proposition}
+
+\subsection{Poisson Regression}
+
+\begin{proposition}
+$$
+e^{\beta_j} = \text{multiplicative effect on expected count}
+$$
+\end{proposition}
+
+\section{Summary}
+
+\begin{itemize}
+\item GLMs extend linear models to non-Gaussian data
+\item Built from exponential family distributions
+\item Use link functions to ensure valid outputs
+\item Bayesian GLMs are typically non-conjugate
+\item Require approximation (Laplace, MCMC, VI)
+\end{itemize}
+
+\chapter{Bayesian Probit Regression Analysis}
+
+\section{Model Setup}
+
+\begin{definition}
+Binary response model:
+$$
+y_i \in \{0,1\}
+$$
+
+$$
+\Prob(y_i = 1 \mid x_i) = \Phi(x_i^\top \beta)
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item $\Phi(\cdot)$ = standard normal CDF
+\item ensures probabilities lie in $(0,1)$
+\end{itemize}
+\end{remark}
+
+\section{Latent Variable Representation}
+
+\begin{definition}
+Introduce latent variable:
+$$
+z_i = x_i^\top \beta + \epsilon_i
+$$
+
+$$
+\epsilon_i \sim \Normal(0,1)
+$$
+
+$$
+y_i =
+\begin{cases}
+1 & \text{if } z_i > 0 \\
+0 & \text{if } z_i \le 0
+\end{cases}
+$$
+\end{definition}
+
+\begin{proposition}
+$$
+\Prob(y_i = 1 \mid x_i)
+=
+\Prob(z_i > 0)
+=
+\Phi(x_i^\top \beta)
+$$
+\end{proposition}
+
+\begin{remark}
+Probit regression is a thresholded Gaussian linear model.
+\end{remark}
+
+\section{Likelihood}
+
+\begin{proposition}
+$$
+p(y \mid \beta)
+=
+\prod_{i=1}^n
+\Phi(x_i^\top \beta)^{y_i}
+\left[1 - \Phi(x_i^\top \beta)\right]^{1 - y_i}
+$$
+\end{proposition}
+
+\begin{remark}
+No conjugate prior exists in this form.
+\end{remark}
+
+\section{Prior}
+
+\begin{definition}
+$$
+\beta \sim \Normal(\beta_0, \Sigma_0)
+$$
+\end{definition}
+
+\section{Posterior}
+
+\begin{proposition}
+$$
+p(\beta \mid y)
+\propto
+p(y \mid \beta)p(\beta)
+$$
+\end{proposition}
+
+\begin{remark}
+Posterior has no closed form → requires sampling.
+\end{remark}
+
+\section{Data Augmentation}
+
+\begin{definition}
+Introduce latent variables:
+$$
+z_i \mid \beta \sim \Normal(x_i^\top \beta, 1)
+$$
+\end{definition}
+
+\begin{proposition}
+Conditional distributions:
+$$
+z_i \mid y_i, \beta
+\sim
+\begin{cases}
+\Normal(x_i^\top \beta, 1)\ \text{truncated at } (0, \infty) & y_i = 1 \\
+\Normal(x_i^\top \beta, 1)\ \text{truncated at } (-\infty, 0] & y_i = 0
+\end{cases}
+$$
+\end{proposition}
+
+\begin{remark}
+This converts the model into a Gaussian regression problem.
+\end{remark}
+
+\section{Conditional Posterior of $\beta$}
+
+\begin{proposition}
+$$
+\beta \mid z
+\sim
+\Normal(\beta_n, V_n)
+$$
+
+$$
+V_n = (X^\top X + \Sigma_0^{-1})^{-1}
+$$
+
+$$
+\beta_n = V_n (X^\top z + \Sigma_0^{-1}\beta_0)
+$$
+\end{proposition}
+
+\begin{remark}
+Conditional on $z$, this is identical to Bayesian linear regression.
+\end{remark}
+
+\section{Gibbs Sampling Algorithm}
+
+\begin{algorithm}
+\begin{enumerate}
+\item Initialize $\beta^{(0)}$
+\item For $t = 1,\dots,T$:
+\begin{enumerate}
+\item Sample latent variables:
+$$
+z_i^{(t)} \sim p(z_i \mid y_i, \beta^{(t-1)})
+$$
+
+\item Sample coefficients:
+$$
+\beta^{(t)} \sim p(\beta \mid z^{(t)})
+$$
+\end{enumerate}
+\end{enumerate}
+\end{algorithm}
+
+\begin{remark}
+\begin{itemize}
+\item Fully Gibbs → no MH needed
+\item Efficient and stable
+\end{itemize}
+\end{remark}
+
+\section{Posterior Prediction}
+
+\begin{proposition}
+$$
+\Prob(y^\ast = 1 \mid x^\ast, \beta)
+=
+\Phi(x^{\ast \top}\beta)
+$$
+\end{proposition}
+
+\begin{remark}
+Posterior predictive:
+$$
+\Prob(y^\ast = 1 \mid y)
+=
+\int \Phi(x^{\ast \top}\beta) p(\beta \mid y)\, d\beta
+$$
+\end{remark}
+
+\section{Interpretation}
+
+\begin{remark}
+\begin{itemize}
+\item $\beta_j$ affects latent variable $z$
+\item not directly interpretable as odds (unlike logistic)
+\end{itemize}
+\end{remark}
+
+\section{Comparison with Logistic Regression}
+
+\begin{proposition}
+\begin{itemize}
+\item Logistic: logit link
+\item Probit: normal CDF link
+\end{itemize}
+\end{proposition}
+
+\begin{remark}
+\begin{itemize}
+\item Probit allows exact Gibbs via augmentation
+\item Logistic typically requires Metropolis or specialized augmentation
+\end{itemize}
+\end{remark}
+
+\section{Summary}
+
+\begin{itemize}
+\item Probit model uses Gaussian latent variable
+\item Binary outcomes arise via thresholding
+\item Data augmentation restores conjugacy
+\item Enables efficient Gibbs sampling
+\item Closely related to linear Gaussian models
+\end{itemize}
+
+\chapter{Missing Data and Imputation}
+
+\section{Motivation}
+
+\begin{remark}
+Real datasets are rarely complete.
+
+Naive approaches:
+\begin{itemize}
+\item Delete missing observations (information loss)
+\item Fill with mean or constants (bias)
+\end{itemize}
+
+Bayesian approach:
+\begin{itemize}
+\item Treat missing values as \emph{unknown random variables}
+\item Integrate or sample them as part of inference
+\end{itemize}
+\end{remark}
+
+\section{Data Decomposition}
+
+\begin{definition}
+Partition data:
+$$
+Y = (Y_{\text{obs}}, Y_{\text{miss}})
+$$
+\end{definition}
+
+\begin{proposition}
+Target posterior:
+$$
+p(\theta \mid Y_{\text{obs}})
+=
+\int p(\theta, Y_{\text{miss}} \mid Y_{\text{obs}})\, dY_{\text{miss}}
+$$
+\end{proposition}
+
+\begin{remark}
+Integration is usually intractable → use sampling.
+\end{remark}
+
+\section{Missing Data Mechanisms}
+
+\begin{definition}
+\textbf{MCAR (Missing Completely at Random)}:
+$$
+p(R \mid Y_{\text{obs}}, Y_{\text{miss}}, \theta)
+=
+p(R)
+$$
+
+\textbf{MAR (Missing at Random)}:
+$$
+p(R \mid Y_{\text{obs}}, Y_{\text{miss}}, \theta)
+=
+p(R \mid Y_{\text{obs}})
+$$
+
+\textbf{MNAR (Not Missing at Random)}:
+depends on $Y_{\text{miss}}$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item MCAR and MAR → standard Bayesian imputation valid
+\item MNAR → must explicitly model missingness
+\end{itemize}
+\end{remark}
+
+\section{Bayesian Formulation}
+
+\begin{proposition}
+Joint posterior:
+$$
+p(\theta, Y_{\text{miss}} \mid Y_{\text{obs}})
+\propto
+p(Y_{\text{obs}}, Y_{\text{miss}} \mid \theta)\, p(\theta)
+$$
+\end{proposition}
+
+\begin{remark}
+Missing values are treated exactly like latent variables.
+\end{remark}
+
+\section{Data Augmentation}
+
+\begin{remark}
+Same idea as probit:
+
+\begin{center}
+\emph{Unknown quantities → introduce → sample → iterate}
+\end{center}
+\end{remark}
+
+\begin{definition}
+Augmented sampling scheme:
+\begin{itemize}
+\item Treat $Y_{\text{miss}}$ as parameters
+\item Sample them along with $\theta$
+\end{itemize}
+\end{definition}
+
+\section{Gibbs Sampling with Missing Data}
+
+\begin{algorithm}
+At iteration $t$:
+
+\begin{enumerate}
+\item Sample parameters:
+$$
+\theta^{(t)} \sim p(\theta \mid Y_{\text{obs}}, Y_{\text{miss}}^{(t-1)})
+$$
+
+\item Sample missing data:
+$$
+Y_{\text{miss}}^{(t)} \sim p(Y_{\text{miss}} \mid Y_{\text{obs}}, \theta^{(t)})
+$$
+\end{enumerate}
+\end{algorithm}
+
+\begin{remark}
+This is a direct extension of:
+\begin{itemize}
+\item Probit latent variable sampling
+\item General Gibbs sampling
+\end{itemize}
+\end{remark}
+
+\section{Key Insight}
+
+\begin{proposition}
+Imputation is sampling from:
+$$
+p(Y_{\text{miss}} \mid Y_{\text{obs}}, \theta)
+$$
+\end{proposition}
+
+\begin{remark}
+\begin{itemize}
+\item Not a single “best guess”
+\item A full distribution of plausible values
+\end{itemize}
+\end{remark}
+
+\section{Example: Normal Model with Missing Data}
+
+\begin{definition}
+Assume:
+$$
+y_i \sim \Normal(\mu, \sigma^2)
+$$
+\end{definition}
+
+\begin{proposition}
+Conditional imputation:
+$$
+y_i^{\text{miss}} \mid \mu, \sigma^2 \sim \Normal(\mu, \sigma^2)
+$$
+\end{proposition}
+
+\begin{remark}
+Missing values are sampled exactly like observed ones.
+\end{remark}
+
+\section{Multiple Imputation}
+
+\begin{definition}
+Instead of one dataset:
+\begin{itemize}
+\item Generate multiple completed datasets
+\item Analyze each
+\item combine results
+\end{itemize}
+\end{definition}
+
+\begin{remark}
+Captures uncertainty from missingness.
+\end{remark}
+
+\section{Complete Case vs Bayesian Approach}
+
+\begin{proposition}
+\begin{itemize}
+\item Complete case:
+\begin{itemize}
+\item biased unless MCAR
+\item wastes data
+\end{itemize}
+
+\item Bayesian:
+\begin{itemize}
+\item uses all available information
+\item propagates uncertainty
+\end{itemize}
+\end{itemize}
+\end{proposition}
+
+\section{Connection to Earlier Topics}
+
+\begin{remark}
+\begin{itemize}
+\item Probit: latent $z_i$
+\item Missing data: latent $Y_{\text{miss}}$
+\item Both use:
+\begin{itemize}
+\item augmentation
+\item Gibbs sampling
+\end{itemize}
+\end{itemize}
+\end{remark}
+
+\section{General Template}
+
+\begin{enumerate}
+\item Initialize missing values
+\item For $t = 1, \dots, T$:
+\begin{enumerate}
+\item Sample $\theta^{(t)}$
+\item Sample $Y_{\text{miss}}^{(t)}$
+\end{enumerate}
+\item Use samples for inference
+\end{enumerate}
+
+\section{Summary}
+
+\begin{itemize}
+\item Missing data treated as latent variables
+\item Posterior integrates over missing uncertainty
+\item Gibbs sampling enables tractable inference
+\item Avoids bias from ad-hoc imputation
+\item Unifies with latent variable modeling
+\end{itemize}
+
+\chapter{GLM and Beyond}
+
+\section{Limitations of GLMs}
+
+\begin{remark}
+Generalized Linear Models assume:
+\begin{itemize}
+\item Correct link function
+\item Correct distributional form
+\item Independent observations
+\end{itemize}
+
+These assumptions may fail in practice.
+\end{remark}
+
+\section{Non-Conjugacy}
+
+\begin{remark}
+For most GLMs:
+\begin{itemize}
+\item Posterior distributions are not available in closed form
+\item Conjugate priors do not exist
+\end{itemize}
+\end{remark}
+
+\begin{proposition}
+$$
+p(\beta \mid y)
+\propto
+p(y \mid \beta) p(\beta)
+$$
+\end{proposition}
+
+\begin{remark}
+Requires approximation or simulation methods.
+\end{remark}
+
+\section{Laplace Approximation}
+
+\begin{definition}
+Approximate posterior around mode:
+$$
+p(\beta \mid y)
+\approx
+\Normal(\hat{\beta}, H^{-1})
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item $\hat{\beta}$ = MAP estimate
+\item $H$ = Hessian of log posterior
+\end{itemize}
+\end{remark}
+
+\section{Data Augmentation}
+
+\begin{remark}
+Introduce latent variables to simplify models:
+\begin{itemize}
+\item Probit: latent Gaussian variable
+\item Missing data: latent observations
+\end{itemize}
+\end{remark}
+
+\begin{remark}
+Transforms non-conjugate models into conditionally conjugate ones.
+\end{remark}
+
+\section{Hierarchical GLMs}
+
+\begin{definition}
+Extend GLMs with group structure:
+$$
+y_{ij} \mid \theta_j \sim \text{GLM}
+$$
+$$
+\theta_j \mid \mu, \tau^2 \sim \Normal(\mu, \tau^2)
+$$
+\end{definition}
+
+\begin{remark}
+Allows:
+\begin{itemize}
+\item Partial pooling
+\item Modeling heterogeneity
+\end{itemize}
+\end{remark}
+
+\section{Overdispersion}
+
+\begin{remark}
+Poisson assumption:
+$$
+\Var(Y) = \E[Y]
+$$
+
+Often violated in practice.
+\end{remark}
+
+\begin{proposition}
+Alternative:
+\begin{itemize}
+\item Negative Binomial model
+\item Random effects models
+\end{itemize}
+\end{proposition}
+
+\section{Robust Models}
+
+\begin{remark}
+Normal errors are sensitive to outliers.
+
+Alternatives:
+\begin{itemize}
+\item Student-t likelihood
+\item Heavy-tailed priors
+\end{itemize}
+\end{remark}
+
+\section{Nonparametric Extensions}
+
+\begin{remark}
+Relax parametric assumptions:
+\begin{itemize}
+\item Dirichlet Process models
+\item Mixture models
+\end{itemize}
+\end{remark}
+
+\section{Summary}
+
+\begin{itemize}
+\item GLMs extend linear models to non-Gaussian data
+\item Non-conjugacy requires approximation methods
+\item Data augmentation restores tractability
+\item Hierarchical extensions capture complex structure
+\item Robust and nonparametric models improve flexibility
+\end{itemize}
+
+\chapter{Model Selection}
+
+\section{Motivation}
+
+\begin{remark}
+Given competing models $M_1, M_2, \dots$, we want to determine which model best explains the data.
+\end{remark}
+
+\section{Bayesian Model Comparison}
+
+\begin{definition}
+Posterior model probability:
+$$
+p(M_i \mid y)
+=
+\frac{p(y \mid M_i) p(M_i)}
+{\sum_j p(y \mid M_j) p(M_j)}
+$$
+\end{definition}
+
+\section{Marginal Likelihood}
+
+\begin{definition}
+$$
+p(y \mid M)
+=
+\int p(y \mid \theta, M) p(\theta \mid M)\, d\theta
+$$
+\end{definition}
+
+\begin{remark}
+Accounts for:
+\begin{itemize}
+\item Model fit
+\item Model complexity
+\end{itemize}
+\end{remark}
+
+\section{Bayes Factors}
+
+\begin{definition}
+For models $M_1$ and $M_2$:
+$$
+BF_{12}
+=
+\frac{p(y \mid M_1)}{p(y \mid M_2)}
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item $BF > 1$ favors $M_1$
+\item $BF < 1$ favors $M_2$
+\end{itemize}
+\end{remark}
+
+\section{Interpretation}
+
+\begin{remark}
+\begin{itemize}
+\item $1 \le BF < 3$: weak evidence
+\item $3 \le BF < 10$: moderate evidence
+\item $10 \le BF < 100$: strong evidence
+\item $BF \ge 100$: decisive
+\end{itemize}
+\end{remark}
+
+\section{Important Considerations}
+
+\begin{remark}
+\begin{itemize}
+\item Requires proper priors
+\item Sensitive to prior choice
+\item Penalizes model complexity automatically
+\end{itemize}
+\end{remark}
+
+\section{Marginalization Paradox}
+
+\begin{remark}
+If prior is improper:
+$$
+p(y \mid M) \text{ is undefined}
+$$
+
+Therefore Bayes factors cannot be computed.
+\end{remark}
+
+\section{Alternative Criteria}
+
+\subsection{BIC}
+
+\begin{definition}
+$$
+\text{BIC} = -2 \log p(y \mid \hat{\theta}) + k \log n
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item Penalizes complexity
+\item Large sample approximation to Bayes factor
+\end{itemize}
+\end{remark}
+
+\subsection{Deviance Information Criterion (DIC)}
+
+\begin{definition}
+$$
+\text{DIC} = \bar{D} + p_D
+$$
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item $\bar{D}$ = posterior mean deviance
+\item $p_D$ = effective number of parameters
+\end{itemize}
+\end{remark}
+
+\subsection{Log Pseudo-Marginal Likelihood (LPML)}
+
+\begin{remark}
+Based on leave-one-out predictive densities.
+\end{remark}
+
+\section{Posterior Predictive Checks}
+
+\begin{definition}
+Compare observed data to simulated data:
+$$
+y^{rep} \sim p(y^{rep} \mid y)
+$$
+\end{definition}
+
+\begin{remark}
+Detects model misfit.
+\end{remark}
+
+\section{Tradeoff: Fit vs Complexity}
+
+\begin{remark}
+Good models:
+\begin{itemize}
+\item Fit data well
+\item Avoid overfitting
+\end{itemize}
+\end{remark}
+
+\section{Summary}
+
+\begin{itemize}
+\item Model selection compares competing explanations of data
+\item Bayes factors use marginal likelihoods
+\item Proper priors are required
+\item Alternative criteria approximate model evidence
+\item Balance between fit and complexity is essential
+\end{itemize}
 
 \end{document}
