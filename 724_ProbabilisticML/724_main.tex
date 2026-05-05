@@ -604,7 +604,7 @@ The reverse inequality follows by constructing an optimal dual potential.
 \end{proof}
 
 
-\subsection{Remarks on Metrics vs Divergences}
+\subsection*{Remarks on Metrics vs Divergences}
 
 \begin{itemize}
 \item Total variation and Wasserstein are \emph{metrics}.
@@ -650,7 +650,7 @@ H_\nu(P) = -\int p(x)\log p(x)\,\nu(\dd x).
 \end{definition}
 
 
-\subsection{Derivation via Lagrange Multipliers}
+\subsection*{Derivation via Lagrange Multipliers}
 
 Assume $\Omega$ is finite for simplicity, and write $p(x) = P(X=x)$.
 
@@ -730,7 +730,7 @@ A(\theta) = \log Z(\theta).
 \end{remark}
 
 
-\subsection{Example: Gaussian from Exponential Family}
+\subsubsection{Example: Gaussian from Exponential Family}
 
 Let $\phi(x) = (x, x^2)$ on $\R$.
 
@@ -869,7 +869,7 @@ The log-partition function satisfies:
 \end{remark}
 
 
-\subsection{Non-Minimal Case}
+\subsection*{Non-Minimal Case}
 
 If $\phi$ is not minimal, then there exists $v \neq 0$ such that
 \[
@@ -883,5 +883,2308 @@ p_{\theta + t v}(x)
 p_\theta(x),
 \]
 so the parametrization is not identifiable, and $\nabla A$ is not injective.
+
+\chapter{Graphical Models}
+
+\section{Directed Graphical Models (Bayesian Networks)}
+
+\subsection{Factorization in DAGs}
+
+\begin{definition}
+Let $G = (V,E)$ be a directed acyclic graph (DAG), and let $\{X_v\}_{v \in V}$ be random variables.
+
+A distribution $P$ \emph{factorizes according to} $G$ if
+\[
+p(x_V) = \prod_{v \in V} p\big(x_v \mid x_{\mathrm{pa}(v)}\big),
+\]
+where $\mathrm{pa}(v)$ denotes the set of parents of node $v$.
+\end{definition}
+
+\begin{remark}
+Each factor $p(x_v \mid x_{\mathrm{pa}(v)})$ is a \emph{local conditional model}.
+\end{remark}
+
+\begin{definition}
+A \emph{topological ordering} of a DAG is an ordering $(v_1,\dots,v_n)$ such that
+\[
+v_i \to v_j \implies i < j.
+\]
+\end{definition}
+
+\begin{remark}
+This allows a generative interpretation:
+\[
+X_{v_1} \to X_{v_2} \to \cdots \to X_{v_n},
+\]
+sampling each variable conditioned on its parents.
+\end{remark}
+
+
+\subsection{Independence Structure}
+
+\begin{definition}
+Let $S_v = \big(\{v\} \cup \mathrm{Desc}(v) \cup \mathrm{pa}(v)\big)^c$.
+
+A DAG encodes the independence relations
+\[
+X_v \perp X_{S_v} \mid X_{\mathrm{pa}(v)}.
+\]
+\end{definition}
+
+\begin{proposition}
+A distribution factorizes according to $G$ if and only if it satisfies the independence relations encoded by $G$.
+\end{proposition}
+
+
+\subsection{Factorization $\Rightarrow$ Independence (Key Idea)}
+
+\begin{lemma}
+If $P$ factorizes according to a DAG $G$, then for any upward-closed set $U$,
+\[
+p(x_U) = \prod_{u \in U} p(x_u \mid x_{\mathrm{pa}(u)}).
+\]
+\end{lemma}
+
+\begin{proof}[Sketch]
+Sum out variables not in $U$ using the factorization; terms outside $U$ cancel due to normalization.
+\end{proof}
+
+This leads to conditional independence:
+\[
+X_v \perp X_{S_v} \mid X_{\mathrm{pa}(v)}.
+\]
+
+
+\subsection{Constructing a DAG}
+
+Given variables $X_1,\dots,X_n$:
+
+\begin{itemize}
+\item Choose an ordering $X_1,\dots,X_n$
+\item For each $k$, choose a minimal set $S \subseteq \{1,\dots,k-1\}$ such that
+\[
+X_k \perp X_{[k-1]\setminus S} \mid X_S
+\]
+\item Set $\mathrm{pa}(k) = S$
+\end{itemize}
+
+\begin{remark}
+The resulting graph is not unique.
+\end{remark}
+
+\begin{remark}
+Causality can guide graph construction, but cannot generally be inferred from the graph alone.
+\end{remark}
+
+
+\subsection{Compactness of Representation}
+
+For $n$ variables taking values in $\{1,\dots,r\}$:
+
+\begin{itemize}
+\item Full joint distribution requires:
+\[
+r^n - 1 \quad \text{parameters}
+\]
+\item If max indegree is $d$:
+\[
+O(n r^{d+1})
+\]
+parameters suffice
+\end{itemize}
+
+\begin{remark}
+Graphical models exploit conditional independence for exponential savings.
+\end{remark}
+
+
+\subsection{Examples}
+
+\subsubsection{Markov Chain}
+
+\[
+X_{k+1} \perp X_1,\dots,X_{k-1} \mid X_k
+\]
+
+Factorization:
+\[
+p(x_1,\dots,x_n)
+=
+p(x_1)\prod_{k=2}^n p(x_k \mid x_{k-1})
+\]
+
+\subsubsection{$d$-th Order Markov Model}
+
+\[
+X_{k+d} \perp X_1,\dots,X_{k-1} \mid X_k,\dots,X_{k+d-1}
+\]
+
+\subsubsection{Naive Bayes}
+
+Latent class $C$:
+\[
+X_k \perp X_{-k} \mid C
+\]
+
+Factorization:
+\[
+p(c,x_1,\dots,x_n)
+=
+p(c)\prod_{k=1}^n p(x_k \mid c)
+\]
+
+
+\subsection{Latent Variable Models}
+
+\begin{definition}
+A \emph{latent variable model} introduces hidden variables $Z$ such that
+\[
+p(x) = \int p(x,z)\,\dd z.
+\]
+\end{definition}
+
+\begin{remark}
+Latent variables simplify structure by introducing conditional independence.
+\end{remark}
+
+\subsubsection{Mixture Model}
+
+\[
+z_i \sim \mathrm{Multinomial}(\pi), \quad
+x_i \mid z_i \sim \Normal(\mu_{z_i}, \Sigma_{z_i})
+\]
+
+\subsubsection{Stochastic Block Model}
+
+\[
+z_i \sim \mathrm{Multinomial}(\pi), \quad
+A_{ij} \mid z_i,z_j \sim \mathrm{Bernoulli}(p_{z_i z_j})
+\]
+
+\subsubsection{Noisy-OR Model}
+
+\[
+x_j \mid z \sim \mathrm{Bernoulli}\left(1 - \exp\left(-\sum_i w_{ij} z_i\right)\right)
+\]
+
+\subsubsection{Hidden Markov Model (HMM)}
+
+\[
+z_t = A z_{t-1} + \epsilon_t, \quad
+x_t = C z_t + \eta_t
+\]
+
+\begin{remark}
+This is a linear Gaussian state-space model.
+\end{remark}
+
+
+\subsection{d-Separation}
+
+\begin{definition}
+A path in a DAG is \emph{blocked} by a set $C$ if one of the following holds:
+\begin{enumerate}
+\item Chain: $X \to Z \to Y$ or $X \leftarrow Z \leftarrow Y$, and $Z \in C$
+\item Fork: $X \leftarrow Z \to Y$, and $Z \in C$
+\item Collider: $X \to Z \leftarrow Y$, and $Z \notin C$ and no descendant of $Z$ is in $C$
+\end{enumerate}
+\end{definition}
+
+\begin{definition}
+$A$ and $B$ are \emph{d-separated} by $C$ if all paths between them are blocked.
+\end{definition}
+
+\begin{theorem}
+If $P$ factorizes according to $G$ and $A,B$ are d-separated by $C$, then
+\[
+X_A \perp X_B \mid X_C.
+\]
+\end{theorem}
+
+
+\section{Undirected Graphical Models (Markov Random Fields)}
+
+\subsection{Factorization}
+
+\begin{definition}
+Let $G=(V,E)$ be an undirected graph. Let $\mathcal{C}$ be the set of maximal cliques.
+
+A distribution factorizes over $G$ if
+\[
+p(x) \propto \exp(-E(x)),
+\quad
+E(x) = \sum_{C \in \mathcal{C}} \phi_C(x_C),
+\]
+or equivalently
+\[
+p(x) = \prod_{C \in \mathcal{C}} \psi_C(x_C).
+\]
+\end{definition}
+
+\begin{remark}
+$\psi_C = e^{-\phi_C}$ are called \emph{clique potentials}.
+\end{remark}
+
+
+\subsection{Markov Properties}
+
+\begin{definition}
+$P$ satisfies:
+\begin{itemize}
+\item Global Markov property:
+\[
+X_A \perp X_B \mid X_C
+\quad \text{if } C \text{ separates } A,B
+\]
+\item Local Markov property:
+\[
+X_v \perp X_{V \setminus (\{v\}\cup N(v))} \mid X_{N(v)}
+\]
+\item Pairwise Markov property:
+\[
+X_v \perp X_w \mid X_{V \setminus \{v,w\}}, \quad (v,w)\notin E
+\]
+\end{itemize}
+\end{definition}
+
+\begin{remark}
+Under positivity conditions:
+\[
+\text{global} \iff \text{local} \iff \text{pairwise}
+\]
+\end{remark}
+
+
+\subsection{Energy-Based Models}
+
+\begin{definition}
+An energy-based model defines
+\[
+p_\theta(x) \propto e^{-E_\theta(x)}.
+\]
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+\item Lower energy $\Rightarrow$ higher probability
+\item $E_\theta(x) = \langle \theta, \phi(x)\rangle$ recovers exponential families
+\end{itemize}
+\end{remark}
+
+
+\subsection{Example: Ising Model}
+
+\[
+p(x)
+\propto
+\exp\left(
+\sum_i h_i x_i + \sum_{(i,j)\in E} J_{ij} x_i x_j
+\right),
+\quad x_i \in \{-1,1\}
+\]
+
+Conditional distribution:
+\[
+p(x_i = 1 \mid x_{-i})
+=
+\frac{\exp(h_i + \sum_{j\in N(i)} J_{ij} x_j)}
+{\exp(h_i + \sum_{j\in N(i)} J_{ij} x_j) + \exp(-h_i - \sum_{j\in N(i)} J_{ij} x_j)}.
+\]
+
+\begin{remark}
+Unlike DAGs, sampling is generally difficult due to the global partition function.
+\end{remark}
+
+\section{Additional Properties of Independence}
+
+\subsection*{Intersection Property}
+
+\begin{proposition}
+Suppose $p(x,y,z,w)$ has positive density with respect to a product measure. Then the \emph{intersection property} holds:
+\[
+\begin{cases}
+X \perp Y \mid Z, W, \\
+X \perp W \mid Z, Y
+\end{cases}
+\quad \Rightarrow \quad
+X \perp (Y,W) \mid Z.
+\]
+\end{proposition}
+
+\begin{remark}
+This property does \emph{not} hold in general without positivity.
+\end{remark}
+
+\begin{proposition}
+If the intersection property holds, then the global, local, and pairwise Markov properties are equivalent.
+\end{proposition}
+
+
+\subsection*{Hammersley--Clifford Theorem}
+
+\begin{theorem}[Hammersley--Clifford]
+Let $G=(V,E)$ be an undirected graph. Suppose $P$ has positive density.
+
+Then:
+\[
+P \text{ satisfies the Markov properties}
+\;\Longleftrightarrow\;
+P \text{ factorizes over } G.
+\]
+\end{theorem}
+
+\begin{remark}
+Positivity is essential: without it, independence does not imply factorization.
+\end{remark}
+
+
+\subsection*{Canonical Representation}
+
+\begin{theorem}
+Any strictly positive distribution can be written as
+\[
+p(x) = \exp\left( \sum_{S \subseteq V} \xi_S(x_S) \right),
+\]
+where
+\[
+\xi_S(x_S) = \sum_{Z \subseteq S} (-1)^{|S|-|Z|} \log p(x_Z, x_{S^c}=0).
+\]
+\end{theorem}
+
+\begin{remark}
+\begin{itemize}
+\item This is an inclusion--exclusion type expansion
+\item If $P$ factorizes over $G$, then $\xi_S = 0$ for non-cliques $S$
+\end{itemize}
+\end{remark}
+
+
+\section{Factor Graphs}
+
+\begin{definition}
+A \emph{factor graph} is a bipartite graph with:
+\begin{itemize}
+\item variable nodes $V$
+\item factor nodes $F$
+\end{itemize}
+and edges only between variables and factors.
+
+A distribution factorizes as
+\[
+p(x_V) = \prod_{a \in F} \varphi_a(x_{N(a)}),
+\]
+where $N(a)$ are variables connected to factor $a$.
+\end{definition}
+
+\begin{remark}
+Factor graphs unify:
+\begin{itemize}
+\item DAG factorizations
+\item MRF factorizations
+\end{itemize}
+\end{remark}
+
+
+\subsection{Example: Restricted Boltzmann Machine (RBM)}
+
+Let visible units $v \in \{0,1\}^{d_v}$ and hidden units $h \in \{0,1\}^{d_h}$.
+
+\[
+p(v,h) \propto \exp\left( \langle v,Wh\rangle + \langle b,v\rangle + \langle a,h\rangle \right)
+\]
+
+\begin{remark}
+Key property:
+\[
+p(h \mid v) = \prod_j p(h_j \mid v),
+\quad
+p(v \mid h) = \prod_i p(v_i \mid h)
+\]
+\end{remark}
+
+\begin{remark}
+This conditional independence enables efficient Gibbs sampling.
+\end{remark}
+
+
+\subsection{Example: Coding Theory (LDPC)}
+
+\[
+p(x,z)
+\propto
+\prod_i \mathbbm{1}\{H_i z = 0\}
+\prod_j p(x_j \mid z_j)
+\]
+
+\begin{remark}
+Inference corresponds to belief propagation.
+\end{remark}
+
+
+\section{Conditional Random Fields}
+
+\begin{definition}
+Let $(V \cup W, E)$ be an undirected graph.
+
+A \emph{conditional random field (CRF)} is a conditional distribution
+\[
+P(X_W \mid X_V)
+\propto
+\prod_{C \in \mathcal{C}} \psi_C(x_C),
+\]
+where cliques $C$ involve variables in $W$.
+\end{definition}
+
+\begin{remark}
+CRFs model conditional structure without specifying a joint model over $(V,W)$.
+\end{remark}
+
+
+\section{Directed $\to$ Undirected Conversion}
+
+\begin{definition}
+The \emph{moralized graph} $\mathcal{M}[G]$ of a DAG $G$ is obtained by:
+\begin{itemize}
+\item adding edges between all pairs of parents of each node
+\item dropping edge directions
+\end{itemize}
+\end{definition}
+
+\begin{proposition}
+If $P$ factorizes according to a DAG $G$, then it factorizes according to the undirected graph $\mathcal{M}[G]$.
+\end{proposition}
+
+
+\section{Independence via Moralization}
+
+\begin{theorem}
+Let $G$ be a DAG and $A,B,C$ disjoint sets. The following are equivalent:
+
+\begin{enumerate}
+\item $A$ and $B$ are d-separated by $C$ in $G$
+\item $A$ and $B$ are separated by $C$ in the moralized ancestral graph
+\end{enumerate}
+
+Moreover, if $P$ factorizes according to $G$, then
+\[
+X_A \perp X_B \mid X_C.
+\]
+\end{theorem}
+
+\begin{definition}
+The \emph{ancestral graph} is the subgraph induced by $A,B,C$ and their ancestors.
+\end{definition}
+
+
+\section{Markov Blanket}
+
+\begin{definition}
+A set $U$ is a \emph{Markov blanket} for $v$ if
+\[
+X_v \perp X_{V \setminus (U \cup \{v\})} \mid X_U.
+\]
+\end{definition}
+
+\begin{proposition}
+\begin{enumerate}
+\item In an undirected graph, $N(v)$ is a Markov blanket.
+\item In a DAG, the Markov blanket is:
+\[
+\mathrm{pa}(v) \cup \mathrm{ch}(v) \cup \mathrm{co\text{-}pa}(v).
+\]
+\end{enumerate}
+\end{proposition}
+
+\begin{remark}
+The Markov blanket gives the minimal conditioning set needed to isolate a node.
+\end{remark}
+
+
+\section{Learning Graph Structure (Undirected Case)}
+
+\begin{proposition}
+Assume $P$ is positive. Define graph $G$ by:
+\[
+(v,w) \in E
+\;\Longleftrightarrow\;
+X_v \not\perp X_w \mid X_{V \setminus \{v,w\}}.
+\]
+
+Then $G$ is the unique minimal graph for which $P$ satisfies the pairwise Markov property.
+\end{proposition}
+
+
+\section*{Comparison: Directed vs Undirected Models}
+
+\begin{itemize}
+\item Directed models:
+\begin{itemize}
+\item capture causal / generative structure
+\item sampling is straightforward
+\item require ordering / domain knowledge
+\end{itemize}
+
+\item Undirected models:
+\begin{itemize}
+\item symmetric relationships
+\item easier structure learning
+\item inference often harder (partition function)
+\end{itemize}
+\end{itemize}
+
+\section{Inference Problems}
+
+\subsection{Core Tasks}
+
+Given a probabilistic model $p_\theta(x)$:
+
+\begin{itemize}
+\item \textbf{Sampling:}
+\[
+x \sim p_\theta(x)
+\]
+
+\item \textbf{Marginals:}
+\[
+p_\theta(x_i) = \int p_\theta(x)\,\nu^{\otimes (n-1)}(dx_{-i})
+\]
+
+\item \textbf{MAP (maximum a posteriori):}
+\[
+x^* = \argmax_x p_\theta(x)
+\]
+
+\item \textbf{Partition function:}
+\[
+Z(\theta) = \int \psi_\theta(x)\,\nu^{\otimes n}(dx)
+\]
+\end{itemize}
+
+\begin{remark}
+These tasks are tightly coupled: computing one often requires solving the others.
+\end{remark}
+
+
+\subsection*{Latent Variable Models}
+
+For joint models:
+\[
+p_\theta(x,z) \propto \psi_\theta(x,z)
+\]
+
+posterior inference requires:
+\[
+p_\theta(z|x) = \frac{\psi_\theta(x,z)}{Z(\theta,x)}, \quad
+Z(\theta,x) = \int \psi_\theta(x,z)\,\nu_Z(dz)
+\]
+
+\begin{itemize}
+\item Sampling: $z \sim p_\theta(z|x)$
+\item Marginals: $p_\theta(z_i|x)$
+\item MAP: $\argmax_z p_\theta(z|x)$
+\end{itemize}
+
+
+\section{Computational Complexity}
+
+\subsection*{Complexity Classes}
+
+\begin{itemize}
+\item $O(n)$, $O(n\log n)$, $O(n^c)$: polynomial time
+\item $O(2^n)$: exponential time
+\end{itemize}
+
+\begin{definition}
+A \emph{decision problem} outputs YES/NO.
+
+\begin{itemize}
+\item \textbf{P}: solvable in polynomial time
+\item \textbf{NP}: solutions verifiable in polynomial time
+\item \textbf{NP-complete}: hardest problems in NP
+\item \textbf{NP-hard}: at least as hard as NP-complete
+\end{itemize}
+\end{definition}
+
+\begin{example}
+3-SAT: given a Boolean formula, does a satisfying assignment exist?
+\end{example}
+
+
+\subsection*{Counting Problems}
+
+\begin{definition}
+$\#\text{P}$: counting versions of NP problems (e.g., number of satisfying assignments).
+\end{definition}
+
+\begin{remark}
+Computing partition functions and marginals is typically $\#\text{P}$-hard.
+\end{remark}
+
+
+\begin{theorem}
+Computing partition functions or marginals in general graphical models is $\#\text{P}$-hard.
+\end{theorem}
+
+\begin{remark}
+Even approximate counting (e.g., $\#\text{SAT}$) can be NP-hard.
+\end{remark}
+
+
+\section{Approximation Algorithms}
+
+\begin{definition}
+A \emph{polynomial-time randomized approximation scheme (PRAS)} for $Z$ outputs $\widehat{Z}$ such that
+\[
+e^{-\epsilon} Z \le \widehat{Z} \le e^{\epsilon} Z
+\]
+in polynomial time, with high probability.
+\end{definition}
+
+\begin{definition}
+\begin{itemize}
+\item \textbf{FPRAS}: runtime polynomial in $n$ and $1/\epsilon$
+\item \textbf{PTAS}: deterministic approximation scheme
+\end{itemize}
+\end{definition}
+
+
+\section*{Equivalence: Sampling, Marginals, Partition Function}
+
+\begin{definition}
+A family of problems is \emph{self-reducible} if fixing variables reduces the problem to a smaller instance.
+\end{definition}
+
+\begin{theorem}[informal]
+For distributions $p_\theta(x) \propto \psi_\theta(x)$ on finite spaces:
+
+\begin{enumerate}
+\item Approximate sampling $\Rightarrow$ approximate marginals
+\item Approximate marginals $\Rightarrow$ approximate sampling (if self-reducible)
+\item Marginals $\Leftrightarrow$ partition function
+\end{enumerate}
+\end{theorem}
+
+
+\begin{theorem}
+If we can sample within TV distance $\epsilon$ in $\mathrm{poly}(n,1/\epsilon)$ time, then we can approximate marginals via empirical averages:
+\[
+\widehat{p}(x_i = a) = \frac{1}{N} \sum_{k=1}^N \ind\{x_i^{(k)} = a\}
+\]
+\end{theorem}
+
+\begin{proof}
+By Hoeffding’s inequality:
+\[
+\Prob\left( |\widehat{p} - p| \ge \delta \right)
+\le 2 \exp(-2N\delta^2)
+\]
+so $N = O(1/\delta^2)$ suffices.
+\end{proof}
+
+
+\section{Exact Inference}
+
+\subsection{Variable Elimination}
+
+\begin{algorithm}
+\caption{Variable Elimination}
+\begin{algorithmic}
+\State Input: $p(x) \propto \prod_a \psi_a(x_{\partial a})$
+\State Choose elimination order
+\For{variable $i$}
+    \State Multiply all factors involving $i$
+    \State Sum out $i$
+    \State Introduce new factor
+\EndFor
+\State Output desired marginal
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+Intermediate factors grow in size → exponential complexity.
+\end{remark}
+
+
+\subsection*{Treewidth}
+
+\begin{definition}
+The \emph{treewidth} $\mathrm{tw}(G)$ is the size of the largest intermediate factor (minus one) in optimal elimination ordering.
+\end{definition}
+
+\begin{remark}
+Complexity of variable elimination:
+\[
+O(n \cdot \text{state}^{\mathrm{tw}(G)+1})
+\]
+\end{remark}
+
+
+\section{Belief Propagation}
+
+\subsection{Message Passing}
+
+Messages:
+
+\begin{itemize}
+\item Variable $\to$ factor:
+\[
+m_{i \to a}(x_i)
+\propto \prod_{b \in \partial i \setminus a} m_{b \to i}(x_i)
+\]
+
+\item Factor $\to$ variable:
+\[
+m_{a \to i}(x_i)
+\propto
+\sum_{x_{\partial a \setminus i}}
+\psi_a(x_{\partial a})
+\prod_{j \in \partial a \setminus i} m_{j \to a}(x_j)
+\]
+\end{itemize}
+
+
+\subsection*{Marginals}
+
+\[
+p(x_i)
+\propto \prod_{a \in \partial i} m_{a \to i}(x_i)
+\]
+
+\[
+p(x_{\partial a})
+\propto
+\psi_a(x_{\partial a})
+\prod_{j \in \partial a} m_{j \to a}(x_j)
+\]
+
+
+\subsection{Properties}
+
+\begin{itemize}
+\item Exact on trees
+\item Equivalent to dynamic programming
+\item Linear-time in number of nodes (for trees)
+\end{itemize}
+
+\begin{remark}
+On loopy graphs:
+\begin{itemize}
+\item becomes \emph{loopy belief propagation}
+\item no guarantees, but often works well
+\end{itemize}
+\end{remark}
+
+
+\section{Extensions}
+
+\begin{itemize}
+\item Conditioning: add indicator factors
+\item Continuous variables: approximate messages (e.g., Gaussian)
+\item Junction tree algorithm: exact inference via tree decomposition
+\end{itemize}
+
+
+\section{Takeaways}
+
+\begin{itemize}
+\item Exact inference is exponential in general
+\item Tree structure enables efficient computation
+\item Message passing = dynamic programming on graphs
+\item Sampling, marginals, and partition function are deeply connected
+\end{itemize}
+
+\subsection*{Correctness of Belief Propagation (Trees)}
+
+We formalize what the messages compute.
+
+Let $T_{b \to i}$ denote the subtree rooted at $b$ when edge $(b,i)$ is removed.
+
+\begin{proposition}
+For a tree-structured factor graph:
+\[
+Z_{b \to i}(x_i)
+=
+\sum_{x_{V(T_{b \to i}) \setminus i}}
+\prod_{c \in F(T_{b \to i})} \psi_c(x_{\partial c}),
+\]
+and similarly
+\[
+Z_{a \to j}(x_j)
+=
+\sum_{x_{V(T_{a \to j}) \setminus j}}
+\prod_{c \in F(T_{a \to j})} \psi_c(x_{\partial c}).
+\]
+\end{proposition}
+
+\begin{proof}
+By induction on the size of the subtree.
+
+\textbf{Base case:} leaf node. Only one factor contributes, and the expression holds trivially.
+
+\textbf{Inductive step:} assume the claim holds for all subtrees of depth $\le k$.  
+Then for a larger subtree,
+\[
+Z_{a \to i}(x_i)
+=
+\sum_{x_{\partial a \setminus i}}
+\psi_a(x_{\partial a})
+\prod_{j \in \partial a \setminus i} Z_{j \to a}(x_j),
+\]
+which matches the factor-to-variable message update.
+
+Thus the recursion exactly computes subtree marginals.
+\end{proof}
+
+
+\subsection*{Max-Product Belief Propagation (MAP)}
+
+Replace sums by maxima.
+
+\begin{itemize}
+\item Variable $\to$ factor:
+\[
+M_{i \to a}(x_i)
+=
+\prod_{b \in \partial i \setminus a} M_{b \to i}(x_i)
+\]
+
+\item Factor $\to$ variable:
+\[
+M_{a \to i}(x_i)
+=
+\max_{x_{\partial a \setminus i}}
+\psi_a(x_{\partial a})
+\prod_{j \in \partial a \setminus i} M_{j \to a}(x_j)
+\]
+\end{itemize}
+
+\begin{remark}
+This computes max-marginals:
+\[
+M_i(x_i) \propto \max_{x_{-i}} p(x)
+\]
+\end{remark}
+
+
+\begin{algorithm}
+\caption{Max-product belief propagation}
+\begin{algorithmic}
+\State Initialize messages
+\Repeat
+    \For{factor $a$}
+        \State update $M_{a \to i}$
+    \EndFor
+    \For{variable $i$}
+        \State update $M_{i \to a}$
+    \EndFor
+\Until{convergence}
+\State Output $\argmax_x p(x)$ from max-marginals
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Hidden Markov Models (HMMs)}
+
+\subsubsection*{Model}
+
+Latent chain:
+\[
+z_1 \to z_2 \to \cdots \to z_n, \quad x_t | z_t
+\]
+
+Factorization:
+\[
+p(z_{1:n}, x_{1:n})
+=
+p(z_1)\prod_{t=2}^n p(z_t | z_{t-1})
+\prod_{t=1}^n p(x_t | z_t)
+\]
+
+
+\subsubsection*{Forward Pass}
+
+Define
+\[
+f_t(i) = p(z_t = i, x_{1:t})
+\]
+
+Recursion:
+\[
+f_{t+1}(j)
+=
+p(x_{t+1} | z_{t+1}=j)
+\sum_i f_t(i)\, p(z_{t+1}=j | z_t=i)
+\]
+
+
+\subsubsection*{Backward Pass}
+
+\[
+b_t(i) = p(x_{t+1:n} | z_t = i)
+\]
+
+Recursion:
+\[
+b_t(i)
+=
+\sum_j p(z_{t+1}=j | z_t=i)\, p(x_{t+1}|z_{t+1}=j)\, b_{t+1}(j)
+\]
+
+
+\subsubsection*{Posterior}
+
+\[
+p(z_t = i | x_{1:n})
+\propto f_t(i)\, b_t(i)
+\]
+
+
+\subsubsection*{Viterbi Algorithm (MAP)}
+
+Define
+\[
+\delta_t(j)
+=
+\max_{z_{1:t-1}} p(z_{1:t}, x_{1:t})
+\]
+
+Recursion:
+\[
+\delta_{t+1}(j)
+=
+p(x_{t+1}|z_{t+1}=j)
+\max_i \delta_t(i)\, p(z_{t+1}=j|z_t=i)
+\]
+
+\begin{remark}
+Viterbi is max-product BP on a chain.
+\end{remark}
+
+
+\subsection{Loopy Belief Propagation}
+
+\begin{itemize}
+\item Same updates as BP, but on graphs with cycles
+\item No guarantees of convergence or correctness
+\item Often works well in practice
+\end{itemize}
+
+\begin{example}
+LDPC decoding uses loopy BP.
+\end{example}
+
+
+\subsection*{Summary: VE vs BP}
+
+\begin{itemize}
+\item \textbf{Variable elimination:}
+\begin{itemize}
+\item works on any graph
+\item computes one marginal at a time
+\item complexity depends on treewidth
+\end{itemize}
+
+\item \textbf{Belief propagation:}
+\begin{itemize}
+\item exact on trees
+\item computes all marginals simultaneously
+\item linear-time for trees
+\item approximate on loopy graphs
+\end{itemize}
+\end{itemize}
+
+
+\section{Takeaways}
+
+\begin{itemize}
+\item Exact inference is exponential in general
+\item Trees $\Rightarrow$ efficient dynamic programming
+\item Message passing unifies many algorithms:
+\begin{itemize}
+\item forward-backward
+\item Viterbi
+\item BP
+\end{itemize}
+\item MAP inference = max-product BP
+\end{itemize}
+
+\section{Sampling with Markov Chains}
+
+\subsection*{Problem Formulation}
+
+We want to approximately sample from a distribution
+\[
+p(x) \propto e^{f(x)}, \quad x \in \Omega,
+\]
+within $\varepsilon$ in total variation distance.
+
+\begin{remark}
+This problem appears across:
+\begin{itemize}
+\item Bayesian inference
+\item statistical physics
+\item combinatorics / theoretical CS
+\item deep generative modeling
+\end{itemize}
+\end{remark}
+
+\begin{remark}
+Sampling is essentially equivalent to computing expectations:
+\[
+\E_{x \sim p}[f(x)] = \int f(x)p(x)\,dx,
+\]
+which becomes intractable in high dimensions.
+\end{remark}
+
+
+\subsection{Monte Carlo Estimation}
+
+Given samples $X_1,\dots,X_N \sim p$,
+\[
+\E[f(X)] \approx \frac{1}{N} \sum_{i=1}^N f(X_i).
+\]
+
+\begin{proposition}
+\[
+\Var\!\left(\frac{1}{N}\sum_{i=1}^N f(X_i)\right)
+=
+\frac{\Var(f(X))}{N}.
+\]
+\end{proposition}
+
+\begin{proof}
+Uses independence:
+\[
+\Var\!\left(\frac{1}{N}\sum f(X_i)\right)
+=
+\frac{1}{N^2}\sum \Var(f(X_i))
+=
+\frac{1}{N}\Var(f(X)).
+\]
+\end{proof}
+
+
+\subsection*{What Distributions Are Easy to Sample?}
+
+\begin{itemize}
+\item Uniform distributions
+\item Finite discrete distributions
+\item 1D distributions via inverse CDF
+\item Product distributions:
+\[
+p(x_1,\dots,x_n) = \prod_{i=1}^n p_i(x_i)
+\]
+\item Directed graphical models:
+\[
+p(x) = \prod_{i=1}^n p(x_i | x_{\mathrm{parents}(i)})
+\]
+\item Gaussian distributions
+\end{itemize}
+
+\begin{remark}
+General high-dimensional distributions are not directly sampleable.
+\end{remark}
+
+
+\subsection{Importance Sampling}
+
+Let $Y \sim Q$.
+
+\begin{definition}
+\[
+\widehat{\mu}
+=
+\frac{1}{N}\sum_{i=1}^N \frac{p(Y_i)}{q(Y_i)} f(Y_i).
+\]
+\end{definition}
+
+\begin{proposition}
+\[
+\E_Q[\widehat{\mu}] = \E_P[f(X)].
+\]
+\end{proposition}
+
+\begin{proof}
+\[
+\E_Q\left[\frac{p(Y)}{q(Y)}f(Y)\right]
+=
+\int \frac{p(y)}{q(y)} f(y) q(y)\,dy
+=
+\int f(y)p(y)\,dy.
+\]
+\end{proof}
+
+
+\subsection{Rejection Sampling}
+
+\begin{algorithm}
+\caption{Rejection sampling}
+\begin{algorithmic}
+\State Input: $q(x)$, $c$ such that $p(x) \le c q(x)$
+\Repeat
+\State Sample $Y \sim Q$
+\State Sample $U \sim \mathrm{Uniform}(0,1)$
+\Until{$U \le \frac{p(Y)}{c q(Y)}$}
+\State Output $Y$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}
+If $p(x) \le c q(x)$, then rejection sampling produces samples from $p$, and
+\[
+\#\text{trials} \sim \mathrm{Geom}(1/c).
+\]
+\end{theorem}
+
+\begin{remark}
+Fails in high dimensions due to exponential scaling of $c$.
+\end{remark}
+
+
+\section{Markov Chains}
+
+\begin{definition}
+A sequence $(X_t)$ is a Markov chain if
+\[
+X_{t+1} \perp X_1,\dots,X_{t-1} \mid X_t,
+\]
+i.e.,
+\[
+p(x_{t+1} | x_1,\dots,x_t) = p(x_{t+1} | x_t).
+\]
+\end{definition}
+
+\begin{definition}
+A Markov chain is time-homogeneous if
+\[
+p(x_{t+1} | x_t) \text{ does not depend on } t.
+\]
+\end{definition}
+
+
+\subsection*{Transition Kernels}
+
+\begin{definition}
+A Markov kernel $K$ is a function such that:
+\begin{itemize}
+\item $K(x,\cdot)$ is a probability measure
+\item measurable in $x$
+\end{itemize}
+\end{definition}
+
+For a distribution $\mu$,
+\[
+(\mu K)(A) = \int K(x,A)\,\mu(dx).
+\]
+
+If densities exist:
+\[
+(\mu K)(y) = \int \mu(x)k(x,y)\,dx.
+\]
+
+
+\subsection*{Operator View}
+
+\begin{definition}
+For $f : \Omega \to \R$,
+\[
+Kf(x) = \E_{Y \sim K(x,\cdot)}[f(Y)]
+= \int f(y)K(x,dy).
+\]
+\end{definition}
+
+\begin{remark}
+$K$ acts:
+\begin{itemize}
+\item on distributions: $\mu \mapsto \mu K$
+\item on functions: $f \mapsto Kf$
+\end{itemize}
+\end{remark}
+
+
+\subsection{Stationary Distributions}
+
+\begin{definition}
+$\pi$ is stationary if
+\[
+\pi K = \pi.
+\]
+\end{definition}
+
+\begin{remark}
+Then $\pi K^t = \pi$ for all $t$.
+\end{remark}
+
+
+\subsection{Conditions for Convergence}
+
+\begin{definition}
+A Markov chain is:
+\begin{itemize}
+\item irreducible: any state can reach any other
+\item aperiodic: no deterministic cycles
+\end{itemize}
+\end{definition}
+
+\begin{theorem}
+If a finite Markov chain is irreducible and aperiodic:
+\begin{itemize}
+\item it has a unique stationary distribution $\pi$
+\item $\mu_0 K^t \to \pi$
+\end{itemize}
+\end{theorem}
+
+\begin{theorem}[Ergodic theorem]
+\[
+\frac{1}{N}\sum_{t=1}^N f(X_t) \to \E_\pi[f(X)] \quad \text{a.s.}
+\]
+\end{theorem}
+
+
+\subsection{Reversibility}
+
+\begin{definition}
+$\pi$ satisfies detailed balance if
+\[
+\pi(x)K(x,y) = \pi(y)K(y,x).
+\]
+\end{definition}
+
+\begin{proposition}
+Detailed balance $\Rightarrow$ stationarity.
+\end{proposition}
+
+\begin{remark}
+Reversibility makes it easy to design Markov chains.
+\end{remark}
+
+
+\section{Metropolis--Hastings}
+
+Target density: $p(x) \propto \tilde{p}(x)$.
+
+\begin{algorithm}
+\caption{Metropolis--Hastings}
+\begin{algorithmic}
+\State Input: $\tilde{p}(x)$, proposal $q(x,y)$
+\For{$t=0,\dots,T$}
+\State Sample proposal $\widehat{X}_{t+1} \sim q(X_t,\cdot)$
+\State Accept with probability
+\[
+\alpha(x,y)
+=
+\min\left\{
+\frac{\tilde{p}(y)q(y,x)}{\tilde{p}(x)q(x,y)}, 1
+\right\}
+\]
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}
+The MH chain has stationary distribution $p$.
+\end{theorem}
+
+
+\subsection*{Gibbs Sampling}
+
+\begin{definition}
+At each step:
+\[
+X_i \sim p(x_i | x_{-i}).
+\]
+\end{definition}
+
+\begin{proposition}
+Gibbs sampling is a special case of Metropolis--Hastings with acceptance probability $1$.
+\end{proposition}
+
+\begin{remark}
+In graphical models:
+\[
+p(x_i | x_{-i}) = p(x_i | x_{\mathrm{MB}(i)}).
+\]
+\end{remark}
+
+
+\subsection*{Examples}
+
+\begin{example}[Ball walk]
+\[
+\widehat{X}_{t+1} \sim \mathrm{Uniform}(B_R(X_t)),
+\]
+then accept/reject via MH.
+\end{example}
+
+\begin{example}[Gibbs sampling]
+Select coordinate $i$ and sample
+\[
+X_i \sim p(x_i | x_{-i}).
+\]
+\end{example}
+
+
+\section*{Takeaways}
+
+\begin{itemize}
+\item Direct sampling is rarely possible
+\item MCMC constructs a Markov chain with target stationary distribution
+\item Convergence requires irreducibility + aperiodicity
+\item Reversibility simplifies construction (MH)
+\item Gibbs exploits conditional structure
+\end{itemize}
+
+\section{Markov Chain Monte Carlo (MCMC)}
+
+\subsection{Sampling via Markov Chains}
+
+\begin{definition}
+Goal: sample from a distribution
+\[
+p(x) \propto e^{f(x)}, \quad x \in \Omega,
+\]
+within $\varepsilon$ in total variation distance.
+\end{definition}
+
+\begin{remark}
+We construct a Markov chain whose stationary distribution is $p$, then simulate it.
+\end{remark}
+
+
+\subsection*{Rejection Sampling (Limitations)}
+
+\begin{theorem}
+If $p(x) \le c q(x)$, rejection sampling produces samples from $p$, and
+\[
+\#\text{trials} \sim \mathrm{Geom}(1/c).
+\]
+\end{theorem}
+
+\begin{remark}
+In high dimensions, $c$ typically grows exponentially, making rejection sampling impractical.
+\end{remark}
+
+
+\subsection*{Markov Chains}
+
+\begin{definition}
+A sequence $(X_t)$ is a Markov chain if
+\[
+p(x_{t+1} | x_1,\dots,x_t) = p(x_{t+1} | x_t).
+\]
+\end{definition}
+
+\begin{definition}
+A distribution $\pi$ is stationary if
+\[
+\pi K = \pi.
+\]
+\end{definition}
+
+
+\subsection{Reversibility}
+
+\begin{definition}
+$\pi$ satisfies detailed balance if
+\[
+\pi(x)K(x,y) = \pi(y)K(y,x).
+\]
+\end{definition}
+
+\begin{proposition}
+If detailed balance holds, then $\pi$ is stationary.
+\end{proposition}
+
+\begin{proof}
+\[
+\sum_x \pi(x)K(x,y)
+=
+\sum_x \pi(y)K(y,x)
+=
+\pi(y)\sum_x K(y,x)
+=
+\pi(y).
+\]
+\end{proof}
+
+
+\section*{Metropolis--Hastings}
+
+\begin{algorithm}
+\caption{Metropolis--Hastings}
+\begin{algorithmic}
+\State Input: $\tilde{p}(x)$, proposal $q(x,y)$
+\For{$t=0,\dots,T$}
+\State Sample $Y \sim q(X_t,\cdot)$
+\State Accept with probability
+\[
+\alpha(x,y)
+=
+\min\left\{
+\frac{\tilde{p}(y)q(y,x)}{\tilde{p}(x)q(x,y)}, 1
+\right\}
+\]
+\State Set $X_{t+1} = Y$ if accepted, else $X_{t+1} = X_t$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}
+The Metropolis--Hastings chain has stationary distribution $p$.
+\end{theorem}
+
+\begin{proof}
+Check detailed balance:
+\[
+p(x)K(x,y)
+=
+p(x)q(x,y)\alpha(x,y)
+=
+\min\{p(x)q(x,y), p(y)q(y,x)\},
+\]
+which is symmetric in $(x,y)$.
+\end{proof}
+
+
+\subsection*{Gibbs Sampling}
+
+\begin{definition}
+At each step, pick coordinate $i$ and sample
+\[
+X_i \sim p(x_i | x_{-i}).
+\]
+\end{definition}
+
+\begin{proposition}
+Gibbs sampling is a special case of Metropolis--Hastings with acceptance probability $1$.
+\end{proposition}
+
+\begin{remark}
+In graphical models:
+\[
+p(x_i | x_{-i}) = p(x_i | x_{\mathrm{MB}(i)}).
+\]
+\end{remark}
+
+
+\section{Langevin Monte Carlo (LMC)}
+
+\subsection*{Continuous-time process}
+
+\begin{definition}
+Langevin diffusion:
+\[
+dX_t = -\nabla V(X_t)\,dt + \sqrt{2}\,dB_t.
+\]
+\end{definition}
+
+\begin{remark}
+Target distribution:
+\[
+p(x) \propto e^{-V(x)}.
+\]
+\end{remark}
+
+
+\subsubsection*{Discretization}
+
+Using Euler--Maruyama:
+\[
+X_{t+1} = X_t - \eta \nabla V(X_t) + \sqrt{2\eta}\,\xi_t,
+\quad \xi_t \sim \Normal(0,I).
+\]
+
+\begin{remark}
+This is noisy gradient descent.
+\end{remark}
+
+
+\subsection*{Stationary Distribution}
+
+\begin{theorem}
+The Langevin diffusion has stationary distribution
+\[
+p(x) \propto e^{-V(x)}.
+\]
+\end{theorem}
+
+\begin{proof}
+From the Fokker--Planck equation:
+\[
+\frac{\partial \mu_t}{\partial t}
+=
+\nabla \cdot (\nabla V \,\mu_t) + \Delta \mu_t.
+\]
+
+Plug $\mu(x) = e^{-V(x)}$:
+
+\[
+\nabla \mu = -(\nabla V)e^{-V}, \quad
+\Delta \mu = \left(-\Delta V + \|\nabla V\|^2\right)e^{-V}.
+\]
+
+Then:
+\[
+\nabla \cdot (\nabla V \mu)
+=
+(\Delta V)e^{-V} - \|\nabla V\|^2 e^{-V}.
+\]
+
+Adding:
+\[
+\nabla \cdot (\nabla V \mu) + \Delta \mu = 0.
+\]
+
+Thus $\mu$ is stationary.
+\end{proof}
+
+
+\subsection{MALA (Metropolis-adjusted Langevin)}
+
+\begin{algorithm}
+\caption{MALA}
+\begin{algorithmic}
+\State Propose
+\[
+Y \sim \Normal(x - h \nabla V(x), 2hI)
+\]
+\State Accept with MH correction
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+Corrects discretization bias of LMC.
+\end{remark}
+
+
+\section{Underdamped Langevin Dynamics}
+
+\begin{definition}
+Introduce momentum $v$:
+\[
+\begin{aligned}
+dX_t &= v_t\,dt \\
+dv_t &= -\gamma v_t\,dt - \nabla V(X_t)\,dt + \sqrt{2\gamma}\,dB_t
+\end{aligned}
+\]
+\end{definition}
+
+\begin{remark}
+Stationary distribution:
+\[
+p(x,v) \propto e^{-V(x) - \frac{1}{2}\|v\|^2}.
+\]
+\end{remark}
+
+\begin{remark}
+Non-reversible → faster mixing.
+\end{remark}
+
+
+\section*{Hamiltonian Monte Carlo (HMC)}
+
+\subsection*{Hamiltonian dynamics}
+
+Define:
+\[
+H(q,p) = U(q) + K(p)
+\]
+
+\[
+\begin{aligned}
+\frac{dq}{dt} &= \nabla_p H = \nabla K(p) \\
+\frac{dp}{dt} &= -\nabla_q H = -\nabla U(q)
+\end{aligned}
+\]
+
+\begin{proposition}
+Hamiltonian dynamics preserve:
+\begin{itemize}
+\item Energy: $H(q(t),p(t))$
+\item Volume (Liouville's theorem)
+\end{itemize}
+\end{proposition}
+
+
+\subsection*{Reversibility trick}
+
+Define momentum flip:
+\[
+R(q,p) = (q,-p).
+\]
+
+Then:
+\[
+R \circ S_T \circ R = S_T^{-1}.
+\]
+
+\begin{proposition}
+HMC transition is reversible w.r.t.
+\[
+\mu(q,p) \propto e^{-H(q,p)}.
+\]
+\end{proposition}
+
+
+\subsection*{Algorithm}
+
+\begin{algorithm}
+\caption{Hamiltonian Monte Carlo (idealized)}
+\begin{algorithmic}
+\State Sample $p \sim e^{-K(p)}$
+\State Simulate Hamiltonian dynamics for time $T$
+\State Output $q$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+No rejection needed in exact dynamics (but required after discretization).
+\end{remark}
+
+
+\subsection*{Leapfrog Integrator}
+
+\begin{algorithm}
+\caption{Leapfrog}
+\begin{algorithmic}
+\State $p \leftarrow p - \frac{h}{2}\nabla U(q)$
+\For{$t=1,\dots,T$}
+\State $q \leftarrow q + h\nabla K(p)$
+\State $p \leftarrow p - h\nabla U(q)$
+\EndFor
+\State $p \leftarrow p - \frac{h}{2}\nabla U(q)$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+Properties:
+\begin{itemize}
+\item volume-preserving
+\item reversible
+\item approximately energy-preserving
+\end{itemize}
+\end{remark}
+
+
+\section*{Takeaways}
+
+\begin{itemize}
+\item MCMC constructs Markov chains with target stationary distribution
+\item Metropolis--Hastings ensures correctness via detailed balance
+\item Gibbs exploits conditional structure
+\item Langevin adds gradient information (diffusion-based sampling)
+\item HMC uses Hamiltonian dynamics for efficient exploration
+\end{itemize}
+
+\subsection*{Langevin Monte Carlo}
+
+We want to sample from
+\[
+p(x) \propto e^{-V(x)}.
+\]
+
+\begin{definition}
+The Langevin diffusion is the stochastic differential equation
+\[
+dX_t = -\nabla V(X_t)\,dt + \sqrt{2}\,dB_t.
+\]
+\end{definition}
+
+Discretizing via Euler--Maruyama:
+\[
+X_{t+1} = X_t - \eta \nabla V(X_t) + \sqrt{2\eta}\,\xi_t,
+\quad \xi_t \sim \Normal(0,I_d).
+\]
+
+\begin{remark}
+This can be viewed as gradient descent with injected Gaussian noise.
+\end{remark}
+
+\begin{remark}
+The continuous-time process has stationary distribution $p(x) \propto e^{-V(x)}$, but the discretized version introduces bias unless $\eta$ is small.
+\end{remark}
+
+
+\subsection*{Metropolis-Adjusted Langevin Algorithm (MALA)}
+
+To correct discretization bias, use Langevin as a proposal in Metropolis--Hastings.
+
+\begin{definition}
+Proposal distribution:
+\[
+q(x,y)
+\propto
+\exp\left(
+-\frac{\|y - (x - \eta \nabla V(x))\|^2}{4\eta}
+\right).
+\]
+\end{definition}
+
+\begin{algorithm}
+\caption{MALA}
+\begin{algorithmic}
+\State Propose $Y \sim \Normal(x - \eta \nabla V(x),\, 2\eta I)$
+\State Accept with probability
+\[
+\alpha(x,y)
+=
+\min\left\{
+\frac{p(y)q(y,x)}{p(x)q(x,y)}, 1
+\right\}
+\]
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection*{Underdamped Langevin Dynamics}
+
+\begin{definition}
+Introduce momentum $v$:
+\[
+\begin{aligned}
+dX_t &= v_t\,dt, \\
+dv_t &= -\gamma v_t\,dt - \nabla V(X_t)\,dt + \sqrt{2\gamma}\,dB_t.
+\end{aligned}
+\]
+\end{definition}
+
+\begin{remark}
+Stationary distribution:
+\[
+p(x,v) \propto e^{-V(x) - \frac{1}{2}\|v\|^2}.
+\]
+\end{remark}
+
+\begin{remark}
+Noise is injected only in $v_t$, leading to more efficient exploration.
+\end{remark}
+
+
+\subsection*{Continuous-Time Markov Processes}
+
+\begin{definition}
+A continuous-time Markov process $(X_t)_{t \ge 0}$ satisfies
+\[
+P(X_u \in A | X_{[0,t]}) = P(X_u \in A | X_t), \quad u > t.
+\]
+\end{definition}
+
+\begin{definition}
+A family $(P_t)_{t \ge 0}$ is a Markov semigroup if
+\[
+P_{t+s} = P_t P_s, \quad P_0 = \mathrm{id}.
+\]
+\end{definition}
+
+
+\subsection*{Generator of a Markov Process}
+
+\begin{definition}
+The generator $\mathcal{L}$ is
+\[
+\mathcal{L}f = \left|\frac{d}{dt} P_t f \right|_{t=0}.
+\]
+\end{definition}
+
+\begin{remark}
+This defines the process via
+\[
+P_t = e^{t\mathcal{L}}.
+\]
+\end{remark}
+
+
+\subsection{Fokker--Planck Equation}
+
+Let $\mathcal{L}^*$ be the adjoint operator.
+
+\begin{definition}
+The distribution $\mu_t$ evolves as
+\[
+\frac{d\mu_t}{dt} = \mathcal{L}^* \mu_t.
+\]
+\end{definition}
+
+\begin{remark}
+For Langevin diffusion:
+\[
+\mathcal{L}f = -\langle \nabla f, \nabla V\rangle + \Delta f,
+\]
+\[
+\mathcal{L}^* \mu = \nabla \cdot (\nabla V \mu) + \Delta \mu.
+\]
+\end{remark}
+
+
+\subsection*{Stationarity of Langevin}
+
+\begin{theorem}
+The distribution
+\[
+\mu(x) \propto e^{-V(x)}
+\]
+is stationary for Langevin diffusion.
+\end{theorem}
+
+\begin{proof}
+Plug into Fokker--Planck equation:
+\[
+\mathcal{L}^*\mu
+=
+\nabla \cdot (\nabla V \mu) + \Delta \mu.
+\]
+
+Compute:
+\[
+\nabla \mu = -(\nabla V)\mu,
+\quad
+\Delta \mu = (-\Delta V + \|\nabla V\|^2)\mu.
+\]
+
+Then:
+\[
+\nabla \cdot (\nabla V \mu)
+=
+(\Delta V)\mu - \|\nabla V\|^2 \mu.
+\]
+
+Adding:
+\[
+(\Delta V - \|\nabla V\|^2)\mu + (-\Delta V + \|\nabla V\|^2)\mu = 0.
+\]
+\end{proof}
+
+
+\section{Hamiltonian Monte Carlo (HMC)}
+
+\subsection{Hamiltonian Dynamics}
+
+Define
+\[
+H(q,p) = U(q) + K(p).
+\]
+
+Dynamics:
+\[
+\frac{dq}{dt} = \nabla_p H, \quad
+\frac{dp}{dt} = -\nabla_q H.
+\]
+
+\begin{remark}
+Typical choice:
+\[
+K(p) = \frac{1}{2}\|p\|^2.
+\]
+\end{remark}
+
+
+\subsection{Key Properties}
+
+\begin{proposition}
+Hamiltonian dynamics preserve:
+\begin{itemize}
+\item energy $H(q,p)$
+\item volume in phase space
+\end{itemize}
+\end{proposition}
+
+
+\subsection{Leapfrog Integrator}
+
+\begin{lemma}
+The leapfrog integrator:
+\begin{itemize}
+\item preserves volume
+\item is reversible (up to momentum flip)
+\end{itemize}
+\end{lemma}
+
+\begin{remark}
+It does \emph{not} exactly preserve the Hamiltonian.
+\end{remark}
+
+
+\subsection*{HMC with Leapfrog}
+
+\begin{algorithm}
+\caption{Hamiltonian Monte Carlo (practical)}
+\begin{algorithmic}
+\State Sample $p \sim e^{-K(p)}$
+\State Simulate Hamiltonian dynamics via leapfrog for time $T$
+\State Accept with probability
+\[
+\alpha = \min\{e^{-H(q',p') + H(q,p)}, 1\}
+\]
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+The Metropolis step corrects discretization error.
+\end{remark}
+
+
+\subsection*{Choosing Parameters}
+
+\begin{itemize}
+\item Integration time $T$:
+\begin{itemize}
+\item Too small $\Rightarrow$ slow exploration
+\item Too large $\Rightarrow$ wasted computation
+\end{itemize}
+\item Randomizing $T$ helps avoid periodic behavior
+\item No-U-Turn criterion adaptively selects trajectory length
+\end{itemize}
+
+
+\subsection*{Geometric Adaptation}
+
+\begin{definition}
+Riemannian HMC uses position-dependent metric:
+\[
+K(q,p) = \frac{1}{2} p^\top \Sigma^{-1}(q)p + \frac{1}{2}\log \det \Sigma(q).
+\]
+\end{definition}
+
+
+\section{Convergence of Markov Chains}
+
+\subsection{Spectral Gap}
+
+\begin{theorem}
+Let $\lambda_2$ be the second largest eigenvalue. Then
+\[
+\Var_\mu(K^n f) \le |\lambda_2|^{2n} \Var_\mu(f).
+\]
+\end{theorem}
+
+
+\subsection{Non-reversible Chains}
+
+\begin{remark}
+For non-reversible chains:
+\[
+\chi^2(\nu K^n || \mu)
+\le C |\lambda_2|^{2n} \chi^2(\nu || \mu).
+\]
+\end{remark}
+
+\begin{remark}
+In continuous time this is called \emph{hypocoercivity}.
+\end{remark}
+
+
+\subsubsection{Poincar\'e Inequality}
+
+\begin{definition}
+A distribution $\mu$ satisfies a Poincar\'e inequality if
+\[
+\langle g, \mathcal{L}g \rangle_\mu \ge c \Var_\mu(g).
+\]
+\end{definition}
+
+\begin{remark}
+Implies exponential convergence rate $e^{-2ct}$.
+\end{remark}
+
+
+\subsection{Contraction in Divergences}
+
+\begin{definition}
+A kernel $K$ is contractive if
+\[
+D_f(\nu K || \mu) \le (1-\kappa) D_f(\nu || \mu).
+\]
+\end{definition}
+
+\begin{remark}
+Implies geometric convergence.
+\end{remark}
+
+
+\subsection{Mixing Time}
+
+\begin{definition}
+\[
+t_{\mathrm{mix}}(\varepsilon)
+=
+\min\{t : \sup_{\mu_0} \mathrm{TV}(\mu_0 K^t, \mu) \le \varepsilon\}.
+\]
+\end{definition}
+
+\begin{definition}
+Relaxation time:
+\[
+t_{\mathrm{rel}} = \frac{1}{1-|\lambda_2|}.
+\]
+\end{definition}
+
+
+\subsection{Conductance}
+
+\begin{definition}
+For $S \subset \Omega$:
+\[
+\Phi(S) = \frac{Q(S,S^c)}{\mu(S)},
+\quad
+Q(S,S^c) = \sum_{x \in S, y \in S^c} \mu(x)P(x,y).
+\]
+\end{definition}
+
+\begin{definition}
+\[
+\Phi_* = \min_{\mu(S)\le 1/2} \Phi(S).
+\]
+\end{definition}
+
+\begin{theorem}
+\[
+t_{\mathrm{mix}}(1/4) \ge \frac{1}{4\Phi_*}.
+\]
+\end{theorem}
+
+
+\subsection{Asymptotic Variance}
+
+\begin{definition}
+\[
+\sigma_f^2
+=
+\Var_\mu(f(X_0)) + 2\sum_{k=1}^\infty \mathrm{Cov}_\mu(f(X_0), f(X_k)).
+\]
+\end{definition}
+
+\begin{theorem}
+\[
+\frac{1}{N}\sum_{k=0}^{N-1} f(X_k)
+\to \E_\mu[f]
+\]
+and
+\[
+\Var\left(\frac{1}{N}\sum f(X_k)\right) \sim \frac{\sigma_f^2}{N}.
+\]
+\end{theorem}
+
+
+\subsection{Practical Diagnostics}
+
+\begin{itemize}
+\item Trace plots (check stationarity)
+\item Autocorrelation:
+\[
+\rho_\ell = \frac{\mathrm{Cov}(f(X_0), f(X_\ell))}{\Var(f)}
+\]
+\item Effective sample size:
+\[
+N_{\mathrm{eff}} = \frac{N}{1 + 2\sum_{\ell \ge 1} \rho_\ell}
+\]
+\end{itemize}
+
+
+\subsection*{Discussion}
+
+\begin{itemize}
+\item Single long chain vs multiple shorter chains:
+\begin{itemize}
+\item single chain: cheaper burn-in
+\item multiple chains: better exploration of multimodal distributions
+\end{itemize}
+\end{itemize}
+
+\section{Tempering and Particle Methods}
+
+\subsection{Multimodality and Slow Mixing}
+
+Multimodal target distributions pose a fundamental challenge for MCMC.
+
+\begin{itemize}
+    \item Probability mass is concentrated in separated regions (modes).
+    \item Transitions between modes require crossing \emph{energy barriers}.
+    \item Local proposals (e.g., random walk, Langevin) rarely cross these barriers.
+\end{itemize}
+
+\begin{remark}
+For distributions of the form $p(x) \propto e^{-f(x)}$, the time to transition between modes is often \emph{exponential} in the barrier height:
+\[
+\text{mixing time} \sim \exp(\Delta f).
+\]
+This is known as \emph{metastability}.
+\end{remark}
+
+\subsection{Temperature Scaling}
+
+Introduce a \emph{temperature parameter} $T > 0$:
+\[
+p_T(x) \propto e^{-f(x)/T} = e^{-\beta f(x)}, \quad \beta = \frac{1}{T}.
+\]
+
+\begin{itemize}
+    \item High temperature ($T \gg 1$, $\beta \ll 1$): distribution is \emph{flattened}.
+    \item Low temperature ($T \ll 1$, $\beta \gg 1$): distribution concentrates near modes.
+\end{itemize}
+
+\begin{remark}
+In Langevin dynamics:
+\[
+dX_t = -\nabla V(X_t)\,dt + \sqrt{2T}\,dB_t,
+\]
+temperature controls the tradeoff between gradient (drift) and noise.
+\end{remark}
+
+\subsection{Simulated Annealing}
+
+Simulated annealing gradually lowers temperature:
+\[
+T_1 > T_2 > \cdots \to 0.
+\]
+
+\begin{itemize}
+    \item Initially explores broadly.
+    \item Eventually concentrates near global minima.
+\end{itemize}
+
+\begin{remark}
+Once modes separate at low temperature, the chain becomes \emph{trapped}:
+probability mass cannot easily move between modes.
+\end{remark}
+
+\subsection{Simulated Tempering}
+
+Introduce temperature as an auxiliary variable:
+\[
+(\ell, x) \in \{1,\dots,L\} \times \Omega.
+\]
+
+Define target:
+\[
+\pi(\ell, x) \propto w_\ell\, p_\ell(x), \quad p_\ell(x) \propto e^{-f(x)/T_\ell}.
+\]
+
+Algorithm:
+\begin{itemize}
+    \item Alternate:
+    \begin{itemize}
+        \item Update $x$ using MCMC at fixed temperature $\ell$.
+        \item Propose $\ell \to \ell \pm 1$ with MH acceptance:
+        \[
+        \alpha = \min\left\{ \frac{w_{\ell'} p_{\ell'}(x)}{w_\ell p_\ell(x)}, 1 \right\}.
+        \]
+    \end{itemize}
+\end{itemize}
+
+\begin{remark}
+Drawback: requires knowledge (or estimation) of normalizing constants for $p_\ell$.
+\end{remark}
+
+\subsection{Parallel Tempering (Replica Exchange)}
+
+Run multiple chains at different temperatures:
+\[
+(x_1, \dots, x_L), \quad x_\ell \sim p_\ell.
+\]
+
+Target:
+\[
+\pi(x_1,\dots,x_L) = \prod_{\ell=1}^L p_\ell(x_\ell).
+\]
+
+Swap proposal:
+\[
+(x_i, x_{i+1}) \to (x_{i+1}, x_i),
+\]
+with acceptance probability
+\[
+\alpha = \min\left\{ \frac{p_i(x_{i+1}) p_{i+1}(x_i)}{p_i(x_i)p_{i+1}(x_{i+1})}, 1 \right\}.
+\]
+
+\begin{remark}
+Advantages:
+\begin{itemize}
+    \item No need for normalizing constants.
+    \item High-temperature chains help low-temperature chains escape modes.
+\end{itemize}
+\end{remark}
+
+\subsection{Sequential Monte Carlo (SMC)}
+
+Construct a sequence of distributions:
+\[
+p_k(x) \propto \tilde p_k(x), \quad k = 1,\dots,L,
+\]
+typically interpolating between easy and target distributions.
+
+\begin{algorithm}[H]
+\caption{Sequential Monte Carlo}
+\begin{algorithmic}[1]
+\State Sample $X_1^{(i)} \sim p_1$
+\For{$k = 2$ to $L$}
+    \State Compute weights:
+    \[
+    w_k^{(i)} \propto \frac{\tilde p_k(X_{k-1}^{(i)})}{\tilde p_{k-1}(X_{k-1}^{(i)})}
+    \]
+    \State Resample particles according to $w_k^{(i)}$
+    \State Move particles: $X_k^{(i)} \sim K_k(X_{k-1}^{(i)}, \cdot)$
+\EndFor
+\State Output $\{X_L^{(i)}\}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+SMC combines:
+\begin{itemize}
+    \item Importance sampling (weights)
+    \item Resampling (to prevent degeneracy)
+    \item MCMC moves (to diversify particles)
+\end{itemize}
+\end{remark}
+
+\subsection{Annealed Importance Sampling (AIS)}
+
+A simplified version of SMC without resampling.
+
+\begin{algorithm}[H]
+\caption{Annealed Importance Sampling}
+\begin{algorithmic}[1]
+\State Sample $X_1^{(i)} \sim p_1$
+\For{$k = 2$ to $L$}
+    \State Sample $X_k^{(i)} \sim K_k(X_{k-1}^{(i)}, \cdot)$
+\EndFor
+\State Compute weights:
+\[
+\tilde w^{(i)} = \prod_{k=2}^L \frac{\tilde p_k(X_k^{(i)})}{\tilde p_{k-1}(X_k^{(i)})}
+\]
+\State Estimate:
+\[
+\E_{p_L}[f(X)] \approx \frac{\sum_i \tilde w^{(i)} f(X_L^{(i)})}{\sum_i \tilde w^{(i)}}
+\]
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+AIS is especially useful for:
+\begin{itemize}
+    \item Estimating partition functions
+    \item Bridging between simple and complex distributions
+\end{itemize}
+\end{remark}
+
+\subsection*{Key Insight}
+
+Tempering and particle methods address the same core issue:
+
+\begin{center}
+\emph{Exploration vs. concentration tradeoff}
+\end{center}
+
+\begin{itemize}
+    \item High temperature $\Rightarrow$ exploration
+    \item Low temperature $\Rightarrow$ accurate sampling
+\end{itemize}
+
+\begin{itemize}
+    \item Tempering methods: move between temperatures
+    \item Particle methods: propagate distributions across temperatures
+\end{itemize}
+
+
 
 \end{document}
