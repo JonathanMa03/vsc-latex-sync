@@ -170,5 +170,922 @@
 \begin{document}
 
 \maketitle
+\tableofcontents
+\chapter{Introduction and Probability Review}
+
+\section{Bayesian vs Frequentist Perspectives}
+
+\begin{definition}
+Probability can be interpreted in two fundamentally different ways:
+\begin{itemize}
+    \item \textbf{Frequentist:} Probability is the long-run relative frequency of an event.
+    \item \textbf{Bayesian:} Probability is a degree of belief about an uncertain quantity.
+\end{itemize}
+\end{definition}
+
+In the Bayesian framework, unknown parameters are treated as random variables. This contrasts with the frequentist view, where parameters are fixed but unknown.
+
+\begin{example}
+Consider a coin flipped $n=10$ times with $7$ heads observed.
+
+\begin{itemize}
+    \item Frequentist estimate: $\hat{\theta} = 0.7$
+    \item Bayesian approach: place a prior $\theta \sim \BetaDist(\alpha,\beta)$
+\end{itemize}
+
+After observing $y=7$ heads, the posterior becomes:
+$$
+\theta \mid y \sim \BetaDist(\alpha + y, \beta + n - y)
+$$
+\end{example}
+
+\section{Bayes' Theorem}
+
+\begin{theorem}[Bayes' Rule]
+For parameter $\theta$ and data $y$,
+$$
+p(\theta \mid y) = \frac{p(y \mid \theta)p(\theta)}{p(y)}
+$$
+where
+$$
+p(y) = \int p(y \mid \theta)p(\theta)\dd \theta
+$$
+\end{theorem}
+
+\begin{remark}
+The posterior is often written up to proportionality:
+$$
+p(\theta \mid y) \propto p(y \mid \theta)p(\theta)
+$$
+\end{remark}
+
+\section{Bernoulli and Binomial Models}
+
+\subsection{Bernoulli Model}
+
+\begin{definition}
+A Bernoulli random variable satisfies:
+$$
+Y \sim \Bern(\theta), \quad P(Y=1)=\theta
+$$
+\end{definition}
+
+\subsection{Binomial Model}
+
+\begin{definition}
+For $n$ independent Bernoulli trials,
+$$
+Y \sim \Bin(n,\theta), \quad P(Y=y|\theta) = \binom{n}{y}\theta^y(1-\theta)^{n-y}
+$$
+\end{definition}
+
+\subsection{Likelihood}
+
+Given observations $y_1,\dots,y_n$, the likelihood is:
+$$
+L(\theta) = \prod_{i=1}^n \theta^{y_i}(1-\theta)^{1-y_i}
+= \theta^{\sum y_i}(1-\theta)^{n-\sum y_i}
+$$
+
+\subsection{Maximum Likelihood Estimation}
+
+\begin{proposition}
+The MLE for $\theta$ in the Bernoulli/Binomial model is:
+$$
+\hat{\theta}_{\text{MLE}} = \bar{y}
+$$
+\end{proposition}
+
+\begin{proof}
+The log-likelihood is:
+$$
+\ell(\theta) = \sum y_i \log \theta + (n-\sum y_i)\log(1-\theta)
+$$
+
+Differentiate:
+$$
+\frac{d\ell}{d\theta} = \frac{\sum y_i}{\theta} - \frac{n-\sum y_i}{1-\theta}
+$$
+
+Set equal to zero:
+$$
+\frac{\sum y_i}{\theta} = \frac{n-\sum y_i}{1-\theta}
+\Rightarrow \theta = \frac{1}{n}\sum y_i
+$$
+\end{proof}
+
+\section{Conjugate Priors: Beta-Binomial Model}
+
+\begin{definition}
+A prior is conjugate if the posterior belongs to the same family as the prior.
+\end{definition}
+
+\begin{proposition}
+If
+$$
+\theta \sim \BetaDist(\alpha,\beta), \quad Y \mid \theta \sim \Bin(n,\theta)
+$$
+then
+$$
+\theta \mid y \sim \BetaDist(\alpha + y, \beta + n - y)
+$$
+\end{proposition}
+
+\begin{proof}
+Posterior:
+$$
+p(\theta \mid y) \propto \theta^y(1-\theta)^{n-y} \cdot \theta^{\alpha-1}(1-\theta)^{\beta-1}
+$$
+
+Combine exponents:
+$$
+p(\theta \mid y) \propto \theta^{\alpha+y-1}(1-\theta)^{\beta+n-y-1}
+$$
+
+which is the kernel of a Beta distribution.
+\end{proof}
+
+\subsection{Posterior Mean}
+
+$$
+\E[\theta \mid y] = \frac{\alpha + y}{\alpha + \beta + n}
+$$
+
+\begin{remark}
+This can be interpreted as a weighted average:
+$$
+\E[\theta \mid y] = w \cdot \frac{\alpha}{\alpha+\beta} + (1-w)\cdot \frac{y}{n}
+$$
+\end{remark}
+
+\section{Credible Intervals and HPD Regions}
+
+\begin{definition}
+An interval $(a,b)$ is a $(1-\alpha)$ credible interval if
+$$
+\Prob(a < \theta < b \mid y) = 1 - \alpha
+$$
+\end{definition}
+
+\begin{definition}
+A highest posterior density (HPD) region $A$ satisfies:
+\begin{itemize}
+    \item $\Prob(\theta \in A \mid y) = 1-\alpha$
+    \item $p(\theta_1 \mid y) > p(\theta_2 \mid y)$ for $\theta_1 \in A$, $\theta_2 \notin A$
+\end{itemize}
+\end{definition}
+
+\section{Posterior Predictive Distribution}
+
+\begin{proposition}
+For a new observation $Z$,
+$$
+p(Z=1 \mid y) = \E[\theta \mid y]
+$$
+\end{proposition}
+
+\begin{proof}
+$$
+p(Z=1 \mid y) = \int p(Z=1 \mid \theta)p(\theta \mid y)\dd \theta
+= \int \theta p(\theta \mid y)\dd \theta = \E[\theta \mid y]
+$$
+\end{proof}
+
+\section{Exponential Family}
+
+\begin{definition}
+A distribution belongs to the exponential family if it can be written as:
+$$
+p(y \mid \theta) = f(y)g(\theta)\exp\{\phi(\theta)u(y)\}
+$$
+\end{definition}
+
+\begin{remark}
+Many common distributions (Normal, Binomial, Poisson) belong to this family, which enables conjugate prior constructions.
+\end{remark}
+
+\section{Prior Specification}
+
+\subsection{Subjective Priors}
+
+Constructed from expert knowledge.
+
+\subsection{Non-informative Priors}
+
+Designed to have minimal influence on the posterior.
+
+\begin{example}
+A flat prior:
+$$
+\pi(\theta) \propto 1
+$$
+\end{example}
+
+\subsection{Jeffreys Prior}
+
+\begin{definition}
+$$
+\pi(\theta) \propto \sqrt{I(\theta)}, \quad I(\theta) = -\E\left[\frac{\partial^2}{\partial \theta^2}\log p(y \mid \theta)\right]
+$$
+\end{definition}
+
+\begin{remark}
+Jeffreys priors are invariant under reparameterization.
+\end{remark}
+
+\section{Poisson-Gamma Model}
+
+\subsection{Model}
+
+$$
+Y_i \iid \Pois(\theta)
+$$
+
+Likelihood:
+$$
+L(\theta) \propto \theta^{\sum y_i} e^{-n\theta}
+$$
+
+\subsection{Prior}
+
+$$
+\theta \sim \Gam(a,b)
+$$
+
+\subsection{Posterior}
+
+\begin{proposition}
+$$
+\theta \mid y \sim \Gam(a + \sum y_i, b + n)
+$$
+\end{proposition}
+
+\section{Preview: Computational Methods}
+
+In many models, posterior distributions cannot be computed analytically. This motivates:
+
+\begin{itemize}
+    \item Monte Carlo integration
+    \item Importance sampling
+    \item Markov Chain Monte Carlo (MCMC)
+\end{itemize}
+
+These methods will be developed in later chapters.
+
+\section{Common Distributions and Identities}
+
+\subsection{Beta and Gamma Functions}
+
+\begin{definition}
+The Gamma function is defined as:
+$$
+\Gamma(a) = \int_0^\infty x^{a-1} e^{-x} \dd x
+$$
+and satisfies:
+$$
+\Gamma(n) = (n-1)! \quad \text{for integer } n
+$$
+\end{definition}
+
+\begin{definition}
+The Beta distribution has density:
+$$
+f(\theta) = \frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)} \theta^{a-1}(1-\theta)^{b-1}
+$$
+\end{definition}
+
+\begin{proposition}
+For $\theta \sim \BetaDist(a,b)$:
+$$
+\E[\theta] = \frac{a}{a+b}, \quad 
+\Var(\theta) = \frac{ab}{(a+b)^2(a+b+1)}
+$$
+\end{proposition}
+
+\subsection{Gamma Distribution}
+
+\begin{definition}
+A Gamma distribution with shape $a$ and rate $b$:
+$$
+f(\theta) = \frac{b^a}{\Gamma(a)} \theta^{a-1} e^{-b\theta}
+$$
+\end{definition}
+
+\begin{proposition}
+$$
+\E[\theta] = \frac{a}{b}, \quad \Var(\theta) = \frac{a}{b^2}
+$$
+\end{proposition}
+
+\begin{remark}
+The Gamma distribution is conjugate to the Poisson likelihood.
+\end{remark}
+
+\section{Sufficiency and Likelihood Structure}
+
+\begin{definition}
+A statistic $T(y)$ is sufficient for $\theta$ if the likelihood can be written as:
+$$
+p(y \mid \theta) = g(T(y), \theta) h(y)
+$$
+\end{definition}
+
+\begin{proposition}
+For:
+\begin{itemize}
+    \item Binomial model: sufficient statistic is $y = \sum y_i$
+    \item Poisson model: sufficient statistic is $\sum y_i$
+\end{itemize}
+\end{proposition}
+
+\begin{remark}
+This reduction is critical in Bayesian updating since posterior distributions depend only on sufficient statistics.
+\end{remark}
+
+\section{Posterior as a Weighted Average}
+
+A key Bayesian insight is that posterior estimates combine prior and data:
+
+\begin{proposition}
+For the Beta-Binomial model:
+$$
+\E[\theta \mid y] = \frac{a+y}{a+b+n}
+$$
+can be written as:
+$$
+\E[\theta \mid y] =
+\frac{a+b}{a+b+n} \cdot \frac{a}{a+b}
++
+\frac{n}{a+b+n} \cdot \frac{y}{n}
+$$
+\end{proposition}
+
+\begin{remark}
+This shows:
+\begin{itemize}
+    \item Prior contributes as pseudo-observations
+    \item Data influence increases with $n$
+\end{itemize}
+\end{remark}
+
+\section{Bias, Variance, and MSE}
+
+\begin{definition}
+Bias of an estimator $\hat{\theta}$:
+$$
+\text{Bias} = \E[\hat{\theta}] - \theta
+$$
+\end{definition}
+
+\begin{definition}
+Mean Squared Error:
+$$
+\text{MSE}(\hat{\theta}) = \Var(\hat{\theta}) + \text{Bias}^2
+$$
+\end{definition}
+
+\begin{remark}
+Bayesian estimators are often biased but achieve lower MSE through shrinkage.
+\end{remark}
+
+\section{Poisson-Gamma Model (Detailed)}
+
+\subsection{Likelihood}
+
+$$
+L(\theta) = \prod_{i=1}^n \frac{\theta^{y_i} e^{-\theta}}{y_i!}
+\propto \theta^{\sum y_i} e^{-n\theta}
+$$
+
+\subsection{Posterior Derivation}
+
+\begin{proof}
+With prior $\theta \sim \Gam(a,b)$:
+$$
+p(\theta \mid y) \propto \theta^{\sum y_i} e^{-n\theta} \cdot \theta^{a-1} e^{-b\theta}
+$$
+
+$$
+= \theta^{a+\sum y_i -1} e^{-(b+n)\theta}
+$$
+
+which is $\Gam(a+\sum y_i, b+n)$.
+\end{proof}
+
+\subsection{Posterior Mean Interpretation}
+
+$$
+\E[\theta \mid y] =
+\frac{b}{b+n} \cdot \frac{a}{b}
++
+\frac{n}{b+n} \cdot \frac{\sum y_i}{n}
+$$
+
+\begin{remark}
+Again, this is a weighted average of prior mean and sample mean.
+\end{remark}
+
+\section{Posterior Predictive Distribution}
+
+\begin{definition}
+The posterior predictive distribution is:
+$$
+p(\tilde{y} \mid y) = \int p(\tilde{y} \mid \theta)p(\theta \mid y)\dd \theta
+$$
+\end{definition}
+
+\begin{remark}
+This integrates out parameter uncertainty, a key advantage over plug-in estimators.
+\end{remark}
+
+\section{Exponential Family and Conjugacy}
+
+\begin{definition}
+A one-parameter exponential family has the form:
+$$
+p(y \mid \phi) = h(y)c(\phi)\exp\{\phi t(y)\}
+$$
+\end{definition}
+
+\begin{proposition}
+For exponential families:
+\begin{itemize}
+    \item Sufficient statistics appear naturally as $t(y)$
+    \item Conjugate priors exist due to exponential structure
+\end{itemize}
+\end{proposition}
+
+\begin{remark}
+Examples:
+\begin{itemize}
+    \item Binomial $\leftrightarrow$ Beta
+    \item Poisson $\leftrightarrow$ Gamma
+    \item Normal $\leftrightarrow$ Normal / Inverse-Gamma
+\end{itemize}
+\end{remark}
+
+\section{Interpretation of Bayesian Updating}
+
+\begin{remark}
+Bayesian inference provides:
+\begin{itemize}
+    \item Full uncertainty quantification (posterior distribution)
+    \item Direct probabilistic statements about parameters
+    \item Natural predictive distributions
+\end{itemize}
+\end{remark}
+
+\begin{example}
+In rare-event estimation, even if $y=0$, the posterior remains well-defined:
+$$
+\theta \mid y \sim \BetaDist(a, b+n)
+$$
+which avoids degenerate estimates like $\hat{\theta}=0$.
+\end{example}
+
+\chapter{The Binomial Model}
+
+\section{Model Setup}
+
+\begin{definition}
+Let $Y \mid \theta \sim \Bin(n,\theta)$ with probability mass function:
+$$
+p(y \mid \theta) = \binom{n}{y}\theta^y(1-\theta)^{n-y}, \quad \theta \in [0,1]
+$$
+\end{definition}
+
+\begin{remark}
+If $Y_i \iid \Bern(\theta)$, then $Y = \sum_{i=1}^n Y_i \sim \Bin(n,\theta)$. The sufficient statistic is $y = \sum Y_i$.
+\end{remark}
+
+\section{Likelihood and Maximum Likelihood Estimation}
+
+Ignoring constants:
+$$
+L(\theta) \propto \theta^y(1-\theta)^{n-y}
+$$
+
+\begin{proposition}
+The log-likelihood is:
+$$
+\ell(\theta) = y\log \theta + (n-y)\log(1-\theta)
+$$
+\end{proposition}
+
+\begin{proposition}
+The MLE for $\theta$ is:
+$$
+\hat{\theta} = \frac{y}{n}
+$$
+\end{proposition}
+
+\begin{proof}
+Differentiate:
+$$
+\frac{d\ell}{d\theta} = \frac{y}{\theta} - \frac{n-y}{1-\theta}
+$$
+
+Set equal to zero:
+$$
+\frac{y}{\theta} = \frac{n-y}{1-\theta}
+\Rightarrow \theta = \frac{y}{n}
+$$
+\end{proof}
+
+\section{Beta Prior}
+
+\begin{definition}
+Assume prior:
+$$
+\theta \sim \BetaDist(a,b), \quad \pi(\theta) \propto \theta^{a-1}(1-\theta)^{b-1}
+$$
+\end{definition}
+
+\begin{remark}
+The parameters $(a,b)$ can be interpreted as prior pseudo-counts:
+$$
+a-1 \text{ successes}, \quad b-1 \text{ failures}
+$$
+\end{remark}
+
+\section{Posterior Distribution}
+
+\begin{theorem}
+If $\theta \sim \BetaDist(a,b)$ and $Y \mid \theta \sim \Bin(n,\theta)$, then:
+$$
+\theta \mid y \sim \BetaDist(a+y, b+n-y)
+$$
+\end{theorem}
+
+\begin{proof}
+$$
+p(\theta \mid y) \propto \theta^y(1-\theta)^{n-y} \cdot \theta^{a-1}(1-\theta)^{b-1}
+$$
+
+$$
+= \theta^{a+y-1}(1-\theta)^{b+n-y-1}
+$$
+\end{proof}
+
+\section{Posterior Summaries}
+
+\subsection{Mean}
+
+$$
+\E[\theta \mid y] = \frac{a+y}{a+b+n}
+$$
+
+\begin{remark}
+This can be written as:
+$$
+\E[\theta \mid y]
+=
+\frac{a+b}{a+b+n}\cdot \frac{a}{a+b}
++
+\frac{n}{a+b+n}\cdot \frac{y}{n}
+$$
+\end{remark}
+
+\subsection{Mode}
+
+$$
+\text{Mode}(\theta \mid y) =
+\frac{a+y-1}{a+b+n-2}
+$$
+
+\subsection{Variance}
+
+$$
+\Var(\theta \mid y)
+=
+\frac{(a+y)(b+n-y)}{(a+b+n)^2(a+b+n+1)}
+$$
+
+\section{Posterior Predictive Distribution}
+
+\begin{definition}
+For a new observation $\tilde{Y}$:
+$$
+p(\tilde{Y}=1 \mid y)
+=
+\int \theta p(\theta \mid y)\dd \theta
+$$
+\end{definition}
+
+\begin{proposition}
+$$
+p(\tilde{Y}=1 \mid y) = \E[\theta \mid y] = \frac{a+y}{a+b+n}
+$$
+\end{proposition}
+
+\section{Credible Intervals}
+
+\begin{definition}
+An interval $(l,u)$ is a $(1-\alpha)$ credible interval if:
+$$
+\Prob(l < \theta < u \mid y) = 1-\alpha
+$$
+\end{definition}
+
+\section{Highest Posterior Density Regions}
+
+\begin{definition}
+A set $A$ is a HPD region if:
+\begin{itemize}
+\item $\Prob(\theta \in A \mid y) = 1-\alpha$
+\item $p(\theta_1 \mid y) > p(\theta_2 \mid y)$ for $\theta_1 \in A$, $\theta_2 \notin A$
+\end{itemize}
+\end{definition}
+
+\section{Shrinkage Interpretation}
+
+\begin{proposition}
+The posterior mean can be written as:
+$$
+\E[\theta \mid y]
+=
+w \cdot \frac{a}{a+b}
++
+(1-w)\cdot \frac{y}{n}
+$$
+
+where:
+$$
+w = \frac{a+b}{a+b+n}
+$$
+\end{proposition}
+
+\begin{remark}
+\begin{itemize}
+\item Small $n$: prior dominates
+\item Large $n$: data dominates
+\end{itemize}
+\end{remark}
+
+\section{Rare Event Example}
+
+\begin{example}
+Suppose:
+$$
+n=20, \quad y=0, \quad \theta \sim \BetaDist(2,20)
+$$
+
+Then:
+$$
+\theta \mid y \sim \BetaDist(2,40)
+$$
+\end{example}
+
+\begin{remark}
+The MLE gives $\hat{\theta}=0$, while the Bayesian estimator remains strictly positive.
+\end{remark}
+
+\section{Frequentist vs Bayesian Interpretation}
+
+\begin{remark}
+Frequentist interval:
+$$
+\Prob(l(Y) < \theta < u(Y) \mid \theta) = 1-\alpha
+$$
+
+Bayesian interval:
+$$
+\Prob(l < \theta < u \mid y) = 1-\alpha
+$$
+\end{remark}
+
+\chapter{Poisson Model and Exponential Families}
+
+\section{Poisson Model}
+
+\begin{definition}
+A random variable $Y$ follows a Poisson distribution with rate $\theta > 0$ if:
+$$
+Y \mid \theta \sim \Pois(\theta), \quad
+p(y \mid \theta) = \frac{\theta^y e^{-\theta}}{y!}, \quad y \in \N
+$$
+\end{definition}
+
+\begin{proposition}
+For $Y \sim \Pois(\theta)$:
+$$
+\E[Y] = \theta, \quad \Var(Y) = \theta
+$$
+\end{proposition}
+
+\begin{remark}
+The equality of mean and variance is a defining feature of the Poisson model. Large deviations between sample mean and variance indicate model misspecification.
+\end{remark}
+
+\section{Likelihood and Sufficiency}
+
+Let $Y_1,\dots,Y_n \iid \Pois(\theta)$. The joint likelihood is:
+$$
+p(y_1,\dots,y_n \mid \theta)
+= \prod_{i=1}^n \frac{\theta^{y_i} e^{-\theta}}{y_i!}
+= c(y)\,\theta^{\sum y_i} e^{-n\theta}
+$$
+
+\begin{proposition}
+The sufficient statistic is:
+$$
+T(y) = \sum_{i=1}^n y_i
+$$
+\end{proposition}
+
+\begin{remark}
+All information about $\theta$ is contained in the total count $\sum y_i$.
+\end{remark}
+
+\section{Maximum Likelihood Estimation}
+
+\begin{proposition}
+The MLE for $\theta$ is:
+$$
+\hat{\theta} = \bar{y} = \frac{1}{n}\sum_{i=1}^n y_i
+$$
+\end{proposition}
+
+\begin{proof}
+Log-likelihood:
+$$
+\ell(\theta) = \sum y_i \log \theta - n\theta
+$$
+
+Differentiate:
+$$
+\frac{d\ell}{d\theta} = \frac{\sum y_i}{\theta} - n
+$$
+
+Set to zero:
+$$
+\theta = \frac{1}{n}\sum y_i
+$$
+\end{proof}
+
+\section{Gamma Prior}
+
+\begin{definition}
+Assume prior:
+$$
+\theta \sim \Gam(a,b), \quad
+\pi(\theta) = \frac{b^a}{\Gamma(a)} \theta^{a-1} e^{-b\theta}
+$$
+\end{definition}
+
+\begin{proposition}
+$$
+\E[\theta] = \frac{a}{b}, \quad \Var(\theta) = \frac{a}{b^2}
+$$
+\end{proposition}
+
+\section{Posterior Distribution}
+
+\begin{theorem}
+If $\theta \sim \Gam(a,b)$ and $Y_i \iid \Pois(\theta)$, then:
+$$
+\theta \mid y \sim \Gam\left(a + \sum y_i,\; b + n\right)
+$$
+\end{theorem}
+
+\begin{proof}
+$$
+p(\theta \mid y)
+\propto \theta^{\sum y_i} e^{-n\theta} \cdot \theta^{a-1} e^{-b\theta}
+$$
+
+$$
+= \theta^{a+\sum y_i -1} e^{-(b+n)\theta}
+$$
+\end{proof}
+
+\section{Posterior Summaries}
+
+\subsection{Mean}
+
+$$
+\E[\theta \mid y]
+= \frac{a + \sum y_i}{b + n}
+$$
+
+\begin{remark}
+This can be written as:
+$$
+\E[\theta \mid y]
+=
+\frac{b}{b+n}\cdot \frac{a}{b}
++
+\frac{n}{b+n}\cdot \frac{\sum y_i}{n}
+$$
+\end{remark}
+
+\subsection{Variance}
+
+$$
+\Var(\theta \mid y)
+=
+\frac{a + \sum y_i}{(b+n)^2}
+$$
+
+\section{Posterior Predictive Distribution}
+
+\begin{definition}
+For a new observation $\tilde{Y}$:
+$$
+p(\tilde{y} \mid y)
+=
+\int p(\tilde{y} \mid \theta)p(\theta \mid y)\dd \theta
+$$
+\end{definition}
+
+\begin{remark}
+This results in a negative binomial distribution, reflecting overdispersion relative to the Poisson model.
+\end{remark}
+
+\section{Example: Birth Rate Comparison}
+
+\begin{example}
+Suppose:
+\begin{itemize}
+\item Group 1: $n_1=111$, $\sum y_i = 217$
+\item Group 2: $n_2=44$, $\sum y_i = 66$
+\item Prior: $\theta \sim \Gam(2,1)$
+\end{itemize}
+
+Posteriors:
+$$
+\theta_1 \mid y \sim \Gam(219,112), \quad
+\theta_2 \mid y \sim \Gam(68,45)
+$$
+\end{example}
+
+\section{Exponential Family Representation}
+
+\begin{definition}
+A distribution belongs to the exponential family if:
+$$
+p(y \mid \phi) = h(y)c(\phi)\exp\{\phi t(y)\}
+$$
+\end{definition}
+
+\subsection{Poisson as an Exponential Family}
+
+\begin{proposition}
+The Poisson distribution can be written as:
+$$
+p(y \mid \theta)
+= \frac{1}{y!}\exp\{y\log \theta - \theta\}
+$$
+\end{proposition}
+
+\begin{remark}
+This corresponds to:
+$$
+t(y) = y, \quad \phi = \log \theta
+$$
+\end{remark}
+
+\section{General Exponential Family Structure}
+
+\begin{definition}
+A one-parameter exponential family has the form:
+$$
+p(y \mid \phi) = h(y)c(\phi)\exp\{\phi t(y)\}
+$$
+\end{definition}
+
+\begin{proposition}
+For exponential families:
+\begin{itemize}
+\item $t(y)$ is a sufficient statistic
+\item Conjugate priors exist due to exponential structure
+\end{itemize}
+\end{proposition}
+
+\begin{remark}
+Common examples:
+\begin{itemize}
+\item Binomial $\leftrightarrow$ Beta
+\item Poisson $\leftrightarrow$ Gamma
+\item Normal $\leftrightarrow$ Normal / Inverse-Gamma
+\end{itemize}
+\end{remark}
+
+\section{Interpretation and Model Limitations}
+
+\begin{remark}
+The Poisson model assumes:
+\begin{itemize}
+\item independence of events
+\item constant rate $\theta$
+\item equal mean and variance
+\end{itemize}
+\end{remark}
+
+\begin{remark}
+If variance exceeds the mean, a negative binomial model may be more appropriate.
+\end{remark}
+
+
 
 \end{document}
