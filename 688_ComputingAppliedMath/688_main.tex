@@ -170,5 +170,5514 @@
 \begin{document}
 
 \maketitle
+\tableofcontents
+
+\part{Applied Mathematics}
+
+\chapter{The Discrete Fourier Transform and Fast Fourier Transform}
+
+\section{The Discrete Fourier Transform}
+
+\begin{definition}
+Let $x = (x_0, \ldots, x_{N-1}) \in \C^N$. The \emph{Discrete Fourier Transform (DFT)} of $x$ is the vector $\hat{x} \in \C^N$ defined by
+\[
+\hat{x}_k = \frac{1}{\sqrt{N}} \sum_{j=0}^{N-1} x_j e^{-2\pi i k j / N}, \quad k = 0, \ldots, N-1.
+\]
+\end{definition}
+
+The DFT is a linear transformation mapping the time domain representation $x$ to its frequency domain representation $\hat{x}$.
+
+\subsection{Matrix Representation}
+
+\begin{proposition}
+The DFT can be written as a matrix-vector multiplication
+\[
+\hat{x} = \frac{1}{\sqrt{N}} M_N x,
+\]
+where $M_N \in \C^{N \times N}$ has entries
+\[
+(M_N)_{k,j} = e^{-2\pi i k j / N}.
+\]
+\end{proposition}
+
+\begin{proof}
+This follows directly from the definition of the DFT by identifying the coefficients multiplying each $x_j$ in the sum defining $\hat{x}_k$.
+\end{proof}
+
+\subsection{Periodicity}
+
+\begin{proposition}
+The DFT is periodic in the frequency index:
+\[
+\hat{x}_{k+N} = \hat{x}_k \quad \text{for all } k \in \Z.
+\]
+\end{proposition}
+
+\begin{proof}
+\[
+\hat{x}_{k+N}
+= \frac{1}{\sqrt{N}} \sum_{j=0}^{N-1} x_j e^{-2\pi i (k+N)j/N}
+= \frac{1}{\sqrt{N}} \sum_{j=0}^{N-1} x_j e^{-2\pi i k j/N} e^{-2\pi i j}.
+\]
+Since $e^{-2\pi i j} = 1$ for all integers $j$, the result follows.
+\end{proof}
+
+Thus $\hat{x}_k = \hat{x}_{k \bmod N}$, so frequencies are defined modulo $N$.
+
+\section{The Inverse Transform}
+
+\begin{definition}
+The inverse DFT (IDFT) is given by
+\[
+x_k = \frac{1}{\sqrt{N}} \sum_{j=0}^{N-1} \hat{x}_j e^{2\pi i k j / N}, \quad k = 0, \ldots, N-1.
+\]
+\end{definition}
+
+\begin{theorem}
+The DFT is unitary. In particular,
+\[
+M_N^{-1} = M_N^*,
+\]
+and the inverse transform recovers the original vector:
+\[
+x = \frac{1}{\sqrt{N}} M_N^* \hat{x}.
+\]
+\end{theorem}
+
+\begin{proof}
+Consider the inner product of two columns $k$ and $\ell$ of $M_N$:
+\[
+\sum_{j=0}^{N-1} e^{-2\pi i k j/N} \overline{e^{-2\pi i \ell j/N}}
+= \sum_{j=0}^{N-1} e^{-2\pi i (k-\ell)j/N}.
+\]
+If $k = \ell$, this equals $N$. Otherwise it is a geometric series:
+\[
+\sum_{j=0}^{N-1} r^j = \frac{1-r^N}{1-r} = 0,
+\]
+since $r = e^{-2\pi i (k-\ell)/N} \neq 1$ but $r^N = 1$.
+
+Thus the columns are orthogonal and have norm $\sqrt{N}$, so
+\[
+\frac{1}{\sqrt{N}} M_N
+\]
+is unitary, proving the result.
+\end{proof}
+
+\section{Time and Frequency Domain Interpretation}
+
+\begin{definition}
+For $k \in \{0,\ldots,N-1\}$, define the discrete complex sinusoid
+\[
+\text{DCS}(k)_j = e^{2\pi i j k / N}, \quad j = 0, \ldots, N-1.
+\]
+\end{definition}
+
+\begin{proposition}
+The inverse DFT matrix can be written as
+\[
+Q_N = [\text{DCS}(0), \ldots, \text{DCS}(N-1)].
+\]
+\end{proposition}
+
+\begin{corollary}
+Every signal admits a frequency decomposition:
+\[
+x = \sum_{k=0}^{N-1} \hat{x}_k \, \text{DCS}(k).
+\]
+\end{corollary}
+
+\begin{remark}
+This shows that the DFT expresses $x$ as a superposition of orthogonal frequency components. The coefficient $\hat{x}_k$ measures the contribution of frequency $k/N$.
+\end{remark}
+
+\section{The Fast Fourier Transform}
+
+\subsection{Even–Odd Decomposition}
+
+Let
+\[
+x_E = (x_0, x_2, \ldots, x_{N-2}), \quad
+x_O = (x_1, x_3, \ldots, x_{N-1}).
+\]
+
+\begin{proposition}
+The DFT satisfies the recursion
+\[
+\hat{x}_k = \hat{x}_E[k] + e^{-2\pi i k/N} \hat{x}_O[k], \quad k = 0, \ldots, \frac{N}{2}-1,
+\]
+and
+\[
+\hat{x}_{k+N/2} = \hat{x}_E[k] - e^{-2\pi i k/N} \hat{x}_O[k].
+\]
+\end{proposition}
+
+\begin{proof}
+Split the sum defining $\hat{x}_k$ into even and odd indices:
+\[
+\hat{x}_k
+= \sum_{j=0}^{N/2-1} x_{2j} e^{-2\pi i k(2j)/N}
++ \sum_{j=0}^{N/2-1} x_{2j+1} e^{-2\pi i k(2j+1)/N}.
+\]
+Factor:
+\[
+= \sum_{j=0}^{N/2-1} x_E[j] e^{-2\pi i k j/(N/2)}
++ e^{-2\pi i k/N} \sum_{j=0}^{N/2-1} x_O[j] e^{-2\pi i k j/(N/2)}.
+\]
+Recognizing DFTs of length $N/2$ gives the result.
+\end{proof}
+
+\subsection{Matrix Factorization}
+
+\begin{proposition}
+Let $B_N$ be the permutation matrix that maps
+\[
+(x_0, x_1, \ldots, x_{N-1}) \mapsto (x_0, x_2, \ldots, x_{N-2}, x_1, x_3, \ldots, x_{N-1}),
+\]
+and let $A_{N/2} = \diag(e^{-2\pi i k/N})$. Then
+\[
+M_N =
+\begin{bmatrix}
+I_{N/2} & A_{N/2} \\
+I_{N/2} & -A_{N/2}
+\end{bmatrix}
+\begin{bmatrix}
+M_{N/2} & 0 \\
+0 & M_{N/2}
+\end{bmatrix}
+B_N.
+\]
+\end{proposition}
+
+This factorization reduces a size-$N$ DFT into two size-$N/2$ DFTs.
+
+\subsection{Recursive Structure}
+
+By recursively applying the factorization, the DFT reduces to repeated applications of
+\[
+M_2 =
+\begin{bmatrix}
+1 & 1 \\
+1 & -1
+\end{bmatrix}.
+\]
+
+\subsection{Complexity}
+
+\begin{theorem}
+The FFT computes the DFT in $\mathcal{O}(N \log N)$ operations.
+\end{theorem}
+
+\begin{proof}
+At each recursion level, the problem splits into two subproblems of size $N/2$, and combining them requires $\mathcal{O}(N)$ operations. The recursion depth is $\log_2 N$, giving total cost $\mathcal{O}(N \log N)$.
+\end{proof}
+
+\begin{remark}
+The efficiency arises from the sparsity of intermediate matrices: each row contains only two nonzero entries, so matrix-vector multiplication is linear in $N$.
+\end{remark}
+
+\section{Exercises}
+
+\begin{exercise}
+Compute the DFT explicitly for small vectors:
+\begin{enumerate}
+\item Derive a closed-form expression for the DFT of a vector in $\C^2$.
+\item Derive the DFT matrix $M_4$ and compute $\hat{x}$ for a general vector $x \in \C^4$.
+\end{enumerate}
+\end{exercise}
+
+\chapter{The Delta Method}
+
+\section{Overview}
+
+The delta method approximates moments of smooth functions of random variables. If $X$ is concentrated near its mean $\mu_X$ and $f$ is smooth near $\mu_X$, then $f(X)$ is concentrated near $f(\mu_X)$.
+
+\section{One-Dimensional Delta Method}
+
+Let $X$ have mean $\mu_X$ and variance $\sigma_X^2$. Suppose $f:\R \to \R$ is twice continuously differentiable near $\mu_X$.
+
+Using a second-order Taylor expansion around $\mu_X$,
+\[
+f(X) \approx f(\mu_X) + f'(\mu_X)(X-\mu_X)
++ \frac{1}{2}f''(\mu_X)(X-\mu_X)^2.
+\]
+
+Taking expectations gives
+\[
+\E[f(X)] \approx f(\mu_X) + \frac{1}{2}f''(\mu_X)\sigma_X^2.
+\]
+
+\begin{proposition}
+If $X$ is concentrated near $\mu_X$, then
+\[
+\E[f(X)] \approx f(\mu_X) + \frac{1}{2}f''(\mu_X)\Var(X).
+\]
+\end{proposition}
+
+\begin{proof}
+Taking expectations in the second-order Taylor approximation,
+\[
+\E[f(X)]
+\approx f(\mu_X)
++ f'(\mu_X)\E[X-\mu_X]
++ \frac{1}{2}f''(\mu_X)\E[(X-\mu_X)^2].
+\]
+Since $\E[X-\mu_X]=0$ and $\E[(X-\mu_X)^2]=\sigma_X^2$, the result follows.
+\end{proof}
+
+For the variance, use the first-order Taylor approximation:
+\[
+f(X) \approx f(\mu_X) + f'(\mu_X)(X-\mu_X).
+\]
+Thus
+\[
+\Var(f(X)) \approx [f'(\mu_X)]^2\sigma_X^2.
+\]
+
+\begin{proposition}
+The first-order delta method gives
+\[
+\Var(f(X)) \approx [f'(\mu_X)]^2\Var(X).
+\]
+\end{proposition}
+
+\section{Examples}
+
+\begin{example}
+Let $R$ be a random radius with mean $\mu_R$ and variance $\sigma_R^2$. The area of a circle is
+\[
+A = f(R) = \pi R^2.
+\]
+Since $f'(r)=2\pi r$ and $f''(r)=2\pi$,
+\[
+\E[A] \approx \pi \mu_R^2 + \pi \sigma_R^2.
+\]
+This is exact because
+\[
+\E[R^2] = \Var(R) + (\E[R])^2.
+\]
+The approximate variance is
+\[
+\Var(A) \approx (2\pi \mu_R)^2\sigma_R^2
+= 4\pi^2 \mu_R^2\sigma_R^2.
+\]
+\end{example}
+
+\begin{example}
+Let $W$ be a measured weight with mean $\mu_W$ and variance $\sigma_W^2$, and suppose density $d$ is fixed. Define
+\[
+V = f(W) = \frac{1}{d}W^{1/3}.
+\]
+Then
+\[
+f'(w)=\frac{1}{3d}w^{-2/3},
+\qquad
+f''(w)=-\frac{2}{9d}w^{-5/3}.
+\]
+Therefore,
+\[
+\E[V] \approx \frac{1}{d}\mu_W^{1/3}
+-\frac{1}{9d}\mu_W^{-5/3}\sigma_W^2,
+\]
+and
+\[
+\Var(V) \approx \frac{1}{9d^2}\mu_W^{-4/3}\sigma_W^2.
+\]
+\end{example}
+
+\section{Two-Dimensional Delta Method}
+
+Let $U$ and $V$ have means $\mu_U,\mu_V$, variances $\sigma_U^2,\sigma_V^2$, and covariance $\sigma_{U,V}$. Let
+\[
+W=f(U,V),
+\]
+where $f:\R^2\to\R$ is smooth.
+
+Using a second-order Taylor expansion around $(\mu_U,\mu_V)$,
+\[
+\begin{aligned}
+f(U,V)
+&\approx f(\mu_U,\mu_V)
++ f_u(\mu_U,\mu_V)(U-\mu_U)
++ f_v(\mu_U,\mu_V)(V-\mu_V) \\
+&\quad
++ \frac{1}{2}f_{uu}(\mu_U,\mu_V)(U-\mu_U)^2
++ \frac{1}{2}f_{vv}(\mu_U,\mu_V)(V-\mu_V)^2 \\
+&\quad
++ f_{uv}(\mu_U,\mu_V)(U-\mu_U)(V-\mu_V).
+\end{aligned}
+\]
+
+Thus
+\[
+\E[f(U,V)]
+\approx
+f(\mu_U,\mu_V)
++ \frac{1}{2}f_{uu}(\mu_U,\mu_V)\sigma_U^2
++ \frac{1}{2}f_{vv}(\mu_U,\mu_V)\sigma_V^2
++ f_{uv}(\mu_U,\mu_V)\sigma_{U,V}.
+\]
+
+Using the first-order approximation,
+\[
+\Var(f(U,V))
+\approx
+f_u(\mu_U,\mu_V)^2\sigma_U^2
++
+f_v(\mu_U,\mu_V)^2\sigma_V^2
++
+2f_u(\mu_U,\mu_V)f_v(\mu_U,\mu_V)\sigma_{U,V}.
+\]
+
+\section{Ratio Example}
+
+Let
+\[
+f(u,v)=\frac{v}{u}.
+\]
+Then
+\[
+f_u(u,v)=-\frac{v}{u^2},
+\qquad
+f_v(u,v)=\frac{1}{u},
+\]
+and
+\[
+f_{uu}(u,v)=\frac{2v}{u^3},
+\qquad
+f_{vv}(u,v)=0,
+\qquad
+f_{uv}(u,v)=-\frac{1}{u^2}.
+\]
+
+Therefore,
+\[
+\E\left[\frac{V}{U}\right]
+\approx
+\frac{\mu_V}{\mu_U}
++
+\frac{\mu_V}{\mu_U^3}\sigma_U^2
+-
+\frac{1}{\mu_U^2}\sigma_{U,V},
+\]
+and
+\[
+\Var\left(\frac{V}{U}\right)
+\approx
+\frac{\mu_V^2}{\mu_U^4}\sigma_U^2
++
+\frac{1}{\mu_U^2}\sigma_V^2
+-
+\frac{2\mu_V}{\mu_U^3}\sigma_{U,V}.
+\]
+
+\section{Functions of Sample Means}
+
+Let $X_1,\ldots,X_n \iid X$ with $\E[X]=\mu_X$ and $\Var(X)=\sigma_X^2<\infty$. Then
+\[
+\Var(\bar{X})=\frac{\sigma_X^2}{n}.
+\]
+By Chebyshev's inequality,
+\[
+\Prob(|\bar{X}-\mu_X|>\varepsilon)
+\le
+\frac{\sigma_X^2}{n\varepsilon^2}
+\to 0.
+\]
+Thus $\bar{X}$ becomes concentrated near $\mu_X$ as $n\to\infty$, making the delta method especially useful for nonlinear functions of estimators.
+
+\begin{example}
+Let $\bar{Y}$ and $\bar{X}$ be independent sample means with
+\[
+\E[\bar{Y}]=\mu_Y,
+\qquad
+\E[\bar{X}]=\mu_X,
+\]
+\[
+\Var(\bar{Y})=\frac{\sigma_Y^2}{n},
+\qquad
+\Var(\bar{X})=\frac{\sigma_X^2}{n},
+\qquad
+\Cov(\bar{X},\bar{Y})=0.
+\]
+For the ratio estimator $\bar{Y}/\bar{X}$,
+\[
+\E\left[\frac{\bar{Y}}{\bar{X}}\right]
+\approx
+\frac{\mu_Y}{\mu_X}
++
+\frac{\mu_Y\sigma_X^2}{\mu_X^3 n},
+\]
+and
+\[
+\Var\left(\frac{\bar{Y}}{\bar{X}}\right)
+\approx
+\frac{\mu_Y^2\sigma_X^2}{\mu_X^4 n}
++
+\frac{\sigma_Y^2}{\mu_X^2 n}.
+\]
+\end{example}
+
+\begin{remark}
+The delta method improves when the input random variables are tightly concentrated. This can happen because the underlying variance is small, or because the input is an estimator such as a sample mean whose variance decreases with $n$.
+\end{remark}
+
+
+\chapter{Monte Carlo Methods}
+
+\section{Overview}
+
+Monte Carlo methods approximate quantities involving random objects by simulation. Let $X$ be a random object taking values in a space $\mathcal{X}$. Common choices include finite sets, $\R$, $\R^k$, or function spaces such as $C[0,T]$.
+
+The general goal is to compute
+\[
+\mu = \E[g(X)]
+\]
+for some function $g:\mathcal{X}\to\R$.
+
+If $g=\ind_A$, then
+\[
+\E[g(X)] = \Prob(X\in A),
+\]
+so probability estimation is a special case of expectation estimation.
+
+\section{Monte Carlo Estimation}
+
+Let $X^{(1)},\ldots,X^{(n)}$ be iid samples from the distribution of $X$. Define
+\[
+\hat{\mu}_n = \frac{1}{n}\sum_{i=1}^n g(X^{(i)}).
+\]
+
+\begin{theorem}
+If $\E[|g(X)|]<\infty$, then
+\[
+\hat{\mu}_n \as \mu.
+\]
+\end{theorem}
+
+\begin{proof}
+This follows directly from the strong law of large numbers applied to the iid random variables $g(X^{(1)}),\ldots,g(X^{(n)})$.
+\end{proof}
+
+\begin{theorem}
+If $\sigma^2=\Var(g(X))<\infty$, then
+\[
+\sqrt{n}(\hat{\mu}_n-\mu)\convd \Normal(0,\sigma^2).
+\]
+\end{theorem}
+
+\begin{proof}
+This follows from the central limit theorem applied to $g(X^{(1)}),\ldots,g(X^{(n)})$.
+\end{proof}
+
+An approximate large-sample confidence interval is
+\[
+\hat{\mu}_n
+\pm
+z_{\alpha/2}\frac{\sigma}{\sqrt{n}},
+\]
+where $z_{\alpha/2}=\Phi^{-1}(1-\alpha/2)$.
+
+\begin{remark}
+Monte Carlo accuracy improves at rate $1/\sqrt{n}$. This convergence rate does not directly depend on the dimension of $\mathcal{X}$, which is one reason Monte Carlo methods are useful in high-dimensional problems.
+\end{remark}
+
+\section{Random Number Generation}
+
+Most Monte Carlo methods begin with pseudo-random draws
+\[
+U\sim \mathrm{Uniform}(0,1).
+\]
+These are transformed into samples from more complicated distributions using methods such as inversion or acceptance--rejection.
+
+\section{The Inversion Method}
+
+\begin{theorem}
+Let $U\sim \mathrm{Uniform}(0,1)$ and suppose $F$ is a strictly increasing continuous CDF. Then
+\[
+X = F^{-1}(U)
+\]
+has CDF $F$.
+\end{theorem}
+
+\begin{proof}
+For any $x$,
+\[
+\Prob(X\le x)
+=
+\Prob(F^{-1}(U)\le x)
+=
+\Prob(U\le F(x)).
+\]
+Since $U\sim \mathrm{Uniform}(0,1)$,
+\[
+\Prob(U\le F(x))=F(x).
+\]
+Thus $X$ has CDF $F$.
+\end{proof}
+
+\begin{example}
+Let $X\sim \Exp(\lambda)$, so
+\[
+F_X(x)=1-e^{-\lambda x}, \quad x>0.
+\]
+Set $u=1-e^{-\lambda x}$. Solving for $x$ gives
+\[
+F_X^{-1}(u)=-\frac{\log(1-u)}{\lambda}.
+\]
+Therefore, if $U\sim \mathrm{Uniform}(0,1)$, then
+\[
+X=-\frac{\log(1-U)}{\lambda}
+\]
+has an exponential distribution with rate $\lambda$.
+\end{example}
+
+\section{Acceptance--Rejection Sampling}
+
+Suppose the target density is $f$ and the proposal density is $g$. Assume there exists $c>0$ such that
+\[
+f(x)\le c g(x)
+\]
+for all $x$.
+
+The acceptance--rejection algorithm is:
+
+\begin{algorithm}[H]
+\caption{Acceptance--Rejection Sampling}
+\begin{algorithmic}[1]
+\Repeat
+    \State Generate $X\sim g$
+    \State Generate $U\sim \mathrm{Uniform}(0,1)$
+\Until{$U \le \dfrac{f(X)}{c g(X)}$}
+\State \Return $X$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}
+The accepted value $X$ has density $f$.
+\end{theorem}
+
+\begin{proof}
+The joint proposal samples points under the envelope $c g(x)$. Conditional on proposing $X=x$, the point is accepted with probability
+\[
+\frac{f(x)}{c g(x)}.
+\]
+Thus the density of an accepted proposal is proportional to
+\[
+g(x)\frac{f(x)}{c g(x)}
+=
+\frac{1}{c}f(x).
+\]
+After normalization, the accepted density is $f(x)$.
+\end{proof}
+
+\begin{proposition}
+The acceptance probability is $1/c$, and the expected number of proposals required for one accepted sample is $c$.
+\end{proposition}
+
+\begin{proof}
+The acceptance probability is
+\[
+\int g(x)\frac{f(x)}{c g(x)}\dd x
+=
+\frac{1}{c}\int f(x)\dd x
+=
+\frac{1}{c}.
+\]
+The number of proposals until acceptance is geometric with success probability $1/c$, so its expectation is $c$.
+\end{proof}
+
+\section{Example: Sampling a Standard Normal}
+
+The standard normal density is
+\[
+f(x)=\frac{1}{\sqrt{2\pi}}e^{-x^2/2}.
+\]
+Use the Laplace proposal
+\[
+g(x)=\frac{1}{2}e^{-|x|}.
+\]
+
+For $x>0$,
+\[
+\frac{f(x)}{g(x)}
+=
+\frac{2}{\sqrt{2\pi}}e^{-x^2/2+x}.
+\]
+Maximize the exponent:
+\[
+-\frac{x^2}{2}+x
+=
+-\frac{1}{2}(x-1)^2+\frac{1}{2}.
+\]
+The maximum occurs at $x=1$, giving
+\[
+c
+=
+\frac{2}{\sqrt{2\pi}}e^{1/2}
+=
+\sqrt{\frac{2e}{\pi}}
+<1.32.
+\]
+Therefore the acceptance probability is approximately
+\[
+\frac{1}{c}\approx 0.76.
+\]
+
+To sample from the Laplace proposal:
+\begin{enumerate}
+\item Generate $Y\sim \Exp(1)$.
+\item Generate $V\sim \mathrm{Uniform}(0,1)$.
+\item Set
+\[
+X=
+\begin{cases}
+Y, & V\le 1/2,\\
+-Y, & V>1/2.
+\end{cases}
+\]
+\end{enumerate}
+
+\section{Examples of Monte Carlo Problems}
+
+\begin{example}
+For coin tossing, let $X=(X_1,\ldots,X_n)\in\{0,1\}^n$. Monte Carlo can estimate quantities such as the probability of a run of 15 consecutive heads in 100 flips or the expected longest run length.
+\end{example}
+
+\begin{example}
+For a shuffled deck, let $X$ be a random permutation of 52 cards. Monte Carlo can estimate probabilities such as all four aces appearing in one bridge hand or the expected number of suits represented in a hand.
+\end{example}
+
+\begin{example}
+For a stochastic process $X=\{X_t:t\in[0,T]\}$, Monte Carlo can estimate functionals such as
+\[
+\Prob(X_t>\tau_U)
+\]
+or
+\[
+\E\left[\int_0^T X_t^2\dd t\right].
+\]
+\end{example}
+
+\section{Summary}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.25\textwidth}
+>{\raggedright\arraybackslash}p{0.30\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Method & Key idea & Notes \\
+\midrule
+Monte Carlo estimation
+& Approximate $\E[g(X)]$ by sample averages
+& Accuracy improves at rate $1/\sqrt{n}$ \\
+
+Inversion method
+& Use $X=F^{-1}(U)$
+& Exact when the inverse CDF is available \\
+
+Acceptance--rejection
+& Propose from $g$ and accept with probability $f(X)/(cg(X))$
+& Efficiency depends on choosing a small envelope constant $c$ \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\chapter{Markov Chains}
+
+\section{Sampling Dependent Random Variables}
+
+Suppose $X$ and $Y$ have joint probability mass function
+\[
+\begin{array}{c|cc}
+\Prob(X=x,Y=y) & y=0 & y=1 \\
+\hline
+x=0 & 1/12 & 2/12 \\
+x=1 & 6/12 & 3/12
+\end{array}
+\]
+
+There are two natural ways to sample from this joint distribution.
+
+\subsection{Sampling Using a Single Variable}
+
+Define a random variable $Z$ taking values in $\{0,1,2,3\}$ with
+\[
+\Prob(Z=0)=\frac{1}{12}, \quad
+\Prob(Z=1)=\frac{2}{12}, \quad
+\Prob(Z=2)=\frac{6}{12}, \quad
+\Prob(Z=3)=\frac{3}{12}.
+\]
+Define a mapping $f$ by
+\[
+f(0)=(0,0), \quad
+f(1)=(0,1), \quad
+f(2)=(1,0), \quad
+f(3)=(1,1).
+\]
+Then sampling $Z$ and returning $f(Z)$ produces a draw from the joint distribution of $(X,Y)$.
+
+\subsection{Conditional Sampling}
+
+Alternatively, sample $X$ first from its marginal distribution:
+\[
+\Prob(X=0)=\frac{3}{12}, \qquad
+\Prob(X=1)=\frac{9}{12}.
+\]
+
+Then sample $Y$ conditionally on the observed value of $X$. If $X=0$,
+\[
+\Prob(Y=0|X=0)=\frac{1/12}{3/12}=\frac{1}{3},
+\qquad
+\Prob(Y=1|X=0)=\frac{2/12}{3/12}=\frac{2}{3}.
+\]
+If $X=1$,
+\[
+\Prob(Y=0|X=1)=\frac{6/12}{9/12}=\frac{2}{3},
+\qquad
+\Prob(Y=1|X=1)=\frac{3/12}{9/12}=\frac{1}{3}.
+\]
+
+\begin{proposition}
+For any two discrete random variables $X$ and $Y$,
+\[
+\Prob(X=x,Y=y)=\Prob(X=x)\Prob(Y=y|X=x).
+\]
+Therefore, sampling $X$ from its marginal distribution and then sampling $Y$ from its conditional distribution given $X$ produces a draw from the joint distribution.
+\end{proposition}
+
+\begin{proof}
+The identity follows from the definition of conditional probability:
+\[
+\Prob(Y=y|X=x)=\frac{\Prob(X=x,Y=y)}{\Prob(X=x)}.
+\]
+Multiplying both sides by $\Prob(X=x)$ gives the result.
+\end{proof}
+
+\section{Sampling Multiple Dependent Variables}
+
+For random variables $X_0,\ldots,X_{n-1}$, the joint distribution can be decomposed as
+\[
+\Prob(X_0=x_0,\ldots,X_{n-1}=x_{n-1})
+=
+\Prob(X_0=x_0)
+\prod_{k=1}^{n-1}
+\Prob(X_k=x_k|X_0=x_0,\ldots,X_{k-1}=x_{k-1}).
+\]
+
+This suggests the following sampling procedure:
+\begin{enumerate}
+\item Sample $X_0$ from its marginal distribution.
+\item Sample $X_1$ given $X_0$.
+\item Sample $X_2$ given $(X_0,X_1)$.
+\item Continue sampling $X_k$ given the previously sampled values.
+\end{enumerate}
+
+The difficulty is that the conditional distributions
+\[
+\Prob(X_k|X_0,\ldots,X_{k-1})
+\]
+can become very complicated as $k$ grows.
+
+\section{The Markov Assumption}
+
+The Markov assumption simplifies this dependence structure by assuming that the future depends on the past only through the present.
+
+\begin{definition}
+A sequence of random variables $X_0,X_1,\ldots$ satisfies the Markov property if
+\[
+\Prob(X_{t+1}=j|X_0,\ldots,X_t)
+=
+\Prob(X_{t+1}=j|X_t)
+\]
+for all states $j$ and all times $t$.
+\end{definition}
+
+\begin{remark}
+The Markov property does not say that the variables are independent. It says that conditional on the current state, the earlier history provides no additional information about the next state.
+\end{remark}
+
+\section{Markov Chains}
+
+\begin{definition}
+A Markov chain with finite state space
+\[
+S=\{0,1,\ldots,K-1\}
+\]
+is a sequence $X_0,X_1,\ldots$ such that each $X_t\in S$ and
+\[
+\Prob(X_{t+1}=j|X_0,\ldots,X_t)
+=
+\Prob(X_{t+1}=j|X_t)
+\]
+for all $i,j\in S$.
+\end{definition}
+
+\subsection{Transition Matrices}
+
+\begin{definition}
+The transition matrix at time $t$ is the matrix $Q(t)$ whose entries are
+\[
+q_{ij}(t)=\Prob(X_{t+1}=j|X_t=i).
+\]
+\end{definition}
+
+If $Q(t)$ is the same for all $t$, then the chain is time-homogeneous, and we write $Q$ instead of $Q(t)$.
+
+\begin{definition}
+A matrix $Q$ is stochastic if
+\[
+q_{ij}\ge 0
+\]
+for all $i,j$, and
+\[
+\sum_{j=0}^{K-1}q_{ij}=1
+\]
+for every row $i$.
+\end{definition}
+
+\begin{definition}
+A stochastic matrix is doubly stochastic if its columns also sum to one:
+\[
+\sum_{i=0}^{K-1}q_{ij}=1
+\]
+for every column $j$.
+\end{definition}
+
+\begin{remark}
+Every transition matrix is stochastic, but not every transition matrix is doubly stochastic.
+\end{remark}
+
+\section{Examples of Markov Chains}
+
+\begin{example}
+If $X_t$ are iid with
+\[
+\Prob(X_t=j)=p_j,
+\]
+then the transition probabilities do not depend on the current state. The transition matrix is
+\[
+Q=
+\begin{bmatrix}
+p_0 & p_1 & \cdots & p_{K-1}\\
+p_0 & p_1 & \cdots & p_{K-1}\\
+\vdots & \vdots & \ddots & \vdots\\
+p_0 & p_1 & \cdots & p_{K-1}
+\end{bmatrix}.
+\]
+\end{example}
+
+\begin{example}
+Consider a two-state chain with states $0=D$ and $1=R$. Suppose
+\[
+\Prob(D\to D)=0.3,
+\qquad
+\Prob(R\to R)=0.4.
+\]
+Then
+\[
+Q=
+\begin{bmatrix}
+0.3 & 0.7\\
+0.6 & 0.4
+\end{bmatrix}.
+\]
+\end{example}
+
+\begin{example}
+For a three-state chain with state space $\{0,1,2\}$, one possible transition matrix is
+\[
+Q=
+\begin{bmatrix}
+1/6 & 2/6 & 3/6\\
+1/2 & 0 & 1/2\\
+1/4 & 1/4 & 1/2
+\end{bmatrix}.
+\]
+\end{example}
+
+\begin{example}
+A random walk on $\{0,1,2,3,4\}$ with reflecting boundaries can have transition matrix
+\[
+Q=
+\begin{bmatrix}
+0 & 1 & 0 & 0 & 0\\
+1/2 & 0 & 1/2 & 0 & 0\\
+0 & 1/2 & 0 & 1/2 & 0\\
+0 & 0 & 1/2 & 0 & 1/2\\
+0 & 0 & 0 & 1 & 0
+\end{bmatrix}.
+\]
+At the boundaries, the chain is forced to move inward.
+\end{example}
+
+\begin{example}
+A reflecting random walk that allows the boundary states to remain fixed with probability $1/2$ has transition matrix
+\[
+Q=
+\begin{bmatrix}
+1/2 & 1/2 & 0 & 0 & 0\\
+1/2 & 0 & 1/2 & 0 & 0\\
+0 & 1/2 & 0 & 1/2 & 0\\
+0 & 0 & 1/2 & 0 & 1/2\\
+0 & 0 & 0 & 1/2 & 1/2
+\end{bmatrix}.
+\]
+\end{example}
+
+\begin{example}
+A nonhomogeneous Markov chain may have a transition matrix that changes with time, such as
+\[
+Q(t)=
+\begin{bmatrix}
+\frac{1}{3}+\frac{t}{120} & \frac{2}{3}-\frac{t}{120}\\
+\frac{1}{2}-\frac{t}{180} & \frac{1}{2}+\frac{t}{180}
+\end{bmatrix}.
+\]
+For this to define a valid transition matrix, the entries must remain nonnegative for the time values under consideration.
+\end{example}
+
+\section{One-Step Distributions}
+
+Let
+\[
+\pi_i(t)=\Prob(X_t=i).
+\]
+Then
+\[
+\pi_j(t+1)=\sum_i \pi_i(t)q_{ij}.
+\]
+
+In row-vector notation,
+\[
+\pi(t+1)=\pi(t)Q.
+\]
+
+\begin{proof}
+By the law of total probability,
+\[
+\Prob(X_{t+1}=j)
+=
+\sum_i \Prob(X_{t+1}=j,X_t=i).
+\]
+Using the product rule,
+\[
+\Prob(X_{t+1}=j,X_t=i)
+=
+\Prob(X_t=i)\Prob(X_{t+1}=j|X_t=i).
+\]
+Therefore,
+\[
+\pi_j(t+1)=\sum_i \pi_i(t)q_{ij}.
+\]
+\end{proof}
+
+\section{Multi-Step Transition Probabilities}
+
+For a time-homogeneous Markov chain,
+\[
+\Prob(X_{t+m}=j|X_t=i)=(Q^m)_{ij}.
+\]
+
+Thus, if the distribution at time $t$ is $\pi(t)$, then
+\[
+\pi(t+m)=\pi(t)Q^m.
+\]
+
+For a nonhomogeneous Markov chain,
+\[
+\Prob(X_{t+m}=j|X_t=i)
+=
+\left(Q(t)Q(t+1)\cdots Q(t+m-1)\right)_{ij}.
+\]
+
+\begin{proposition}
+For a time-homogeneous Markov chain,
+\[
+\Prob(X_{t+m}=j|X_t=i)=(Q^m)_{ij}.
+\]
+\end{proposition}
+
+\begin{proof}
+The case $m=1$ follows from the definition of $Q$. For $m=2$,
+\[
+\Prob(X_{t+2}=j|X_t=i)
+=
+\sum_{\ell}
+\Prob(X_{t+2}=j,X_{t+1}=\ell|X_t=i).
+\]
+Using the Markov property,
+\[
+=
+\sum_{\ell}
+\Prob(X_{t+1}=\ell|X_t=i)
+\Prob(X_{t+2}=j|X_{t+1}=\ell)
+=
+\sum_{\ell}q_{i\ell}q_{\ell j}
+=
+(Q^2)_{ij}.
+\]
+Repeating this argument gives the result for general $m$.
+\end{proof}
+
+\section{Irreducibility}
+
+\begin{definition}
+State $j$ is accessible from state $i$ if there exists $n\ge 1$ such that
+\[
+(Q^n)_{ij}>0.
+\]
+\end{definition}
+
+\begin{definition}
+A Markov chain is irreducible if every state is accessible from every other state. Equivalently, for all $i,j$, there exists $n\ge 1$ such that
+\[
+(Q^n)_{ij}>0.
+\]
+\end{definition}
+
+If this condition fails, the chain is reducible.
+
+\begin{example}
+The transition matrix
+\[
+Q=
+\begin{bmatrix}
+1 & 0 & 0\\
+0.5 & 0.5 & 0\\
+0 & 0 & 1
+\end{bmatrix}
+\]
+is reducible. State $0$ is absorbing, state $2$ is absorbing, and state $1$ can never reach state $2$.
+\end{example}
+
+\begin{example}
+The transition matrix
+\[
+Q=
+\begin{bmatrix}
+0.5 & 0.5 & 0\\
+0.2 & 0.3 & 0.5\\
+0.1 & 0.6 & 0.3
+\end{bmatrix}
+\]
+is irreducible. From state $0$, the chain can reach state $1$ directly and state $2$ through state $1$. From state $2$, the chain can reach states $0$ and $1$ with positive probability.
+\end{example}
+
+\section{Periodicity}
+
+\begin{definition}
+The period of state $i$ is
+\[
+d(i)=\gcd\{n\ge 1:(Q^n)_{ii}>0\}.
+\]
+If $d(i)=1$, state $i$ is aperiodic. If $d(i)>1$, state $i$ is periodic.
+\end{definition}
+
+\begin{remark}
+In an irreducible finite Markov chain, all states have the same period. Therefore, one can refer to the period of the chain.
+\end{remark}
+
+\begin{example}
+The transition matrix
+\[
+Q=
+\begin{bmatrix}
+0 & 1 & 0\\
+0 & 0 & 1\\
+1 & 0 & 0
+\end{bmatrix}
+\]
+is periodic with period $3$. The chain moves deterministically as
+\[
+0\to 1\to 2\to 0\to \cdots.
+\]
+A return to any state can occur only after $3,6,9,\ldots$ steps.
+\end{example}
+
+\begin{example}
+The transition matrix
+\[
+Q=
+\begin{bmatrix}
+0.5 & 0.5 & 0\\
+0.2 & 0.3 & 0.5\\
+0.3 & 0.3 & 0.4
+\end{bmatrix}
+\]
+is aperiodic because each state has a positive self-loop:
+\[
+q_{00}>0,\qquad q_{11}>0,\qquad q_{22}>0.
+\]
+Hence each state can return to itself in one step, so the period is $1$.
+\end{example}
+
+\section{Recurrence and Transience}
+
+\begin{definition}
+A state $i$ is recurrent if, starting from $i$, the probability of eventually returning to $i$ is $1$.
+\end{definition}
+
+\begin{definition}
+A state $i$ is transient if, starting from $i$, there is a positive probability of never returning to $i$.
+\end{definition}
+
+\begin{theorem}
+In a finite irreducible Markov chain, every state is recurrent.
+\end{theorem}
+
+\begin{remark}
+Reducible chains may contain transient states. For example, if a state can move into an absorbing class and can never return, then that state is transient.
+\end{remark}
+
+\section{Stationary Distributions}
+
+\begin{definition}
+A probability vector $\pi$ is a stationary distribution for a Markov chain with transition matrix $Q$ if
+\[
+\pi Q=\pi,
+\]
+where
+\[
+\pi_i\ge 0,
+\qquad
+\sum_i \pi_i=1.
+\]
+\end{definition}
+
+If $X_t\sim \pi$ and $\pi Q=\pi$, then
+\[
+X_{t+1}\sim \pi.
+\]
+Thus a stationary distribution is unchanged by one step of the Markov chain.
+
+\begin{proposition}
+If $Q$ is doubly stochastic on a finite state space with $K$ states, then
+\[
+\pi=\left(\frac{1}{K},\ldots,\frac{1}{K}\right)
+\]
+is a stationary distribution.
+\end{proposition}
+
+\begin{proof}
+For each $j$,
+\[
+(\pi Q)_j
+=
+\sum_{i=0}^{K-1}\frac{1}{K}q_{ij}
+=
+\frac{1}{K}\sum_{i=0}^{K-1}q_{ij}.
+\]
+Since $Q$ is doubly stochastic, each column sums to $1$, so
+\[
+(\pi Q)_j=\frac{1}{K}.
+\]
+Therefore $\pi Q=\pi$.
+\end{proof}
+
+\section{Ergodicity}
+
+\begin{definition}
+A finite Markov chain is ergodic if it is irreducible and aperiodic.
+\end{definition}
+
+\begin{theorem}
+If a finite Markov chain is irreducible and aperiodic, then it has a unique stationary distribution $\pi$, and for any initial distribution $\pi^{(0)}$,
+\[
+\lim_{t\to\infty}\pi^{(0)}Q^t=\pi.
+\]
+\end{theorem}
+
+\begin{remark}
+Irreducibility ensures that the chain has one communicating class, while aperiodicity prevents deterministic cycling. Together, these conditions imply convergence to a unique long-run distribution.
+\end{remark}
+
+\begin{remark}
+If irreducibility fails, the limiting behavior may depend on the starting state. If aperiodicity fails, the chain may continue oscillating even if it has a stationary distribution.
+\end{remark}
+
+\section{Summary}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.25\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Property & Meaning \\
+\midrule
+Stochastic matrix
+& Nonnegative entries and rows summing to one \\
+
+Doubly stochastic matrix
+& Rows and columns both sum to one \\
+
+Irreducible
+& Every state can reach every other state in some number of steps \\
+
+Reducible
+& Some states cannot be reached from others \\
+
+Periodic
+& Returns to a state occur only in multiples of some integer $d>1$ \\
+
+Aperiodic
+& The greatest common divisor of return times is $1$ \\
+
+Recurrent
+& Starting from the state, the chain returns with probability $1$ \\
+
+Transient
+& Starting from the state, there is positive probability of never returning \\
+
+Stationary distribution
+& A probability vector $\pi$ satisfying $\pi Q=\pi$ \\
+
+Ergodic
+& Irreducible and aperiodic; guarantees convergence to a unique stationary distribution \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\chapter{The Metropolis--Hastings Algorithm}
+
+\section{Overview}
+
+The Metropolis--Hastings algorithm is a general-purpose method for sampling from a target distribution $\pi$ when direct sampling is difficult. The key idea is to construct a Markov chain whose stationary distribution is $\pi$. After enough iterations, samples from the chain are approximately distributed according to $\pi$.
+
+\section{Self-Avoiding Paths}
+
+\begin{definition}
+A path of length $N$ in $\Z^2$ is defined by a sequence of direction vectors
+\[
+\delta(i)\in\{(-1,0),(1,0),(0,-1),(0,1)\},
+\qquad i=0,\ldots,N-1.
+\]
+The associated sequence of points is
+\[
+p(0)=(0,0),
+\]
+and
+\[
+p(k)=\sum_{i=0}^{k-1}\delta(i),
+\qquad k=1,\ldots,N.
+\]
+The path is the ordered sequence
+\[
+[p(0),p(1),\ldots,p(N)].
+\]
+\end{definition}
+
+\begin{definition}
+A path is self-avoiding if all points $p(0),p(1),\ldots,p(N)$ are distinct.
+\end{definition}
+
+A self-avoiding path never visits the same lattice point twice.
+
+\section{Uniform Sampling of Self-Avoiding Paths}
+
+There are $4^N$ possible direction sequences of length $N$, but only some of them produce self-avoiding paths. A simple acceptance--rejection sampler is:
+
+\begin{algorithm}[H]
+\caption{Acceptance--Rejection for Uniform Self-Avoiding Paths}
+\begin{algorithmic}[1]
+\Repeat
+    \State Sample $\delta(0),\ldots,\delta(N-1)$ independently and uniformly from $\{(-1,0),(1,0),(0,-1),(0,1)\}$
+    \State Construct $p(0),\ldots,p(N)$
+\Until{$p$ is self-avoiding}
+\State \Return $p$
+\end{algorithmic}
+\end{algorithm}
+
+This algorithm samples uniformly from the set of self-avoiding paths because every direction sequence is proposed with equal probability, and accepted paths are exactly the valid self-avoiding paths.
+
+\begin{remark}
+For large $N$, acceptance--rejection becomes inefficient because the probability that a uniformly sampled direction sequence is self-avoiding becomes very small.
+\end{remark}
+
+\section{Number of Bends}
+
+\begin{definition}
+The number of bends in a path is
+\[
+b(p)
+=
+\left|\{i\in\{0,\ldots,N-2\}:\delta(i+1)\neq \delta(i)\}\right|.
+\]
+\end{definition}
+
+This statistic measures how frequently the direction of the path changes.
+
+\section{Detailed Balance}
+
+Let $S=\{1,\ldots,K\}$ be a finite state space, and let $\pi$ be a probability vector on $S$. Let $Q=(q_{ij})$ be a Markov transition matrix.
+
+\begin{definition}
+The transition matrix $Q$ satisfies detailed balance with respect to $\pi$ if
+\[
+\pi_i q_{ij}=\pi_j q_{ji}
+\]
+for all $i,j\in S$.
+\end{definition}
+
+\begin{theorem}
+If $Q$ satisfies detailed balance with respect to $\pi$, then $\pi$ is a stationary distribution of $Q$.
+\end{theorem}
+
+\begin{proof}
+For any fixed state $k$,
+\[
+(\pi Q)_k
+=
+\sum_i \pi_i q_{ik}.
+\]
+By detailed balance,
+\[
+\pi_i q_{ik}=\pi_k q_{ki}.
+\]
+Therefore,
+\[
+(\pi Q)_k
+=
+\sum_i \pi_k q_{ki}
+=
+\pi_k\sum_i q_{ki}.
+\]
+Since $Q$ is stochastic, the rows sum to one, so
+\[
+\sum_i q_{ki}=1.
+\]
+Hence
+\[
+(\pi Q)_k=\pi_k.
+\]
+Because this holds for every $k$, $\pi Q=\pi$.
+\end{proof}
+
+\begin{remark}
+Detailed balance is a sufficient condition for stationarity. It is not necessary: some chains have stationary distributions without satisfying detailed balance.
+\end{remark}
+
+\section{Metropolis--Hastings Construction}
+
+Suppose the state space $S$ is viewed as a graph. The vertices are possible states, and $N_i$ denotes the set of neighbors of state $i$. Let $n_i=|N_i|$.
+
+The target distribution is $\pi$, where $\pi_i>0$ for all states of interest.
+
+\subsection{Uniform Neighbor Proposal}
+
+Suppose that from state $i$, we propose a neighbor $j\in N_i$ uniformly:
+\[
+r_{ij}=\frac{1}{n_i}.
+\]
+The Metropolis--Hastings acceptance probability is
+\[
+\alpha(i,j)
+=
+\min\left(1,\frac{\pi_j r_{ji}}{\pi_i r_{ij}}\right)
+=
+\min\left(1,\frac{\pi_j n_i}{\pi_i n_j}\right).
+\]
+Thus,
+\[
+q_{ij}
+=
+\frac{1}{n_i}
+\min\left(1,\frac{\pi_j n_i}{\pi_i n_j}\right),
+\qquad i\neq j,
+\]
+and
+\[
+q_{ii}
+=
+1-\sum_{j\neq i}q_{ij}.
+\]
+
+\begin{theorem}
+The Metropolis--Hastings transition matrix satisfies detailed balance with respect to $\pi$.
+\end{theorem}
+
+\begin{proof}
+For neighboring states $i$ and $j$,
+\[
+\pi_i q_{ij}
+=
+\pi_i \frac{1}{n_i}
+\min\left(1,\frac{\pi_j n_i}{\pi_i n_j}\right).
+\]
+This can be written as
+\[
+\pi_i q_{ij}
+=
+\min\left(\frac{\pi_i}{n_i},\frac{\pi_j}{n_j}\right).
+\]
+Similarly,
+\[
+\pi_j q_{ji}
+=
+\pi_j \frac{1}{n_j}
+\min\left(1,\frac{\pi_i n_j}{\pi_j n_i}\right)
+=
+\min\left(\frac{\pi_j}{n_j},\frac{\pi_i}{n_i}\right).
+\]
+Therefore,
+\[
+\pi_i q_{ij}=\pi_j q_{ji}.
+\]
+If $i$ and $j$ are not neighbors, then both transition probabilities are zero, so detailed balance also holds.
+\end{proof}
+
+\subsection{Weighted Neighbor Proposal}
+
+Alternatively, propose a neighbor $j\in N_i$ with probability
+\[
+r_{ij}
+=
+\frac{\pi_j}{\sum_{u\in N_i}\pi_u}.
+\]
+Then the Metropolis--Hastings acceptance probability is
+\[
+\alpha(i,j)
+=
+\min\left(
+1,
+\frac{\pi_j r_{ji}}{\pi_i r_{ij}}
+\right).
+\]
+Substituting the proposal probabilities gives
+\[
+\alpha(i,j)
+=
+\min\left(
+1,
+\frac{\sum_{u\in N_i}\pi_u}{\sum_{v\in N_j}\pi_v}
+\right).
+\]
+
+\begin{remark}
+The Metropolis--Hastings algorithm only requires ratios of target probabilities. If
+\[
+\pi_i=\frac{w_i}{Z},
+\]
+where $Z$ is an unknown normalizing constant, then
+\[
+\frac{\pi_j}{\pi_i}
+=
+\frac{w_j/Z}{w_i/Z}
+=
+\frac{w_j}{w_i}.
+\]
+Thus $Z$ cancels.
+\end{remark}
+
+\section{Metropolis--Hastings for Uniform Self-Avoiding Paths}
+
+Let $S$ be the set of all self-avoiding paths of length $N$. The uniform target distribution is
+\[
+\pi_p=\frac{1}{|S|},
+\qquad p\in S.
+\]
+
+Two self-avoiding paths are neighbors if one can be obtained from the other by changing exactly one direction vector and the resulting path remains self-avoiding.
+
+Since $\pi_p$ is constant over $S$, the acceptance probability for a uniform neighbor proposal becomes
+\[
+\alpha(p,p')
+=
+\min\left(1,\frac{|N_p|}{|N_{p'}|}\right).
+\]
+
+The algorithm is:
+
+\begin{algorithm}[H]
+\caption{Metropolis--Hastings for Uniform Self-Avoiding Paths}
+\begin{algorithmic}[1]
+\State Initialize $X_0$ as a valid self-avoiding path, for example the straight path with all directions $(1,0)$
+\For{$t=0,1,\ldots,T-1$}
+    \State List the self-avoiding neighbors $N_{X_t}$
+    \State Propose $p'\sim \mathrm{Uniform}(N_{X_t})$
+    \State Compute $|N_{X_t}|$ and $|N_{p'}|$
+    \State Generate $U\sim \mathrm{Uniform}(0,1)$
+    \If{$U\le \min\left(1,\dfrac{|N_{X_t}|}{|N_{p'}|}\right)$}
+        \State $X_{t+1}=p'$
+    \Else
+        \State $X_{t+1}=X_t$
+    \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+If the proposed state has more neighbors than the current state, then the move is accepted with probability less than one. This correction prevents the chain from over-sampling states that are easier to propose.
+\end{remark}
+
+\section{Autocorrelation and Convergence Diagnostics}
+
+Metropolis--Hastings samples are dependent. Therefore, consecutive samples may not behave like iid draws from the target distribution.
+
+One simple diagnostic is the lag-one autocorrelation of a summary statistic. For self-avoiding paths, a natural summary is the bend count
+\[
+B_t=b(X_t).
+\]
+
+Given samples $B_0,\ldots,B_{n-1}$ with mean $\bar{B}$, the lag-one autocorrelation is
+\[
+\rho_1
+=
+\frac{
+\sum_{i=0}^{n-2}(B_i-\bar{B})(B_{i+1}-\bar{B})
+}{
+\sum_{i=0}^{n-1}(B_i-\bar{B})^2
+}.
+\]
+
+\begin{remark}
+Large positive autocorrelation indicates that the chain is moving slowly through the state space. In practice, one may need longer runs, better proposal mechanisms, or thinning between retained samples.
+\end{remark}
+
+\section{Nonuniform Target Distributions}
+
+Metropolis--Hastings is not limited to uniform targets. For example, to favor smoother self-avoiding paths, define
+\[
+\pi_p = C e^{-\gamma b(p)},
+\]
+where $b(p)$ is the number of bends, $\gamma>0$ controls the strength of the preference for fewer bends, and $C$ is a normalizing constant.
+
+Since $C$ cancels in ratios,
+\[
+\frac{\pi_{p'}}{\pi_p}
+=
+\frac{C e^{-\gamma b(p')}}{C e^{-\gamma b(p)}}
+=
+e^{-\gamma(b(p')-b(p))}.
+\]
+
+For a uniform neighbor proposal, the acceptance probability becomes
+\[
+\alpha(p,p')
+=
+\min\left(
+1,
+e^{-\gamma(b(p')-b(p))}
+\frac{|N_p|}{|N_{p'}|}
+\right).
+\]
+
+\begin{remark}
+When $\gamma$ is large, paths with many bends are penalized more strongly. When $\gamma=0$, the target distribution reduces to the uniform distribution on self-avoiding paths.
+\end{remark}
+
+\section{Ergodicity and Convergence}
+
+\begin{theorem}
+If the Metropolis--Hastings chain is irreducible and aperiodic, and if it satisfies detailed balance with respect to $\pi$, then
+\[
+\lim_{t\to\infty}\Prob(X_t=i)=\pi_i
+\]
+for every state $i$, regardless of the initial state.
+\end{theorem}
+
+\begin{remark}
+Detailed balance ensures that $\pi$ is stationary. Irreducibility and aperiodicity ensure convergence to that stationary distribution.
+\end{remark}
+
+\section{Summary}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.28\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Concept & Description \\
+\midrule
+Self-avoiding path
+& A path on $\Z^2$ that never visits the same point twice \\
+
+Uniform SAP sampling
+& All self-avoiding paths of fixed length have equal probability \\
+
+Acceptance--rejection
+& Simple exact method, but inefficient for large $N$ \\
+
+Metropolis--Hastings
+& Constructs a Markov chain with target stationary distribution $\pi$ \\
+
+Detailed balance
+& Condition $\pi_i q_{ij}=\pi_j q_{ji}$ ensuring stationarity \\
+
+Acceptance probability
+& Corrects for proposal asymmetry and target probability ratios \\
+
+Normalization cancellation
+& Unknown constants in $\pi$ are unnecessary because only ratios are used \\
+
+Autocorrelation
+& Measures dependence between successive Markov chain samples \\
+
+Weighted SAPs
+& Use $\pi_p\propto e^{-\gamma b(p)}$ to favor paths with fewer bends \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\chapter{Brownian Motion}
+
+\section{From Random Walk to Brownian Motion}
+
+The standard symmetric random walk on $\Z$ is a Markov chain defined by
+\[
+X_0=0,
+\]
+and
+\[
+X_{t+1}=X_t+\delta_{t+1},
+\]
+where
+\[
+\Prob(\delta_{t+1}=1)=\Prob(\delta_{t+1}=-1)=\frac{1}{2}.
+\]
+
+Brownian motion can be viewed as the continuous-time limit of a rescaled random walk. Let $\Delta>0$ be a small time step. Define
+\[
+B_{n\Delta}
+=
+\sqrt{\Delta}\sum_{i=1}^n \delta_i,
+\]
+where $\delta_i$ are iid with
+\[
+\Prob(\delta_i=1)=\Prob(\delta_i=-1)=\frac{1}{2}.
+\]
+For times between grid points, define $B_t$ by linear interpolation.
+
+As $\Delta\to 0$, this process converges to standard Brownian motion.
+
+\section{Definition and Basic Properties}
+
+\begin{definition}
+A standard Brownian motion is a stochastic process $\{B_t:t\ge 0\}$ satisfying:
+\begin{enumerate}
+\item $B_0=0$.
+\item $B_t-B_s\sim \Normal(0,t-s)$ for $0\le s<t$.
+\item For $0=t_0<t_1<\cdots<t_n$, the increments
+\[
+B_{t_1}-B_{t_0},\ldots,B_{t_n}-B_{t_{n-1}}
+\]
+are independent.
+\item The sample paths $t\mapsto B_t$ are continuous almost surely.
+\end{enumerate}
+\end{definition}
+
+\subsection{Normality of Increments}
+
+For $s<t$, choose integers $m,n$ such that
+\[
+s\approx m\Delta,
+\qquad
+t\approx n\Delta.
+\]
+Then
+\[
+B_t-B_s
+\approx
+\sqrt{\Delta}\sum_{i=m+1}^n \delta_i.
+\]
+Rewrite this as
+\[
+B_t-B_s
+\approx
+\sqrt{(n-m)\Delta}
+\left(
+\frac{1}{\sqrt{n-m}}\sum_{i=m+1}^n \delta_i
+\right).
+\]
+Since each $\delta_i$ has mean $0$ and variance $1$, the central limit theorem gives
+\[
+\frac{1}{\sqrt{n-m}}\sum_{i=m+1}^n \delta_i
+\convd
+\Normal(0,1).
+\]
+Also,
+\[
+(n-m)\Delta \approx t-s.
+\]
+Therefore,
+\[
+B_t-B_s\sim \Normal(0,t-s)
+\]
+in the limit.
+
+\begin{remark}
+Independent increments come from the fact that disjoint time intervals use disjoint sets of random walk steps.
+\end{remark}
+
+\section{Simulating Brownian Motion}
+
+To simulate approximate Brownian motion on $[0,T]$:
+
+\begin{algorithm}[H]
+\caption{Approximate Brownian Motion}
+\begin{algorithmic}[1]
+\State Choose $N$ and set $\Delta=T/N$
+\State Set $B_0=0$
+\For{$n=1,\ldots,N$}
+    \State Generate $\delta_n\in\{-1,1\}$ with equal probability
+    \State Set $B_{n\Delta}=B_{(n-1)\Delta}+\sqrt{\Delta}\delta_n$
+\EndFor
+\State Linearly interpolate between grid points
+\end{algorithmic}
+\end{algorithm}
+
+Alternatively, one may generate
+\[
+Z_n\sim \Normal(0,1)
+\]
+and set
+\[
+B_{n\Delta}=B_{(n-1)\Delta}+\sqrt{\Delta}Z_n.
+\]
+This directly matches the Gaussian increment structure:
+\[
+B_{n\Delta}-B_{(n-1)\Delta}\sim \Normal(0,\Delta).
+\]
+
+\section{Brownian Motion with Drift and Volatility}
+
+\begin{definition}
+Brownian motion with drift $\mu$ and volatility $\sigma>0$ is
+\[
+Y_t=Y_0+\mu t+\sigma B_t.
+\]
+\end{definition}
+
+For $0\le s<t$,
+\[
+Y_t-Y_s
+=
+\mu(t-s)+\sigma(B_t-B_s).
+\]
+Since
+\[
+B_t-B_s\sim \Normal(0,t-s),
+\]
+we have
+\[
+Y_t-Y_s\sim \Normal(\mu(t-s),\sigma^2(t-s)).
+\]
+
+\section{Fitting Brownian Motion with Drift and Volatility}
+
+Suppose we observe
+\[
+0=t_0<t_1<\cdots<t_n
+\]
+and values
+\[
+Y_{t_0},Y_{t_1},\ldots,Y_{t_n}.
+\]
+Define increments
+\[
+\Delta t_i=t_i-t_{i-1},
+\qquad
+\Delta Y_i=Y_{t_i}-Y_{t_{i-1}}.
+\]
+The model implies
+\[
+\Delta Y_i\sim \Normal(\mu\Delta t_i,\sigma^2\Delta t_i),
+\]
+independently for $i=1,\ldots,n$.
+
+The log-likelihood, up to constants, is
+\[
+\ell(\mu,\sigma^2)
+=
+-\frac{1}{2}\sum_{i=1}^n
+\left[
+\log(\sigma^2\Delta t_i)
++
+\frac{(\Delta Y_i-\mu\Delta t_i)^2}{\sigma^2\Delta t_i}
+\right].
+\]
+
+\begin{proposition}
+The maximum likelihood estimator for $\mu$ is
+\[
+\hat{\mu}
+=
+\frac{\sum_{i=1}^n \Delta Y_i}{\sum_{i=1}^n \Delta t_i}
+=
+\frac{Y_{t_n}-Y_{t_0}}{t_n-t_0}.
+\]
+\end{proposition}
+
+\begin{proof}
+For fixed $\sigma^2$, maximizing the log-likelihood in $\mu$ is equivalent to minimizing
+\[
+\sum_{i=1}^n
+\frac{(\Delta Y_i-\mu\Delta t_i)^2}{\Delta t_i}.
+\]
+Differentiate with respect to $\mu$:
+\[
+\frac{\partial}{\partial \mu}
+\sum_{i=1}^n
+\frac{(\Delta Y_i-\mu\Delta t_i)^2}{\Delta t_i}
+=
+-2\sum_{i=1}^n(\Delta Y_i-\mu\Delta t_i).
+\]
+Setting this equal to zero gives
+\[
+\sum_{i=1}^n \Delta Y_i
+=
+\mu\sum_{i=1}^n \Delta t_i.
+\]
+Thus,
+\[
+\hat{\mu}
+=
+\frac{\sum_{i=1}^n \Delta Y_i}{\sum_{i=1}^n \Delta t_i}.
+\]
+\end{proof}
+
+The maximum likelihood estimator for $\sigma^2$ is
+\[
+\hat{\sigma}^2
+=
+\frac{1}{n}
+\sum_{i=1}^n
+\frac{(\Delta Y_i-\hat{\mu}\Delta t_i)^2}{\Delta t_i}.
+\]
+An approximately unbiased version replaces $n$ by $n-1$:
+\[
+\hat{\sigma}^2
+=
+\frac{1}{n-1}
+\sum_{i=1}^n
+\frac{(\Delta Y_i-\hat{\mu}\Delta t_i)^2}{\Delta t_i}.
+\]
+
+\begin{exercise}
+Write a function that takes times
+\[
+(t_0,t_1,\ldots,t_n)
+\]
+and observed values
+\[
+(Y_{t_0},Y_{t_1},\ldots,Y_{t_n})
+\]
+and returns
+\[
+Y_0,\qquad \hat{\mu},\qquad \hat{\sigma}.
+\]
+\end{exercise}
+
+\section{Geometric Brownian Motion}
+
+Brownian motion with drift can take negative values. To model positive quantities such as stock prices, use geometric Brownian motion.
+
+\begin{definition}
+A geometric Brownian motion is
+\[
+X_t=X_0 e^{\mu t+\sigma B_t}.
+\]
+Equivalently,
+\[
+\log X_t=\log X_0+\mu t+\sigma B_t.
+\]
+\end{definition}
+
+For $0\le s<t$,
+\[
+\log X_t-\log X_s
+=
+\mu(t-s)+\sigma(B_t-B_s),
+\]
+so
+\[
+\log X_t-\log X_s
+\sim
+\Normal(\mu(t-s),\sigma^2(t-s)).
+\]
+Therefore,
+\[
+\frac{X_t}{X_s}
+\]
+is lognormal.
+
+\begin{exercise}
+Fit a geometric Brownian motion model to positive observations
+\[
+X_{t_0},X_{t_1},\ldots,X_{t_n}.
+\]
+Hint: apply the Brownian motion with drift estimators to the transformed data
+\[
+Y_{t_i}=\log X_{t_i}.
+\]
+Return
+\[
+X_0,\qquad \hat{\mu},\qquad \hat{\sigma}.
+\]
+\end{exercise}
+
+\section{Higher-Dimensional Brownian Motion}
+
+A $d$-dimensional Brownian motion is a process
+\[
+B_t=(B_t^{(1)},\ldots,B_t^{(d)})
+\]
+where the coordinate processes are independent one-dimensional Brownian motions.
+
+For two-dimensional Brownian motion,
+\[
+B_t=(B_t^{(1)},B_t^{(2)}).
+\]
+Then
+\[
+B_t-B_s
+\sim
+\Normal\left(
+\begin{bmatrix}
+0\\
+0
+\end{bmatrix},
+(t-s)I_2
+\right).
+\]
+
+A simple two-dimensional random walk approximation uses steps chosen from
+\[
+(dx,dy)\in\{(1,0),(-1,0),(0,1),(0,-1)\}.
+\]
+To match Brownian scaling, the increments should be scaled by $\sqrt{\Delta}$:
+\[
+(X_{n\Delta},Y_{n\Delta})
+=
+(X_{(n-1)\Delta},Y_{(n-1)\Delta})
++
+\sqrt{\Delta}(dx_n,dy_n).
+\]
+
+\begin{remark}
+If the four coordinate directions are chosen with probability $1/4$, then each coordinate has variance $\Delta/2$ per step, not $\Delta$. To obtain standard two-dimensional Brownian motion with covariance $\Delta I_2$, one may instead generate independent Gaussian increments
+\[
+Z_n^{(1)},Z_n^{(2)}\iid \Normal(0,1)
+\]
+and set
+\[
+B_{n\Delta}=B_{(n-1)\Delta}+\sqrt{\Delta}(Z_n^{(1)},Z_n^{(2)}).
+\]
+\end{remark}
+
+\begin{exercise}
+Create a function that takes:
+\begin{enumerate}
+\item total time $T$,
+\item starting point $(x_0,y_0)$,
+\item number of steps $N$ with $\Delta=T/N$,
+\end{enumerate}
+and returns an $(N+1)\times 3$ array whose columns are:
+\[
+t,\qquad X_t,\qquad Y_t.
+\]
+\end{exercise}
+
+\section{Summary}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.28\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Property & Description \\
+\midrule
+Origin
+& Brownian motion is the limit of a scaled symmetric random walk \\
+
+Increment distribution
+& $B_t-B_s\sim \Normal(0,t-s)$ \\
+
+Independent increments
+& Increments over disjoint time intervals are independent \\
+
+Continuity
+& Sample paths are continuous almost surely \\
+
+Simulation
+& Use increments $\sqrt{\Delta}Z_i$ with $Z_i\sim \Normal(0,1)$ \\
+
+Drift and volatility
+& $Y_t=Y_0+\mu t+\sigma B_t$ \\
+
+Geometric Brownian motion
+& $X_t=X_0e^{\mu t+\sigma B_t}$ ensures positive values \\
+
+Higher dimensions
+& Use independent Brownian motions as coordinates \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\chapter{Stochastic Differential Equations}
+
+\section{Ordinary Differential Equations}
+
+An ordinary differential equation has the form
+\[
+y'(t)=f(t,y(t)),
+\]
+with initial condition
+\[
+y(0)=y_0.
+\]
+
+Equivalently, one may write
+\[
+\dd y(t)=f(t,y(t))\dd t.
+\]
+Integrating from $0$ to $t$ gives
+\[
+y(t)=y(0)+\int_0^t f(s,y(s))\dd s.
+\]
+
+\begin{example}
+The ODE
+\[
+y'(t)=y(t), \qquad y(0)=1
+\]
+has solution
+\[
+y(t)=e^t.
+\]
+\end{example}
+
+\section{Euler's Method}
+
+Euler's method approximates the solution of an ODE by replacing the derivative with a finite difference. If
+\[
+y'(t)=f(t,y(t)),
+\]
+then for small $\Delta>0$,
+\[
+y(t+\Delta)-y(t)\approx f(t,y(t))\Delta.
+\]
+Thus
+\[
+y(t+\Delta)\approx y(t)+f(t,y(t))\Delta.
+\]
+
+Starting from $y_0=y(0)$, the Euler scheme is
+\[
+y_{n+1}=y_n+f(t_n,y_n)\Delta,
+\qquad
+t_n=n\Delta.
+\]
+
+\begin{algorithm}[H]
+\caption{Euler's Method}
+\begin{algorithmic}[1]
+\State Choose step size $\Delta>0$ and final time $T$
+\State Set $N=T/\Delta$
+\State Initialize $y_0=y(0)$
+\For{$n=0,\ldots,N-1$}
+    \State Set $t_n=n\Delta$
+    \State Update $y_{n+1}=y_n+f(t_n,y_n)\Delta$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\section{A One-Dimensional ODE Example}
+
+Consider
+\[
+x'(t)=f(x,t)
+\]
+with
+\[
+f(x,t)=\frac{\sin(2\pi t)+2\pi t\cos(2\pi t)}{x}.
+\]
+Then
+\[
+\frac{\dd x}{\dd t}
+=
+\frac{\sin(2\pi t)+2\pi t\cos(2\pi t)}{x}.
+\]
+Multiplying both sides by $x\dd t$ gives
+\[
+x\dd x
+=
+\left[\sin(2\pi t)+2\pi t\cos(2\pi t)\right]\dd t.
+\]
+Integrating,
+\[
+\frac{1}{2}x^2
+=
+t\sin(2\pi t)+C.
+\]
+Therefore,
+\[
+x(t)=\sqrt{2t\sin(2\pi t)+2C}.
+\]
+
+If $x(0)=5$, then
+\[
+25=2C,
+\]
+so
+\[
+x(t)=\sqrt{2t\sin(2\pi t)+25}.
+\]
+
+\section{Higher-Dimensional ODEs}
+
+The Euler scheme extends naturally to systems of ODEs. Let
+\[
+x(t)\in \R^d
+\]
+and suppose
+\[
+\dot{x}(t)=f(x(t),t),
+\]
+where
+\[
+f:\R^d\times [0,\infty)\to \R^d.
+\]
+Starting from $x(0)=x_0$, the Euler update is
+\[
+x_{n+1}=x_n+\Delta f(x_n,t_n),
+\qquad
+t_n=n\Delta.
+\]
+
+\subsection{A Two-Dimensional Rotating and Contracting System}
+
+Let $d=2$ and consider
+\[
+\dot{x}_1=-a(t)x_1-b(t)x_2,
+\]
+\[
+\dot{x}_2=b(t)x_1-a(t)x_2.
+\]
+Write
+\[
+x_1=r\cos\theta,
+\qquad
+x_2=r\sin\theta.
+\]
+Then
+\[
+\dot{x}_1=\dot{r}\cos\theta-r\dot{\theta}\sin\theta,
+\]
+and
+\[
+\dot{x}_2=\dot{r}\sin\theta+r\dot{\theta}\cos\theta.
+\]
+
+Using the system equations,
+\[
+\dot{x}_1=-a(t)r\cos\theta-b(t)r\sin\theta,
+\]
+and
+\[
+\dot{x}_2=b(t)r\cos\theta-a(t)r\sin\theta.
+\]
+
+To derive the radial equation, compute
+\[
+\dot{r}
+=
+\dot{x}_1\cos\theta+\dot{x}_2\sin\theta.
+\]
+Substituting,
+\[
+\dot{r}
+=
+[-a(t)r\cos\theta-b(t)r\sin\theta]\cos\theta
++
+[b(t)r\cos\theta-a(t)r\sin\theta]\sin\theta.
+\]
+The $b(t)$ terms cancel, giving
+\[
+\dot{r}
+=
+-a(t)r(\cos^2\theta+\sin^2\theta)
+=
+-a(t)r.
+\]
+
+To derive the angular equation, use
+\[
+r\dot{\theta}
+=
+-\dot{x}_1\sin\theta+\dot{x}_2\cos\theta.
+\]
+Substituting,
+\[
+r\dot{\theta}
+=
+-[ -a(t)r\cos\theta-b(t)r\sin\theta]\sin\theta
++
+[b(t)r\cos\theta-a(t)r\sin\theta]\cos\theta.
+\]
+The $a(t)$ terms cancel, giving
+\[
+r\dot{\theta}
+=
+b(t)r(\sin^2\theta+\cos^2\theta)
+=
+b(t)r.
+\]
+Therefore,
+\[
+\dot{\theta}=b(t).
+\]
+
+Thus the system reduces to
+\[
+\dot{r}=-a(t)r,
+\qquad
+\dot{\theta}=b(t).
+\]
+Solving,
+\[
+r(t)=r(0)\exp\left(-\int_0^t a(s)\dd s\right),
+\]
+and
+\[
+\theta(t)=\theta(0)+\int_0^t b(s)\dd s.
+\]
+
+\section{Brownian Motion Recap}
+
+Brownian motion can be viewed as the limit of a rescaled random walk. Let $\Delta>0$ and let
+\[
+\delta_1,\delta_2,\ldots \iid \Normal(0,1).
+\]
+Define
+\[
+B_0=0,
+\]
+and
+\[
+B_{n\Delta}
+=
+B_{(n-1)\Delta}+\sqrt{\Delta}\delta_n.
+\]
+As $\Delta\to 0$, this converges to Brownian motion.
+
+\begin{definition}
+A standard Brownian motion $\{B_t:t\ge 0\}$ satisfies:
+\begin{enumerate}
+\item $B_0=0$.
+\item For $0=t_0<t_1<\cdots<t_k$, the increments
+\[
+B_{t_1}-B_{t_0},\ldots,B_{t_k}-B_{t_{k-1}}
+\]
+are independent.
+\item For $t>s$,
+\[
+B_t-B_s\sim \Normal(0,t-s).
+\]
+\item The paths $t\mapsto B_t$ are continuous but nowhere differentiable almost surely.
+\end{enumerate}
+\end{definition}
+
+\begin{proposition}
+For standard Brownian motion,
+\[
+\Cov(B_s,B_t)=\min(s,t).
+\]
+\end{proposition}
+
+\begin{proof}
+Assume without loss of generality that $s\le t$. Then
+\[
+B_t=B_s+(B_t-B_s).
+\]
+Therefore,
+\[
+\Cov(B_s,B_t)
+=
+\Cov(B_s,B_s)+\Cov(B_s,B_t-B_s).
+\]
+By independent increments, $B_s$ and $B_t-B_s$ are independent, so
+\[
+\Cov(B_s,B_t-B_s)=0.
+\]
+Also,
+\[
+\Cov(B_s,B_s)=\Var(B_s)=s.
+\]
+Thus
+\[
+\Cov(B_s,B_t)=s=\min(s,t).
+\]
+\end{proof}
+
+\section{Stochastic Differential Equations}
+
+An SDE generalizes an ODE by adding infinitesimal random shocks. A one-dimensional SDE has the form
+\[
+\dd S_t=f(t,S_t)\dd t+g(t,S_t)\dd B_t.
+\]
+
+The function $f$ is called the drift coefficient, and $g$ is called the diffusion coefficient.
+
+For small $\Delta>0$,
+\[
+S_{t+\Delta}-S_t
+\approx
+f(t,S_t)\Delta
++
+g(t,S_t)(B_{t+\Delta}-B_t).
+\]
+Since
+\[
+B_{t+\Delta}-B_t\sim \Normal(0,\Delta),
+\]
+we can write
+\[
+B_{t+\Delta}-B_t=\sqrt{\Delta}Z,
+\qquad
+Z\sim \Normal(0,1).
+\]
+
+\section{Euler--Maruyama Method}
+
+The Euler--Maruyama method is the stochastic analogue of Euler's method. Let $t_n=n\Delta$. The update is
+\[
+S_{n+1}
+=
+S_n
++
+f(t_n,S_n)\Delta
++
+g(t_n,S_n)\sqrt{\Delta}Z_n,
+\]
+where
+\[
+Z_n\iid \Normal(0,1).
+\]
+
+\begin{algorithm}[H]
+\caption{Euler--Maruyama Method}
+\begin{algorithmic}[1]
+\State Choose step size $\Delta>0$ and final time $T$
+\State Set $N=T/\Delta$
+\State Initialize $S_0$
+\For{$n=0,\ldots,N-1$}
+    \State Generate $Z_n\sim \Normal(0,1)$
+    \State Set $t_n=n\Delta$
+    \State Update
+    \[
+    S_{n+1}=S_n+f(t_n,S_n)\Delta+g(t_n,S_n)\sqrt{\Delta}Z_n
+    \]
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+One may also approximate Brownian increments using random variables taking values $\pm\sqrt{\Delta}$ with equal probability. Any increment distribution with mean $0$ and variance $\Delta$ can yield the same Brownian limit under suitable conditions.
+\end{remark}
+
+\section{Ito's Lemma}
+
+\begin{theorem}
+Let $S_t$ satisfy
+\[
+\dd S_t=f(t,S_t)\dd t+g(t,S_t)\dd B_t.
+\]
+Let
+\[
+Y_t=h(t,S_t),
+\]
+where $h$ is sufficiently smooth. Then
+\[
+\dd h(t,S_t)
+=
+\left[
+h_t(t,S_t)
++
+h_S(t,S_t)f(t,S_t)
++
+\frac{1}{2}h_{SS}(t,S_t)g^2(t,S_t)
+\right]\dd t
++
+h_S(t,S_t)g(t,S_t)\dd B_t.
+\]
+\end{theorem}
+
+\begin{proof}
+Use a second-order Taylor expansion:
+\[
+\dd h
+\approx
+h_t\dd t+h_S\dd S_t+\frac{1}{2}h_{SS}(\dd S_t)^2.
+\]
+Substitute
+\[
+\dd S_t=f\dd t+g\dd B_t.
+\]
+Then
+\[
+(\dd S_t)^2
+=
+(f\dd t+g\dd B_t)^2
+=
+f^2(\dd t)^2+2fg\dd t\dd B_t+g^2(\dd B_t)^2.
+\]
+Using the Ito rules
+\[
+(\dd t)^2=0,
+\qquad
+\dd t\dd B_t=0,
+\qquad
+(\dd B_t)^2=\dd t,
+\]
+we get
+\[
+(\dd S_t)^2=g^2\dd t.
+\]
+Therefore,
+\[
+\dd h
+=
+h_t\dd t+h_S(f\dd t+g\dd B_t)+\frac{1}{2}h_{SS}g^2\dd t.
+\]
+Collecting terms gives
+\[
+\dd h
+=
+\left[
+h_t+h_Sf+\frac{1}{2}h_{SS}g^2
+\right]\dd t
++
+h_Sg\dd B_t.
+\]
+\end{proof}
+
+\begin{remark}
+Ito's lemma is the stochastic version of the chain rule. The additional term
+\[
+\frac{1}{2}h_{SS}g^2\dd t
+\]
+appears because Brownian increments satisfy $(\dd B_t)^2=\dd t$.
+\end{remark}
+
+\section{Brownian Motion with Drift}
+
+Let
+\[
+Y_t=\mu t+\sigma B_t.
+\]
+Then
+\[
+Y_t=h(t,B_t),
+\qquad
+h(t,b)=\mu t+\sigma b.
+\]
+Since
+\[
+h_t=\mu,
+\qquad
+h_b=\sigma,
+\qquad
+h_{bb}=0,
+\]
+Ito's lemma gives
+\[
+\dd Y_t=\mu\dd t+\sigma\dd B_t.
+\]
+
+This process is called arithmetic Brownian motion or Brownian motion with drift and volatility.
+
+\section{Geometric Brownian Motion}
+
+Suppose
+\[
+Y_t=\log X_t
+\]
+satisfies
+\[
+\dd Y_t=\mu\dd t+\sigma\dd B_t.
+\]
+Then
+\[
+X_t=e^{Y_t}.
+\]
+Let $h(y)=e^y$. Then
+\[
+h'(y)=e^y,
+\qquad
+h''(y)=e^y.
+\]
+By Ito's lemma,
+\[
+\dd X_t
+=
+h'(Y_t)\dd Y_t
++
+\frac{1}{2}h''(Y_t)\sigma^2\dd t.
+\]
+Thus
+\[
+\dd X_t
+=
+X_t(\mu\dd t+\sigma\dd B_t)
++
+\frac{1}{2}\sigma^2X_t\dd t.
+\]
+Therefore,
+\[
+\dd X_t
+=
+\left(\mu+\frac{1}{2}\sigma^2\right)X_t\dd t
++
+\sigma X_t\dd B_t.
+\]
+
+\begin{remark}
+If $\log X_t$ has drift $\mu$, then $X_t$ has drift coefficient $\mu+\sigma^2/2$ in its SDE.
+\end{remark}
+
+\section{Log Transform of Geometric Brownian Motion}
+
+Suppose instead that $X_t$ satisfies
+\[
+\dd X_t=\mu X_t\dd t+\sigma X_t\dd B_t.
+\]
+Let
+\[
+Y_t=\log X_t.
+\]
+Then
+\[
+h(x)=\log x,
+\qquad
+h'(x)=\frac{1}{x},
+\qquad
+h''(x)=-\frac{1}{x^2}.
+\]
+Using Ito's lemma,
+\[
+\dd Y_t
+=
+\frac{1}{X_t}\dd X_t
++
+\frac{1}{2}\left(-\frac{1}{X_t^2}\right)(\sigma^2X_t^2)\dd t.
+\]
+Substituting $\dd X_t$,
+\[
+\dd Y_t
+=
+\frac{1}{X_t}(\mu X_t\dd t+\sigma X_t\dd B_t)
+-
+\frac{1}{2}\sigma^2\dd t.
+\]
+Thus
+\[
+\dd \log X_t
+=
+\left(\mu-\frac{1}{2}\sigma^2\right)\dd t
++
+\sigma\dd B_t.
+\]
+
+\begin{exercise}
+If
+\[
+\dd X_t=\mu X_t\dd t+\sigma X_t\dd B_t,
+\]
+derive the SDE satisfied by $\log X_t$.
+\end{exercise}
+
+\section{Calibration of Geometric Brownian Motion}
+
+Suppose we observe positive values
+\[
+G_{t_0},G_{t_1},\ldots,G_{t_N}
+\]
+at times
+\[
+0=t_0<t_1<\cdots<t_N.
+\]
+Define
+\[
+\Delta t_i=t_{i+1}-t_i,
+\]
+and
+\[
+\Delta \log G_i=\log G_{t_{i+1}}-\log G_{t_i},
+\qquad
+i=0,\ldots,N-1.
+\]
+
+If
+\[
+\log G_t=\log G_0+\mu t+\sigma B_t,
+\]
+then
+\[
+\Delta \log G_i
+\sim
+\Normal(\mu\Delta t_i,\sigma^2\Delta t_i).
+\]
+
+The log-likelihood is
+\[
+\log L(\mu,\sigma)
+=
+-\frac{N}{2}\log(2\pi)
+-
+N\log\sigma
+-
+\frac{1}{2}\sum_{i=0}^{N-1}\log(\Delta t_i)
+-
+\frac{1}{2\sigma^2}
+\sum_{i=0}^{N-1}
+\frac{(\Delta \log G_i-\mu\Delta t_i)^2}{\Delta t_i}.
+\]
+
+\begin{proposition}
+The maximum likelihood estimator for the log-drift parameter $\mu$ is
+\[
+\hat{\mu}
+=
+\frac{\sum_{i=0}^{N-1}\Delta \log G_i}
+{\sum_{i=0}^{N-1}\Delta t_i}
+=
+\frac{\log G_{t_N}-\log G_{t_0}}{t_N-t_0}.
+\]
+If $t_0=0$, this becomes
+\[
+\hat{\mu}
+=
+\frac{\log G_{t_N}-\log G_0}{t_N}.
+\]
+\end{proposition}
+
+\begin{proof}
+For fixed $\sigma$, maximizing the log-likelihood in $\mu$ is equivalent to minimizing
+\[
+\sum_{i=0}^{N-1}
+\frac{(\Delta \log G_i-\mu\Delta t_i)^2}{\Delta t_i}.
+\]
+Differentiate with respect to $\mu$:
+\[
+-2\sum_{i=0}^{N-1}
+(\Delta \log G_i-\mu\Delta t_i).
+\]
+Setting this equal to zero gives
+\[
+\sum_{i=0}^{N-1}\Delta \log G_i
+=
+\mu\sum_{i=0}^{N-1}\Delta t_i.
+\]
+Therefore,
+\[
+\hat{\mu}
+=
+\frac{\sum_{i=0}^{N-1}\Delta \log G_i}
+{\sum_{i=0}^{N-1}\Delta t_i}.
+\]
+\end{proof}
+
+Since
+\[
+\Delta \log G_i
+=
+\mu\Delta t_i+\sigma\sqrt{\Delta t_i}Z_i,
+\]
+where $Z_i\iid \Normal(0,1)$,
+\[
+\hat{\mu}
+=
+\mu
++
+\frac{\sigma\sum_{i=0}^{N-1}\sqrt{\Delta t_i}Z_i}
+{\sum_{i=0}^{N-1}\Delta t_i}.
+\]
+Thus
+\[
+\hat{\mu}
+\sim
+\Normal\left(
+\mu,
+\frac{\sigma^2}{t_N-t_0}
+\right).
+\]
+
+The maximum likelihood estimator for $\sigma$ is
+\[
+\hat{\sigma}
+=
+\sqrt{
+\frac{1}{N}
+\sum_{i=0}^{N-1}
+\frac{(\Delta \log G_i-\hat{\mu}\Delta t_i)^2}{\Delta t_i}
+}.
+\]
+An approximately unbiased estimator replaces $N$ with $N-1$:
+\[
+\hat{\sigma}
+=
+\sqrt{
+\frac{1}{N-1}
+\sum_{i=0}^{N-1}
+\frac{(\Delta \log G_i-\hat{\mu}\Delta t_i)^2}{\Delta t_i}
+}.
+\]
+
+\begin{remark}
+There are two common parameterizations of geometric Brownian motion:
+\[
+X_t=X_0e^{\mu t+\sigma B_t},
+\]
+which makes $\mu$ the drift of $\log X_t$, and
+\[
+\dd X_t=\alpha X_t\dd t+\sigma X_t\dd B_t,
+\]
+which makes $\alpha$ the drift coefficient of $X_t$. They are related by
+\[
+\mu=\alpha-\frac{1}{2}\sigma^2,
+\qquad
+\alpha=\mu+\frac{1}{2}\sigma^2.
+\]
+\end{remark}
+
+\section{Summary}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.28\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Concept & Description \\
+\midrule
+ODE
+& Deterministic differential equation $\dd y=f(t,y)\dd t$ \\
+
+Euler method
+& Approximation $y_{n+1}=y_n+f(t_n,y_n)\Delta$ \\
+
+Brownian motion
+& Continuous stochastic process with independent Gaussian increments \\
+
+SDE
+& Differential equation with drift term and Brownian noise term \\
+
+Euler--Maruyama
+& Numerical scheme for simulating SDE sample paths \\
+
+Ito's lemma
+& Stochastic chain rule with correction term $\frac{1}{2}h_{SS}g^2\dd t$ \\
+
+Arithmetic Brownian motion
+& $\dd Y_t=\mu\dd t+\sigma\dd B_t$ \\
+
+Geometric Brownian motion
+& Positive process satisfying $\dd X_t=\alpha X_t\dd t+\sigma X_t\dd B_t$ \\
+
+GBM calibration
+& Estimate parameters using Gaussian log-increments \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\chapter{Directional Derivatives}
+
+\section{Definition}
+
+Let $f:\R^2\to\R$ be differentiable at $(x,y)$, and let
+\[
+\mathbf{u}=(\cos\theta,\sin\theta)
+\]
+be a unit vector. The directional derivative of $f$ in the direction $\mathbf{u}$ is
+\[
+D_{\mathbf{u}}f(x,y)
+=
+f_x(x,y)\cos\theta+f_y(x,y)\sin\theta.
+\]
+
+Equivalently,
+\[
+D_{\mathbf{u}}f(x,y)
+=
+\grad f(x,y)^\top \mathbf{u}.
+\]
+
+\section{A Direction-Dependent Example}
+
+Consider
+\[
+f(x,y)=\frac{yx^2}{x^2+y^2},
+\]
+for $(x,y)\neq (0,0)$, and define
+\[
+f(0,0)=0.
+\]
+
+We study the behavior of $f$ near the origin.
+
+\subsection{Partial Derivative with Respect to $x$}
+
+For $(x,y)\neq (0,0)$,
+\[
+f_x(x,y)
+=
+\frac{\partial}{\partial x}
+\left(
+\frac{yx^2}{x^2+y^2}
+\right).
+\]
+Using the quotient rule,
+\[
+f_x(x,y)
+=
+\frac{2xy(x^2+y^2)-yx^2(2x)}{(x^2+y^2)^2}.
+\]
+Simplifying,
+\[
+f_x(x,y)
+=
+\frac{2xy^3}{(x^2+y^2)^2}.
+\]
+
+Now approach the origin along the line
+\[
+x=u\cos\theta,
+\qquad
+y=u\sin\theta.
+\]
+Then
+\[
+f_x(u\cos\theta,u\sin\theta)
+=
+\frac{2(u\cos\theta)(u\sin\theta)^3}
+{\left((u\cos\theta)^2+(u\sin\theta)^2\right)^2}.
+\]
+Since
+\[
+(u\cos\theta)^2+(u\sin\theta)^2=u^2,
+\]
+we get
+\[
+f_x(u\cos\theta,u\sin\theta)
+=
+2\cos\theta\sin^3\theta.
+\]
+
+This depends on the direction $\theta$ but not on the distance $u$ from the origin.
+
+\subsection{Partial Derivative with Respect to $y$}
+
+For $(x,y)\neq (0,0)$,
+\[
+f_y(x,y)
+=
+\frac{\partial}{\partial y}
+\left(
+\frac{yx^2}{x^2+y^2}
+\right).
+\]
+Using the quotient rule,
+\[
+f_y(x,y)
+=
+\frac{x^2(x^2+y^2)-yx^2(2y)}{(x^2+y^2)^2}.
+\]
+Simplifying,
+\[
+f_y(x,y)
+=
+\frac{x^2(x^2-y^2)}{(x^2+y^2)^2}.
+\]
+
+Along the line
+\[
+x=u\cos\theta,
+\qquad
+y=u\sin\theta,
+\]
+we obtain
+\[
+f_y(u\cos\theta,u\sin\theta)
+=
+\frac{u^2\cos^2\theta\left(u^2\cos^2\theta-u^2\sin^2\theta\right)}
+{u^4}.
+\]
+Therefore,
+\[
+f_y(u\cos\theta,u\sin\theta)
+=
+\cos^2\theta(\cos^2\theta-\sin^2\theta)
+=
+\cos^2\theta\cos(2\theta).
+\]
+
+Again, the expression depends on the direction of approach.
+
+\section{Continuity and Differentiability}
+
+At the origin,
+\[
+f_x(0,0)
+=
+\lim_{h\to 0}\frac{f(h,0)-f(0,0)}{h}.
+\]
+Since
+\[
+f(h,0)=0,
+\]
+we get
+\[
+f_x(0,0)=0.
+\]
+
+Similarly,
+\[
+f_y(0,0)
+=
+\lim_{h\to 0}\frac{f(0,h)-f(0,0)}{h}.
+\]
+Since
+\[
+f(0,h)=0,
+\]
+we get
+\[
+f_y(0,0)=0.
+\]
+
+Thus both partial derivatives exist at the origin.
+
+However, $f_x$ is not continuous at the origin because
+\[
+f_x(u\cos\theta,u\sin\theta)
+=
+2\cos\theta\sin^3\theta
+\]
+has different limits for different $\theta$. Similarly,
+\[
+f_y(u\cos\theta,u\sin\theta)
+=
+\cos^2\theta\cos(2\theta)
+\]
+is direction-dependent.
+
+\begin{proposition}
+The function
+\[
+f(x,y)=\frac{yx^2}{x^2+y^2},
+\qquad
+f(0,0)=0,
+\]
+has partial derivatives at the origin, but its partial derivatives are not continuous at the origin.
+\end{proposition}
+
+\begin{remark}
+The existence of partial derivatives at a point does not imply differentiability at that point. Differentiability is a stronger condition requiring a good linear approximation to the function near the point.
+\end{remark}
+
+\section{Directional Derivatives at the Origin}
+
+For a unit vector
+\[
+\mathbf{u}=(a,b),
+\]
+the directional derivative at the origin is
+\[
+D_{\mathbf{u}}f(0,0)
+=
+\lim_{h\to 0}
+\frac{f(ha,hb)-f(0,0)}{h}.
+\]
+Now
+\[
+f(ha,hb)
+=
+\frac{(hb)(ha)^2}{(ha)^2+(hb)^2}.
+\]
+Since $a^2+b^2=1$,
+\[
+f(ha,hb)=hba^2.
+\]
+Therefore,
+\[
+D_{\mathbf{u}}f(0,0)=ba^2.
+\]
+
+If $f$ were differentiable at the origin, then
+\[
+D_{\mathbf{u}}f(0,0)
+=
+\grad f(0,0)^\top \mathbf{u}.
+\]
+But
+\[
+\grad f(0,0)=(0,0),
+\]
+so differentiability would imply
+\[
+D_{\mathbf{u}}f(0,0)=0
+\]
+for every direction $\mathbf{u}$. This is false, since for example with
+\[
+\mathbf{u}=\left(\frac{1}{\sqrt{2}},\frac{1}{\sqrt{2}}\right),
+\]
+we get
+\[
+D_{\mathbf{u}}f(0,0)
+=
+\frac{1}{\sqrt{2}}\left(\frac{1}{2}\right)
+=
+\frac{1}{2\sqrt{2}}.
+\]
+
+\begin{proposition}
+The function $f$ is not differentiable at $(0,0)$.
+\end{proposition}
+
+\begin{proof}
+If $f$ were differentiable at $(0,0)$, then all directional derivatives would be determined by the gradient:
+\[
+D_{\mathbf{u}}f(0,0)=\grad f(0,0)^\top \mathbf{u}.
+\]
+Since $f_x(0,0)=f_y(0,0)=0$, this would imply
+\[
+D_{\mathbf{u}}f(0,0)=0
+\]
+for all unit vectors $\mathbf{u}$. But for
+\[
+\mathbf{u}=\left(\frac{1}{\sqrt{2}},\frac{1}{\sqrt{2}}\right),
+\]
+we found
+\[
+D_{\mathbf{u}}f(0,0)=\frac{1}{2\sqrt{2}}\neq 0.
+\]
+Therefore, $f$ is not differentiable at the origin.
+\end{proof}
+
+\begin{remark}
+Direction-dependence near a point is often a warning sign that differentiability may fail. Partial derivatives can exist without producing a valid linear approximation.
+\end{remark}
+
+
+\chapter{Mean-Reverting Processes}
+
+\section{Motivation}
+
+Geometric Brownian motion is often used for equity prices, but it is not always appropriate for quantities that fluctuate around a long-run average. Commodity prices, interest rates, and certain physical measurements often exhibit mean reversion.
+
+A standard mean-reverting process is the Ornstein--Uhlenbeck process:
+\[
+\dd X_t=\theta(\mu-X_t)\dd t+\sigma\dd B_t,
+\]
+where:
+\begin{itemize}
+\item $\theta>0$ is the speed of mean reversion,
+\item $\mu$ is the long-run mean,
+\item $\sigma>0$ is the volatility,
+\item $B_t$ is standard Brownian motion.
+\end{itemize}
+
+When $X_t>\mu$, the drift
+\[
+\theta(\mu-X_t)
+\]
+is negative, pulling the process downward. When $X_t<\mu$, the drift is positive, pulling the process upward.
+
+\section{Euler--Maruyama Simulation}
+
+To simulate
+\[
+\dd X_t=\theta(\mu-X_t)\dd t+\sigma\dd B_t
+\]
+on a grid
+\[
+s,\ s+\Delta,\ s+2\Delta,\ldots,
+\]
+the Euler--Maruyama update is
+\[
+X_{s+(j+1)\Delta}
+=
+X_{s+j\Delta}
++
+\theta(\mu-X_{s+j\Delta})\Delta
++
+\sigma\sqrt{\Delta}Z_j,
+\]
+where
+\[
+Z_j\iid \Normal(0,1).
+\]
+
+\begin{algorithm}[H]
+\caption{Euler--Maruyama Simulation of a Mean-Reverting Process}
+\begin{algorithmic}[1]
+\State Choose parameters $\theta,\mu,\sigma$, step size $\Delta$, and initial value $X_0$
+\For{$j=0,\ldots,N-1$}
+    \State Generate $Z_j\sim \Normal(0,1)$
+    \State Set
+    \[
+    X_{(j+1)\Delta}
+    =
+    X_{j\Delta}
+    +
+    \theta(\mu-X_{j\Delta})\Delta
+    +
+    \sigma\sqrt{\Delta}Z_j
+    \]
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\section{Exact Conditional Distribution}
+
+The mean-reverting SDE admits an exact solution. Starting from
+\[
+\dd X_t=\theta(\mu-X_t)\dd t+\sigma\dd B_t,
+\]
+rewrite as
+\[
+\dd X_t+\theta X_t\dd t=\theta\mu\dd t+\sigma\dd B_t.
+\]
+
+Multiply by the integrating factor $e^{\theta t}$. Define
+\[
+Y_t=e^{\theta t}X_t.
+\]
+Using Ito's product rule,
+\[
+\dd Y_t
+=
+\theta e^{\theta t}X_t\dd t+e^{\theta t}\dd X_t.
+\]
+Substitute the SDE for $\dd X_t$:
+\[
+\dd Y_t
+=
+\theta e^{\theta t}X_t\dd t
++
+e^{\theta t}\left[\theta(\mu-X_t)\dd t+\sigma\dd B_t\right].
+\]
+The $X_t$ terms cancel:
+\[
+\dd Y_t
+=
+\theta\mu e^{\theta t}\dd t
++
+\sigma e^{\theta t}\dd B_t.
+\]
+
+Integrating from $s$ to $t$ gives
+\[
+e^{\theta t}X_t-e^{\theta s}X_s
+=
+\theta\mu\int_s^t e^{\theta u}\dd u
++
+\sigma\int_s^t e^{\theta u}\dd B_u.
+\]
+Since
+\[
+\theta\mu\int_s^t e^{\theta u}\dd u
+=
+\mu(e^{\theta t}-e^{\theta s}),
+\]
+we obtain
+\[
+X_t
+=
+e^{-\theta(t-s)}X_s
++
+\mu(1-e^{-\theta(t-s)})
++
+\sigma e^{-\theta t}\int_s^t e^{\theta u}\dd B_u.
+\]
+
+The stochastic integral has mean zero. By Ito isometry,
+\[
+\Var\left(
+\sigma e^{-\theta t}\int_s^t e^{\theta u}\dd B_u
+\right)
+=
+\sigma^2 e^{-2\theta t}
+\int_s^t e^{2\theta u}\dd u.
+\]
+Thus
+\[
+\Var\left(
+\sigma e^{-\theta t}\int_s^t e^{\theta u}\dd B_u
+\right)
+=
+\sigma^2 e^{-2\theta t}
+\frac{e^{2\theta t}-e^{2\theta s}}{2\theta}.
+\]
+Simplifying,
+\[
+\Var\left(
+\sigma e^{-\theta t}\int_s^t e^{\theta u}\dd B_u
+\right)
+=
+\sigma^2
+\frac{1-e^{-2\theta(t-s)}}{2\theta}.
+\]
+
+\begin{theorem}
+For $t>s$,
+\[
+X_t|X_s
+\sim
+\Normal(m_{s,t},v_{s,t}),
+\]
+where
+\[
+m_{s,t}
+=
+e^{-\theta(t-s)}X_s+\mu(1-e^{-\theta(t-s)}),
+\]
+and
+\[
+v_{s,t}
+=
+\sigma^2\frac{1-e^{-2\theta(t-s)}}{2\theta}.
+\]
+\end{theorem}
+
+\section{Exact Simulation on an Arbitrary Time Grid}
+
+Let
+\[
+0=t_0<t_1<\cdots<t_N
+\]
+be a time grid. Define
+\[
+\Delta t_i=t_i-t_{i-1}.
+\]
+Then exact simulation uses
+\[
+X_{t_i}|X_{t_{i-1}}
+\sim
+\Normal(m_i,v_i),
+\]
+where
+\[
+m_i
+=
+e^{-\theta\Delta t_i}X_{t_{i-1}}
++
+\mu(1-e^{-\theta\Delta t_i}),
+\]
+and
+\[
+v_i
+=
+\sigma^2
+\frac{1-e^{-2\theta\Delta t_i}}{2\theta}.
+\]
+
+Equivalently,
+\[
+X_{t_i}
+=
+m_i+\sqrt{v_i}Z_i,
+\qquad
+Z_i\iid \Normal(0,1).
+\]
+
+\section{Long-Run Behavior}
+
+From the conditional mean,
+\[
+\E[X_t|X_0]
+=
+e^{-\theta t}X_0+\mu(1-e^{-\theta t}).
+\]
+Therefore,
+\[
+\lim_{t\to\infty}\E[X_t|X_0]=\mu.
+\]
+
+From the conditional variance,
+\[
+\Var(X_t|X_0)
+=
+\sigma^2\frac{1-e^{-2\theta t}}{2\theta}.
+\]
+Therefore,
+\[
+\lim_{t\to\infty}\Var(X_t|X_0)
+=
+\frac{\sigma^2}{2\theta}.
+\]
+
+Thus the limiting stationary distribution is
+\[
+X_\infty
+\sim
+\Normal\left(\mu,\frac{\sigma^2}{2\theta}\right).
+\]
+
+\section{Covariance Structure}
+
+Assume $X_0$ is fixed. For $0<s<t$, the covariance is
+\[
+\Cov(X_s,X_t)
+=
+\frac{\sigma^2}{2\theta}
+\left(
+e^{-\theta(t-s)}-e^{-\theta(t+s)}
+\right).
+\]
+
+\begin{proof}
+Using the exact solution from time $0$,
+\[
+X_t
+=
+e^{-\theta t}X_0+\mu(1-e^{-\theta t})
++
+\sigma e^{-\theta t}\int_0^t e^{\theta u}\dd B_u.
+\]
+Only the stochastic integral contributes to covariance. Thus
+\[
+\Cov(X_s,X_t)
+=
+\sigma^2 e^{-\theta(s+t)}
+\Cov\left(
+\int_0^s e^{\theta u}\dd B_u,
+\int_0^t e^{\theta v}\dd B_v
+\right).
+\]
+Since $s<t$, the shared stochastic variation is over $[0,s]$, so by Ito isometry,
+\[
+\Cov(X_s,X_t)
+=
+\sigma^2 e^{-\theta(s+t)}
+\int_0^s e^{2\theta u}\dd u.
+\]
+Therefore,
+\[
+\Cov(X_s,X_t)
+=
+\sigma^2 e^{-\theta(s+t)}
+\frac{e^{2\theta s}-1}{2\theta}.
+\]
+Simplifying,
+\[
+\Cov(X_s,X_t)
+=
+\frac{\sigma^2}{2\theta}
+\left(
+e^{-\theta(t-s)}-e^{-\theta(t+s)}
+\right).
+\]
+\end{proof}
+
+\begin{remark}
+If the process is initialized from its stationary distribution, then
+\[
+\Cov(X_s,X_t)
+=
+\frac{\sigma^2}{2\theta}e^{-\theta|t-s|}.
+\]
+\end{remark}
+
+\section{Likelihood for Observed Data}
+
+Suppose we observe
+\[
+X_{t_0},X_{t_1},\ldots,X_{t_N}
+\]
+at times
+\[
+t_0<t_1<\cdots<t_N.
+\]
+
+Because the process is Markov,
+\[
+f(x_{t_0},\ldots,x_{t_N})
+=
+f(x_{t_0})
+\prod_{i=1}^N
+f(x_{t_i}|x_{t_{i-1}}).
+\]
+
+Ignoring the initial density term, the conditional log-likelihood is
+\[
+\ell(\mu,\sigma,\theta)
+=
+\sum_{i=1}^N
+\left[
+-\frac{1}{2}\log(2\pi v_i)
+-
+\frac{(X_{t_i}-m_i)^2}{2v_i}
+\right],
+\]
+where
+\[
+m_i
+=
+e^{-\theta\Delta t_i}X_{t_{i-1}}
++
+\mu(1-e^{-\theta\Delta t_i}),
+\]
+and
+\[
+v_i
+=
+\sigma^2
+\frac{1-e^{-2\theta\Delta t_i}}{2\theta}.
+\]
+
+\section{Simplifying Notation}
+
+Define
+\[
+w_i=e^{-\theta\Delta t_i}.
+\]
+Then
+\[
+m_i=w_iX_{t_{i-1}}+\mu(1-w_i),
+\]
+and
+\[
+v_i
+=
+\sigma^2\frac{1-w_i^2}{2\theta}.
+\]
+
+\section{Maximum Likelihood Estimation}
+
+For fixed $\theta$, the transition model can be written as a heteroskedastic Gaussian regression:
+\[
+X_{t_i}-w_iX_{t_{i-1}}
+=
+\mu(1-w_i)+\varepsilon_i,
+\]
+where
+\[
+\varepsilon_i\sim
+\Normal\left(
+0,
+\sigma^2\frac{1-w_i^2}{2\theta}
+\right).
+\]
+
+\subsection{Estimating $\mu$ for Fixed $\theta$}
+
+For fixed $\theta$, maximizing the likelihood with respect to $\mu$ is equivalent to minimizing
+\[
+\sum_{i=1}^N
+\frac{
+\left[X_{t_i}-w_iX_{t_{i-1}}-\mu(1-w_i)\right]^2
+}{
+1-w_i^2
+}.
+\]
+Since
+\[
+1-w_i^2=(1-w_i)(1+w_i),
+\]
+the first-order condition gives
+\[
+\hat{\mu}(\theta)
+=
+\frac{
+\sum_{i=1}^N
+\frac{X_{t_i}-w_iX_{t_{i-1}}}{1+w_i}
+}{
+\sum_{i=1}^N
+\frac{1-w_i}{1+w_i}
+}.
+\]
+
+\subsection{Estimating $\sigma$ for Fixed $\theta$ and $\mu$}
+
+For fixed $\theta$ and $\mu$, define
+\[
+\hat{m}_i
+=
+w_iX_{t_{i-1}}+\mu(1-w_i).
+\]
+The MLE for $\sigma^2$ is
+\[
+\hat{\sigma}^2(\theta)
+=
+\frac{2\theta}{N}
+\sum_{i=1}^N
+\frac{(X_{t_i}-\hat{m}_i)^2}{1-w_i^2}.
+\]
+Thus
+\[
+\hat{\sigma}(\theta)
+=
+\sqrt{
+\frac{2\theta}{N}
+\sum_{i=1}^N
+\frac{(X_{t_i}-\hat{m}_i)^2}{1-w_i^2}
+}.
+\]
+
+\subsection{Grid Search over $\theta$}
+
+A practical estimation strategy is:
+\begin{enumerate}
+\item Choose a grid of candidate values for $\theta>0$.
+\item For each $\theta$, compute $\hat{\mu}(\theta)$.
+\item Compute $\hat{\sigma}(\theta)$.
+\item Evaluate the log-likelihood
+\[
+\ell(\hat{\mu}(\theta),\hat{\sigma}(\theta),\theta).
+\]
+\item Choose the $\theta$ value that maximizes the profile log-likelihood.
+\end{enumerate}
+
+The final estimates are
+\[
+\hat{\theta},
+\qquad
+\hat{\mu}(\hat{\theta}),
+\qquad
+\hat{\sigma}(\hat{\theta}).
+\]
+
+\section{Parametric Bootstrap Confidence Intervals}
+
+A parametric bootstrap can be used to quantify uncertainty in
+\[
+(\theta,\mu,\sigma).
+\]
+
+\begin{algorithm}[H]
+\caption{Parametric Bootstrap for Mean-Reverting Process}
+\begin{algorithmic}[1]
+\State Fit the model to obtain estimates $(\hat{\theta},\hat{\mu},\hat{\sigma})$
+\For{$j=1,\ldots,M$}
+    \State Simulate a dataset from the mean-reverting process using $(\hat{\theta},\hat{\mu},\hat{\sigma})$
+    \State Refit the model to the simulated dataset
+    \State Store $(\hat{\theta}^{(j)},\hat{\mu}^{(j)},\hat{\sigma}^{(j)})$
+\EndFor
+\State Use the empirical $2.5\%$ and $97.5\%$ quantiles of the bootstrap estimates as approximate $95\%$ confidence intervals
+\end{algorithmic}
+\end{algorithm}
+
+For example,
+\[
+\left(
+\hat{\theta}_{0.025},
+\hat{\theta}_{0.975}
+\right)
+\]
+is an approximate $95\%$ bootstrap confidence interval for $\theta$.
+
+\section{Summary}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.28\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Concept & Description \\
+\midrule
+Mean reversion
+& Drift pulls the process toward a long-run mean $\mu$ \\
+
+Ornstein--Uhlenbeck SDE
+& $\dd X_t=\theta(\mu-X_t)\dd t+\sigma\dd B_t$ \\
+
+Speed parameter
+& Larger $\theta$ means faster reversion to $\mu$ \\
+
+Euler--Maruyama
+& Approximate simulation using normal increments \\
+
+Exact transition
+& $X_t|X_s$ is normally distributed \\
+
+Stationary distribution
+& $\Normal(\mu,\sigma^2/(2\theta))$ \\
+
+Likelihood
+& Product of Gaussian transition densities \\
+
+Estimation
+& Profile over $\theta$, with closed-form $\hat{\mu}(\theta)$ and $\hat{\sigma}(\theta)$ \\
+
+Parametric bootstrap
+& Simulate and refit to approximate parameter uncertainty \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\chapter{Boosting Methods}
+
+\section{Empirical Risk Minimization}
+
+Suppose we observe training data
+\[
+(x^{(i)},Y^{(i)}), \qquad i=1,\ldots,N,
+\]
+where
+\[
+x^{(i)}=(x_1^{(i)},\ldots,x_k^{(i)})
+\]
+is a predictor vector and $Y^{(i)}$ is the response.
+
+The goal is to choose a prediction function $f$ that minimizes the expected loss
+\[
+\E[\ell(Y,f(X))].
+\]
+Since the population distribution is unknown, we instead minimize the empirical risk
+\[
+R_N(f)
+=
+\frac{1}{N}\sum_{i=1}^N \ell(Y^{(i)},f(x^{(i)})).
+\]
+
+\section{Examples of Loss Functions}
+
+\begin{example}
+For regression with squared error loss,
+\[
+\ell(y,f(x))=(y-f(x))^2.
+\]
+The empirical risk is
+\[
+R_N(f)
+=
+\frac{1}{N}\sum_{i=1}^N (Y^{(i)}-f(x^{(i)}))^2.
+\]
+\end{example}
+
+\begin{example}
+For binary classification with $Y\in\{0,1\}$ and predicted probability
+\[
+p(x)=\Prob(Y=1|X=x),
+\]
+the negative log-likelihood loss is
+\[
+\ell(y,p(x))
+=
+-y\log p(x)-(1-y)\log(1-p(x)).
+\]
+Equivalently, the empirical risk is
+\[
+-\frac{1}{N}\sum_{i=1}^N
+\left[
+Y^{(i)}\log p(x^{(i)})
++
+(1-Y^{(i)})\log(1-p(x^{(i)}))
+\right].
+\]
+\end{example}
+
+\begin{example}
+For multiclass classification with $Y\in\{1,\ldots,K\}$ and predicted probabilities
+\[
+f(x)=(f_1(x),\ldots,f_K(x)),
+\]
+where
+\[
+f_j(x)\approx \Prob(Y=j|X=x),
+\]
+the cross-entropy loss is
+\[
+\ell(y,f(x))
+=
+-\sum_{j=1}^K \ind_{\{y=j\}}\log f_j(x).
+\]
+The empirical risk is
+\[
+-\frac{1}{N}\sum_{i=1}^N
+\sum_{j=1}^K
+\ind_{\{Y^{(i)}=j\}}\log f_j(x^{(i)}).
+\]
+\end{example}
+
+\section{Weak Learners and Regularity}
+
+Boosting constructs a strong predictor by combining many weak predictors. Let $\mathcal{H}$ denote a class of simple prediction functions. A common choice is the class of decision stumps, which are depth-one trees.
+
+Specifying a regression stump requires:
+\begin{enumerate}
+\item a variable to split on,
+\item a threshold,
+\item a prediction value at each leaf.
+\end{enumerate}
+
+\begin{remark}
+Without restrictions on $f$, empirical risk minimization can overfit. For example, under squared error loss, if all $x^{(i)}$ are distinct, one can force
+\[
+f(x^{(i)})=Y^{(i)}
+\]
+for all $i$, making the training loss zero. Boosting controls complexity by building $f$ as a sum of simple weak learners, often with small step sizes.
+\end{remark}
+
+\section{Gradient Boosting}
+
+Suppose we currently have a predictor $f$. We want to improve it by adding a small multiple of a weak learner:
+\[
+f_{\text{new}}=f+c h,
+\]
+where
+\[
+h\in\mathcal{H}
+\]
+and $c\in\R$ is a step size.
+
+The empirical risk after the update is
+\[
+R_N(f+ch)
+=
+\frac{1}{N}\sum_{i=1}^N
+\ell(Y^{(i)},f(x^{(i)})+c h(x^{(i)})).
+\]
+
+For small $c$, use a first-order Taylor expansion in the second argument:
+\[
+\ell(Y^{(i)},f(x^{(i)})+c h(x^{(i)}))
+\approx
+\ell(Y^{(i)},f(x^{(i)}))
++
+c
+\frac{\partial \ell}{\partial f}
+(Y^{(i)},f(x^{(i)}))
+h(x^{(i)}).
+\]
+Therefore,
+\[
+R_N(f+ch)
+\approx
+R_N(f)
++
+\frac{c}{N}
+\sum_{i=1}^N
+\frac{\partial \ell}{\partial f}
+(Y^{(i)},f(x^{(i)}))
+h(x^{(i)}).
+\]
+
+Define the gradient vector
+\[
+g
+=
+\begin{bmatrix}
+\dfrac{\partial \ell}{\partial f}(Y^{(1)},f(x^{(1)}))\\
+\vdots\\
+\dfrac{\partial \ell}{\partial f}(Y^{(N)},f(x^{(N)}))
+\end{bmatrix}.
+\]
+Also define the weak learner prediction vector
+\[
+h_X
+=
+\begin{bmatrix}
+h(x^{(1)})\\
+\vdots\\
+h(x^{(N)})
+\end{bmatrix}.
+\]
+Then the linearized risk change is proportional to
+\[
+g^\top h_X.
+\]
+
+Thus, to reduce empirical risk, gradient boosting chooses a weak learner whose predictions point approximately in the negative-gradient direction.
+
+\begin{definition}
+The negative gradient values
+\[
+r_i
+=
+-
+\frac{\partial \ell}{\partial f}
+(Y^{(i)},f(x^{(i)}))
+\]
+are called pseudo-residuals or generalized residuals.
+\end{definition}
+
+\section{Gradient Boosting Algorithm}
+
+The boosting model has the additive form
+\[
+f_M(x)
+=
+f_0(x)+\sum_{m=1}^M c_m h_m(x),
+\]
+where each
+\[
+h_m\in\mathcal{H}.
+\]
+
+\begin{algorithm}[H]
+\caption{Gradient Boosting}
+\begin{algorithmic}[1]
+\State Initialize
+\[
+f_0=\argmin_{h\in\mathcal{H}} \frac{1}{N}\sum_{i=1}^N \ell(Y^{(i)},h(x^{(i)})).
+\]
+\For{$m=1,\ldots,M$}
+    \State Compute pseudo-residuals
+    \[
+    r_i^{(m)}
+    =
+    -
+    \frac{\partial \ell}{\partial f}
+    (Y^{(i)},f_{m-1}(x^{(i)})).
+    \]
+    \State Fit a weak learner $h_m\in\mathcal{H}$ to the pseudo-residuals
+    \[
+    r_1^{(m)},\ldots,r_N^{(m)}.
+    \]
+    \State Choose a step size $c_m$, for example by line search:
+    \[
+    c_m
+    =
+    \argmin_{c\in\R}
+    \frac{1}{N}\sum_{i=1}^N
+    \ell(Y^{(i)},f_{m-1}(x^{(i)})+c h_m(x^{(i)})).
+    \]
+    \State Update
+    \[
+    f_m(x)=f_{m-1}(x)+\nu c_m h_m(x),
+    \]
+    where $0<\nu\le 1$ is a learning rate.
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+The learning rate $\nu$ regularizes the boosting procedure. Smaller $\nu$ values usually require more boosting iterations but can improve generalization.
+\end{remark}
+
+\section{Least Squares Gradient Boosting}
+
+For squared error loss,
+\[
+\ell(y,f)=(y-f)^2.
+\]
+Then
+\[
+\frac{\partial \ell}{\partial f}
+=
+-2(y-f).
+\]
+Therefore, the negative gradient is
+\[
+-\frac{\partial \ell}{\partial f}
+=
+2(y-f).
+\]
+Ignoring the constant factor $2$, the pseudo-residuals are the ordinary residuals:
+\[
+r_i
+=
+Y^{(i)}-f(x^{(i)}).
+\]
+
+Thus, under squared error loss, gradient boosting repeatedly fits weak learners to the current residuals.
+
+\begin{proposition}
+For squared error loss, gradient boosting performs functional gradient descent by fitting weak learners to residuals.
+\end{proposition}
+
+\begin{proof}
+The empirical risk is
+\[
+R_N(f)
+=
+\frac{1}{N}\sum_{i=1}^N (Y^{(i)}-f(x^{(i)}))^2.
+\]
+Differentiating with respect to the fitted value $f(x^{(i)})$ gives
+\[
+\frac{\partial R_N}{\partial f(x^{(i)})}
+=
+-\frac{2}{N}(Y^{(i)}-f(x^{(i)})).
+\]
+Thus the negative gradient direction is proportional to
+\[
+Y^{(i)}-f(x^{(i)}),
+\]
+which is exactly the residual.
+\end{proof}
+
+\section{Weak Learner Complexity}
+
+The class $\mathcal{H}$ may contain decision stumps, shallow trees, splines, or other simple predictors. In tree-based boosting, the trees are usually kept shallow.
+
+\begin{remark}
+Boosting works by combining many weak learners. If each learner is too complex, the model may overfit quickly. If each learner is too weak, many iterations may be required.
+\end{remark}
+
+\section{AdaBoost}
+
+AdaBoost is a boosting algorithm for binary classification with labels
+\[
+Y^{(i)}\in\{-1,1\}.
+\]
+It maintains weights on the training observations. Misclassified observations receive larger weights in later iterations, forcing future classifiers to focus on difficult cases.
+
+Let
+\[
+w_i^{(0)}=\frac{1}{N},
+\qquad
+i=1,\ldots,N.
+\]
+
+At iteration $j$, fit a classifier
+\[
+\hat{Y}_j(x)\in\{-1,1\}
+\]
+using the current observation weights.
+
+The weighted error rate is
+\[
+e_j
+=
+\frac{
+\sum_{i=1}^N
+w_i^{(j)}
+\ind_{\{\hat{Y}_j(x^{(i)})\neq Y^{(i)}\}}
+}{
+\sum_{i=1}^N w_i^{(j)}
+}.
+\]
+
+Define
+\[
+\alpha_j
+=
+\log\left(\frac{1-e_j}{e_j}\right).
+\]
+
+Update the weights by
+\[
+w_i^{(j+1)}
+=
+w_i^{(j)}
+\exp\left(
+\alpha_j
+\ind_{\{\hat{Y}_j(x^{(i)})\neq Y^{(i)}\}}
+\right).
+\]
+
+After $J$ iterations, the final classifier is
+\[
+\hat{Y}(x)
+=
+\operatorname{sign}
+\left(
+\sum_{j=0}^{J-1}
+\alpha_j \hat{Y}_j(x)
+\right).
+\]
+
+\begin{algorithm}[H]
+\caption{AdaBoost}
+\begin{algorithmic}[1]
+\State Initialize $w_i^{(0)}=1/N$ for $i=1,\ldots,N$
+\For{$j=0,\ldots,J-1$}
+    \State Fit a classifier $\hat{Y}_j$ using weights $w_i^{(j)}$
+    \State Compute weighted error
+    \[
+    e_j
+    =
+    \frac{
+    \sum_{i=1}^N
+    w_i^{(j)}
+    \ind_{\{\hat{Y}_j(x^{(i)})\neq Y^{(i)}\}}
+    }{
+    \sum_{i=1}^N w_i^{(j)}
+    }
+    \]
+    \State Compute
+    \[
+    \alpha_j=\log\left(\frac{1-e_j}{e_j}\right)
+    \]
+    \State Update weights
+    \[
+    w_i^{(j+1)}
+    =
+    w_i^{(j)}
+    \exp\left(
+    \alpha_j
+    \ind_{\{\hat{Y}_j(x^{(i)})\neq Y^{(i)}\}}
+    \right)
+    \]
+\EndFor
+\State Return
+\[
+\hat{Y}(x)
+=
+\operatorname{sign}
+\left(
+\sum_{j=0}^{J-1}
+\alpha_j\hat{Y}_j(x)
+\right)
+\]
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+If $e_j<1/2$, then
+\[
+\frac{1-e_j}{e_j}>1,
+\]
+so
+\[
+\alpha_j>0.
+\]
+Misclassified observations are multiplied by
+\[
+e^{\alpha_j}>1,
+\]
+while correctly classified observations are unchanged. Therefore, later classifiers place more emphasis on examples that earlier classifiers missed.
+\end{remark}
+
+\section{AdaBoost and Exponential Loss}
+
+AdaBoost can be interpreted as minimizing exponential loss. For a classifier score function
+\[
+F(x)=\sum_{j=0}^{J-1}\alpha_j\hat{Y}_j(x),
+\]
+the prediction is
+\[
+\hat{Y}(x)=\operatorname{sign}(F(x)).
+\]
+The exponential loss is
+\[
+\ell(y,F(x))=e^{-yF(x)}.
+\]
+
+If $yF(x)$ is large and positive, the observation is correctly classified with high confidence and the loss is small. If $yF(x)<0$, the observation is misclassified and the loss is large.
+
+\begin{remark}
+Gradient boosting is a general framework based on functional gradient descent. AdaBoost is a specific boosting method for binary classification that can be viewed as a special case involving exponential loss and adaptive reweighting.
+\end{remark}
+
+\section{Summary}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.28\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Concept & Description \\
+\midrule
+Empirical risk
+& Average loss over the training data \\
+
+Weak learner
+& Simple model such as a decision stump or shallow tree \\
+
+Boosting
+& Combines many weak learners into a stronger model \\
+
+Gradient boosting
+& Adds learners in the negative-gradient direction of the empirical risk \\
+
+Pseudo-residual
+& Negative derivative of the loss with respect to the current prediction \\
+
+Least squares boosting
+& Fits weak learners to ordinary residuals \\
+
+Learning rate
+& Shrinks each update to regularize the model \\
+
+AdaBoost
+& Binary classification boosting method that upweights misclassified observations \\
+
+Exponential loss
+& Loss function interpretation of AdaBoost \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\part{Scientific Computing}
+
+\chapter{Python Fundamentals}
+
+\section{Assignment}
+
+Python uses assignment to bind a name to an object:
+\[
+\texttt{name = object}.
+\]
+
+\begin{lstlisting}[language=Python]
+x = 10
+y = 3.14
+name = "Jonathan"
+\end{lstlisting}
+
+Assignment does not copy the object by default. It creates another reference to the same object.
+
+\begin{lstlisting}[language=Python]
+a = [1, 2, 3]
+b = a
+b.append(4)
+
+print(a)  # [1, 2, 3, 4]
+\end{lstlisting}
+
+Here, both \texttt{a} and \texttt{b} refer to the same list.
+
+\begin{remark}
+For mutable objects such as lists and dictionaries, assignment creates an alias. For immutable objects such as integers, floats, strings, and tuples, this distinction is less visible because the object cannot be modified in place.
+\end{remark}
+
+\subsection{Multiple Assignment}
+
+Python supports multiple assignment:
+\begin{lstlisting}[language=Python]
+x, y = 1, 2
+\end{lstlisting}
+
+This is useful for swapping variables:
+\begin{lstlisting}[language=Python]
+x, y = y, x
+\end{lstlisting}
+
+\subsection{Unpacking}
+
+Sequences can be unpacked into variables:
+\begin{lstlisting}[language=Python]
+point = (3, 4)
+x, y = point
+\end{lstlisting}
+
+The starred expression collects remaining values:
+\begin{lstlisting}[language=Python]
+first, *middle, last = [1, 2, 3, 4, 5]
+
+print(first)   # 1
+print(middle)  # [2, 3, 4]
+print(last)    # 5
+\end{lstlisting}
+
+\section{Basic Data Types}
+
+Python objects have types. Common built-in types include:
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.25\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Type & Description \\
+\midrule
+\texttt{int} & Integer values such as \texttt{1}, \texttt{-5}, and \texttt{1000} \\
+
+\texttt{float} & Floating-point values such as \texttt{3.14} and \texttt{-0.5} \\
+
+\texttt{bool} & Boolean values \texttt{True} and \texttt{False} \\
+
+\texttt{str} & Text strings \\
+
+\texttt{list} & Mutable ordered sequence \\
+
+\texttt{tuple} & Immutable ordered sequence \\
+
+\texttt{dict} & Key-value mapping \\
+
+\texttt{set} & Unordered collection of unique elements \\
+
+\texttt{NoneType} & Represents absence of a value; written as \texttt{None} \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\subsection{Numbers}
+
+\begin{lstlisting}[language=Python]
+a = 10       # int
+b = 3.5      # float
+
+print(a + b)   # 13.5
+print(a / 3)   # 3.333...
+print(a // 3)  # 3
+print(a % 3)   # 1
+print(a ** 2)  # 100
+\end{lstlisting}
+
+\subsection{Booleans}
+
+\begin{lstlisting}[language=Python]
+is_large = 10 > 5
+is_equal = 10 == 5
+
+print(is_large)  # True
+print(is_equal)  # False
+\end{lstlisting}
+
+Boolean operators are:
+\begin{lstlisting}[language=Python]
+x = 10
+
+print(x > 0 and x < 20)
+print(x < 0 or x == 10)
+print(not x == 5)
+\end{lstlisting}
+
+\subsection{Lists}
+
+Lists are mutable ordered sequences:
+\begin{lstlisting}[language=Python]
+values = [10, 20, 30]
+
+values.append(40)
+values[0] = 5
+
+print(values)  # [5, 20, 30, 40]
+\end{lstlisting}
+
+Indexing starts at zero:
+\begin{lstlisting}[language=Python]
+values = [10, 20, 30, 40]
+
+print(values[0])   # 10
+print(values[-1])  # 40
+print(values[1:3]) # [20, 30]
+\end{lstlisting}
+
+\subsection{Tuples}
+
+Tuples are immutable ordered sequences:
+\begin{lstlisting}[language=Python]
+point = (3, 4)
+
+x, y = point
+\end{lstlisting}
+
+\begin{remark}
+Tuples are useful when the grouped values should not be modified, such as coordinates, fixed records, or multiple return values.
+\end{remark}
+
+\subsection{Dictionaries}
+
+Dictionaries store key-value pairs:
+\begin{lstlisting}[language=Python]
+student = {
+    "name": "Jonathan",
+    "program": "Applied Math and Statistics",
+    "year": 2026
+}
+
+print(student["name"])
+student["year"] = 2027
+\end{lstlisting}
+
+Use \texttt{get} to safely retrieve values:
+\begin{lstlisting}[language=Python]
+major = student.get("major", "Not listed")
+\end{lstlisting}
+
+\subsection{Sets}
+
+Sets store unique elements:
+\begin{lstlisting}[language=Python]
+a = {1, 2, 3}
+b = {3, 4, 5}
+
+print(a | b)  # union
+print(a & b)  # intersection
+print(a - b)  # difference
+\end{lstlisting}
+
+\section{Evaluation and Control Flow}
+
+Python evaluates expressions and returns values.
+
+\begin{lstlisting}[language=Python]
+x = 2 + 3 * 4
+print(x)  # 14
+\end{lstlisting}
+
+Parentheses can control evaluation order:
+\begin{lstlisting}[language=Python]
+x = (2 + 3) * 4
+print(x)  # 20
+\end{lstlisting}
+
+\subsection{Conditional Statements}
+
+\begin{lstlisting}[language=Python]
+x = 10
+
+if x > 0:
+    print("positive")
+elif x == 0:
+    print("zero")
+else:
+    print("negative")
+\end{lstlisting}
+
+\subsection{Loops}
+
+A \texttt{for} loop iterates over a sequence:
+\begin{lstlisting}[language=Python]
+for value in [1, 2, 3]:
+    print(value)
+\end{lstlisting}
+
+A \texttt{while} loop continues while a condition is true:
+\begin{lstlisting}[language=Python]
+count = 0
+
+while count < 3:
+    print(count)
+    count += 1
+\end{lstlisting}
+
+\subsection{List Comprehensions}
+
+List comprehensions provide compact syntax for building lists:
+\begin{lstlisting}[language=Python]
+squares = [x ** 2 for x in range(5)]
+print(squares)
+\end{lstlisting}
+
+With a condition:
+\begin{lstlisting}[language=Python]
+even_squares = [x ** 2 for x in range(10) if x % 2 == 0]
+\end{lstlisting}
+
+\section{Functions}
+
+Functions package reusable computations:
+\begin{lstlisting}[language=Python]
+def add(a, b):
+    return a + b
+
+result = add(2, 3)
+\end{lstlisting}
+
+\subsection{Default Arguments}
+
+\begin{lstlisting}[language=Python]
+def greet(name, greeting="Hello"):
+    return f"{greeting}, {name}"
+
+print(greet("Jonathan"))
+print(greet("Jonathan", greeting="Hi"))
+\end{lstlisting}
+
+\subsection{Keyword Arguments}
+
+\begin{lstlisting}[language=Python]
+def power(base, exponent):
+    return base ** exponent
+
+print(power(base=2, exponent=3))
+\end{lstlisting}
+
+\subsection{Variable-Length Arguments}
+
+\begin{lstlisting}[language=Python]
+def total(*values):
+    return sum(values)
+
+print(total(1, 2, 3, 4))
+\end{lstlisting}
+
+Keyword arguments can be collected with \texttt{**kwargs}:
+\begin{lstlisting}[language=Python]
+def describe(**kwargs):
+    for key, value in kwargs.items():
+        print(key, value)
+
+describe(name="Jonathan", program="AMS")
+\end{lstlisting}
+
+\section{Timing Code}
+
+Timing code is useful for comparing implementations and identifying bottlenecks.
+
+\subsection{Using \texttt{time}}
+
+\begin{lstlisting}[language=Python]
+import time
+
+start = time.time()
+
+total = 0
+for i in range(1_000_000):
+    total += i
+
+end = time.time()
+
+print("Elapsed time:", end - start)
+\end{lstlisting}
+
+\subsection{Using \texttt{timeit}}
+
+The \texttt{timeit} module is better for small snippets:
+\begin{lstlisting}[language=Python]
+import timeit
+
+elapsed = timeit.timeit(
+    stmt="sum(range(1000))",
+    number=10000
+)
+
+print(elapsed)
+\end{lstlisting}
+
+\begin{remark}
+Use \texttt{time.time()} for quick timing of larger code blocks. Use \texttt{timeit} for more reliable microbenchmarks.
+\end{remark}
+
+\section{Debugging Code}
+
+Debugging is the process of finding and fixing errors.
+
+\subsection{Common Error Types}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.25\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Error & Meaning \\
+\midrule
+\texttt{SyntaxError} & Python cannot parse the code \\
+
+\texttt{NameError} & A variable or function name is not defined \\
+
+\texttt{TypeError} & An operation is applied to an incompatible type \\
+
+\texttt{ValueError} & Correct type, but invalid value \\
+
+\texttt{IndexError} & Sequence index is out of range \\
+
+\texttt{KeyError} & Dictionary key does not exist \\
+
+\texttt{AttributeError} & Object does not have the requested attribute \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\subsection{Print Debugging}
+
+\begin{lstlisting}[language=Python]
+def mean(values):
+    print("values:", values)
+    result = sum(values) / len(values)
+    print("result:", result)
+    return result
+\end{lstlisting}
+
+\subsection{Assertions}
+
+Assertions check that expected conditions hold:
+\begin{lstlisting}[language=Python]
+def divide(a, b):
+    assert b != 0, "b must be nonzero"
+    return a / b
+\end{lstlisting}
+
+\subsection{Using \texttt{pdb}}
+
+The built-in debugger can pause execution:
+\begin{lstlisting}[language=Python]
+import pdb
+
+def compute(values):
+    total = sum(values)
+    pdb.set_trace()
+    return total / len(values)
+\end{lstlisting}
+
+Useful debugger commands include:
+\[
+\texttt{n} \text{ for next}, \quad
+\texttt{s} \text{ for step}, \quad
+\texttt{c} \text{ for continue}, \quad
+\texttt{q} \text{ for quit}.
+\]
+
+\section{String Manipulation}
+
+Strings are immutable sequences of characters.
+
+\begin{lstlisting}[language=Python]
+text = "Introduction to Data Science"
+
+print(text[0])
+print(text[-1])
+print(text[0:12])
+\end{lstlisting}
+
+\subsection{Common String Methods}
+
+\begin{lstlisting}[language=Python]
+text = "  Python Programming  "
+
+print(text.lower())
+print(text.upper())
+print(text.strip())
+print(text.replace("Python", "Scientific"))
+\end{lstlisting}
+
+\subsection{Splitting and Joining}
+
+\begin{lstlisting}[language=Python]
+sentence = "data,models,statistics"
+
+parts = sentence.split(",")
+print(parts)
+
+joined = " | ".join(parts)
+print(joined)
+\end{lstlisting}
+
+\subsection{Formatted Strings}
+
+Formatted strings make interpolation readable:
+\begin{lstlisting}[language=Python]
+name = "Jonathan"
+score = 95.12345
+
+message = f"{name} scored {score:.2f}"
+print(message)
+\end{lstlisting}
+
+\subsection{String Membership}
+
+\begin{lstlisting}[language=Python]
+text = "Bayesian statistics"
+
+print("Bayesian" in text)
+print("frequentist" in text)
+\end{lstlisting}
+
+\section{Classes}
+
+Classes define custom object types. They bundle data and behavior.
+
+\begin{lstlisting}[language=Python]
+class Student:
+    def __init__(self, name, program):
+        self.name = name
+        self.program = program
+
+    def introduce(self):
+        return f"My name is {self.name} and I study {self.program}."
+
+student = Student("Jonathan", "Applied Math and Statistics")
+print(student.introduce())
+\end{lstlisting}
+
+\subsection{The \texttt{self} Argument}
+
+Inside a class, \texttt{self} refers to the current object.
+
+\begin{lstlisting}[language=Python]
+class Counter:
+    def __init__(self):
+        self.count = 0
+
+    def increment(self):
+        self.count += 1
+
+counter = Counter()
+counter.increment()
+counter.increment()
+
+print(counter.count)
+\end{lstlisting}
+
+\subsection{Instance Attributes and Class Attributes}
+
+\begin{lstlisting}[language=Python]
+class Model:
+    model_type = "statistical model"  # class attribute
+
+    def __init__(self, name):
+        self.name = name              # instance attribute
+\end{lstlisting}
+
+\section{Overloaded Operators}
+
+Python classes can define special methods to customize built-in behavior. These methods usually begin and end with double underscores.
+
+\subsection{String Representation}
+
+\begin{lstlisting}[language=Python]
+class Vector:
+    def __init__(self, values):
+        self.values = values
+
+    def __repr__(self):
+        return f"Vector({self.values})"
+
+v = Vector([1, 2, 3])
+print(v)
+\end{lstlisting}
+
+\subsection{Addition}
+
+\begin{lstlisting}[language=Python]
+class Vector:
+    def __init__(self, values):
+        self.values = values
+
+    def __add__(self, other):
+        return Vector([
+            a + b
+            for a, b in zip(self.values, other.values)
+        ])
+
+    def __repr__(self):
+        return f"Vector({self.values})"
+
+v1 = Vector([1, 2, 3])
+v2 = Vector([4, 5, 6])
+
+print(v1 + v2)
+\end{lstlisting}
+
+\subsection{Scalar Multiplication}
+
+\begin{lstlisting}[language=Python]
+class Vector:
+    def __init__(self, values):
+        self.values = values
+
+    def __mul__(self, scalar):
+        return Vector([scalar * x for x in self.values])
+
+    def __rmul__(self, scalar):
+        return self.__mul__(scalar)
+
+    def __repr__(self):
+        return f"Vector({self.values})"
+
+v = Vector([1, 2, 3])
+
+print(v * 2)
+print(2 * v)
+\end{lstlisting}
+
+\subsection{Length and Indexing}
+
+\begin{lstlisting}[language=Python]
+class Dataset:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def __len__(self):
+        return len(self.rows)
+
+    def __getitem__(self, index):
+        return self.rows[index]
+
+data = Dataset([
+    {"x": 1, "y": 2},
+    {"x": 3, "y": 4}
+])
+
+print(len(data))
+print(data[0])
+\end{lstlisting}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.25\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Method & Behavior \\
+\midrule
+\texttt{\_\_repr\_\_} & Object representation \\
+
+\texttt{\_\_add\_\_} & Addition with \texttt{+} \\
+
+\texttt{\_\_sub\_\_} & Subtraction with \texttt{-} \\
+
+\texttt{\_\_mul\_\_} & Multiplication with \texttt{*} \\
+
+\texttt{\_\_truediv\_\_} & Division with \texttt{/} \\
+
+\texttt{\_\_eq\_\_} & Equality with \texttt{==} \\
+
+\texttt{\_\_lt\_\_} & Less-than comparison with \texttt{<} \\
+
+\texttt{\_\_len\_\_} & Length with \texttt{len(obj)} \\
+
+\texttt{\_\_getitem\_\_} & Indexing with \texttt{obj[i]} \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\section{Decorators}
+
+A decorator is a function that modifies another function.
+
+\subsection{Basic Decorator}
+
+\begin{lstlisting}[language=Python]
+def announce(func):
+    def wrapper():
+        print("Starting function")
+        result = func()
+        print("Finished function")
+        return result
+    return wrapper
+
+@announce
+def greet():
+    print("Hello")
+
+greet()
+\end{lstlisting}
+
+The syntax
+\[
+\texttt{@announce}
+\]
+is equivalent to
+\[
+\texttt{greet = announce(greet)}.
+\]
+
+\subsection{Decorators with Arguments}
+
+To decorate functions with arbitrary arguments, use \texttt{*args} and \texttt{**kwargs}:
+\begin{lstlisting}[language=Python]
+def announce(func):
+    def wrapper(*args, **kwargs):
+        print("Starting function")
+        result = func(*args, **kwargs)
+        print("Finished function")
+        return result
+    return wrapper
+
+@announce
+def add(a, b):
+    return a + b
+
+print(add(2, 3))
+\end{lstlisting}
+
+\subsection{Timing Decorator}
+
+\begin{lstlisting}[language=Python]
+import time
+
+def timer(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {end - start:.4f} seconds")
+        return result
+    return wrapper
+
+@timer
+def slow_sum(n):
+    total = 0
+    for i in range(n):
+        total += i
+    return total
+
+slow_sum(1_000_000)
+\end{lstlisting}
+
+\subsection{Using \texttt{functools.wraps}}
+
+A good decorator should preserve the original function metadata:
+\begin{lstlisting}[language=Python]
+from functools import wraps
+
+def timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        import time
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {end - start:.4f} seconds")
+        return result
+    return wrapper
+\end{lstlisting}
+
+\section{Class Decorators and Properties}
+
+The \texttt{@property} decorator makes a method behave like an attribute.
+
+\begin{lstlisting}[language=Python]
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+    @property
+    def area(self):
+        return 3.14159 * self.radius ** 2
+
+circle = Circle(2)
+print(circle.area)
+\end{lstlisting}
+
+This allows computed attributes without calling a method explicitly.
+
+\section{Static Methods and Class Methods}
+
+A static method does not require access to the instance:
+\begin{lstlisting}[language=Python]
+class MathUtils:
+    @staticmethod
+    def square(x):
+        return x ** 2
+
+print(MathUtils.square(5))
+\end{lstlisting}
+
+A class method receives the class itself as the first argument:
+\begin{lstlisting}[language=Python]
+class Dataset:
+    def __init__(self, values):
+        self.values = values
+
+    @classmethod
+    def from_range(cls, n):
+        return cls(list(range(n)))
+
+data = Dataset.from_range(5)
+print(data.values)
+\end{lstlisting}
+
+\section{Summary}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.28\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Topic & Main idea \\
+\midrule
+Assignment
+& Names are bound to objects; mutable objects can have aliases \\
+
+Data types
+& Python includes numbers, booleans, strings, lists, tuples, dictionaries, sets, and \texttt{None} \\
+
+Evaluation
+& Expressions are evaluated using operator precedence and control flow \\
+
+Timing
+& Use \texttt{time} for simple timing and \texttt{timeit} for small benchmarks \\
+
+Debugging
+& Use error messages, print statements, assertions, and \texttt{pdb} \\
+
+Strings
+& Strings support indexing, slicing, formatting, splitting, joining, and replacement \\
+
+Classes
+& Classes bundle data and behavior into reusable object types \\
+
+Overloaded operators
+& Special methods customize behavior of operators such as \texttt{+}, \texttt{*}, and indexing \\
+
+Decorators
+& Decorators wrap functions or methods to modify behavior without changing the original code \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\chapter{Advanced Python Topics for Data Science}
+
+\section{Web Scraping and Regular Expressions}
+
+\subsection{Web Scraping Overview}
+
+Web scraping extracts structured data from web pages. The standard workflow:
+
+\begin{enumerate}
+\item Send a request to a webpage
+\item Parse the HTML
+\item Extract relevant elements
+\end{enumerate}
+
+\subsection{Requests + BeautifulSoup}
+
+\begin{lstlisting}[language=Python]
+import requests
+from bs4 import BeautifulSoup
+
+url = "https://example.com"
+
+response = requests.get(url)
+html = response.text
+
+soup = BeautifulSoup(html, "html.parser")
+
+print(soup.title.text)
+\end{lstlisting}
+
+\subsection{Finding Elements}
+
+\begin{lstlisting}[language=Python]
+# find first occurrence
+link = soup.find("a")
+
+# find all occurrences
+links = soup.find_all("a")
+
+# extract attributes
+for link in links:
+    print(link.get("href"))
+\end{lstlisting}
+
+\subsection{Using CSS Selectors}
+
+\begin{lstlisting}[language=Python]
+elements = soup.select("div.classname > p")
+
+for el in elements:
+    print(el.text)
+\end{lstlisting}
+
+\begin{remark}
+Websites may block scraping. Always check robots.txt and use rate limiting.
+\end{remark}
+
+\subsection{Regular Expressions}
+
+Regular expressions (regex) are used for pattern matching in strings.
+
+\begin{lstlisting}[language=Python]
+import re
+
+text = "Email: test@example.com"
+
+match = re.search(r"\S+@\S+", text)
+print(match.group())
+\end{lstlisting}
+
+\subsection{Common Patterns}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.25\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Pattern & Meaning \\
+\midrule
+\texttt{.} & Any character \\
+\texttt{\textbackslash d} & Digit \\
+\texttt{\textbackslash w} & Word character \\
+\texttt{*} & Zero or more \\
+\texttt{+} & One or more \\
+\texttt{?} & Optional \\
+\texttt{\^} & Start of string \\
+\texttt{\$} & End of string \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\subsection{Extraction Example}
+
+\begin{lstlisting}[language=Python]
+text = "Prices: $10, $25, $100"
+
+prices = re.findall(r"\$\d+", text)
+print(prices)
+\end{lstlisting}
+
+\section{Parallel Computing}
+
+Parallel computing allows execution of multiple tasks simultaneously.
+
+\subsection{Multiprocessing}
+
+\begin{lstlisting}[language=Python]
+from multiprocessing import Pool
+
+def square(x):
+    return x ** 2
+
+with Pool(4) as p:
+    results = p.map(square, [1,2,3,4])
+
+print(results)
+\end{lstlisting}
+
+\subsection{Parallel Loops}
+
+\begin{lstlisting}[language=Python]
+from multiprocessing import Pool
+
+def compute(x):
+    return x * x
+
+data = list(range(10))
+
+with Pool() as pool:
+    output = pool.map(compute, data)
+\end{lstlisting}
+
+\subsection{Threading}
+
+Useful for I/O-bound tasks:
+
+\begin{lstlisting}[language=Python]
+import threading
+
+def task():
+    print("Running task")
+
+thread = threading.Thread(target=task)
+thread.start()
+thread.join()
+\end{lstlisting}
+
+\begin{remark}
+Multiprocessing is better for CPU-bound tasks. Threading is better for I/O-bound tasks.
+\end{remark}
+
+\section{Priority Queues and Trees}
+
+\subsection{Priority Queue (Heap)}
+
+Python provides a min-heap implementation:
+
+\begin{lstlisting}[language=Python]
+import heapq
+
+heap = []
+
+heapq.heappush(heap, 5)
+heapq.heappush(heap, 1)
+heapq.heappush(heap, 3)
+
+print(heapq.heappop(heap))  # 1
+\end{lstlisting}
+
+\subsection{Custom Priority Queue}
+
+\begin{lstlisting}[language=Python]
+import heapq
+
+tasks = []
+
+heapq.heappush(tasks, (2, "medium"))
+heapq.heappush(tasks, (1, "high"))
+heapq.heappush(tasks, (3, "low"))
+
+while tasks:
+    priority, task = heapq.heappop(tasks)
+    print(priority, task)
+\end{lstlisting}
+
+\subsection{Binary Tree Implementation}
+
+\begin{lstlisting}[language=Python]
+class Node:
+    def __init__(self, value):
+        self.value = value
+        self.left = None
+        self.right = None
+\end{lstlisting}
+
+\subsection{Traversal (Inorder)}
+
+\begin{lstlisting}[language=Python]
+def inorder(node):
+    if node:
+        inorder(node.left)
+        print(node.value)
+        inorder(node.right)
+\end{lstlisting}
+
+\subsection{Binary Search Tree Insert}
+
+\begin{lstlisting}[language=Python]
+def insert(root, value):
+    if root is None:
+        return Node(value)
+    if value < root.value:
+        root.left = insert(root.left, value)
+    else:
+        root.right = insert(root.right, value)
+    return root
+\end{lstlisting}
+
+\section{PyTorch}
+
+PyTorch is a library for tensor computation and deep learning.
+
+\subsection{Tensors}
+
+\begin{lstlisting}[language=Python]
+import torch
+
+x = torch.tensor([1.0, 2.0, 3.0])
+y = torch.ones(3)
+
+print(x + y)
+\end{lstlisting}
+
+\subsection{Automatic Differentiation}
+
+\begin{lstlisting}[language=Python]
+x = torch.tensor(2.0, requires_grad=True)
+
+y = x ** 2
+y.backward()
+
+print(x.grad)
+\end{lstlisting}
+
+\subsection{Neural Network Example}
+
+\begin{lstlisting}[language=Python]
+import torch.nn as nn
+
+model = nn.Sequential(
+    nn.Linear(3, 5),
+    nn.ReLU(),
+    nn.Linear(5, 1)
+)
+\end{lstlisting}
+
+\subsection{Training Loop}
+
+\begin{lstlisting}[language=Python]
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+loss_fn = nn.MSELoss()
+
+for epoch in range(10):
+    optimizer.zero_grad()
+    predictions = model(x)
+    loss = loss_fn(predictions, y)
+    loss.backward()
+    optimizer.step()
+\end{lstlisting}
+
+\begin{remark}
+PyTorch builds computational graphs dynamically, which makes debugging and experimentation easier.
+\end{remark}
+
+\section{Pandas}
+
+Pandas is used for structured data manipulation.
+
+\subsection{DataFrame Creation}
+
+\begin{lstlisting}[language=Python]
+import pandas as pd
+
+data = {
+    "name": ["A", "B", "C"],
+    "score": [90, 85, 88]
+}
+
+df = pd.DataFrame(data)
+print(df)
+\end{lstlisting}
+
+\subsection{Basic Operations}
+
+\begin{lstlisting}[language=Python]
+print(df.head())
+print(df.describe())
+print(df["score"])
+\end{lstlisting}
+
+\subsection{Filtering}
+
+\begin{lstlisting}[language=Python]
+filtered = df[df["score"] > 85]
+\end{lstlisting}
+
+\subsection{Adding Columns}
+
+\begin{lstlisting}[language=Python]
+df["passed"] = df["score"] > 80
+\end{lstlisting}
+
+\subsection{GroupBy}
+
+\begin{lstlisting}[language=Python]
+df.groupby("passed")["score"].mean()
+\end{lstlisting}
+
+\subsection{Merging DataFrames}
+
+\begin{lstlisting}[language=Python]
+df1 = pd.DataFrame({"id": [1,2], "x": [10,20]})
+df2 = pd.DataFrame({"id": [1,2], "y": [100,200]})
+
+merged = pd.merge(df1, df2, on="id")
+\end{lstlisting}
+
+\subsection{Reading and Writing Files}
+
+\begin{lstlisting}[language=Python]
+df = pd.read_csv("data.csv")
+df.to_csv("output.csv", index=False)
+\end{lstlisting}
+
+\begin{remark}
+Pandas is central for data preprocessing pipelines and integrates well with NumPy, scikit-learn, and visualization libraries.
+\end{remark}
+
+\section{Summary}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.3\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Topic & Key Idea \\
+\midrule
+Web scraping & Extract structured data from HTML using requests and BeautifulSoup \\
+
+Regular expressions & Pattern matching and text extraction \\
+
+Parallel computing & Speed up computations via multiprocessing or threading \\
+
+Priority queues & Efficient min-heap structure for ordered tasks \\
+
+Trees & Recursive data structures for hierarchical data \\
+
+PyTorch & Tensor computation and deep learning with automatic differentiation \\
+
+Pandas & Tabular data manipulation and analysis \\
+
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\chapter{Neural Networks}
+
+\section{Architecture Overview}
+
+We define a parametric function
+\[
+F_\theta:\R^3 \to \R^3
+\]
+using a feedforward neural network with:
+
+\begin{itemize}
+\item Input layer: 3 nodes  
+\item Hidden layer 1: 5 nodes  
+\item Hidden layer 2: 4 nodes  
+\item Output layer: 3 nodes  
+\end{itemize}
+
+Each layer applies an affine transformation followed by a nonlinear activation:
+\[
+\text{Layer Output} = \Psi\!\left(\alpha + \sum_j \beta_j v_j\right),
+\]
+where $\Psi$ is typically the ReLU activation
+\[
+\Psi(t) = \max(0,t).
+\]
+
+\section{Layer Equations}
+
+Let $x \in \R^3$.
+
+\subsection{First Hidden Layer}
+
+\[
+h^{(1)} = \Psi(W^{(1)} x + b^{(1)}), \quad W^{(1)} \in \R^{5 \times 3}, \; b^{(1)} \in \R^5.
+\]
+
+\subsection{Second Hidden Layer}
+
+\[
+h^{(2)} = \Psi(W^{(2)} h^{(1)} + b^{(2)}), \quad W^{(2)} \in \R^{4 \times 5}, \; b^{(2)} \in \R^4.
+\]
+
+\subsection{Output Layer (Pre-Softmax)}
+
+\[
+z = W^{(3)} h^{(2)} + b^{(3)}, \quad W^{(3)} \in \R^{3 \times 4}, \; b^{(3)} \in \R^3.
+\]
+
+\section{Parameter Counting}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.2\textwidth}
+>{\raggedright\arraybackslash}p{0.15\textwidth}
+>{\raggedright\arraybackslash}p{0.15\textwidth}
+>{\raggedright\arraybackslash}p{0.2\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Layer & Inputs & Nodes & Parameters per node & Total \\
+\midrule
+Hidden 1 & 3 & 5 & $1+3=4$ & $20$ \\
+Hidden 2 & 5 & 4 & $1+5=6$ & $24$ \\
+Output   & 4 & 3 & $1+4=5$ & $15$ \\
+\midrule
+Total & & & & $59$ \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+\begin{remark}
+Each node has a bias term plus weights for each input. Total parameters include all weights and biases.
+\end{remark}
+
+\section{Softmax Output Layer}
+
+Given logits $z_0,z_1,z_2$, define:
+\[
+p_j = \frac{e^{z_j}}{\sum_{s=0}^{2} e^{z_s}}, \quad j=0,1,2.
+\]
+
+Then $p = (p_0,p_1,p_2)$ is a probability vector satisfying:
+\[
+\sum_{j=0}^2 p_j = 1.
+\]
+
+\section{Cross-Entropy Loss}
+
+Given training data $(x^{(i)},Y^{(i)})$, define:
+\[
+\mathcal{L}(\theta)
+= -\frac{1}{N}\sum_{i=1}^{N} \log p^{(i)}_{Y^{(i)}}(\theta).
+\]
+
+This corresponds to maximum likelihood under a multinomial model.
+
+\section{Gradient Descent}
+
+We update parameters via:
+\[
+\theta \leftarrow \theta - \varepsilon \nabla_\theta \mathcal{L}(\theta),
+\]
+where $\varepsilon > 0$ is the learning rate.
+
+\subsection{Backpropagation Idea}
+
+Gradients are computed efficiently using the chain rule:
+
+\[
+\frac{\partial \mathcal{L}}{\partial W^{(l)}} 
+= \frac{\partial \mathcal{L}}{\partial h^{(l)}} 
+\frac{\partial h^{(l)}}{\partial W^{(l)}}.
+\]
+
+Each layer passes gradients backward through the network.
+
+\section{Interpretation}
+
+\subsection{Decision Regions}
+
+The composition of affine transformations and nonlinearities produces a highly flexible function:
+\[
+F_\theta(x) = W^{(3)} \Psi\!\left(W^{(2)} \Psi(W^{(1)}x + b^{(1)}) + b^{(2)}\right) + b^{(3)}.
+\]
+
+This allows nonlinear partitioning of the input space into decision regions.
+
+\subsection{Training Dynamics}
+
+Training minimizes:
+\[
+\mathcal{L}(\theta) = -\frac{1}{N}\sum_i \log p^{(i)}_{Y^{(i)}}(\theta).
+\]
+
+A decreasing loss indicates improved predictive performance.
+
+\subsection{Probabilistic Output}
+
+The softmax ensures outputs can be interpreted as probabilities:
+\[
+p_j = P(Y=j|x,\theta).
+\]
+
+\section{PyTorch Implementation}
+
+\subsection{Model Definition}
+
+\begin{lstlisting}[language=Python]
+import torch
+import torch.nn as nn
+
+model = nn.Sequential(
+    nn.Linear(3, 5),
+    nn.ReLU(),
+    nn.Linear(5, 4),
+    nn.ReLU(),
+    nn.Linear(4, 3)
+)
+\end{lstlisting}
+
+\subsection{Loss and Optimizer}
+
+\begin{lstlisting}[language=Python]
+loss_fn = nn.CrossEntropyLoss()
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+\end{lstlisting}
+
+\subsection{Training Loop}
+
+\begin{lstlisting}[language=Python]
+for epoch in range(100):
+    optimizer.zero_grad()
+
+    outputs = model(X)
+    loss = loss_fn(outputs, y)
+
+    loss.backward()
+    optimizer.step()
+\end{lstlisting}
+
+\begin{remark}
+In PyTorch, \texttt{CrossEntropyLoss} automatically applies softmax internally.
+\end{remark}
+
+\section{Mini-Batch Training}
+
+Instead of using all data at once, split into batches:
+\begin{lstlisting}[language=Python]
+batch_size = 32
+
+for epoch in range(10):
+    for i in range(0, len(X), batch_size):
+        xb = X[i:i+batch_size]
+        yb = y[i:i+batch_size]
+
+        optimizer.zero_grad()
+        loss = loss_fn(model(xb), yb)
+        loss.backward()
+        optimizer.step()
+\end{lstlisting}
+
+\section{Regularization}
+
+To prevent overfitting:
+
+\begin{itemize}
+\item Smaller networks
+\item Weight decay (L2 regularization)
+\item Dropout layers
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+optimizer = torch.optim.SGD(
+    model.parameters(), 
+    lr=0.01, 
+    weight_decay=1e-4
+)
+\end{lstlisting}
+
+\section{Summary}
+
+\begin{center}
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.28\textwidth}
+>{\raggedright\arraybackslash}X}
+\toprule
+Concept & Description \\
+\midrule
+Node computation & $\Psi(\alpha + \sum_j \beta_j v_j)$ \\
+
+Activation & ReLU: $\Psi(t)=\max(0,t)$ \\
+
+Architecture & Layered affine + nonlinear transformations \\
+
+Output & Softmax probabilities \\
+
+Loss & Cross-entropy \\
+
+Optimization & Gradient descent with backpropagation \\
+
+Training & Iterative updates over epochs \\
+
+Implementation & Efficiently handled via PyTorch \\
+
+\bottomrule
+\end{xltabular}
+\end{center}
 
 \end{document}
