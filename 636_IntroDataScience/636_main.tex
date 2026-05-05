@@ -170,5 +170,5432 @@
 \begin{document}
 
 \maketitle
+\tableofcontents
+
+\chapter{Descriptive Statistics}
+
+\section{Data Sets}
+
+A data set consisting of $N$ scalar observations is denoted by
+\[
+\{x_i\}_{i=1}^N, \quad x_i \in \R.
+\]
+
+In data analysis, we typically summarize a data set through three main characteristics:
+\begin{itemize}
+    \item Location (central tendency)
+    \item Dispersion (variability)
+    \item Shape (distributional features such as skewness and modality)
+\end{itemize}
+
+\section{Measures of Location}
+
+\begin{definition}[Mean]
+The sample mean of a data set $\{x_i\}_{i=1}^N$ is
+\[
+\bar{x} = \frac{1}{N} \sum_{i=1}^N x_i.
+\]
+\end{definition}
+
+In computational settings (e.g., Python), indexing often begins at $0$, in which case the mean is written as
+\[
+\bar{x} = \frac{1}{N} \sum_{i=0}^{N-1} x_i.
+\]
+
+\begin{definition}[Median]
+Let $\{x_{(i)}\}_{i=1}^N$ denote the sorted data such that $x_{(1)} \leq \cdots \leq x_{(N)}$.
+The sample median is defined as
+\[
+\text{median} =
+\begin{cases}
+x_{(\frac{N+1}{2})}, & \text{if } N \text{ is odd}, \\
+\frac{1}{2}\big(x_{(\frac{N}{2})} + x_{(\frac{N}{2}+1)}\big), & \text{if } N \text{ is even}.
+\end{cases}
+\]
+\end{definition}
+
+\begin{definition}[Mode]
+The mode is the value(s) that occur with the highest frequency in the data set.
+A distribution may be unimodal or multimodal depending on the number of such values.
+\end{definition}
+
+\section{Measures of Dispersion}
+
+\begin{definition}[Sample Variance]
+The sample variance is defined as
+\[
+s^2 = \frac{1}{N-1} \sum_{i=1}^N (x_i - \bar{x})^2.
+\]
+\end{definition}
+
+\begin{definition}[Sample Standard Deviation]
+The sample standard deviation is
+\[
+s = \sqrt{s^2}.
+\]
+\end{definition}
+
+\begin{remark}[Degrees of Freedom]
+The factor $N-1$ arises from estimating the population mean using $\bar{x}$.
+This reduces the effective degrees of freedom by one, leading to an unbiased estimator of the population variance.
+\end{remark}
+
+\begin{proposition}[Unbiasedness of Sample Variance]
+Let $X_1, \dots, X_N \iid$ with mean $\mu$ and variance $\sigma^2$. Then
+\[
+\E[s^2] = \sigma^2.
+\]
+\end{proposition}
+
+\begin{proof}
+We write
+\[
+\sum_{i=1}^N (X_i - \bar{X})^2
+= \sum_{i=1}^N (X_i - \mu)^2 - N(\bar{X} - \mu)^2.
+\]
+Taking expectations,
+\[
+\E\left[\sum_{i=1}^N (X_i - \mu)^2\right] = N\sigma^2,
+\quad
+\E\left[N(\bar{X} - \mu)^2\right] = N \cdot \frac{\sigma^2}{N} = \sigma^2.
+\]
+Thus,
+\[
+\E\left[\sum_{i=1}^N (X_i - \bar{X})^2\right] = (N-1)\sigma^2.
+\]
+Dividing by $N-1$ yields $\E[s^2] = \sigma^2$.
+\end{proof}
+
+\section{Outliers}
+
+\begin{definition}[Outlier]
+An outlier is an observation that deviates significantly from the rest of the data.
+\end{definition}
+
+\begin{remark}
+Extreme values can heavily influence the mean and variance. For example, if a single observation diverges (e.g., $x_i \to \infty$), then
+\[
+\bar{x} \to \infty, \quad s^2 \to \infty.
+\]
+\end{remark}
+
+\section{Robustness}
+
+\begin{definition}[Robust Statistic]
+A statistic is said to be robust if it is not unduly affected by small deviations from model assumptions or the presence of outliers.
+\end{definition}
+
+\begin{proposition}
+The median is more robust to outliers than the mean.
+\end{proposition}
+
+\begin{proof}
+The mean depends linearly on all observations:
+\[
+\bar{x} = \frac{1}{N} \sum_{i=1}^N x_i,
+\]
+so a single extreme value can arbitrarily shift $\bar{x}$.
+
+In contrast, the median depends only on the ordering of the data. A single extreme value changes only the endpoints of the ordered sequence and does not affect the middle element(s), leaving the median unchanged unless the outlier crosses the median threshold.
+\end{proof}
+
+\begin{definition}[Median Absolute Deviation (MAD)]
+The median absolute deviation is defined as
+\[
+\text{MAD} = \mathrm{median} \left( \abs{x_i - \mathrm{median}(x)} \right).
+\]
+\end{definition}
+
+\begin{remark}
+MAD provides a robust alternative to standard deviation, as it is based on medians rather than squared deviations, making it less sensitive to extreme values.
+\end{remark}
+
+\chapter{Distributions}
+
+\section{Probability Density Functions}
+
+\begin{definition}[Probability Density Function]
+A function $p : \R \to [0,\infty)$ is called a probability density function (PDF) if
+\[
+\int_{-\infty}^{\infty} p(x)\,dx = 1.
+\]
+\end{definition}
+
+\begin{proposition}
+For a continuous random variable $X$ with density $p(x)$, the probability that $X$ lies in an interval $(a,b)$ is
+\[
+\Prob(a < X < b) = \int_a^b p(x)\,dx.
+\]
+\end{proposition}
+
+\begin{example}[Uniform Distribution]
+The uniform distribution on $(a,b)$ has density
+\[
+p(x) = \frac{\ind_{(a,b)}(x)}{b-a},
+\]
+where $\ind_{(a,b)}(x)$ is the indicator function.
+\end{example}
+
+\begin{example}[Gaussian Distribution]
+The Gaussian (normal) distribution with mean $\mu$ and variance $\sigma^2$ has density
+\[
+p(x) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right).
+\]
+\end{example}
+
+\section{Cumulative Distribution Function}
+
+\begin{definition}[Cumulative Distribution Function]
+The cumulative distribution function (CDF) of a random variable $X$ is
+\[
+F(x) = \Prob(X \leq x) = \int_{-\infty}^x p(t)\,dt.
+\]
+\end{definition}
+
+\begin{proposition}
+The CDF $F(x)$ satisfies:
+\begin{itemize}
+    \item $F(x)$ is non-decreasing,
+    \item $\lim_{x \to -\infty} F(x) = 0$ and $\lim_{x \to \infty} F(x) = 1$,
+    \item If $p(x)$ is continuous, then $F'(x) = p(x)$.
+\end{itemize}
+\end{proposition}
+
+\section{Expectation and Moments}
+
+\begin{definition}[Expectation]
+The expectation of a random variable $X$ with density $p(x)$ is
+\[
+\E[X] = \int_{-\infty}^{\infty} x\,p(x)\,dx.
+\]
+\end{definition}
+
+\begin{definition}[Expectation of a Function]
+For any measurable function $f$,
+\[
+\E[f(X)] = \int_{-\infty}^{\infty} f(x)\,p(x)\,dx.
+\]
+\end{definition}
+
+\begin{definition}[Moments]
+The $k$-th moment of $X$ is
+\[
+\E[X^k].
+\]
+The $k$-th central moment is
+\[
+\E[(X - \mu)^k], \quad \mu = \E[X].
+\]
+\end{definition}
+
+\begin{definition}[Variance]
+The variance of $X$ is
+\[
+\Var(X) = \E[(X - \mu)^2].
+\]
+\end{definition}
+
+\begin{proposition}[Variance Identity]
+\[
+\Var(X) = \E[X^2] - (\E[X])^2.
+\]
+\end{proposition}
+
+\begin{proof}
+Expanding,
+\[
+\Var(X) = \E[(X - \mu)^2] = \E[X^2 - 2\mu X + \mu^2]
+= \E[X^2] - 2\mu \E[X] + \mu^2.
+\]
+Since $\mu = \E[X]$, this simplifies to
+\[
+\Var(X) = \E[X^2] - \mu^2.
+\]
+\end{proof}
+
+\begin{definition}[Standard Deviation]
+The standard deviation is
+\[
+\sigma = \sqrt{\Var(X)}.
+\]
+\end{definition}
+
+\begin{definition}[Standardized Moments]
+The $k$-th standardized moment is
+\[
+\E\left[\left(\frac{X - \mu}{\sigma}\right)^k\right].
+\]
+\end{definition}
+
+\begin{definition}[Skewness and Kurtosis]
+\begin{itemize}
+    \item Skewness: $\E\left[\left(\frac{X - \mu}{\sigma}\right)^3\right]$
+    \item Kurtosis: $\E\left[\left(\frac{X - \mu}{\sigma}\right)^4\right]$
+\end{itemize}
+\end{definition}
+
+\section{Python Introduction}
+
+\subsection{Core Language Concepts}
+
+\begin{itemize}
+    \item \textbf{Tuple}: immutable ordered collection
+\begin{lstlisting}[language=Python]
+x = (1, 2, 3)
+\end{lstlisting}
+
+    \item \textbf{List}: mutable ordered collection
+\begin{lstlisting}[language=Python]
+x = [1, 2, 3]
+\end{lstlisting}
+
+    \item \textbf{Function}
+\begin{lstlisting}[language=Python]
+def f(x):
+    return x**2
+\end{lstlisting}
+
+    \item \textbf{Lambda}
+\begin{lstlisting}[language=Python]
+f = lambda x: x**2
+\end{lstlisting}
+
+    \item \textbf{For loop}
+\begin{lstlisting}[language=Python]
+for i in range(5):
+    print(i)
+\end{lstlisting}
+
+    \item \textbf{Map}
+\begin{lstlisting}[language=Python]
+list(map(lambda x: x**2, [1,2,3]))
+\end{lstlisting}
+
+    \item \textbf{Importing libraries}
+\begin{lstlisting}[language=Python]
+import numpy as np
+import matplotlib.pyplot as plt
+\end{lstlisting}
+\end{itemize}
+
+\subsection{Pandas Introduction}
+
+Pandas is a library for structured data manipulation.
+
+\begin{lstlisting}[language=Python]
+import pandas as pd
+
+df = pd.DataFrame({
+    "x": [1,2,3],
+    "y": [4,5,6]
+})
+
+df.mean()
+df.describe()
+\end{lstlisting}
+
+\subsection{Seaborn Introduction}
+
+Seaborn is a visualization library built on top of matplotlib.
+
+\begin{lstlisting}[language=Python]
+import seaborn as sns
+
+sns.histplot(df["x"])
+sns.scatterplot(x="x", y="y", data=df)
+\end{lstlisting}
+
+\chapter{Samples and Kernels}
+
+\section{Sample vs Population Quantities}
+
+\begin{proposition}[Sample Estimates vs Population Quantities]
+Let $\{x_i\}_{i=1}^N$ be a sample from a random variable $X \sim p(\cdot)$. Then
+\[
+\bar{x} = \frac{1}{N}\sum_{i=1}^N x_i = \langle x_i \rangle_{i=1}^N
+\quad \longleftrightarrow \quad
+\mu = \E[X] = \int x\,p(x)\,dx,
+\]
+\[
+s^2 = \frac{1}{N-1}\sum_{i=1}^N (x_i - \bar{x})^2
+\quad \longleftrightarrow \quad
+\Var(X) = \int (x-\mu)^2 p(x)\,dx.
+\]
+\end{proposition}
+
+\begin{remark}
+Sample statistics approximate population quantities. The quality of approximation improves with increasing $N$.
+\end{remark}
+
+\section{Sampling from Distributions}
+
+\begin{proposition}[Uniform Scaling]
+If $U \sim \mathrm{Uniform}(0,1)$, then
+\[
+X = a + (b-a)U \sim \mathrm{Uniform}(a,b).
+\]
+\end{proposition}
+
+\begin{proof}
+For $x \in (a,b)$,
+\[
+\Prob(X \leq x) = \Prob\left(U \leq \frac{x-a}{b-a}\right) = \frac{x-a}{b-a},
+\]
+which is the CDF of $\mathrm{Uniform}(a,b)$.
+\end{proof}
+
+\begin{proposition}[Inverse Transform Sampling]
+Let $U \sim \mathrm{Uniform}(0,1)$ and let $F$ be a strictly increasing CDF. Then
+\[
+X = F^{-1}(U)
+\]
+has distribution with CDF $F$.
+\end{proposition}
+
+\begin{proof}
+For any $x$,
+\[
+\Prob(X \leq x) = \Prob(F^{-1}(U) \leq x)
+= \Prob(U \leq F(x)) = F(x).
+\]
+\end{proof}
+
+\begin{definition}[Rejection Sampling]
+To sample from a target density $p(x)$:
+\begin{enumerate}
+    \item Choose proposal $q(x)$ and constant $M$ such that $p(x) \leq M q(x)$.
+    \item Sample $X \sim q(x)$ and $U \sim \mathrm{Uniform}(0,1)$.
+    \item Accept $X$ if $U \leq \frac{p(X)}{M q(X)}$.
+\end{enumerate}
+\end{definition}
+
+\begin{remark}
+Rejection sampling extends naturally to $\R^d$, but efficiency deteriorates in high dimensions due to low acceptance rates.
+\end{remark}
+
+\section{Monte Carlo Approximation}
+
+\begin{proposition}[Law of Large Numbers Approximation]
+Let $x_i \iid p(\cdot)$. Then
+\[
+\E[X] = \int x\,p(x)\,dx \approx \frac{1}{N}\sum_{i=1}^N x_i,
+\]
+\[
+\E[f(X)] = \int f(x)\,p(x)\,dx \approx \frac{1}{N}\sum_{i=1}^N f(x_i).
+\]
+\end{proposition}
+
+\begin{proposition}[Variance Approximation]
+\[
+\Var(X) = \E[(X-\mu)^2] \approx \frac{1}{N}\sum_{i=1}^N (x_i - \mu)^2.
+\]
+\end{proposition}
+
+\begin{remark}[Bessel Correction]
+The estimator
+\[
+s^2 = \frac{1}{N-1}\sum_{i=1}^N (x_i - \bar{x})^2
+\]
+uses $N-1$ degrees of freedom because
+\[
+\sum_{i=1}^N (x_i - \bar{x}) = 0,
+\]
+implying only $N-1$ independent deviations.
+\end{remark}
+
+\section{Density Estimation}
+
+\subsection{Histograms}
+
+\begin{definition}[Histogram Estimator]
+Let bin width be $h$ and bin origin $x_0$. Then
+\[
+\mathrm{Hist}(x) = \frac{1}{Nh}\sum_{i=1}^N \ind_{\mathrm{bin}(x_i; x_0, h)}(x).
+\]
+\end{definition}
+
+\begin{remark}
+Histograms depend heavily on the choice of bin width $h$ and alignment $x_0$, leading to discontinuous density estimates.
+\end{remark}
+
+\subsection{Kernel Density Estimation}
+
+\begin{definition}[Kernel Density Estimator]
+Let $K$ be a kernel function and $h>0$ a bandwidth. Then
+\[
+\widehat{p}(x) = \frac{1}{N}\sum_{i=1}^N K_h(x - x_i)
+= \frac{1}{Nh}\sum_{i=1}^N K\left(\frac{x - x_i}{h}\right).
+\]
+\end{definition}
+
+\begin{remark}
+The bandwidth $h$ controls the bias-variance tradeoff:
+\begin{itemize}
+    \item Small $h$: low bias, high variance (overfitting)
+    \item Large $h$: high bias, low variance (oversmoothing)
+\end{itemize}
+\end{remark}
+
+\begin{definition}[Kernel Function]
+A kernel $K$ satisfies:
+\begin{itemize}
+    \item $K(x) \geq 0$
+    \item $\int K(x)\,dx = 1$
+    \item Often symmetric: $K(x) = K(-x)$
+\end{itemize}
+\end{definition}
+
+\begin{example}[Common Kernels]
+\begin{itemize}
+    \item Uniform: $K(x) = \frac{1}{2}\ind_{\abs{x} \leq 1}$
+    \item Triangular: $K(x) = (1-\abs{x})\ind_{\abs{x} \leq 1}$
+    \item Gaussian: $K(x) = \frac{1}{\sqrt{2\pi}}e^{-x^2/2}$
+    \item Epanechnikov: $K(x) = \frac{3}{4}(1-x^2)\ind_{\abs{x} \leq 1}$
+\end{itemize}
+\end{example}
+
+\begin{remark}[Support]
+Kernels may have:
+\begin{itemize}
+    \item Finite support (e.g., uniform, Epanechnikov)
+    \item Infinite support (e.g., Gaussian)
+\end{itemize}
+\end{remark}
+
+\begin{remark}[Numerical Considerations]
+In practice:
+\begin{itemize}
+    \item Gaussian kernels are widely used due to smoothness and differentiability
+    \item Finite-support kernels are computationally cheaper
+    \item Bandwidth selection dominates kernel choice in importance
+\end{itemize}
+\end{remark}
+
+\chapter{Optimization}
+
+\section{Unconstrained Optimization}
+
+We consider problems of the form
+\[
+\min_{x \in \R^d} f(x),
+\]
+where $f$ is typically assumed to be differentiable.
+
+\subsection{First-Order Optimality}
+
+\begin{theorem}[First-Order Condition]
+If $f$ is differentiable and $x^\star$ is a local minimizer, then
+\[
+\grad f(x^\star) = 0.
+\]
+\end{theorem}
+
+\subsection{Second-Order Conditions}
+
+\begin{theorem}[Second-Order Condition]
+If $f$ is twice differentiable and $x^\star$ is a local minimizer, then
+\[
+\grad f(x^\star) = 0, \quad \Hess f(x^\star) \succeq 0.
+\]
+If $\Hess f(x^\star) \succ 0$, then $x^\star$ is a strict local minimum.
+\end{theorem}
+
+\subsection{Line Search Methods}
+
+Iterative update:
+\[
+x_{k+1} = x_k + \alpha_k d_k,
+\]
+where $d_k$ is a descent direction.
+
+\begin{lstlisting}[language=Python]
+# Gradient Descent with Line Search
+x = x0
+for k in range(max_iter):
+    grad = grad_f(x)
+    d = -grad
+    alpha = line_search(f, x, d)
+    x = x + alpha * d
+\end{lstlisting}
+
+\begin{remark}
+Common choices for $d_k$ include $-\grad f(x_k)$ (gradient descent) and quasi-Newton directions.
+\end{remark}
+
+\subsection{Newton's Method}
+
+Using second-order information:
+\[
+x_{k+1} = x_k - \Hess f(x_k)^{-1} \grad f(x_k).
+\]
+
+\begin{lstlisting}[language=Python]
+# Newton's Method
+x = x0
+for k in range(max_iter):
+    g = grad_f(x)
+    H = hess_f(x)
+    x = x - np.linalg.solve(H, g)
+\end{lstlisting}
+
+\begin{remark}
+Newton's method has quadratic convergence near the optimum but requires solving a linear system at each step.
+\end{remark}
+
+\subsection{Trust Region Methods}
+
+Solve subproblem:
+\[
+\min_{\norm{p} \leq \Delta} \quad m_k(p) = f(x_k) + \inner{\grad f(x_k)}{p} + \frac{1}{2} \inner{p}{\Hess f(x_k)p}.
+\]
+
+\begin{lstlisting}[language=Python]
+# Trust Region (conceptual)
+for k in range(max_iter):
+    p = solve_trust_region_subproblem(grad, H, Delta)
+    if actual_reduction / predicted_reduction > eta:
+        x = x + p
+        Delta = increase(Delta)
+    else:
+        Delta = decrease(Delta)
+\end{lstlisting}
+
+\section{Constrained Optimization}
+
+General problem:
+\[
+\min_{x \in \R^d} f(x) \quad \text{s.t.} \quad g_i(x) \leq 0, \; h_j(x) = 0.
+\]
+
+\subsection{Karush--Kuhn--Tucker (KKT) Conditions}
+
+\begin{theorem}[KKT Conditions]
+If $x^\star$ is optimal and regularity conditions hold, then there exist multipliers $\lambda_i \geq 0$, $\nu_j$ such that
+\[
+\grad f(x^\star) + \sum_i \lambda_i \grad g_i(x^\star) + \sum_j \nu_j \grad h_j(x^\star) = 0,
+\]
+\[
+g_i(x^\star) \leq 0, \quad h_j(x^\star) = 0,
+\]
+\[
+\lambda_i g_i(x^\star) = 0.
+\]
+\end{theorem}
+
+\subsection{Simplex Method}
+
+Used for linear programs:
+\[
+\min c^\top x \quad \text{s.t.} \quad Ax = b, \; x \geq 0.
+\]
+
+\begin{lstlisting}[language=Python]
+# Conceptual Simplex
+initialize basic feasible solution
+while optimality not reached:
+    choose entering variable
+    choose leaving variable
+    pivot
+\end{lstlisting}
+
+\subsection{Interior Point Methods}
+
+Solve barrier problem:
+\[
+\min_x \; f(x) - \mu \sum_i \log(-g_i(x)).
+\]
+
+\begin{lstlisting}[language=Python]
+# Interior Point (Barrier)
+x = x0
+for t in schedule:
+    minimize f(x) - mu * sum(log(-g(x)))
+    decrease mu
+\end{lstlisting}
+
+\subsection{Ellipsoid Method}
+
+Iteratively shrink ellipsoid containing feasible region.
+
+\begin{lstlisting}[language=Python]
+# Ellipsoid (conceptual)
+initialize ellipsoid E0
+for k in range(max_iter):
+    if center feasible:
+        update best solution
+    else:
+        cut ellipsoid using separating hyperplane
+\end{lstlisting}
+
+\section{General Optimization Frameworks}
+
+\subsection{Penalty Methods}
+
+Convert constrained problem into unconstrained:
+\[
+\min_x \; f(x) + \rho \sum_i \max(0, g_i(x))^2.
+\]
+
+\begin{remark}
+As $\rho \to \infty$, solutions approach feasibility.
+\end{remark}
+
+\subsection{Augmented Lagrangian}
+
+\[
+\mathcal{L}_\rho(x,\lambda) = f(x) + \lambda^\top g(x) + \frac{\rho}{2}\norm{g(x)}^2.
+\]
+
+\begin{lstlisting}[language=Python]
+# Augmented Lagrangian
+for k in range(max_iter):
+    x = minimize L_rho(x, lambda)
+    lambda = lambda + rho * g(x)
+\end{lstlisting}
+
+\subsection{Alternating Direction Method of Multipliers (ADMM)}
+
+Split problem:
+\[
+\min f(x) + g(z) \quad \text{s.t.} \quad Ax + Bz = c.
+\]
+
+Iterations:
+\[
+x^{k+1} = \argmin_x \mathcal{L}_\rho(x,z^k,y^k),
+\]
+\[
+z^{k+1} = \argmin_z \mathcal{L}_\rho(x^{k+1},z,y^k),
+\]
+\[
+y^{k+1} = y^k + \rho (Ax^{k+1} + Bz^{k+1} - c).
+\]
+
+\begin{lstlisting}[language=Python]
+# ADMM
+for k in range(max_iter):
+    x = argmin_x L(x, z, y)
+    z = argmin_z L(x, z, y)
+    y = y + rho * (A@x + B@z - c)
+\end{lstlisting}
+
+\begin{remark}
+ADMM is especially useful for large-scale problems and distributed optimization.
+\end{remark}
+
+\chapter{Least Squares}
+
+\section{Multivariate Probability Theory}
+
+\subsection{Dependence}
+
+Let $X,Y \in \R$ be random variables. They are independent if
+\[
+p(x,y) = p_X(x)p_Y(y).
+\]
+Equivalently, for events $A$ and $B$,
+\[
+\Prob(X \in A, Y \in B) = \Prob(X \in A)\Prob(Y \in B).
+\]
+
+If
+\[
+p(x,y) \neq p_X(x)p_Y(y),
+\]
+then $X$ and $Y$ are dependent.
+
+\subsection{Covariance}
+
+\begin{definition}[Covariance]
+The covariance between $X$ and $Y$ is
+\[
+\Cov(X,Y)
+=
+\E\left[(X-\E[X])(Y-\E[Y])\right].
+\]
+\end{definition}
+
+Equivalent notation includes $C_{X,Y}$ and $\sigma(X,Y)$.
+
+\begin{proposition}[Covariance Identity]
+\[
+\Cov(X,Y) = \E[XY] - \E[X]\E[Y].
+\]
+\end{proposition}
+
+\begin{proof}
+Expanding the definition,
+\[
+\Cov(X,Y)
+=
+\E[(X-\mu_X)(Y-\mu_Y)].
+\]
+Thus,
+\[
+\Cov(X,Y)
+=
+\E[XY - X\mu_Y - Y\mu_X + \mu_X\mu_Y].
+\]
+Using linearity of expectation,
+\[
+\Cov(X,Y)
+=
+\E[XY] - \mu_Y\E[X] - \mu_X\E[Y] + \mu_X\mu_Y.
+\]
+Since $\mu_X=\E[X]$ and $\mu_Y=\E[Y]$,
+\[
+\Cov(X,Y)
+=
+\E[XY] - \mu_X\mu_Y.
+\]
+\end{proof}
+
+\begin{definition}[Sample Covariance]
+Given paired data $\{(x_i,y_i)\}_{i=1}^N$, the sample covariance is
+\[
+C_{xy}
+=
+\frac{1}{N-1}\sum_{i=1}^N (x_i-\bar{x})(y_i-\bar{y}).
+\]
+\end{definition}
+
+\subsection{Correlation}
+
+\begin{definition}[Correlation]
+The correlation between $X$ and $Y$ is
+\[
+\Corr(X,Y)
+=
+\frac{\Cov(X,Y)}{\sigma_X\sigma_Y},
+\]
+where $\sigma_X=\sqrt{\Var(X)}$ and $\sigma_Y=\sqrt{\Var(Y)}$.
+\end{definition}
+
+\begin{remark}
+Correlation is a standardized covariance. It satisfies
+\[
+-1 \leq \Corr(X,Y) \leq 1.
+\]
+Values near $1$ indicate strong positive linear association, values near $-1$ indicate strong negative linear association, and values near $0$ indicate weak linear association.
+\end{remark}
+
+\subsection{Vector Notation}
+
+Let
+\[
+V=
+\begin{pmatrix}
+X\\
+Y
+\end{pmatrix}.
+\]
+Then
+\[
+\E[V]
+=
+\begin{pmatrix}
+\E[X]\\
+\E[Y]
+\end{pmatrix}
+=
+\begin{pmatrix}
+\mu_X\\
+\mu_Y
+\end{pmatrix}.
+\]
+
+\begin{definition}[Covariance Matrix]
+The covariance matrix of $V$ is
+\[
+\Sigma_V
+=
+\E\left[(V-\E[V])(V-\E[V])^T\right].
+\]
+For $V=(X,Y)^T$,
+\[
+\Sigma_V
+=
+\begin{pmatrix}
+\sigma_X^2 & \Cov(X,Y)\\
+\Cov(Y,X) & \sigma_Y^2
+\end{pmatrix}.
+\]
+\end{definition}
+
+\begin{remark}
+Since $\Cov(X,Y)=\Cov(Y,X)$, covariance matrices are symmetric.
+\end{remark}
+
+More generally, for a random vector $X \in \R^d$,
+\[
+\Sigma
+=
+\E\left[(X-\mu)(X-\mu)^T\right],
+\]
+where $\mu=\E[X]$.
+
+\subsection{Bivariate Normal Distribution}
+
+If $X$ and $Y$ are independent normal random variables with means $\mu_X,\mu_Y$ and variances $\sigma_X^2,\sigma_Y^2$, then their joint density is
+\[
+p(x,y)
+=
+\frac{1}{2\pi\sigma_X\sigma_Y}
+\exp\left[
+-\frac{(x-\mu_X)^2}{2\sigma_X^2}
+-\frac{(y-\mu_Y)^2}{2\sigma_Y^2}
+\right].
+\]
+
+In vector notation, for $x \in \R^2$,
+\[
+p(x)
+=
+\frac{1}{2\pi |\Sigma|^{1/2}}
+\exp\left[
+-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)
+\right].
+\]
+
+Here $|\Sigma|=\det(\Sigma)$.
+
+If
+\[
+\Sigma
+=
+\begin{pmatrix}
+\sigma_X^2 & 0\\
+0 & \sigma_Y^2
+\end{pmatrix},
+\]
+then $X$ and $Y$ are uncorrelated.
+
+\begin{remark}
+For jointly Gaussian random variables, uncorrelatedness implies independence. This is not true for arbitrary distributions.
+\end{remark}
+
+\subsection{Multivariate Normal Distribution}
+
+\begin{definition}[Multivariate Normal Distribution]
+For $x,\mu \in \R^k$ and positive definite covariance matrix $\Sigma \in \R^{k\times k}$,
+\[
+p(x)
+=
+\frac{1}{\sqrt{(2\pi)^k|\Sigma|}}
+\exp\left[
+-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)
+\right].
+\]
+Equivalently,
+\[
+p(x)
+=
+\frac{1}{\sqrt{|2\pi\Sigma|}}
+\exp\left[
+-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)
+\right].
+\]
+\end{definition}
+
+\section{Ordinary Least Squares}
+
+\subsection{The Idea}
+
+Suppose we have a training set
+\[
+\{(x_i,y_i)\}_{i=1}^N.
+\]
+We want to fit a parameterized function
+\[
+f(x;\theta),
+\]
+where $\theta$ may contain one or more parameters.
+
+The residual for observation $i$ is
+\[
+r_i(\theta)=y_i-f(x_i;\theta).
+\]
+
+Ordinary least squares chooses parameters by minimizing the sum of squared residuals:
+\[
+\hat{\theta}
+=
+\argmin_{\theta}
+\sum_{i=1}^N
+\left[y_i-f(x_i;\theta)\right]^2.
+\]
+
+\subsection{Fitting a Constant}
+
+Consider the constant model
+\[
+f(x;\mu)=\mu.
+\]
+The cost function is
+\[
+C(\mu)
+=
+\sum_{i=1}^N (y_i-\mu)^2.
+\]
+
+\begin{proposition}[Least Squares Estimate of a Constant]
+The least squares estimate of $\mu$ is the sample mean:
+\[
+\hat{\mu}
+=
+\frac{1}{N}\sum_{i=1}^N y_i.
+\]
+\end{proposition}
+
+\begin{proof}
+Differentiate the cost:
+\[
+\frac{dC}{d\mu}
+=
+\frac{d}{d\mu}
+\sum_{i=1}^N (y_i-\mu)^2
+=
+-2\sum_{i=1}^N (y_i-\mu).
+\]
+At the optimum,
+\[
+-2\sum_{i=1}^N (y_i-\hat{\mu})=0.
+\]
+Therefore,
+\[
+\sum_{i=1}^N y_i - N\hat{\mu}=0,
+\]
+and hence
+\[
+\hat{\mu}
+=
+\frac{1}{N}\sum_{i=1}^N y_i.
+\]
+\end{proof}
+
+\subsection{Weighted Constant Fit and Heteroscedasticity}
+
+Suppose observations have different variances $\sigma_i^2$. Define weights
+\[
+w_i=\frac{1}{\sigma_i^2}.
+\]
+The weighted least squares cost is
+\[
+C(\mu)
+=
+\sum_{i=1}^N w_i(y_i-\mu)^2.
+\]
+
+\begin{proposition}[Weighted Average]
+The weighted least squares estimate is
+\[
+\hat{\mu}
+=
+\frac{\sum_{i=1}^N w_i y_i}{\sum_{i=1}^N w_i}.
+\]
+\end{proposition}
+
+\begin{proof}
+Differentiate:
+\[
+\frac{dC}{d\mu}
+=
+-2\sum_{i=1}^N w_i(y_i-\mu).
+\]
+At the optimum,
+\[
+\sum_{i=1}^N w_i(y_i-\hat{\mu})=0.
+\]
+Thus,
+\[
+\sum_{i=1}^N w_i y_i
+-
+\hat{\mu}\sum_{i=1}^N w_i
+=
+0.
+\]
+Solving for $\hat{\mu}$ gives
+\[
+\hat{\mu}
+=
+\frac{\sum_{i=1}^N w_i y_i}{\sum_{i=1}^N w_i}.
+\]
+\end{proof}
+
+\section{Simple Linear Regression}
+
+Consider the linear model
+\[
+f(x;\theta)=a+bx,
+\]
+where
+\[
+\theta=
+\begin{pmatrix}
+a\\
+b
+\end{pmatrix}.
+\]
+The least squares estimate solves
+\[
+\hat{\theta}
+=
+\argmin_{a,b}
+\sum_{i=1}^N
+\left[y_i-(a+bx_i)\right]^2.
+\]
+
+The cost is quadratic in $a$ and $b$, so the first-order conditions form a linear system.
+
+\begin{proposition}[Simple Linear Regression Coefficients]
+The least squares estimates are
+\[
+\hat{b}
+=
+\frac{\sum_{i=1}^N (x_i-\bar{x})(y_i-\bar{y})}
+{\sum_{i=1}^N (x_i-\bar{x})^2},
+\]
+and
+\[
+\hat{a}
+=
+\bar{y}-\hat{b}\bar{x}.
+\]
+\end{proposition}
+
+\begin{proof}
+The cost is
+\[
+C(a,b)
+=
+\sum_{i=1}^N
+(y_i-a-bx_i)^2.
+\]
+The first-order conditions are
+\[
+\frac{\partial C}{\partial a}
+=
+-2\sum_{i=1}^N (y_i-a-bx_i)
+=
+0,
+\]
+and
+\[
+\frac{\partial C}{\partial b}
+=
+-2\sum_{i=1}^N x_i(y_i-a-bx_i)
+=
+0.
+\]
+The first equation gives
+\[
+\sum_{i=1}^N y_i
+=
+Na+b\sum_{i=1}^N x_i.
+\]
+Dividing by $N$,
+\[
+\bar{y}=a+b\bar{x},
+\]
+so
+\[
+a=\bar{y}-b\bar{x}.
+\]
+Substituting into the second first-order condition yields
+\[
+\sum_{i=1}^N x_i\left[y_i-\bar{y}-b(x_i-\bar{x})\right]=0.
+\]
+Equivalently,
+\[
+\sum_{i=1}^N (x_i-\bar{x})(y_i-\bar{y})
+=
+b\sum_{i=1}^N (x_i-\bar{x})^2.
+\]
+Thus,
+\[
+\hat{b}
+=
+\frac{\sum_{i=1}^N (x_i-\bar{x})(y_i-\bar{y})}
+{\sum_{i=1}^N (x_i-\bar{x})^2},
+\]
+and
+\[
+\hat{a}=\bar{y}-\hat{b}\bar{x}.
+\]
+\end{proof}
+
+\section{Linear Regression with Basis Functions}
+
+Let $\phi_1,\dots,\phi_K$ be known basis functions. A linear regression model is
+\[
+f(x;\beta)
+=
+\sum_{k=1}^K \beta_k \phi_k(x).
+\]
+Equivalently,
+\[
+f(x;\beta)=\beta^T\phi(x),
+\]
+where
+\[
+\beta=(\beta_1,\dots,\beta_K)^T,
+\quad
+\phi(x)=(\phi_1(x),\dots,\phi_K(x))^T.
+\]
+
+The cost function is
+\[
+C(\beta)
+=
+\sum_{i=1}^N
+\left[
+y_i-\sum_{k=1}^K \beta_k\phi_k(x_i)
+\right]^2.
+\]
+
+Define the design matrix $X \in \R^{N\times K}$ by
+\[
+X_{ik}=\phi_k(x_i).
+\]
+Then the model predictions are
+\[
+\hat{y}=X\beta,
+\]
+and the cost becomes
+\[
+C(\beta)
+=
+\norm{y-X\beta}_2^2.
+\]
+
+\subsection{Normal Equations}
+
+\begin{theorem}[Normal Equations]
+The least squares solution satisfies
+\[
+X^T X\hat{\beta}=X^T y.
+\]
+If $X^T X$ is invertible, then
+\[
+\hat{\beta}
+=
+(X^T X)^{-1}X^T y.
+\]
+\end{theorem}
+
+\begin{proof}
+The cost is
+\[
+C(\beta)
+=
+(y-X\beta)^T(y-X\beta).
+\]
+Expanding,
+\[
+C(\beta)
+=
+y^Ty - 2\beta^T X^T y + \beta^T X^T X\beta.
+\]
+Taking the gradient with respect to $\beta$,
+\[
+\grad_\beta C(\beta)
+=
+-2X^Ty + 2X^T X\beta.
+\]
+At the optimum,
+\[
+-2X^Ty + 2X^T X\hat{\beta}=0.
+\]
+Therefore,
+\[
+X^T X\hat{\beta}=X^T y.
+\]
+If $X^T X$ is invertible,
+\[
+\hat{\beta}
+=
+(X^T X)^{-1}X^T y.
+\]
+\end{proof}
+
+\begin{remark}[Kronecker Delta]
+The Kronecker delta is
+\[
+\delta_{kl}
+=
+\begin{cases}
+1, & k=l,\\
+0, & k\neq l.
+\end{cases}
+\]
+It satisfies
+\[
+\sum_l \delta_{kl}a_l=a_k.
+\]
+This is the componentwise analogue of
+\[
+Ia=a.
+\]
+\end{remark}
+
+\subsection{Componentwise Derivation}
+
+Starting from
+\[
+C(\beta)
+=
+\sum_{i=1}^N
+\left[
+y_i-\sum_{k=1}^K X_{ik}\beta_k
+\right]^2,
+\]
+differentiate with respect to $\beta_l$:
+\[
+\frac{\partial C}{\partial \beta_l}
+=
+-2\sum_{i=1}^N
+\left[
+y_i-\sum_{k=1}^K X_{ik}\beta_k
+\right]X_{il}.
+\]
+At the optimum,
+\[
+\sum_{i=1}^N
+\left[
+y_i-\sum_{k=1}^K X_{ik}\hat{\beta}_k
+\right]X_{il}
+=
+0.
+\]
+Therefore,
+\[
+\sum_{i=1}^N X_{il}y_i
+=
+\sum_{k=1}^K
+\left(
+\sum_{i=1}^N X_{il}X_{ik}
+\right)\hat{\beta}_k.
+\]
+This is precisely
+\[
+X^Ty=X^TX\hat{\beta}.
+\]
+
+\subsection{Moore--Penrose Pseudoinverse}
+
+When $X^TX$ is invertible,
+\[
+X^+ = (X^TX)^{-1}X^T,
+\]
+so
+\[
+\hat{\beta}=X^+y.
+\]
+
+More generally, the Moore--Penrose pseudoinverse can be defined using the singular value decomposition. If
+\[
+X=U\Sigma V^T,
+\]
+then
+\[
+X^+=V\Sigma^+U^T,
+\]
+where $\Sigma^+$ is formed by taking reciprocals of the nonzero singular values.
+
+\section{Geometry of Least Squares}
+
+Least squares projects $y$ onto the column space of $X$.
+
+The fitted values are
+\[
+\hat{y}=X\hat{\beta}.
+\]
+Using the closed form solution,
+\[
+\hat{y}
+=
+X(X^TX)^{-1}X^Ty.
+\]
+
+\begin{definition}[Hat Matrix]
+The hat matrix is
+\[
+H
+=
+X(X^TX)^{-1}X^T.
+\]
+Thus,
+\[
+\hat{y}=Hy.
+\]
+\end{definition}
+
+\begin{proposition}[Projection Properties]
+The hat matrix satisfies
+\[
+H^T=H,
+\]
+and
+\[
+H^2=H.
+\]
+\end{proposition}
+
+\begin{proof}
+First,
+\[
+H^T
+=
+\left[X(X^TX)^{-1}X^T\right]^T
+=
+X(X^TX)^{-1}X^T
+=
+H,
+\]
+since $X^TX$ is symmetric.
+
+Next,
+\[
+H^2
+=
+X(X^TX)^{-1}X^T X(X^TX)^{-1}X^T.
+\]
+Since $X^TX$ appears in the middle,
+\[
+H^2
+=
+X(X^TX)^{-1}(X^TX)(X^TX)^{-1}X^T
+=
+X(X^TX)^{-1}X^T
+=
+H.
+\]
+\end{proof}
+
+\begin{remark}
+The residual vector is
+\[
+r=y-\hat{y}=y-X\hat{\beta}.
+\]
+The normal equations imply
+\[
+X^Tr=0.
+\]
+Thus, the residuals are orthogonal to every column of the design matrix.
+\end{remark}
+
+\section{Weighted Least Squares}
+
+For heteroscedastic errors, use
+\[
+C(\beta)
+=
+\sum_{i=1}^N
+w_i
+\left[
+y_i-\sum_{k=1}^K X_{ik}\beta_k
+\right]^2.
+\]
+Let $W$ be diagonal with
+\[
+W_{ij}=w_i\delta_{ij}.
+\]
+Then
+\[
+C(\beta)
+=
+(y-X\beta)^TW(y-X\beta).
+\]
+
+\begin{theorem}[Weighted Least Squares]
+The weighted least squares estimator satisfies
+\[
+X^TWX\hat{\beta}=X^TWy.
+\]
+If $X^TWX$ is invertible, then
+\[
+\hat{\beta}
+=
+(X^TWX)^{-1}X^TWy.
+\]
+\end{theorem}
+
+\begin{proof}
+Expand the weighted cost:
+\[
+C(\beta)
+=
+(y-X\beta)^TW(y-X\beta).
+\]
+Taking the gradient,
+\[
+\grad_\beta C(\beta)
+=
+-2X^TWy+2X^TWX\beta.
+\]
+Setting the gradient equal to zero gives
+\[
+X^TWX\hat{\beta}=X^TWy.
+\]
+Solving gives
+\[
+\hat{\beta}
+=
+(X^TWX)^{-1}X^TWy.
+\]
+\end{proof}
+
+\begin{remark}
+If errors are uncorrelated but have variances $\sigma_i^2$, then the optimal weights are
+\[
+w_i=\frac{1}{\sigma_i^2}.
+\]
+If errors are correlated with covariance matrix $C$, then the natural weight matrix is
+\[
+W=C^{-1}.
+\]
+\end{remark}
+
+\section{Regularization}
+
+Least squares can become unstable when predictors are highly correlated or when $X^TX$ is nearly singular. Regularization stabilizes estimation by penalizing large coefficients.
+
+\subsection{Ridge Regression}
+
+\begin{definition}[Ridge Regression]
+Ridge regression solves
+\[
+\hat{\beta}
+=
+\argmin_{\beta}
+\norm{y-X\beta}_2^2
++
+\lambda\norm{\beta}_2^2,
+\]
+where $\lambda \geq 0$.
+\end{definition}
+
+\begin{theorem}[Ridge Solution]
+The ridge regression estimator is
+\[
+\hat{\beta}_{\mathrm{ridge}}
+=
+(X^TX+\lambda I)^{-1}X^Ty.
+\]
+\end{theorem}
+
+\begin{proof}
+The objective is
+\[
+C(\beta)
+=
+(y-X\beta)^T(y-X\beta)+\lambda\beta^T\beta.
+\]
+Taking the gradient,
+\[
+\grad_\beta C(\beta)
+=
+-2X^Ty+2X^TX\beta+2\lambda\beta.
+\]
+Setting the gradient equal to zero,
+\[
+(X^TX+\lambda I)\hat{\beta}=X^Ty.
+\]
+Thus,
+\[
+\hat{\beta}_{\mathrm{ridge}}
+=
+(X^TX+\lambda I)^{-1}X^Ty.
+\]
+\end{proof}
+
+More generally, one may use a matrix penalty:
+\[
+\hat{\beta}
+=
+\argmin_{\beta}
+\norm{y-X\beta}_2^2
++
+\lambda\norm{\Gamma\beta}_2^2.
+\]
+The solution satisfies
+\[
+(X^TX+\lambda\Gamma^T\Gamma)\hat{\beta}=X^Ty.
+\]
+
+\subsection{Lasso Regression}
+
+\begin{definition}[Lasso Regression]
+Lasso regression solves
+\[
+\hat{\beta}
+=
+\argmin_{\beta}
+\norm{y-X\beta}_2^2
++
+\lambda\norm{\beta}_1.
+\]
+\end{definition}
+
+\begin{remark}
+The $L_1$ penalty encourages sparsity, meaning some coefficients are exactly zero. Unlike ridge regression, lasso does not generally have a simple closed form solution.
+\end{remark}
+
+\section{Least Squares Algorithm}
+
+\begin{algorithm}[H]
+\caption{Ordinary Least Squares via Normal Equations}
+\begin{algorithmic}[1]
+\Require Design matrix $X \in \R^{N\times K}$, response vector $y \in \R^N$
+\Ensure Coefficient estimate $\hat{\beta}$
+\State Compute $A \gets X^TX$
+\State Compute $b \gets X^Ty$
+\State Solve $A\hat{\beta}=b$
+\State \Return $\hat{\beta}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Weighted Least Squares}
+\begin{algorithmic}[1]
+\Require Design matrix $X$, response vector $y$, weights $w_1,\dots,w_N$
+\Ensure Weighted least squares estimate $\hat{\beta}$
+\State Form diagonal matrix $W$ with $W_{ii}=w_i$
+\State Compute $A \gets X^TWX$
+\State Compute $b \gets X^TWy$
+\State Solve $A\hat{\beta}=b$
+\State \Return $\hat{\beta}$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+
+def ordinary_least_squares(X, y):
+    """
+    Computes beta_hat = (X^T X)^(-1) X^T y.
+    Uses solve rather than explicitly forming the inverse.
+    """
+    A = X.T @ X
+    b = X.T @ y
+    beta_hat = np.linalg.solve(A, b)
+    return beta_hat
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+def weighted_least_squares(X, y, w):
+    """
+    Weighted least squares with diagonal weights w.
+    """
+    W = np.diag(w)
+    A = X.T @ W @ X
+    b = X.T @ W @ y
+    beta_hat = np.linalg.solve(A, b)
+    return beta_hat
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+def ridge_regression(X, y, lam):
+    """
+    Ridge regression:
+    beta_hat = (X^T X + lambda I)^(-1) X^T y.
+    """
+    K = X.shape[1]
+    A = X.T @ X + lam * np.eye(K)
+    b = X.T @ y
+    beta_hat = np.linalg.solve(A, b)
+    return beta_hat
+\end{lstlisting}
+
+\section{Linear Combinations and Basis Expansions}
+
+Linear regression is fundamentally about representing data as linear combinations of known basis functions:
+\[
+f(x;\beta)
+=
+\sum_{k=1}^K \beta_k\phi_k(x).
+\]
+
+Examples include:
+\begin{itemize}
+    \item Polynomial regression
+    \item Fourier series
+    \item Discrete cosine transforms
+    \item Spherical harmonics
+    \item Image bases
+    \item Shape bases
+\end{itemize}
+
+\begin{remark}
+The term ``linear regression'' means linear in the parameters $\beta$, not necessarily linear in the input $x$. For example,
+\[
+f(x;\beta)=\beta_0+\beta_1x+\beta_2x^2
+\]
+is still a linear regression model because it is linear in $\beta$.
+\end{remark}
+
+\chapter{Principal Components Analysis}
+
+\section{Directions of Maximum Variance}
+
+Let $X \in \R^N$ be a random vector with
+\[
+\E[X]=0
+\]
+and covariance matrix
+\[
+C=\E[XX^T].
+\]
+For any direction $a \in \R^N$, the scalar projection of $X$ onto $a$ is
+\[
+a^TX.
+\]
+The variance of this projection is
+\[
+\Var(a^TX)
+=
+\E[(a^TX)^2].
+\]
+Since
+\[
+(a^TX)^2 = a^TXX^Ta,
+\]
+we have
+\[
+\Var(a^TX)
+=
+\E[a^TXX^Ta]
+=
+a^T\E[XX^T]a
+=
+a^TCa.
+\]
+
+Therefore, the direction of maximum variance solves
+\[
+\max_{a \in \R^N} a^TCa
+\quad
+\text{s.t.}
+\quad
+a^Ta=1.
+\]
+
+\section{Constrained Optimization Derivation}
+
+Define the Lagrangian
+\[
+\mathcal{L}(a,\lambda)
+=
+a^TCa-\lambda(a^Ta-1).
+\]
+The constrained maximizer satisfies
+\[
+\frac{\partial \mathcal{L}}{\partial \lambda}=0,
+\quad
+\grad_a \mathcal{L}=0.
+\]
+The first condition gives
+\[
+a^Ta=1.
+\]
+
+For the second condition, write
+\[
+a^TCa
+=
+\sum_{i=1}^N\sum_{j=1}^N a_i C_{ij}a_j.
+\]
+Differentiating with respect to $a_k$,
+\[
+\frac{\partial}{\partial a_k}
+\left(
+\sum_{i=1}^N\sum_{j=1}^N a_iC_{ij}a_j
+\right)
+=
+\sum_{i=1}^N\sum_{j=1}^N
+\frac{\partial a_i}{\partial a_k}C_{ij}a_j
++
+\sum_{i=1}^N\sum_{j=1}^N
+a_iC_{ij}\frac{\partial a_j}{\partial a_k}.
+\]
+Using
+\[
+\frac{\partial a_i}{\partial a_k}=\delta_{ik},
+\]
+we get
+\[
+\sum_{j=1}^N C_{kj}a_j
++
+\sum_{i=1}^N a_iC_{ik}.
+\]
+In matrix notation, this is
+\[
+Ca+C^Ta.
+\]
+Since covariance matrices are symmetric, $C=C^T$, so
+\[
+\grad_a(a^TCa)=2Ca.
+\]
+Also,
+\[
+\grad_a\{\lambda(a^Ta-1)\}=2\lambda a.
+\]
+Thus,
+\[
+2Ca-2\lambda a=0,
+\]
+so
+\[
+Ca=\lambda a.
+\]
+
+\begin{theorem}[First Principal Component]
+The direction of maximum variance is the eigenvector $a_1$ corresponding to the largest eigenvalue $\lambda_1$ of $C$:
+\[
+Ca_1=\lambda_1a_1.
+\]
+The maximum variance is
+\[
+a_1^TCa_1=\lambda_1.
+\]
+\end{theorem}
+
+\begin{proof}
+From the Lagrange multiplier derivation, any stationary direction satisfies
+\[
+Ca=\lambda a.
+\]
+If $a$ is normalized so that $a^Ta=1$, then
+\[
+a^TCa
+=
+a^T\lambda a
+=
+\lambda a^Ta
+=
+\lambda.
+\]
+Therefore, maximizing $a^TCa$ over unit vectors is equivalent to choosing the largest eigenvalue. The associated eigenvector is the first principal component.
+\end{proof}
+
+\section{Second Principal Component}
+
+The second principal component is the direction of maximum variance subject to being uncorrelated with the first principal component.
+
+Let $a_1$ be the first principal component. Since
+\[
+\Cov(a^TX,a_1^TX)
+=
+a^TCa_1,
+\]
+the uncorrelatedness constraint is
+\[
+a^TCa_1=0.
+\]
+
+The constrained optimization problem is
+\[
+\max_{a \in \R^N}
+\left[
+a^TCa
+-
+\lambda(a^Ta-1)
+-
+\lambda'(a^TCa_1)
+\right].
+\]
+
+The first-order condition is
+\[
+2Ca-2\lambda a-\lambda'Ca_1=0.
+\]
+Since
+\[
+Ca_1=\lambda_1a_1,
+\]
+left multiply by $a_1^T$:
+\[
+2a_1^TCa
+-
+2\lambda a_1^Ta
+-
+\lambda'a_1^TCa_1
+=
+0.
+\]
+The orthogonality and uncorrelatedness constraints imply
+\[
+a_1^TCa=0,
+\quad
+a_1^Ta=0.
+\]
+Therefore,
+\[
+-\lambda'a_1^TCa_1=0.
+\]
+But
+\[
+a_1^TCa_1=\lambda_1,
+\]
+so
+\[
+\lambda'=0.
+\]
+Thus the first-order condition reduces to
+\[
+Ca=\lambda a.
+\]
+
+\begin{theorem}[Second Principal Component]
+The second principal component is the eigenvector $a_2$ corresponding to the second largest eigenvalue $\lambda_2$:
+\[
+Ca_2=\lambda_2a_2.
+\]
+\end{theorem}
+
+\section{Principal Components Analysis}
+
+Let
+\[
+\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_N \geq 0
+\]
+be the eigenvalues of $C$, with corresponding orthonormal eigenvectors
+\[
+e_1,\dots,e_N.
+\]
+Since $C$ is symmetric positive semidefinite, it admits the spectral decomposition
+\[
+C
+=
+\sum_{k=1}^N \lambda_k e_ke_k^T.
+\]
+
+For any eigenvector $e_l$,
+\[
+Ce_l
+=
+\sum_{k=1}^N \lambda_k e_k(e_k^Te_l).
+\]
+Since the eigenvectors are orthonormal,
+\[
+e_k^Te_l=\delta_{kl}.
+\]
+Therefore,
+\[
+Ce_l
+=
+\lambda_l e_l.
+\]
+
+In matrix form, let
+\[
+E=
+\begin{pmatrix}
+e_1 & e_2 & \cdots & e_N
+\end{pmatrix},
+\]
+and
+\[
+\Lambda=
+\diag(\lambda_1,\dots,\lambda_N).
+\]
+Then
+\[
+C=E\Lambda E^T.
+\]
+
+\begin{definition}[Principal Components]
+The principal components are the orthonormal eigenvectors of the covariance matrix, ordered by decreasing eigenvalue.
+\end{definition}
+
+\begin{remark}
+The eigenvectors associated with the largest eigenvalues capture the directions of greatest variance in the data.
+\end{remark}
+
+\section{Low-Rank Approximation}
+
+If only $K<N$ principal components are retained, then
+\[
+C
+\approx
+C_K
+=
+\sum_{k=1}^K \lambda_k e_ke_k^T.
+\]
+Equivalently,
+\[
+C_K
+=
+E_K\Lambda_K E_K^T,
+\]
+where
+\[
+E_K=
+\begin{pmatrix}
+e_1 & \cdots & e_K
+\end{pmatrix}
+\]
+and
+\[
+\Lambda_K=\diag(\lambda_1,\dots,\lambda_K).
+\]
+
+The remaining covariance is
+\[
+C-C_K
+=
+\sum_{l=K+1}^N \lambda_l e_le_l^T.
+\]
+
+\begin{definition}[Projection Matrix]
+The rank-$K$ PCA projection matrix is
+\[
+P_K=E_KE_K^T.
+\]
+\end{definition}
+
+\begin{remark}
+The matrix $P_K$ projects observations onto the subspace spanned by the first $K$ principal components.
+\end{remark}
+
+\section{New Coordinate System}
+
+Since $E$ is orthonormal,
+\[
+E^TE=EE^T=I.
+\]
+Thus, the transformation
+\[
+Z=E^TX
+\]
+expresses $X$ in the principal component coordinate system.
+
+Using only the first $K$ eigenvectors,
+\[
+Z_K=E_K^TX.
+\]
+The reconstruction in the original coordinates is
+\[
+X_K=E_KZ_K.
+\]
+Therefore,
+\[
+X_K=E_KE_K^TX=P_KX.
+\]
+
+\begin{remark}
+PCA can be viewed as a rotation followed by truncation. The full transformation $E^TX$ preserves all information, while the truncated transformation $E_K^TX$ discards directions with smaller variance.
+\end{remark}
+
+\section{Samples and the Sample Covariance Matrix}
+
+Suppose we have $n$ centered observations
+\[
+x_1,\dots,x_n \in \R^N,
+\]
+arranged as columns of a data matrix
+\[
+X=
+\begin{pmatrix}
+x_1 & x_2 & \cdots & x_n
+\end{pmatrix}.
+\]
+Assuming the sample mean is zero, the sample covariance matrix is
+\[
+C
+=
+\frac{1}{n-1}\sum_{i=1}^n x_ix_i^T.
+\]
+In matrix form,
+\[
+C
+=
+\frac{1}{n-1}XX^T.
+\]
+
+\section{Connection to Singular Value Decomposition}
+
+Let the singular value decomposition of $X$ be
+\[
+X=UWV^T,
+\]
+where
+\[
+U^TU=I,
+\quad
+V^TV=I,
+\]
+and $W$ is diagonal with nonnegative singular values.
+
+Then
+\[
+C
+=
+\frac{1}{n-1}XX^T.
+\]
+Substituting the SVD,
+\[
+C
+=
+\frac{1}{n-1}
+UWV^TVWU^T.
+\]
+Since
+\[
+V^TV=I,
+\]
+we obtain
+\[
+C
+=
+\frac{1}{n-1}UW^2U^T.
+\]
+
+Thus, if
+\[
+C=E\Lambda E^T,
+\]
+then
+\[
+E=U,
+\]
+and
+\[
+\Lambda=\frac{1}{n-1}W^2.
+\]
+
+\begin{remark}
+Computing PCA by SVD is often more numerically stable than explicitly forming the covariance matrix.
+\end{remark}
+
+\section{Whitening}
+
+\begin{definition}[Whitening Transformation]
+Given covariance decomposition
+\[
+C=E\Lambda E^T,
+\]
+the whitened representation of centered data $X$ is
+\[
+A=\Lambda^{-1/2}E^TX.
+\]
+\end{definition}
+
+\begin{proposition}
+If $X$ has covariance $C=E\Lambda E^T$, then the whitened variable
+\[
+A=\Lambda^{-1/2}E^TX
+\]
+has identity covariance.
+\end{proposition}
+
+\begin{proof}
+Compute
+\[
+\Cov(A)
+=
+\E[AA^T].
+\]
+Substituting $A=\Lambda^{-1/2}E^TX$,
+\[
+\Cov(A)
+=
+\E[\Lambda^{-1/2}E^TXX^TE\Lambda^{-1/2}].
+\]
+Since $\E[XX^T]=C$,
+\[
+\Cov(A)
+=
+\Lambda^{-1/2}E^TCE\Lambda^{-1/2}.
+\]
+Using $C=E\Lambda E^T$,
+\[
+\Cov(A)
+=
+\Lambda^{-1/2}E^TE\Lambda E^TE\Lambda^{-1/2}.
+\]
+Since $E^TE=I$,
+\[
+\Cov(A)
+=
+\Lambda^{-1/2}\Lambda\Lambda^{-1/2}
+=
+I.
+\]
+\end{proof}
+
+\section{Scree Plot and Explained Variance}
+
+The eigenvalue spectrum is
+\[
+\{\lambda_1,\lambda_2,\dots,\lambda_N\}.
+\]
+A scree plot displays these eigenvalues in decreasing order.
+
+\begin{definition}[Explained Variance Ratio]
+The explained variance ratio of component $k$ is
+\[
+\frac{\lambda_k}{\sum_{j=1}^N \lambda_j}.
+\]
+The cumulative explained variance of the first $K$ components is
+\[
+\frac{\sum_{k=1}^K \lambda_k}{\sum_{j=1}^N \lambda_j}.
+\]
+\end{definition}
+
+\begin{remark}
+A common heuristic is to choose $K$ by looking for an elbow in the scree plot. The elbow indicates that additional components contribute relatively little variance.
+\end{remark}
+
+\begin{proposition}[Variance Additivity for Uncorrelated Components]
+If $Z_1,\dots,Z_K$ are pairwise uncorrelated, then
+\[
+\Var\left(\sum_{k=1}^K Z_k\right)
+=
+\sum_{k=1}^K \Var(Z_k).
+\]
+\end{proposition}
+
+\begin{proof}
+For two variables,
+\[
+\Var(X+Y)
+=
+\Var(X)+\Var(Y)+2\Cov(X,Y).
+\]
+If $X$ and $Y$ are uncorrelated, then $\Cov(X,Y)=0$, so
+\[
+\Var(X+Y)=\Var(X)+\Var(Y).
+\]
+The general result follows by applying the same expansion to $K$ variables:
+\[
+\Var\left(\sum_{k=1}^K Z_k\right)
+=
+\sum_{k=1}^K \Var(Z_k)
++
+2\sum_{i<j}\Cov(Z_i,Z_j).
+\]
+If all variables are pairwise uncorrelated, all covariance terms vanish.
+\end{proof}
+
+\section{PCA Algorithm}
+
+\begin{algorithm}[H]
+\caption{Principal Components Analysis}
+\begin{algorithmic}[1]
+\Require Data matrix $X \in \R^{n\times d}$ with rows as observations, number of components $K$
+\Ensure Principal component scores $Z_K$, loading matrix $E_K$
+\State Center the data: $X_c \gets X - \bar{X}$
+\State Compute covariance matrix: $C \gets \frac{1}{n-1}X_c^TX_c$
+\State Compute eigendecomposition: $C=E\Lambda E^T$
+\State Sort eigenvalues in decreasing order and reorder eigenvectors accordingly
+\State Keep first $K$ eigenvectors: $E_K \gets [e_1,\dots,e_K]$
+\State Project data: $Z_K \gets X_cE_K$
+\State \Return $Z_K, E_K$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{PCA via Singular Value Decomposition}
+\begin{algorithmic}[1]
+\Require Centered data matrix $X_c \in \R^{n\times d}$, number of components $K$
+\Ensure Principal component scores $Z_K$, loading matrix $V_K$
+\State Compute SVD: $X_c=U W V^T$
+\State Keep first $K$ right singular vectors: $V_K \gets [v_1,\dots,v_K]$
+\State Compute scores: $Z_K \gets X_cV_K$
+\State Eigenvalues are $\lambda_k = \frac{w_k^2}{n-1}$
+\State \Return $Z_K,V_K$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+
+def pca(X, K):
+    """
+    PCA using SVD.
+    Rows are observations and columns are features.
+    """
+    X_centered = X - X.mean(axis=0)
+
+    U, S, Vt = np.linalg.svd(X_centered, full_matrices=False)
+
+    components = Vt[:K]
+    scores = X_centered @ components.T
+    eigenvalues = (S**2) / (X.shape[0] - 1)
+
+    explained_variance_ratio = eigenvalues / eigenvalues.sum()
+
+    return scores, components, eigenvalues[:K], explained_variance_ratio[:K]
+\end{lstlisting}
+
+\begin{remark}
+For machine learning data matrices, the common convention is rows as observations and columns as features. In this convention, the covariance matrix is
+\[
+C=\frac{1}{n-1}X_c^TX_c.
+\]
+In the column-vector convention used in the derivation above, the covariance matrix is
+\[
+C=\frac{1}{n-1}X_cX_c^T.
+\]
+The mathematics is the same, but the orientation of the data matrix changes.
+\end{remark}
+
+\chapter{Nearest Neighbors}
+
+\section{Classification}
+
+Classification is the supervised learning problem of assigning discrete labels to observations.
+
+A training set consists of labeled data:
+\[
+T=\{(x_i,C_i)\}_{i=1}^N,
+\]
+where
+\[
+x_i \in \R^d
+\]
+is a feature vector and $C_i$ is the known class label.
+
+A query set consists of unlabeled data:
+\[
+Q=\{x_i\}_{i=1}^M,
+\]
+where
+\[
+x_i \in \R^d.
+\]
+
+The goal is to construct a classifier
+\[
+\hat{C}(x)
+\]
+that assigns a class label to a new point $x$.
+
+\begin{remark}
+Classification is similar to regression, but the response variable is discrete rather than continuous. Common classifiers include nearest neighbors, naive Bayes, LDA/QDA, logistic regression, decision trees, random forests, and support vector machines.
+\end{remark}
+
+\section{Nearest Neighbors}
+
+\begin{definition}[Nearest Neighbor Classifier]
+Given a query point $x$, the nearest neighbor classifier assigns $x$ the label of the closest training point:
+\[
+\hat{C}(x)=C_{i^\star},
+\]
+where
+\[
+i^\star=\argmin_{1\leq i\leq N} d(x,x_i).
+\]
+\end{definition}
+
+The most common distance is Euclidean distance:
+\[
+d(x,x_i)=\norm{x-x_i}_2
+=
+\sqrt{\sum_{j=1}^d (x_j-x_{ij})^2}.
+\]
+
+\section{$k$-Nearest Neighbors}
+
+\begin{definition}[$k$-Nearest Neighbor Classifier]
+Let $\mathcal{N}_k(x)$ denote the indices of the $k$ nearest training points to $x$. The $k$-nearest neighbor classifier assigns the most frequent class among those neighbors:
+\[
+\hat{C}(x)
+=
+\argmax_{c}
+\sum_{i\in \mathcal{N}_k(x)}
+\ind(C_i=c).
+\]
+\end{definition}
+
+A weighted version uses distance-dependent weights:
+\[
+\hat{C}(x)
+=
+\argmax_c
+\sum_{i\in \mathcal{N}_k(x)}
+w_i(x)\ind(C_i=c),
+\]
+where a common choice is
+\[
+w_i(x)=\frac{1}{d(x,x_i)+\varepsilon}.
+\]
+
+\begin{remark}
+Using $k$ instead of a fixed distance cutoff adapts better to regions with different data density. In dense regions, the neighborhood is small; in sparse regions, the neighborhood expands.
+\end{remark}
+
+\section{Bias-Variance Tradeoff}
+
+The choice of $k$ controls model complexity.
+
+\begin{itemize}
+    \item Small $k$: low bias, high variance
+    \item Large $k$: high bias, low variance
+\end{itemize}
+
+\begin{remark}
+The case $k=1$ produces highly flexible decision boundaries, but it is sensitive to noise. Larger values of $k$ smooth the decision boundary.
+\end{remark}
+
+\section{Evaluating on a Grid}
+
+To visualize a classifier in two dimensions:
+\begin{enumerate}
+    \item Create a mesh of query points with resolution $h$.
+    \item Apply the classifier to each grid point.
+    \item Plot the predicted class regions.
+    \item Overlay the training data.
+\end{enumerate}
+
+This produces a visualization of the decision boundary.
+
+\begin{algorithm}[H]
+\caption{$k$-Nearest Neighbors Classification}
+\begin{algorithmic}[1]
+\Require Training data $\{(x_i,C_i)\}_{i=1}^N$, query point $x$, number of neighbors $k$
+\Ensure Predicted class label $\hat{C}(x)$
+\State Compute distances $d_i \gets d(x,x_i)$ for $i=1,\dots,N$
+\State Sort distances in increasing order
+\State Let $\mathcal{N}_k(x)$ be the indices of the first $k$ points
+\State Count class votes among $\{C_i : i \in \mathcal{N}_k(x)\}$
+\State Return the class with the largest vote count
+\end{algorithmic}
+\end{algorithm}
+
+\section{Meaningful Distance}
+
+Nearest neighbor methods depend entirely on the distance function. If features have different units or scales, Euclidean distance can be dominated by variables with larger numerical ranges.
+
+For example, suppose
+\[
+x=(\text{height in meters}, \text{income in dollars}).
+\]
+The income coordinate may dominate the distance unless features are scaled.
+
+\begin{definition}[Standardization]
+Given feature $j$, standardization transforms
+\[
+x_{ij}
+\mapsto
+\frac{x_{ij}-\bar{x}_j}{s_j},
+\]
+where $\bar{x}_j$ is the sample mean of feature $j$ and $s_j$ is its sample standard deviation.
+\end{definition}
+
+\begin{remark}
+Centering and scaling are often essential preprocessing steps for nearest neighbor methods.
+\end{remark}
+
+\section{Curse of Dimensionality}
+
+In high dimensions, nearest neighbor methods become less effective because distances become less informative.
+
+\begin{remark}
+Informally, in high dimensions, ``everybody is lonely.'' Points tend to be far apart, and the contrast between nearest and farthest neighbors decreases.
+\end{remark}
+
+\subsection{Volume Concentration}
+
+Consider a unit ball in $\R^d$. The volume concentrates near the boundary as $d$ increases. For a point uniformly distributed in the unit ball, the probability that its radius is at most $r$ is
+\[
+\Prob(R\leq r)=r^d.
+\]
+Thus,
+\[
+\Prob(R>r)=1-r^d.
+\]
+For fixed $r<1$,
+\[
+r^d \to 0
+\quad
+\text{as}
+\quad
+d\to\infty.
+\]
+Therefore, most of the volume lies near the surface.
+
+\begin{remark}
+This explains why nearest neighbor methods may require very large sample sizes in high dimensions. The data become sparse relative to the feature space.
+\end{remark}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+
+def knn_predict(X_train, y_train, x_query, k=5):
+    """
+    Simple k-nearest neighbors classifier.
+    X_train: array of shape (N, d)
+    y_train: array of shape (N,)
+    x_query: array of shape (d,)
+    """
+    distances = np.linalg.norm(X_train - x_query, axis=1)
+    neighbor_idx = np.argsort(distances)[:k]
+    neighbor_labels = y_train[neighbor_idx]
+
+    labels, counts = np.unique(neighbor_labels, return_counts=True)
+    return labels[np.argmax(counts)]
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+def standardize_train_test(X_train, X_test):
+    """
+    Standardize using training-set statistics only.
+    """
+    mean = X_train.mean(axis=0)
+    std = X_train.std(axis=0, ddof=1)
+
+    X_train_scaled = (X_train - mean) / std
+    X_test_scaled = (X_test - mean) / std
+
+    return X_train_scaled, X_test_scaled
+\end{lstlisting}
+
+\chapter{Naive Bayes, LDA, and QDA}
+
+\section{Naive Bayes Classifier}
+
+\subsection{Bayesian Classification}
+
+Let $\{C_k\}_{k=1}^K$ denote discrete classes and $x \in \R^d$ a feature vector.
+
+By Bayes' rule,
+\[
+\Prob(C_k \mid x)
+=
+\frac{\pi_k \, \mathcal{L}_x(C_k)}{Z},
+\]
+where
+\[
+\pi_k = \Prob(C_k)
+\quad \text{(prior)},
+\quad
+\mathcal{L}_x(C_k)=p(x \mid C_k)
+\quad \text{(likelihood)},
+\]
+and $Z$ is a normalization constant independent of $k$.
+
+\begin{proposition}[MAP Classification Rule]
+The Bayes classifier assigns
+\[
+\hat{k}
+=
+\argmax_k \Prob(C_k \mid x)
+=
+\argmax_k \left[ \pi_k \, p(x \mid C_k) \right].
+\]
+\end{proposition}
+
+\begin{remark}
+The normalization constant cancels in the $\argmax$, so it need not be computed explicitly.
+\end{remark}
+
+\subsection{Naive Independence Assumption}
+
+\begin{definition}[Naive Bayes Model]
+Naive Bayes assumes conditional independence of features:
+\[
+p(x \mid C_k)
+=
+\prod_{\alpha=1}^d p(x_\alpha \mid C_k).
+\]
+\end{definition}
+
+Thus, the classifier becomes
+\[
+\hat{k}
+=
+\argmax_k
+\left[
+\pi_k \prod_{\alpha=1}^d p(x_\alpha \mid C_k)
+\right].
+\]
+
+\subsection{Gaussian Naive Bayes}
+
+Assume each feature is conditionally Gaussian:
+\[
+p(x_\alpha \mid C_k)
+=
+\frac{1}{\sqrt{2\pi\sigma_{k,\alpha}^2}}
+\exp\left(
+-\frac{(x_\alpha-\mu_{k,\alpha})^2}{2\sigma_{k,\alpha}^2}
+\right).
+\]
+
+\begin{definition}[Parameter Estimation]
+For each class $k$ and feature $\alpha$, estimate
+\[
+\mu_{k,\alpha}
+=
+\frac{1}{N_k}\sum_{i:C_i=k} x_{i\alpha},
+\quad
+\sigma_{k,\alpha}^2
+=
+\frac{1}{N_k-1}\sum_{i:C_i=k}(x_{i\alpha}-\mu_{k,\alpha})^2.
+\]
+\end{definition}
+
+Class priors are estimated as
+\[
+\pi_k
+=
+\frac{N_k}{N}.
+\]
+
+\subsection{Log-Domain Form}
+
+To improve numerical stability, take logarithms:
+\[
+\hat{k}
+=
+\argmax_k
+\left[
+\log \pi_k
++
+\sum_{\alpha=1}^d
+\log p(x_\alpha \mid C_k)
+\right].
+\]
+
+\begin{remark}
+Working in the log-domain avoids numerical underflow from multiplying many small probabilities.
+\end{remark}
+
+\subsection{Advantages and Limitations}
+
+\begin{proposition}[Scaling Invariance]
+Naive Bayes is invariant to feature scaling (for Gaussian likelihoods), since each feature is normalized by its variance.
+\end{proposition}
+
+\begin{remark}
+The independence assumption is often unrealistic. However, naive Bayes performs well in practice due to low variance and computational efficiency.
+\end{remark}
+
+\section{Discriminant Analysis}
+
+Discriminant analysis assumes class-conditional Gaussian distributions:
+\[
+p(x \mid C_k)
+=
+\mathcal{N}(x;\mu_k,\Sigma_k).
+\]
+
+\subsection{Quadratic Discriminant Analysis (QDA)}
+
+\begin{definition}[QDA Model]
+Each class has its own covariance matrix:
+\[
+p(x \mid C_k)
+=
+\frac{1}{\sqrt{(2\pi)^d|\Sigma_k|}}
+\exp\left(
+-\frac{1}{2}(x-\mu_k)^T\Sigma_k^{-1}(x-\mu_k)
+\right).
+\]
+\end{definition}
+
+The discriminant function is obtained from the log-posterior:
+\[
+\delta_k(x)
+=
+\log \pi_k
+-
+\frac{1}{2}\log|\Sigma_k|
+-
+\frac{1}{2}(x-\mu_k)^T\Sigma_k^{-1}(x-\mu_k).
+\]
+
+\begin{proposition}[QDA Classification Rule]
+\[
+\hat{k}
+=
+\argmax_k \delta_k(x).
+\]
+\end{proposition}
+
+\begin{remark}
+The decision boundary between two classes is quadratic in $x$ due to the quadratic form $(x-\mu_k)^T\Sigma_k^{-1}(x-\mu_k)$.
+\end{remark}
+
+\subsection{Binary QDA Decision Boundary}
+
+For two classes $C_1$ and $C_2$, compare
+\[
+(x-\mu_1)^T\Sigma_1^{-1}(x-\mu_1)+\log|\Sigma_1|
+\]
+and
+\[
+(x-\mu_2)^T\Sigma_2^{-1}(x-\mu_2)+\log|\Sigma_2|.
+\]
+
+The classification depends on which quantity is smaller (after including priors).
+
+\section{Linear Discriminant Analysis (LDA)}
+
+\begin{definition}[LDA Model]
+LDA assumes a common covariance matrix across classes:
+\[
+\Sigma_k=\Sigma
+\quad \forall k.
+\]
+\end{definition}
+
+The discriminant function becomes
+\[
+\delta_k(x)
+=
+\log \pi_k
+-
+\frac{1}{2}(x-\mu_k)^T\Sigma^{-1}(x-\mu_k).
+\]
+
+\subsection{Linearization of the Decision Boundary}
+
+Expand the quadratic term:
+\[
+(x-\mu_k)^T\Sigma^{-1}(x-\mu_k)
+=
+x^T\Sigma^{-1}x
+-
+2\mu_k^T\Sigma^{-1}x
++
+\mu_k^T\Sigma^{-1}\mu_k.
+\]
+
+When comparing two classes, the $x^T\Sigma^{-1}x$ term cancels, yielding a linear function of $x$:
+\[
+\delta_k(x)
+=
+\mu_k^T\Sigma^{-1}x
+-
+\frac{1}{2}\mu_k^T\Sigma^{-1}\mu_k
++
+\log \pi_k.
+\]
+
+\begin{theorem}[LDA Decision Boundary]
+The decision boundary between classes is linear in $x$.
+\end{theorem}
+
+\begin{proof}
+The discriminant difference between two classes is
+\[
+\delta_1(x)-\delta_2(x)
+=
+(\mu_1-\mu_2)^T\Sigma^{-1}x
+-
+\frac{1}{2}
+\left(
+\mu_1^T\Sigma^{-1}\mu_1
+-
+\mu_2^T\Sigma^{-1}\mu_2
+\right)
++
+\log \frac{\pi_1}{\pi_2}.
+\]
+This is an affine (linear + constant) function of $x$, so the boundary
+\[
+\delta_1(x)=\delta_2(x)
+\]
+is linear.
+\end{proof}
+
+\subsection{Parameter Estimation}
+
+Means:
+\[
+\mu_k
+=
+\frac{1}{N_k}\sum_{i:C_i=k} x_i.
+\]
+
+Shared covariance:
+\[
+\Sigma
+=
+\frac{1}{N-K}
+\sum_{k=1}^K
+\sum_{i:C_i=k}
+(x_i-\mu_k)(x_i-\mu_k)^T.
+\]
+
+\subsection{Comparison: LDA vs QDA}
+
+\begin{itemize}
+    \item QDA:
+    \begin{itemize}
+        \item Separate covariance matrices $\Sigma_k$
+        \item Flexible (quadratic boundaries)
+        \item High variance (many parameters)
+    \end{itemize}
+    \item LDA:
+    \begin{itemize}
+        \item Shared covariance $\Sigma$
+        \item Linear boundaries
+        \item Lower variance, better for small sample sizes
+    \end{itemize}
+\end{itemize}
+
+\begin{remark}
+The choice between LDA and QDA depends on whether class covariances are similar. If covariances differ significantly, QDA may perform better; otherwise LDA is more stable.
+\end{remark}
+
+\section{Algorithmic Summary}
+
+\begin{algorithm}[H]
+\caption{Gaussian Naive Bayes}
+\begin{algorithmic}[1]
+\Require Training data $\{(x_i,C_i)\}$, query point $x$
+\Ensure Predicted class $\hat{k}$
+\State Estimate $\mu_{k,\alpha}$ and $\sigma_{k,\alpha}^2$ for each class and feature
+\State Estimate priors $\pi_k$
+\For{each class $k$}
+    \State Compute score:
+    \[
+    s_k = \log \pi_k + \sum_\alpha \log p(x_\alpha \mid C_k)
+    \]
+\EndFor
+\State Return $\argmax_k s_k$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{LDA Classification}
+\begin{algorithmic}[1]
+\Require Training data $\{(x_i,C_i)\}$, query point $x$
+\Ensure Predicted class $\hat{k}$
+\State Estimate $\mu_k$, shared $\Sigma$, and priors $\pi_k$
+\For{each class $k$}
+    \State Compute
+    \[
+    \delta_k(x)
+    =
+    \mu_k^T\Sigma^{-1}x
+    -
+    \frac{1}{2}\mu_k^T\Sigma^{-1}\mu_k
+    +
+    \log \pi_k
+    \]
+\EndFor
+\State Return $\argmax_k \delta_k(x)$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{QDA Classification}
+\begin{algorithmic}[1]
+\Require Training data $\{(x_i,C_i)\}$, query point $x$
+\Ensure Predicted class $\hat{k}$
+\State Estimate $\mu_k$, $\Sigma_k$, and priors $\pi_k$
+\For{each class $k$}
+    \State Compute
+    \[
+    \delta_k(x)
+    =
+    \log \pi_k
+    -
+    \frac{1}{2}\log|\Sigma_k|
+    -
+    \frac{1}{2}(x-\mu_k)^T\Sigma_k^{-1}(x-\mu_k)
+    \]
+\EndFor
+\State Return $\argmax_k \delta_k(x)$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+
+def gaussian_naive_bayes_predict(X_train, y_train, x):
+    classes = np.unique(y_train)
+    scores = []
+
+    for k in classes:
+        X_k = X_train[y_train == k]
+        mu = X_k.mean(axis=0)
+        var = X_k.var(axis=0, ddof=1)
+
+        log_prior = np.log(len(X_k) / len(X_train))
+        log_likelihood = -0.5 * np.sum(
+            np.log(2*np.pi*var) + ((x - mu)**2)/var
+        )
+
+        scores.append(log_prior + log_likelihood)
+
+    return classes[np.argmax(scores)]
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+def lda_predict(X_train, y_train, x):
+    classes = np.unique(y_train)
+    n, d = X_train.shape
+
+    means = {}
+    priors = {}
+
+    for k in classes:
+        X_k = X_train[y_train == k]
+        means[k] = X_k.mean(axis=0)
+        priors[k] = len(X_k) / n
+
+    # shared covariance
+    X_centered = []
+    for k in classes:
+        X_k = X_train[y_train == k]
+        X_centered.append(X_k - means[k])
+    X_centered = np.vstack(X_centered)
+
+    Sigma = np.cov(X_centered, rowvar=False)
+    Sigma_inv = np.linalg.inv(Sigma)
+
+    scores = []
+    for k in classes:
+        mu = means[k]
+        score = (
+            mu @ Sigma_inv @ x
+            - 0.5 * mu @ Sigma_inv @ mu
+            + np.log(priors[k])
+        )
+        scores.append(score)
+
+    return classes[np.argmax(scores)]
+\end{lstlisting}
+
+\chapter{Cross Validation}
+
+\section{Model Evaluation}
+
+Given a learning algorithm that produces an estimator $\hat{f}$ from training data, we seek to estimate its predictive performance on unseen data.
+
+\begin{definition}[Generalization Error]
+Let $(X,Y)$ be a new observation drawn from the same distribution as the training data. The generalization error is
+\[
+\mathcal{E}
+=
+\E\left[ L(Y,\hat{f}(X)) \right],
+\]
+where $L(\cdot,\cdot)$ is a loss function (e.g., squared error for regression or $0$-$1$ loss for classification).
+\end{definition}
+
+Since the true distribution is unknown, we approximate $\mathcal{E}$ using resampling methods.
+
+\section{Train-Test Split and Complementary Subsets}
+
+\begin{definition}[Hold-Out Method]
+Split the data into two disjoint subsets:
+\begin{itemize}
+    \item Training set $\mathcal{D}_{\text{train}}$
+    \item Test set $\mathcal{D}_{\text{test}}$
+\end{itemize}
+Train the model on $\mathcal{D}_{\text{train}}$ and evaluate on $\mathcal{D}_{\text{test}}$.
+\end{definition}
+
+\begin{remark}
+The test error is
+\[
+\widehat{\mathcal{E}}
+=
+\frac{1}{|\mathcal{D}_{\text{test}}|}
+\sum_{(x_i,y_i)\in \mathcal{D}_{\text{test}}}
+L(y_i,\hat{f}(x_i)).
+\]
+\end{remark}
+
+\begin{remark}
+A single split can have high variance depending on how the data is partitioned. To reduce this variance, one may use repeated random splits (complementary subsets).
+\end{remark}
+
+\section{Repeated Random Subsampling}
+
+\begin{definition}[Repeated Hold-Out]
+Repeat the following procedure multiple times:
+\begin{enumerate}
+    \item Randomly split data into training and test sets.
+    \item Train the model on the training set.
+    \item Evaluate on the test set.
+\end{enumerate}
+Average the resulting test errors.
+\end{definition}
+
+\begin{remark}
+This reduces variance relative to a single split but may reuse data unevenly across training and testing.
+\end{remark}
+
+\section{Leave-One-Out Cross Validation (LOOCV)}
+
+\begin{definition}[LOOCV]
+For a dataset of size $n$, perform $n$ training rounds. In each round:
+\begin{itemize}
+    \item Use $n-1$ observations for training
+    \item Use the remaining observation for testing
+\end{itemize}
+\end{definition}
+
+The LOOCV estimate of prediction error is
+\[
+\widehat{\mathcal{E}}_{\mathrm{LOOCV}}
+=
+\frac{1}{n}
+\sum_{i=1}^n
+L\big(y_i,\hat{f}^{(-i)}(x_i)\big),
+\]
+where $\hat{f}^{(-i)}$ is the model trained without the $i$-th observation.
+
+\begin{remark}
+LOOCV has low bias because nearly the full dataset is used for training, but it can be computationally expensive.
+\end{remark}
+
+\begin{remark}
+For some models (e.g., linear regression), LOOCV can be computed efficiently without retraining using analytic formulas involving the hat matrix.
+\end{remark}
+
+\section{$k$-Fold Cross Validation}
+
+\begin{definition}[$k$-Fold Cross Validation]
+Partition the dataset into $k$ disjoint subsets (folds) of approximately equal size:
+\[
+\mathcal{D} = \mathcal{D}_1 \cup \cdots \cup \mathcal{D}_k.
+\]
+For each fold $j=1,\dots,k$:
+\begin{itemize}
+    \item Train on $\mathcal{D} \setminus \mathcal{D}_j$
+    \item Test on $\mathcal{D}_j$
+\end{itemize}
+\end{definition}
+
+The cross-validation estimate is
+\[
+\widehat{\mathcal{E}}_{\mathrm{CV}}
+=
+\frac{1}{k}
+\sum_{j=1}^k
+\frac{1}{|\mathcal{D}_j|}
+\sum_{(x_i,y_i)\in \mathcal{D}_j}
+L\big(y_i,\hat{f}^{(-j)}(x_i)\big).
+\]
+
+\begin{remark}
+Common choices are $k=5$ or $k=10$. Smaller $k$ increases bias but reduces computational cost; larger $k$ reduces bias but increases variance and computation.
+\end{remark}
+
+\begin{proposition}
+LOOCV is a special case of $k$-fold cross validation with $k=n$.
+\end{proposition}
+
+\section{Bias-Variance Tradeoff in Cross Validation}
+
+\begin{itemize}
+    \item LOOCV:
+    \begin{itemize}
+        \item Low bias
+        \item High variance
+        \item High computational cost
+    \end{itemize}
+    \item Small $k$ (e.g., $k=2$):
+    \begin{itemize}
+        \item Higher bias
+        \item Lower variance
+        \item Lower computational cost
+    \end{itemize}
+\end{itemize}
+
+\section{Cross Validation Algorithm}
+
+\begin{algorithm}[H]
+\caption{$k$-Fold Cross Validation}
+\begin{algorithmic}[1]
+\Require Dataset $\mathcal{D}$, number of folds $k$
+\Ensure Estimated prediction error $\widehat{\mathcal{E}}$
+\State Partition $\mathcal{D}$ into $k$ folds $\{\mathcal{D}_j\}_{j=1}^k$
+\For{$j=1$ to $k$}
+    \State Train model $\hat{f}^{(-j)}$ on $\mathcal{D} \setminus \mathcal{D}_j$
+    \State Compute error on $\mathcal{D}_j$
+\EndFor
+\State Average the errors across folds
+\State \Return $\widehat{\mathcal{E}}$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+from sklearn.model_selection import KFold
+import numpy as np
+
+def k_fold_cv(model, X, y, k=5):
+    kf = KFold(n_splits=k, shuffle=True, random_state=0)
+    errors = []
+
+    for train_idx, test_idx in kf.split(X):
+        X_train, X_test = X[train_idx], X[test_idx]
+        y_train, y_test = y[train_idx], y[test_idx]
+
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+
+        error = np.mean((y_test - y_pred)**2)
+        errors.append(error)
+
+    return np.mean(errors)
+\end{lstlisting}
+
+\begin{remark}
+In practice, cross validation is used not only to estimate model performance but also to tune hyperparameters (e.g., $k$ in $k$-NN or $\lambda$ in regularization).
+\end{remark}
+
+\chapter{Decision Trees}
+
+\section{Tree Structures}
+
+\begin{definition}[Tree]
+A tree is a connected acyclic graph with a hierarchical structure.
+\end{definition}
+
+\begin{definition}[Binary Tree]
+A binary tree is a tree in which each node has at most two children:
+\begin{itemize}
+    \item A single \textbf{root} node
+    \item Each node has at most a \textbf{left} and \textbf{right} child
+    \item \textbf{Leaves} are terminal nodes with no children
+\end{itemize}
+\end{definition}
+
+\begin{remark}
+Trees are naturally defined recursively: each subtree is itself a tree.
+\end{remark}
+
+\subsection{$n$-ary Trees}
+
+\begin{definition}[$n$-ary Tree]
+An $n$-ary tree allows each node to have up to $n$ children.
+\end{definition}
+
+\section{Trees in Computation}
+
+Trees appear in many applications:
+\begin{itemize}
+    \item Search structures: $k$d-trees, B-trees, R-trees, ball trees
+    \item Decision making: classification and regression trees
+\end{itemize}
+
+\subsection{$k$d-Trees}
+
+\begin{definition}[$k$d-Tree]
+A $k$d-tree is a binary tree that recursively partitions $\R^d$ by splitting along coordinate axes.
+\end{definition}
+
+\begin{remark}
+At each level, the split dimension cycles through coordinates, producing a space-partitioning structure.
+\end{remark}
+
+\section{Decision Trees}
+
+\subsection{Recursive Partitioning}
+
+A decision tree partitions the feature space recursively.
+
+At a node with dataset $D$, we choose a split
+\[
+\theta=(j,t),
+\]
+where $j$ is a feature index and $t$ is a threshold.
+
+The split defines two subsets:
+\[
+D_{\text{left}}(\theta)=\{x \in D : x_j \leq t\},
+\quad
+D_{\text{right}}(\theta)=\{x \in D : x_j > t\}.
+\]
+
+\subsection{Impurity Minimization}
+
+We choose $\theta$ to minimize impurity:
+\[
+I(\theta)
+=
+\frac{n_{\text{left}}}{n}H(D_{\text{left}}(\theta))
++
+\frac{n_{\text{right}}}{n}H(D_{\text{right}}(\theta)),
+\]
+where $H(\cdot)$ measures impurity and $n=|D|$.
+
+\begin{definition}[Impurity Function]
+An impurity function measures how mixed the class labels are in a dataset.
+\end{definition}
+
+\subsection{Gini Impurity}
+
+\begin{definition}[Gini Impurity]
+For a dataset $D$ with class proportions $p_1,\dots,p_K$,
+\[
+H(D)
+=
+\sum_{k=1}^K p_k(1-p_k).
+\]
+\end{definition}
+
+\begin{remark}
+Equivalently,
+\[
+H(D)=1-\sum_{k=1}^K p_k^2.
+\]
+\end{remark}
+
+\subsection{Example: Root Impurity}
+
+Suppose a dataset contains $8$ observations across $3$ classes with counts $(4,3,1)$. Then
+\[
+H
+=
+\frac{4}{8}\left(1-\frac{4}{8}\right)
++
+\frac{3}{8}\left(1-\frac{3}{8}\right)
++
+\frac{1}{8}\left(1-\frac{1}{8}\right).
+\]
+Compute each term:
+\[
+\frac{4}{8}\cdot\frac{4}{8}
+=
+\frac{16}{64},
+\quad
+\frac{3}{8}\cdot\frac{5}{8}
+=
+\frac{15}{64},
+\quad
+\frac{1}{8}\cdot\frac{7}{8}
+=
+\frac{7}{64}.
+\]
+Thus,
+\[
+H
+=
+\frac{16}{64}
++
+\frac{15}{64}
++
+\frac{7}{64}
+=
+\frac{38}{64}
+=
+\frac{19}{32}
+\approx 0.59375.
+\]
+
+\subsection{Example: Split Impurity}
+
+Suppose a split produces two partitions:
+
+\paragraph{Left partition:} 2 samples, all from one class:
+\[
+H_{\text{left}}
+=
+\frac{2}{2}(1-\frac{2}{2})=0.
+\]
+
+\paragraph{Right partition:} 6 samples with counts $(3,2,1)$:
+\[
+H_{\text{right}}
+=
+\frac{3}{6}\left(1-\frac{3}{6}\right)
++
+\frac{2}{6}\left(1-\frac{2}{6}\right)
++
+\frac{1}{6}\left(1-\frac{1}{6}\right).
+\]
+Compute:
+\[
+=
+\frac{3}{6}\cdot\frac{3}{6}
++
+\frac{2}{6}\cdot\frac{4}{6}
++
+\frac{1}{6}\cdot\frac{5}{6}
+=
+\frac{9}{36}
++
+\frac{8}{36}
++
+\frac{5}{36}
+=
+\frac{22}{36}
+=
+\frac{11}{18}
+\approx 0.6111.
+\]
+
+\subsection{Weighted Impurity}
+
+The total impurity after the split is
+\[
+I(\theta)
+=
+\frac{2}{8}\cdot 0
++
+\frac{6}{8}\cdot \frac{11}{18}
+=
+\frac{6}{8}\cdot \frac{11}{18}
+=
+\frac{66}{144}
+=
+\frac{11}{24}.
+\]
+
+\begin{remark}
+Impurity must be weighted by partition size. A perfectly pure small partition does not necessarily yield a good split overall.
+\end{remark}
+
+\section{Regression Trees}
+
+For regression, impurity is measured by variance:
+\[
+H(D)
+=
+\frac{1}{|D|}
+\sum_{x_i \in D}
+(y_i-\bar{y})^2.
+\]
+
+\section{Greedy Tree Construction}
+
+Decision trees are built greedily:
+\begin{itemize}
+    \item At each node, choose the best split minimizing impurity
+    \item Recurse on resulting subsets
+    \item Stop when a stopping criterion is met
+\end{itemize}
+
+\begin{algorithm}[H]
+\caption{Decision Tree Training}
+\begin{algorithmic}[1]
+\Require Dataset $D$, stopping criterion
+\Ensure Decision tree
+\If{stopping criterion satisfied}
+    \State Return leaf node with prediction
+\EndIf
+\For{each feature $j$ and threshold $t$}
+    \State Compute split $\theta=(j,t)$
+    \State Compute impurity $I(\theta)$
+\EndFor
+\State Choose $\theta^\star=\argmin_\theta I(\theta)$
+\State Split data into $D_{\text{left}}, D_{\text{right}}$
+\State Recursively build left and right subtrees
+\State Return node with split $\theta^\star$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Properties of Decision Trees}
+
+\begin{itemize}
+    \item Nonparametric: no assumption on data distribution
+    \item Capture nonlinear relationships
+    \item Easy to interpret
+    \item Can overfit without regularization
+\end{itemize}
+
+\section{Regularization and Practical Considerations}
+
+Common techniques:
+\begin{itemize}
+    \item Maximum tree depth
+    \item Minimum samples per leaf
+    \item Pruning (post-training simplification)
+\end{itemize}
+
+\begin{remark}
+Decision trees have low bias but high variance. Ensemble methods such as random forests reduce variance.
+\end{remark}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+from sklearn.tree import DecisionTreeClassifier
+
+model = DecisionTreeClassifier(max_depth=3)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+from sklearn.tree import DecisionTreeRegressor
+
+model = DecisionTreeRegressor(max_depth=3)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+\end{lstlisting}
+
+\chapter{Scikit-Learn Pipeline and Random Forests}
+
+\section{Scikit-Learn Pipeline and Grid Search}
+
+\subsection{Pipelines}
+
+\begin{definition}[Pipeline]
+A pipeline chains multiple transformations and a final estimator into a single object:
+\[
+X \rightarrow \text{Transform}_1 \rightarrow \cdots \rightarrow \text{Transform}_m \rightarrow \hat{f}.
+\]
+\end{definition}
+
+\begin{remark}
+Pipelines ensure that preprocessing steps (e.g., scaling, PCA) are applied consistently during training and testing.
+\end{remark}
+
+\begin{example}[Pipeline Structure]
+\begin{lstlisting}[language=Python]
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LogisticRegression
+
+pipe = Pipeline([
+    ("scaler", StandardScaler()),
+    ("pca", PCA(n_components=5)),
+    ("model", LogisticRegression())
+])
+\end{lstlisting}
+\end{example}
+
+\subsection{Grid Search with Cross Validation}
+
+\begin{definition}[Grid Search]
+Grid search selects hyperparameters by evaluating a model over a predefined parameter grid using cross validation.
+\end{definition}
+
+\begin{example}[Grid Search with Pipeline]
+\begin{lstlisting}[language=Python]
+from sklearn.model_selection import GridSearchCV
+
+param_grid = {
+    "pca__n_components": [2, 5, 10],
+    "model__C": [0.1, 1, 10]
+}
+
+grid = GridSearchCV(pipe, param_grid, cv=5)
+grid.fit(X_train, y_train)
+
+best_model = grid.best_estimator_
+\end{lstlisting}
+\end{example}
+
+\begin{remark}
+The notation \texttt{step\_\_param} specifies a parameter for a given pipeline step.
+\end{remark}
+
+\begin{remark}
+Grid search combined with cross validation provides a principled way to tune hyperparameters while avoiding overfitting to a single train-test split.
+\end{remark}
+
+\section{Random Forests}
+
+\subsection{Random Trees}
+
+\begin{definition}[Randomized Tree]
+A randomized decision tree selects a random subset of features when searching for the best split at each node.
+\end{definition}
+
+\begin{remark}
+In high dimensions, searching all features is computationally expensive. Random feature selection reduces cost and introduces diversity across trees.
+\end{remark}
+
+\subsection{Forest of Random Trees}
+
+\begin{definition}[Random Forest]
+A random forest is an ensemble of randomized decision trees:
+\[
+\{\hat{f}_1,\dots,\hat{f}_B\}.
+\]
+\end{definition}
+
+Predictions are combined:
+\begin{itemize}
+    \item Classification: majority vote
+    \item Regression: average prediction
+\end{itemize}
+
+\begin{definition}[Bootstrap Sampling]
+Each tree is trained on a bootstrap sample of the data, obtained by sampling with replacement.
+\end{definition}
+
+\subsection{Bagging and Variance Reduction}
+
+\begin{proposition}[Variance Reduction via Averaging]
+Let $\hat{f}_1,\dots,\hat{f}_B$ be independent estimators with variance $\sigma^2$. Then the average
+\[
+\bar{f}=\frac{1}{B}\sum_{b=1}^B \hat{f}_b
+\]
+has variance
+\[
+\Var(\bar{f})=\frac{\sigma^2}{B}.
+\]
+\end{proposition}
+
+\begin{proof}
+Using independence,
+\[
+\Var\left(\frac{1}{B}\sum_{b=1}^B \hat{f}_b\right)
+=
+\frac{1}{B^2}\sum_{b=1}^B \Var(\hat{f}_b)
+=
+\frac{B\sigma^2}{B^2}
+=
+\frac{\sigma^2}{B}.
+\]
+\end{proof}
+
+\begin{remark}
+In practice, trees are not independent, but randomization reduces correlation, improving variance reduction.
+\end{remark}
+
+\subsection{Connection to the Central Limit Theorem}
+
+\begin{remark}
+As the number of trees $B$ increases, the average prediction stabilizes. Under mild conditions, the distribution of the ensemble prediction approaches a normal distribution due to averaging effects.
+\end{remark}
+
+\section{Feature Selection in Random Forests}
+
+\begin{definition}[Feature Importance]
+Feature importance measures how often and how effectively a feature is used to split the data.
+\end{definition}
+
+A common measure is the total impurity reduction contributed by a feature across all trees.
+
+\begin{remark}
+Features that frequently produce large impurity reductions are considered more important.
+\end{remark}
+
+\section{Assumptions and Limitations}
+
+\begin{itemize}
+    \item Decision trees produce axis-aligned splits, which may be suboptimal for rotated or highly correlated data
+    \item No explicit distance function is required
+    \item Random forests reduce overfitting relative to single trees
+\end{itemize}
+
+\section{Divide and Conquer Perspective}
+
+Decision trees partition the feature space recursively:
+\[
+\R^d = \bigcup_{m=1}^M R_m,
+\]
+where each region $R_m$ corresponds to a leaf.
+
+For regression, predictions are piecewise constant:
+\[
+\hat{f}(x)
+=
+\sum_{m=1}^M c_m \ind(x \in R_m),
+\]
+where
+\[
+c_m
+=
+\frac{1}{|R_m|}
+\sum_{x_i \in R_m} y_i.
+\]
+
+\begin{remark}
+This can be interpreted as minimizing within-region variance:
+\[
+\sum_{m=1}^M \sum_{x_i \in R_m} (y_i - c_m)^2.
+\]
+\end{remark}
+
+\section{Random Forest Algorithm}
+
+\begin{algorithm}[H]
+\caption{Random Forest Training}
+\begin{algorithmic}[1]
+\Require Training data $\mathcal{D}$, number of trees $B$
+\Ensure Ensemble of trees $\{\hat{f}_b\}_{b=1}^B$
+\For{$b=1$ to $B$}
+    \State Draw bootstrap sample $\mathcal{D}_b$ from $\mathcal{D}$
+    \State Train decision tree $\hat{f}_b$:
+    \begin{itemize}
+        \item At each split, select a random subset of features
+        \item Choose the best split among those features
+    \end{itemize}
+\EndFor
+\State \Return $\{\hat{f}_b\}_{b=1}^B$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Random Forest Prediction}
+\begin{algorithmic}[1]
+\Require Trees $\{\hat{f}_b\}_{b=1}^B$, query point $x$
+\Ensure Prediction $\hat{y}$
+\If{classification}
+    \State $\hat{y} \gets$ majority vote of $\{\hat{f}_b(x)\}$
+\Else
+    \State $\hat{y} \gets \frac{1}{B}\sum_{b=1}^B \hat{f}_b(x)$
+\EndIf
+\State \Return $\hat{y}$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
+
+pipe = Pipeline([
+    ("scaler", StandardScaler()),
+    ("rf", RandomForestClassifier())
+])
+
+param_grid = {
+    "rf__n_estimators": [100, 200],
+    "rf__max_depth": [None, 5, 10],
+    "rf__max_features": ["sqrt", "log2"]
+}
+
+grid = GridSearchCV(pipe, param_grid, cv=5)
+grid.fit(X_train, y_train)
+
+best_model = grid.best_estimator_
+\end{lstlisting}
+
+\begin{remark}
+Random forests typically require minimal preprocessing and perform well out-of-the-box, making them a strong baseline model.
+\end{remark}
+
+\chapter{Logistic Regression}
+
+\section{Binary Classification and the Logistic Function}
+
+In binary classification, we model the posterior probability
+\[
+\pi(x) = \Prob(C_1 \mid x).
+\]
+
+\begin{definition}[Logistic (Sigmoid) Function]
+The logistic function is
+\[
+\sigma(t)
+=
+\frac{1}{1+e^{-t}}.
+\]
+\end{definition}
+
+\begin{remark}
+The logistic function maps $\R \to (0,1)$, making it suitable for modeling probabilities.
+\end{remark}
+
+\section{Log-Odds and Linear Model}
+
+Define the log-odds (logit) transformation:
+\[
+\log \frac{\Prob(C_1 \mid x)}{\Prob(C_0 \mid x)}
+=
+\log \frac{\pi(x)}{1-\pi(x)}.
+\]
+
+\begin{definition}[Logistic Regression Model]
+Assume the log-odds are linear in the features:
+\[
+\log \frac{\pi(x)}{1-\pi(x)}
+=
+\beta_0 + \beta^T x.
+\]
+\end{definition}
+
+Solving for $\pi(x)$,
+\[
+\pi(x)
+=
+\frac{1}{1+e^{-(\beta_0+\beta^T x)}}.
+\]
+
+\begin{remark}
+This is equivalent to applying the sigmoid function to a linear predictor:
+\[
+\pi(x) = \sigma(\beta_0+\beta^T x).
+\]
+\end{remark}
+
+\section{Likelihood and Estimation}
+
+Given training data
+\[
+\{(x_i,c_i)\}_{i=1}^n,
+\quad
+c_i \in \{0,1\},
+\]
+the likelihood is
+\[
+\mathcal{L}(\beta)
+=
+\prod_{i=1}^n
+\pi(x_i;\beta)^{c_i}
+\left[1-\pi(x_i;\beta)\right]^{1-c_i}.
+\]
+
+\begin{definition}[Log-Likelihood]
+The log-likelihood is
+\[
+\ell(\beta)
+=
+\sum_{i=1}^n
+\left[
+c_i \log \pi(x_i;\beta)
++
+(1-c_i)\log(1-\pi(x_i;\beta))
+\right].
+\]
+\end{definition}
+
+\begin{proposition}[Maximum Likelihood Estimation]
+The logistic regression estimator is
+\[
+\hat{\beta}
+=
+\argmax_{\beta} \ell(\beta).
+\]
+\end{proposition}
+
+\subsection{Gradient and Optimization}
+
+Let $\pi_i = \pi(x_i;\beta)$. Then
+\[
+\frac{\partial \ell}{\partial \beta}
+=
+\sum_{i=1}^n (c_i - \pi_i)x_i.
+\]
+
+\begin{proof}
+We use
+\[
+\frac{d}{dt}\sigma(t) = \sigma(t)(1-\sigma(t)).
+\]
+Differentiating the log-likelihood,
+\[
+\frac{\partial \ell}{\partial \beta}
+=
+\sum_{i=1}^n
+\left[
+\frac{c_i}{\pi_i}\frac{\partial \pi_i}{\partial \beta}
+-
+\frac{1-c_i}{1-\pi_i}\frac{\partial \pi_i}{\partial \beta}
+\right].
+\]
+Using
+\[
+\frac{\partial \pi_i}{\partial \beta}
+=
+\pi_i(1-\pi_i)x_i,
+\]
+we obtain
+\[
+\frac{\partial \ell}{\partial \beta}
+=
+\sum_{i=1}^n
+(c_i-\pi_i)x_i.
+\]
+\end{proof}
+
+\begin{remark}
+The log-likelihood is concave, so standard optimization methods (gradient ascent, Newton's method) converge to the global optimum.
+\end{remark}
+
+\section{Prediction}
+
+\begin{definition}[Prediction Rule]
+Given $\hat{\beta}$, predict
+\[
+\hat{C}(x)
+=
+\begin{cases}
+1, & \pi(x;\hat{\beta}) \geq 0.5,\\
+0, & \text{otherwise}.
+\end{cases}
+\]
+\end{definition}
+
+\section{Decision Boundary}
+
+The decision boundary is given by
+\[
+\beta_0 + \beta^T x = 0,
+\]
+which is linear in $x$.
+
+\begin{remark}
+Thus, logistic regression produces linear decision boundaries, similar to LDA.
+\end{remark}
+
+\section{Multiclass Logistic Regression}
+
+For $K$ classes, define
+\[
+\pi_k(x)
+=
+\Prob(C_k \mid x).
+\]
+
+\begin{definition}[Softmax Model]
+\[
+\pi_k(x)
+=
+\frac{e^{\beta_k^T x}}{\sum_{j=1}^K e^{\beta_j^T x}}.
+\]
+\end{definition}
+
+The log-likelihood is
+\[
+\ell(\beta)
+=
+\sum_{i=1}^n
+\log \pi_{c_i}(x_i;\beta).
+\]
+
+\begin{remark}
+This is known as multinomial logistic regression or softmax regression.
+\end{remark}
+
+\section{Discriminative vs Generative Models}
+
+\begin{definition}[Discriminative Model]
+A discriminative model directly estimates
+\[
+\Prob(C_k \mid x).
+\]
+\end{definition}
+
+\begin{definition}[Generative Model]
+A generative model estimates
+\[
+p(x \mid C_k)
+\quad \text{and} \quad \Prob(C_k),
+\]
+and uses Bayes' rule to compute posteriors.
+\end{definition}
+
+\begin{remark}
+Logistic regression is discriminative, whereas naive Bayes and LDA/QDA are generative.
+\end{remark}
+
+\section{Regularization}
+
+To prevent overfitting, add a penalty:
+
+\subsection{L2 Regularization (Ridge)}
+
+\[
+\hat{\beta}
+=
+\argmax_{\beta}
+\left[
+\ell(\beta) - \lambda \norm{\beta}_2^2
+\right].
+\]
+
+\subsection{L1 Regularization (Lasso)}
+
+\[
+\hat{\beta}
+=
+\argmax_{\beta}
+\left[
+\ell(\beta) - \lambda \norm{\beta}_1
+\right].
+\]
+
+\section{Algorithm}
+
+\begin{algorithm}[H]
+\caption{Logistic Regression via Gradient Ascent}
+\begin{algorithmic}[1]
+\Require Training data $\{(x_i,c_i)\}$, learning rate $\eta$
+\Ensure Parameter estimate $\hat{\beta}$
+\State Initialize $\beta$
+\For{$t=1$ to max iterations}
+    \State Compute $\pi_i = \sigma(\beta^T x_i)$ for all $i$
+    \State Compute gradient:
+    \[
+    g = \sum_i (c_i - \pi_i)x_i
+    \]
+    \State Update:
+    \[
+    \beta \gets \beta + \eta g
+    \]
+\EndFor
+\State \Return $\beta$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+def logistic_regression_fit(X, y, lr=0.01, n_iter=1000):
+    n, d = X.shape
+    beta = np.zeros(d)
+
+    for _ in range(n_iter):
+        z = X @ beta
+        p = sigmoid(z)
+        grad = X.T @ (y - p)
+        beta += lr * grad
+
+    return beta
+
+def logistic_regression_predict(X, beta):
+    probs = sigmoid(X @ beta)
+    return (probs >= 0.5).astype(int)
+\end{lstlisting}
+
+\chapter{Support Vector Machines}
+
+\section{Maximum Margin Classification}
+
+Support Vector Machines (SVMs) construct a separating hyperplane between classes with maximum margin.
+
+\begin{definition}[Hyperplane]
+A hyperplane in $\R^d$ is defined as
+\[
+w^T x - b = 0,
+\]
+where $w \in \R^d$ is the normal vector and $b \in \R$ is the bias.
+\end{definition}
+
+\begin{remark}
+The sign of $w^T x - b$ determines the predicted class.
+\end{remark}
+
+\section{Hard Margin SVM}
+
+Assume the data are linearly separable with labels $y_i \in \{-1,1\}$.
+
+We define two parallel hyperplanes:
+\[
+w^T x - b = 1,
+\quad
+w^T x - b = -1.
+\]
+
+\subsection{Margin Width}
+
+\begin{proposition}[Margin Width]
+The distance between the two margin hyperplanes is
+\[
+\frac{2}{\norm{w}_2}.
+\]
+\end{proposition}
+
+\begin{proof}
+Let $x_0$ satisfy
+\[
+w^T x_0 - b = -1.
+\]
+Let $x_1 = x_0 + d\frac{w}{\norm{w}}$ lie on the other hyperplane:
+\[
+w^T x_1 - b = 1.
+\]
+Substitute:
+\[
+w^T\left(x_0 + d\frac{w}{\norm{w}}\right) - b
+=
+w^T x_0 - b + d \frac{w^T w}{\norm{w}}.
+\]
+Since $w^T x_0 - b = -1$ and $w^T w = \norm{w}^2$,
+\[
+-1 + d \frac{\norm{w}^2}{\norm{w}} = 1.
+\]
+Thus,
+\[
+-1 + d \norm{w} = 1
+\quad \Rightarrow \quad
+d = \frac{2}{\norm{w}}.
+\]
+\end{proof}
+
+\subsection{Optimization Problem}
+
+Maximizing the margin is equivalent to minimizing $\norm{w}_2^2$:
+
+\begin{definition}[Hard Margin SVM]
+\[
+\min_{w,b} \norm{w}_2^2
+\quad \text{s.t.} \quad
+y_i(w^T x_i - b) \ge 1
+\quad \forall i.
+\]
+\end{definition}
+
+\begin{remark}
+This is a convex quadratic optimization problem with linear constraints.
+\end{remark}
+
+\section{Support Vectors}
+
+\begin{definition}[Support Vectors]
+The support vectors are the data points that lie exactly on the margin:
+\[
+y_i(w^T x_i - b) = 1.
+\]
+\end{definition}
+
+\begin{remark}
+Only support vectors determine the optimal hyperplane. Points farther from the boundary do not affect the solution.
+\end{remark}
+
+\section{Soft Margin SVM}
+
+When classes are not linearly separable, introduce slack variables $\xi_i \ge 0$.
+
+\begin{definition}[Soft Margin SVM]
+\[
+\min_{w,b,\xi}
+\quad
+\norm{w}_2^2 + C \sum_{i=1}^n \xi_i
+\]
+subject to
+\[
+y_i(w^T x_i - b) \ge 1 - \xi_i,
+\quad
+\xi_i \ge 0.
+\]
+\end{definition}
+
+\begin{remark}
+The parameter $C > 0$ controls the tradeoff between margin size and classification errors.
+\end{remark}
+
+\subsection{Hinge Loss Formulation}
+
+The soft-margin objective can be written as
+\[
+\min_{w,b}
+\quad
+\norm{w}_2^2
++
+C \sum_{i=1}^n
+\max\{0,\,1 - y_i(w^T x_i - b)\}.
+\]
+
+\begin{remark}
+The hinge loss penalizes points that are inside the margin or misclassified.
+\end{remark}
+
+\section{Kernel Methods}
+
+\subsection{Feature Transformation}
+
+Instead of working in the original space, map data to a higher-dimensional feature space:
+\[
+x \mapsto \phi(x).
+\]
+
+The SVM optimization then uses
+\[
+w^T \phi(x).
+\]
+
+\subsection{Kernel Trick}
+
+\begin{definition}[Kernel Function]
+A kernel function is defined as
+\[
+k(x,x') = \phi(x)^T \phi(x').
+\]
+\end{definition}
+
+\begin{remark}
+The kernel trick allows computation in high-dimensional feature spaces without explicitly computing $\phi(x)$.
+\end{remark}
+
+\subsection{Common Kernels}
+
+\begin{itemize}
+    \item Polynomial kernel:
+    \[
+    k(x,x') = (x^T x' + c)^d
+    \]
+    \item Radial basis function (RBF):
+    \[
+    k(x,x') = \exp\left(-\frac{\norm{x-x'}^2}{2\sigma^2}\right)
+    \]
+\end{itemize}
+
+\begin{remark}
+RBF kernels produce nonlinear decision boundaries by mapping data into infinite-dimensional feature spaces.
+\end{remark}
+
+\section{Dual Formulation (Key Insight)}
+
+The SVM solution can be expressed in terms of inner products:
+\[
+w = \sum_{i=1}^n \alpha_i y_i x_i.
+\]
+
+Thus predictions become
+\[
+f(x) = \sum_{i=1}^n \alpha_i y_i k(x_i,x) - b.
+\]
+
+\begin{remark}
+Only support vectors have nonzero $\alpha_i$, making the model sparse.
+\end{remark}
+
+\section{Algorithmic Summary}
+
+\begin{algorithm}[H]
+\caption{Support Vector Machine (Conceptual)}
+\begin{algorithmic}[1]
+\Require Training data $\{(x_i,y_i)\}$
+\Ensure Classifier $(w,b)$
+\State Solve quadratic optimization problem
+\State Identify support vectors
+\State Construct decision function:
+\[
+f(x) = \sum_i \alpha_i y_i k(x_i,x) - b
+\]
+\State \Return classifier
+\end{algorithmic}
+\end{algorithm}
+
+\section{Properties and Comparison}
+
+\begin{itemize}
+    \item Maximizes geometric margin
+    \item Robust to high-dimensional data
+    \item Depends only on support vectors
+    \item Kernel trick enables nonlinear classification
+\end{itemize}
+
+\begin{remark}
+Unlike nearest neighbors, SVM does not rely on a distance metric in the original space, but rather on inner products (or kernels).
+\end{remark}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+from sklearn.svm import SVC
+
+model = SVC(kernel="rbf", C=1.0, gamma="scale")
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+
+pipe = Pipeline([
+    ("scaler", StandardScaler()),
+    ("svm", SVC())
+])
+
+pipe.fit(X_train, y_train)
+\end{lstlisting}
+
+\begin{remark}
+SVMs are sensitive to feature scaling, so standardization is typically required.
+\end{remark}
+
+\chapter{$k$-Means Clustering}
+
+\section{Clustering}
+
+Clustering is the task of grouping data points into subsets (clusters) such that points in the same cluster are more similar to each other than to points in other clusters.
+
+\begin{itemize}
+    \item Discover species based on features
+    \item Segment images by pixel similarity
+    \item Group documents by topic
+\end{itemize}
+
+\section{Types of Clustering Algorithms}
+
+\subsection{Flat (Partitioning) Methods}
+
+\begin{itemize}
+    \item Start with an initial partition of the data
+    \item Iteratively refine cluster assignments
+\end{itemize}
+
+\subsection{Hierarchical Methods}
+
+\begin{itemize}
+    \item \textbf{Agglomerative (bottom-up)}: merge closest clusters
+    \item \textbf{Divisive (top-down)}: split clusters recursively
+\end{itemize}
+
+\section{$k$-Means Clustering}
+
+\subsection{Optimization Problem}
+
+Given data $\{x_l\}_{l=1}^n$ with $x_l \in \R^d$, partition the data into $k$ clusters $\{C_i\}_{i=1}^k$.
+
+\begin{definition}[$k$-Means Objective]
+\[
+\hat{C}
+=
+\argmin_{C}
+\sum_{i=1}^k
+\sum_{x \in C_i}
+\norm{x-\mu_i}_2^2,
+\]
+where
+\[
+\mu_i
+=
+\frac{1}{|C_i|}
+\sum_{x \in C_i} x.
+\]
+\end{definition}
+
+\begin{remark}
+This objective is also called the within-cluster sum of squares (WCSS).
+\end{remark}
+
+\subsection{Optimality of the Mean}
+
+\begin{proposition}
+Given a fixed cluster $C$, the point minimizing
+\[
+\sum_{x \in C} \norm{x - \mu}_2^2
+\]
+is the mean
+\[
+\mu = \frac{1}{|C|}\sum_{x \in C} x.
+\]
+\end{proposition}
+
+\begin{proof}
+Let
+\[
+f(\mu)
+=
+\sum_{x \in C} \norm{x-\mu}_2^2.
+\]
+Expanding,
+\[
+f(\mu)
+=
+\sum_{x \in C} (x-\mu)^T(x-\mu).
+\]
+Taking gradient,
+\[
+\grad_\mu f(\mu)
+=
+-2\sum_{x \in C} (x-\mu).
+\]
+Setting equal to zero,
+\[
+\sum_{x \in C} (x-\mu)=0
+\quad \Rightarrow \quad
+\mu=\frac{1}{|C|}\sum_{x \in C} x.
+\]
+\end{proof}
+
+\section{Algorithm}
+
+$k$-means is an iterative algorithm alternating between assignment and update steps.
+
+\begin{algorithm}[H]
+\caption{$k$-Means Clustering}
+\begin{algorithmic}[1]
+\Require Data $\{x_i\}_{i=1}^n$, number of clusters $k$
+\Ensure Clusters $\{C_i\}$ and centroids $\{\mu_i\}$
+\State Initialize centroids $\mu_1,\dots,\mu_k$
+\Repeat
+    \State \textbf{Assignment step:}
+    \For{each data point $x_i$}
+        \State Assign $x_i$ to cluster
+        \[
+        C_j = \argmin_{j} \norm{x_i-\mu_j}_2
+        \]
+    \EndFor
+    \State \textbf{Update step:}
+    \For{each cluster $C_j$}
+        \State Update centroid
+        \[
+        \mu_j = \frac{1}{|C_j|}\sum_{x \in C_j} x
+        \]
+    \EndFor
+\Until{convergence}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+Each iteration decreases the objective function, so the algorithm converges to a local minimum.
+\end{remark}
+
+\section{Inertia}
+
+\begin{definition}[Inertia]
+Inertia is the total within-cluster sum of squares:
+\[
+\text{Inertia}
+=
+\sum_{i=1}^k
+\sum_{x \in C_i}
+\norm{x-\mu_i}_2^2.
+\]
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+    \item Lower inertia indicates tighter clusters
+    \item Inertia always decreases as $k$ increases
+\end{itemize}
+\end{remark}
+
+\section{Choosing the Number of Clusters}
+
+\subsection{Elbow Method}
+
+Plot inertia as a function of $k$ and look for a point where the decrease slows significantly.
+
+\begin{remark}
+The ``elbow'' corresponds to a good tradeoff between model complexity and fit.
+\end{remark}
+
+\section{Limitations}
+
+\begin{itemize}
+    \item Sensitive to initialization
+    \item Converges to local minima
+    \item Assumes spherical clusters (Euclidean distance)
+    \item Sensitive to feature scaling
+\end{itemize}
+
+\subsection{Initialization Strategies}
+
+\begin{itemize}
+    \item Random initialization
+    \item Multiple restarts (parameter \texttt{n\_init})
+    \item $k$-means++ initialization
+\end{itemize}
+
+\section{Variants}
+
+\subsection{$k$-Medians}
+
+\begin{definition}[$k$-Medians Objective]
+\[
+\min_{C}
+\sum_{i=1}^k
+\sum_{x \in C_i}
+\norm{x-\mu_i}_1,
+\]
+where $\mu_i$ is the coordinate-wise median.
+\end{definition}
+
+\begin{remark}
+Using $L_1$ distance makes the method more robust to outliers.
+\end{remark}
+
+\section{Geometric Interpretation}
+
+$k$-means partitions the space into Voronoi regions:
+\[
+R_j = \{x : \norm{x-\mu_j}_2 \leq \norm{x-\mu_l}_2 \ \forall l\}.
+\]
+
+\begin{remark}
+The decision boundaries between clusters are linear (perpendicular bisectors).
+\end{remark}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+from sklearn.cluster import KMeans
+
+model = KMeans(n_clusters=3, n_init=10)
+model.fit(X)
+
+labels = model.labels_
+centroids = model.cluster_centers_
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+import matplotlib.pyplot as plt
+
+inertia = []
+k_values = range(1, 10)
+
+for k in k_values:
+    model = KMeans(n_clusters=k, n_init=10)
+    model.fit(X)
+    inertia.append(model.inertia_)
+
+plt.plot(k_values, inertia)
+plt.xlabel("k")
+plt.ylabel("Inertia")
+plt.title("Elbow Method")
+plt.show()
+\end{lstlisting}
+
+\chapter{Gaussian Mixture Models}
+
+\section{Probabilistic Clustering}
+
+Gaussian Mixture Models (GMMs) provide a probabilistic approach to clustering by modeling the data as a mixture of Gaussian distributions.
+
+\begin{definition}[Gaussian Mixture Model]
+A GMM with $K$ components assumes
+\[
+p(x)
+=
+\sum_{k=1}^K \pi_k \, \mathcal{N}(x;\mu_k,\Sigma_k),
+\]
+where
+\begin{itemize}
+    \item $\pi_k \ge 0$, $\sum_{k=1}^K \pi_k = 1$ (mixture weights)
+    \item $\mu_k \in \R^d$ (means)
+    \item $\Sigma_k \in \R^{d\times d}$ (covariances)
+\end{itemize}
+\end{definition}
+
+\begin{remark}
+Each component represents a cluster, but membership is probabilistic rather than deterministic.
+\end{remark}
+
+\section{Latent Variables}
+
+Introduce latent variables $z_{ki}$:
+\[
+z_{ki} =
+\begin{cases}
+1, & \text{if } x_i \text{ belongs to component } k,\\
+0, & \text{otherwise}.
+\end{cases}
+\]
+
+Since cluster memberships are unknown, we treat $z_{ki}$ as hidden variables.
+
+\section{Likelihood Function}
+
+Given data $\{x_i\}_{i=1}^n$, the likelihood is
+\[
+L(\theta; x)
+=
+\prod_{i=1}^n
+\left[
+\sum_{k=1}^K \pi_k \, \mathcal{N}(x_i;\mu_k,\Sigma_k)
+\right].
+\]
+
+\begin{remark}
+The log-likelihood involves a log of sums, making direct maximization difficult.
+\end{remark}
+
+\section{Expectation-Maximization (EM) Algorithm}
+
+The EM algorithm iteratively maximizes the likelihood in the presence of latent variables.
+
+\begin{definition}[EM Framework]
+Given current parameters $\theta$, compute updated parameters $\theta'$ such that
+\[
+p(D \mid \theta') \ge p(D \mid \theta).
+\]
+\end{definition}
+
+\subsection{E-Step}
+
+Compute posterior probabilities (responsibilities):
+\[
+\gamma_{ik}
+=
+\Prob(z_{ki}=1 \mid x_i)
+=
+\frac{\pi_k \, \mathcal{N}(x_i;\mu_k,\Sigma_k)}
+{\sum_{j=1}^K \pi_j \, \mathcal{N}(x_i;\mu_j,\Sigma_j)}.
+\]
+
+\begin{remark}
+$\gamma_{ik}$ represents the degree to which point $x_i$ belongs to cluster $k$.
+\end{remark}
+
+\subsection{M-Step}
+
+Update parameters using responsibilities:
+
+\[
+N_k = \sum_{i=1}^n \gamma_{ik}.
+\]
+
+\[
+\pi_k = \frac{N_k}{n}.
+\]
+
+\[
+\mu_k = \frac{1}{N_k} \sum_{i=1}^n \gamma_{ik} x_i.
+\]
+
+\[
+\Sigma_k = \frac{1}{N_k}
+\sum_{i=1}^n
+\gamma_{ik}
+(x_i-\mu_k)(x_i-\mu_k)^T.
+\]
+
+\begin{remark}
+The M-step computes weighted means and covariances, where weights are the responsibilities.
+\end{remark}
+
+\subsection{Algorithm}
+
+\begin{algorithm}[H]
+\caption{Gaussian Mixture Model via EM}
+\begin{algorithmic}[1]
+\Require Data $\{x_i\}$, number of components $K$
+\Ensure Parameters $\{\pi_k,\mu_k,\Sigma_k\}$
+\State Initialize parameters
+\Repeat
+    \State \textbf{E-step:} Compute $\gamma_{ik}$ for all $i,k$
+    \State \textbf{M-step:} Update $\pi_k,\mu_k,\Sigma_k$
+\Until{convergence}
+\end{algorithmic}
+\end{algorithm}
+
+\section{Connection to $k$-Means}
+
+\begin{remark}
+$k$-means can be viewed as a limiting case of GMMs:
+\begin{itemize}
+    \item Equal covariances $\Sigma_k = \sigma^2 I$
+    \item $\sigma^2 \to 0$
+\end{itemize}
+This leads to hard assignments instead of probabilistic memberships.
+\end{remark}
+
+\section{Soft Clustering}
+
+\begin{definition}[Soft Clustering]
+In GMMs, each data point belongs to each cluster with probability $\gamma_{ik}$.
+\end{definition}
+
+\begin{remark}
+This contrasts with $k$-means, where each point is assigned to exactly one cluster.
+\end{remark}
+
+\section{Properties and Limitations}
+
+\begin{itemize}
+    \item Captures elliptical clusters via covariance matrices
+    \item Provides probabilistic cluster assignments
+    \item More flexible than $k$-means
+    \item Sensitive to initialization
+    \item May converge to local optima
+\end{itemize}
+
+\section{Model Selection}
+
+Choosing $K$:
+\begin{itemize}
+    \item Likelihood-based methods
+    \item Information criteria (AIC, BIC)
+\end{itemize}
+
+\begin{remark}
+Unlike inertia in $k$-means, likelihood does not necessarily monotonically improve with $K$ when penalization is used.
+\end{remark}
+
+\section{Comparison with $k$-Means}
+
+\begin{itemize}
+    \item GMM:
+    \begin{itemize}
+        \item Probabilistic model
+        \item Elliptical clusters
+        \item Soft assignments
+    \end{itemize}
+    \item $k$-means:
+    \begin{itemize}
+        \item Deterministic assignments
+        \item Spherical clusters
+        \item Faster and simpler
+    \end{itemize}
+\end{itemize}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+from sklearn.mixture import GaussianMixture
+
+model = GaussianMixture(n_components=3)
+model.fit(X)
+
+labels = model.predict(X)
+probs = model.predict_proba(X)
+\end{lstlisting}
+
+\begin{remark}
+\texttt{predict\_proba} returns the soft cluster assignments $\gamma_{ik}$.
+\end{remark}
+
+\section{Further Clustering Methods}
+
+\begin{itemize}
+    \item Agglomerative clustering (hierarchical)
+    \item DBSCAN (density-based clustering)
+\end{itemize}
+
+\begin{remark}
+These methods do not require specifying the number of clusters in advance and can capture more complex cluster shapes.
+\end{remark}
+
+\chapter{Spectral Embedding and Spectral Clustering}
+
+\section{Spectral Methods}
+
+Spectral methods construct low-dimensional representations of data using eigenvectors of matrices derived from pairwise similarities.
+
+\begin{definition}[Spectral Embedding]
+Spectral embedding maps data points into a lower-dimensional space using eigenvectors of a graph-based matrix constructed from similarities.
+\end{definition}
+
+\begin{definition}[Spectral Clustering]
+Spectral clustering applies a standard clustering method (e.g., $k$-means) to the embedded coordinates obtained from spectral embedding.
+\end{definition}
+
+\section{Graphs}
+
+\begin{definition}[Graph]
+A graph is defined as
+\[
+G=(V,E),
+\]
+where $V$ is a set of vertices and $E$ is a set of edges.
+\end{definition}
+
+\begin{definition}[Vertex and Edge]
+\begin{itemize}
+    \item A \textbf{vertex} is a node in the graph
+    \item An \textbf{edge} connects two vertices
+\end{itemize}
+\end{definition}
+
+\section{Similarity Graphs}
+
+\begin{definition}[Similarity Graph]
+A similarity graph connects data points based on a notion of similarity.
+\end{definition}
+
+Common constructions:
+\begin{itemize}
+    \item $\varepsilon$-neighborhood graph
+    \item $k$-nearest neighbor graph
+    \item Fully connected graph with weighted edges
+\end{itemize}
+
+\begin{remark}
+Edges may be weighted by similarity values such as Gaussian kernels:
+\[
+w_{ij} = \exp\left(-\frac{\norm{x_i - x_j}^2}{2\sigma^2}\right).
+\]
+\end{remark}
+
+\section{Adjacency Matrix}
+
+\begin{definition}[Adjacency Matrix]
+The adjacency matrix $A \in \R^{n\times n}$ is defined by
+\[
+a_{ij}
+=
+\begin{cases}
+1, & \text{if vertices $i$ and $j$ are connected},\\
+0, & \text{otherwise}.
+\end{cases}
+\]
+\end{definition}
+
+\begin{remark}
+For undirected graphs, $A$ is symmetric:
+\[
+A = A^T.
+\]
+\end{remark}
+
+\begin{example}[Adjacency Matrix]
+\[
+A =
+\begin{pmatrix}
+0 & 1 & 1 & 1 & 0\\
+1 & 0 & 0 & 1 & 0\\
+1 & 0 & 0 & 1 & 1\\
+1 & 1 & 1 & 0 & 1\\
+0 & 0 & 1 & 1 & 0
+\end{pmatrix}.
+\]
+\end{example}
+
+\section{Degree Matrix and Graph Laplacian}
+
+\begin{definition}[Degree Matrix]
+The degree matrix $D$ is diagonal with
+\[
+D_{ii} = \sum_{j=1}^n a_{ij}.
+\]
+\end{definition}
+
+\begin{definition}[Graph Laplacian]
+The (unnormalized) graph Laplacian is
+\[
+L = D - A.
+\]
+\end{definition}
+
+\begin{remark}
+The Laplacian encodes connectivity structure and plays a central role in spectral methods.
+\end{remark}
+
+\section{Spectral Embedding}
+
+Spectral embedding is based on eigenvectors of the Laplacian.
+
+\begin{definition}[Spectral Embedding Coordinates]
+Let $L$ have eigenvalues
+\[
+0 = \lambda_1 \le \lambda_2 \le \cdots \le \lambda_n
+\]
+with corresponding eigenvectors $v_1,\dots,v_n$.
+
+The spectral embedding of dimension $k$ is given by
+\[
+Z =
+\begin{pmatrix}
+v_2 & v_3 & \cdots & v_{k+1}
+\end{pmatrix}.
+\]
+\end{definition}
+
+\begin{remark}
+The first eigenvector $v_1$ is constant and typically discarded.
+\end{remark}
+
+\section{Spectral Clustering Algorithm}
+
+\begin{algorithm}[H]
+\caption{Spectral Clustering}
+\begin{algorithmic}[1]
+\Require Data $\{x_i\}$, number of clusters $k$
+\Ensure Cluster assignments
+\State Construct similarity graph and adjacency matrix $A$
+\State Compute degree matrix $D$
+\State Compute Laplacian $L = D - A$
+\State Compute first $k$ eigenvectors of $L$
+\State Form matrix $Z$ from these eigenvectors
+\State Apply $k$-means to rows of $Z$
+\State \Return cluster labels
+\end{algorithmic}
+\end{algorithm}
+
+\section{Interpretation}
+
+\begin{itemize}
+    \item The graph encodes local similarity structure
+    \item Eigenvectors capture global structure
+    \item Clustering is performed in the embedded space
+\end{itemize}
+
+\begin{remark}
+Spectral methods can identify nonlinearly separable clusters that are not well captured by $k$-means in the original space.
+\end{remark}
+
+\section{Properties of the Laplacian}
+
+\begin{proposition}
+The Laplacian matrix $L$ is symmetric and positive semidefinite.
+\end{proposition}
+
+\begin{proof}
+For any $x \in \R^n$,
+\[
+x^T L x
+=
+x^T(D-A)x
+=
+\sum_{i} d_i x_i^2 - \sum_{i,j} a_{ij} x_i x_j.
+\]
+Rewriting,
+\[
+x^T L x
+=
+\frac{1}{2}
+\sum_{i,j} a_{ij} (x_i - x_j)^2 \ge 0.
+\]
+\end{proof}
+
+\begin{proposition}
+The multiplicity of the eigenvalue $0$ equals the number of connected components in the graph.
+\end{proposition}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+from sklearn.cluster import SpectralClustering
+
+model = SpectralClustering(
+    n_clusters=3,
+    affinity="nearest_neighbors"
+)
+
+labels = model.fit_predict(X)
+\end{lstlisting}
+
+\begin{remark}
+Choice of similarity graph and its parameters (e.g., $k$ in $k$-NN or $\sigma$ in RBF kernels) strongly affects performance.
+\end{remark}
+
+\chapter{Laplacian Eigenmaps}
+
+\section{Motivation}
+
+Laplacian Eigenmaps is a nonlinear dimensionality reduction technique that preserves local neighborhood structure using a graph representation of the data.
+
+\begin{remark}
+Unlike PCA, which captures global variance, Laplacian Eigenmaps focuses on preserving local geometry.
+\end{remark}
+
+\section{Graph Construction}
+
+Given data $\{x_i\}_{i=1}^n \subset \R^d$, construct a similarity graph:
+\begin{itemize}
+    \item Connect points using $k$-nearest neighbors or $\varepsilon$-neighborhoods
+    \item Assign weights $w_{ij}$ to edges
+\end{itemize}
+
+A common choice is the heat kernel:
+\[
+w_{ij}
+=
+\exp\left(-\frac{\norm{x_i - x_j}^2}{2\sigma^2}\right).
+\]
+
+\begin{definition}[Weight Matrix]
+Let $W \in \R^{n \times n}$ be defined by
+\[
+W_{ij} = w_{ij}.
+\]
+\end{definition}
+
+\section{Graph Laplacian}
+
+\begin{definition}[Degree Matrix]
+\[
+D_{ii} = \sum_{j=1}^n W_{ij}.
+\]
+\end{definition}
+
+\begin{definition}[Laplacian Matrix]
+\[
+L = D - W.
+\]
+\end{definition}
+
+\section{Optimization Problem}
+
+We seek a low-dimensional embedding $y_i \in \R^m$ for each data point $x_i$.
+
+\begin{definition}[Laplacian Eigenmaps Objective]
+\[
+\min_{\{y_i\}}
+\quad
+\frac{1}{2}
+\sum_{i,j} W_{ij} \norm{y_i - y_j}_2^2.
+\]
+\end{definition}
+
+\begin{remark}
+Nearby points (large $W_{ij}$) are encouraged to remain close in the embedding.
+\end{remark}
+
+\subsection{Matrix Form}
+
+Let $Y = (y_1,\dots,y_n)^T \in \R^{n \times m}$. Then
+\[
+\sum_{i,j} W_{ij} \norm{y_i - y_j}_2^2
+=
+2 \, \tr(Y^T L Y).
+\]
+
+\begin{proof}
+Expand:
+\[
+\norm{y_i - y_j}_2^2
+=
+y_i^T y_i - 2 y_i^T y_j + y_j^T y_j.
+\]
+Summing,
+\[
+\sum_{i,j} W_{ij} \norm{y_i - y_j}_2^2
+=
+2 \sum_i d_i y_i^T y_i - 2 \sum_{i,j} W_{ij} y_i^T y_j.
+\]
+This equals
+\[
+2 \, \tr(Y^T D Y) - 2 \, \tr(Y^T W Y)
+=
+2 \, \tr(Y^T L Y).
+\]
+\end{proof}
+
+\section{Constraints}
+
+To avoid trivial solutions (e.g., $y_i=0$), impose constraints:
+\[
+Y^T D Y = I,
+\quad
+Y^T D \mathbf{1} = 0.
+\]
+
+\begin{remark}
+The second constraint removes the constant eigenvector.
+\end{remark}
+
+\section{Solution via Eigenvalue Problem}
+
+The optimization reduces to solving the generalized eigenvalue problem:
+\[
+L v = \lambda D v.
+\]
+
+\begin{definition}[Embedding Coordinates]
+The embedding is given by the eigenvectors corresponding to the smallest nonzero eigenvalues:
+\[
+Y = [v_2,\dots,v_{m+1}].
+\]
+\end{definition}
+
+\begin{remark}
+The first eigenvector $v_1$ corresponds to eigenvalue $0$ and is constant.
+\end{remark}
+
+\section{Interpretation}
+
+\begin{itemize}
+    \item Minimizes distortion of local neighborhoods
+    \item Preserves manifold structure
+    \item Produces a low-dimensional embedding reflecting intrinsic geometry
+\end{itemize}
+
+\section{Connection to Spectral Clustering}
+
+\begin{remark}
+Laplacian Eigenmaps provides the embedding step used in spectral clustering. After computing $Y$, clustering methods (e.g., $k$-means) can be applied to the embedded coordinates.
+\end{remark}
+
+\section{Algorithm}
+
+\begin{algorithm}[H]
+\caption{Laplacian Eigenmaps}
+\begin{algorithmic}[1]
+\Require Data $\{x_i\}$, embedding dimension $m$
+\Ensure Embedded coordinates $\{y_i\}$
+\State Construct similarity graph and weight matrix $W$
+\State Compute degree matrix $D$
+\State Compute Laplacian $L = D - W$
+\State Solve $L v = \lambda D v$
+\State Take eigenvectors $v_2,\dots,v_{m+1}$
+\State Form embedding $Y = [v_2,\dots,v_{m+1}]$
+\State \Return $\{y_i\}$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Properties and Limitations}
+
+\begin{itemize}
+    \item Captures nonlinear structure
+    \item Sensitive to graph construction (choice of $k$, $\sigma$)
+    \item Requires eigen-decomposition (computational cost)
+\end{itemize}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+from sklearn.manifold import SpectralEmbedding
+
+model = SpectralEmbedding(
+    n_components=2,
+    n_neighbors=10
+)
+
+Y = model.fit_transform(X)
+\end{lstlisting}
+
+\begin{remark}
+The embedding can be visualized or used as input to clustering or classification algorithms.
+\end{remark}
+
+\chapter{Manifold Learning}
+
+\section{Motivation}
+
+Manifold learning assumes that high-dimensional data lie on or near a low-dimensional manifold embedded in $\R^D$.
+
+\begin{remark}
+The goal is to recover intrinsic low-dimensional coordinates while preserving geometric structure (distances, neighborhoods, or local linearity).
+\end{remark}
+
+\section{Metric Multidimensional Scaling (MDS)}
+
+\subsection{Problem Formulation}
+
+Given a distance matrix $\{d_{ij}\}$, find points $\{x_i\}_{i=1}^n \subset \R^d$ such that
+\[
+d_{ij} \approx \norm{x_i - x_j}_2.
+\]
+
+\begin{definition}[MDS Stress Function]
+\[
+\min_{\{x_i\}}
+\quad
+\sum_{i<j}
+\left(
+\norm{x_i - x_j}_2 - d_{ij}
+\right)^2.
+\]
+\end{definition}
+
+\subsection{Classical MDS}
+
+Define the squared distance matrix $D^{(2)}$ with entries $d_{ij}^2$. Let
+\[
+J = I - \frac{1}{n}\mathbf{1}\mathbf{1}^T.
+\]
+
+\begin{definition}[Centered Gram Matrix]
+\[
+B = -\frac{1}{2} J D^{(2)} J.
+\]
+\end{definition}
+
+\begin{proposition}
+If $B = X X^T$, then the rows of $X$ provide the embedding coordinates.
+\end{proposition}
+
+\begin{remark}
+The embedding is obtained via eigen-decomposition:
+\[
+B = U \Lambda U^T,
+\quad
+X = U_d \Lambda_d^{1/2}.
+\]
+\end{remark}
+
+\section{Isomap}
+
+\subsection{Idea}
+
+Isomap extends MDS by replacing Euclidean distances with geodesic distances on a neighborhood graph.
+
+\begin{remark}
+Geodesic distances approximate distances along the manifold rather than through ambient space.
+\end{remark}
+
+\subsection{Algorithm}
+
+\begin{algorithm}[H]
+\caption{Isomap}
+\begin{algorithmic}[1]
+\Require Data $\{x_i\}$, neighborhood size ($k$ or $\varepsilon$), embedding dimension $d$
+\Ensure Embedded coordinates
+\State Construct neighborhood graph:
+\begin{itemize}
+    \item Connect $k$ nearest neighbors or points within $\varepsilon$
+\end{itemize}
+\State Initialize graph distances:
+\[
+d_G(i,j) =
+\begin{cases}
+\norm{x_i - x_j}_2, & \text{if connected},\\
+\infty, & \text{otherwise}.
+\end{cases}
+\]
+\State Compute shortest paths:
+\[
+d_G(i,j) = \min_k \left\{ d_G(i,j), \; d_G(i,k) + d_G(k,j) \right\}
+\]
+\State Apply classical MDS to $\{d_G(i,j)\}$
+\State \Return embedding
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+Shortest paths can be computed using Floyd–Warshall or Dijkstra's algorithm.
+\end{remark}
+
+\section{Locally Linear Embedding (LLE)}
+
+\subsection{Idea}
+
+LLE assumes each point can be reconstructed as a linear combination of its neighbors.
+
+\begin{definition}[Reconstruction Weights]
+For each point $x_i$, find weights $w_{ij}$ solving
+\[
+\min_{w_{ij}}
+\quad
+\norm{x_i - \sum_{j \in \mathcal{N}(i)} w_{ij} x_j}_2^2
+\]
+subject to
+\[
+\sum_{j \in \mathcal{N}(i)} w_{ij} = 1.
+\]
+\end{definition}
+
+\subsection{Embedding Step}
+
+Find low-dimensional points $\{y_i\}$ minimizing
+\[
+\sum_i
+\norm{y_i - \sum_j w_{ij} y_j}_2^2.
+\]
+
+\begin{remark}
+The weights $w_{ij}$ are fixed from the original space and reused in the embedding space.
+\end{remark}
+
+\subsection{Solution}
+
+This reduces to an eigenvalue problem:
+\[
+M = (I - W)^T (I - W),
+\]
+and the embedding is given by the eigenvectors corresponding to the smallest nonzero eigenvalues.
+
+\section{Comparison of Methods}
+
+\begin{itemize}
+    \item MDS:
+    \begin{itemize}
+        \item Preserves pairwise distances
+        \item Sensitive to noise in distances
+    \end{itemize}
+    \item Isomap:
+    \begin{itemize}
+        \item Preserves geodesic distances
+        \item Captures global manifold structure
+    \end{itemize}
+    \item LLE:
+    \begin{itemize}
+        \item Preserves local linear structure
+        \item Does not explicitly preserve distances
+    \end{itemize}
+\end{itemize}
+
+\section{Other Embedding Methods}
+
+\subsection{Random Projection}
+
+Project data using a random matrix:
+\[
+y = R x,
+\]
+where $R$ has random entries.
+
+\begin{remark}
+Preserves distances approximately (Johnson–Lindenstrauss lemma).
+\end{remark}
+
+\subsection{PCA Projection}
+
+Project onto top principal components:
+\[
+y = E_K^T x.
+\]
+
+\subsection{Spectral Embedding}
+
+Uses eigenvectors of a graph Laplacian to embed data.
+
+\subsection{$t$-SNE}
+
+\begin{remark}
+$t$-SNE maps high-dimensional data to low dimensions by preserving local similarities using probability distributions.
+\end{remark}
+
+\section{Implementation Notes}
+
+\begin{lstlisting}[language=Python]
+from sklearn.manifold import MDS, Isomap, LocallyLinearEmbedding
+
+mds = MDS(n_components=2)
+X_mds = mds.fit_transform(X)
+
+iso = Isomap(n_neighbors=10, n_components=2)
+X_iso = iso.fit_transform(X)
+
+lle = LocallyLinearEmbedding(n_neighbors=10, n_components=2)
+X_lle = lle.fit_transform(X)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+from sklearn.manifold import TSNE
+
+tsne = TSNE(n_components=2)
+X_tsne = tsne.fit_transform(X)
+\end{lstlisting}
+
+\begin{remark}
+Choice of method depends on whether global or local structure is more important.
+\end{remark}
+
+\chapter{SQLite Databases and SQL}
+
+\section{Overview}
+
+Relational databases store data in structured tables and are queried using Structured Query Language (SQL).
+
+\begin{remark}
+SQLite is a lightweight, self-contained database engine that can be embedded directly in applications (e.g., Python).
+\end{remark}
+
+\section{Database Schema}
+
+We consider a synthetic measurement database with four tables:
+
+\begin{itemize}
+    \item \textbf{Data(X, Y, RunID, ID)}: measurement points
+    \item \textbf{Runs(RunID, UserID, InstrumentID)}: run metadata
+    \item \textbf{Users(UserID, Name)}: user information
+    \item \textbf{Instruments(InsID, Name)}: instrument information
+\end{itemize}
+
+\begin{remark}
+Tables are related via keys:
+\begin{itemize}
+    \item RunID links Data and Runs
+    \item UserID links Runs and Users
+    \item InstrumentID links Runs and Instruments
+\end{itemize}
+\end{remark}
+
+\section{Basic SQL Queries}
+
+\subsection{Selecting Data}
+
+\begin{lstlisting}[language=SQL]
+SELECT * FROM Data;
+\end{lstlisting}
+
+\begin{lstlisting}[language=SQL]
+SELECT X, Y FROM Data WHERE X > 0;
+\end{lstlisting}
+
+\subsection{Sorting}
+
+\begin{lstlisting}[language=SQL]
+SELECT * FROM Data
+ORDER BY X DESC;
+\end{lstlisting}
+
+\section{Aggregation}
+
+\begin{definition}[Aggregate Functions]
+SQL provides functions that summarize data:
+\begin{itemize}
+    \item COUNT
+    \item SUM
+    \item AVG
+    \item MIN
+    \item MAX
+\end{itemize}
+\end{definition}
+
+\begin{example}
+\begin{lstlisting}[language=SQL]
+SELECT COUNT(*) FROM Data;
+
+SELECT AVG(X), AVG(Y) FROM Data;
+\end{lstlisting}
+\end{example}
+
+\subsection{Grouping}
+
+\begin{lstlisting}[language=SQL]
+SELECT RunID, COUNT(*) AS n_points
+FROM Data
+GROUP BY RunID;
+\end{lstlisting}
+
+\begin{remark}
+GROUP BY partitions rows and applies aggregate functions within each group.
+\end{remark}
+
+\section{Joins}
+
+\begin{definition}[Join]
+A join combines rows from multiple tables based on matching keys.
+\end{definition}
+
+\subsection{Inner Join}
+
+\begin{lstlisting}[language=SQL]
+SELECT *
+FROM Data d
+JOIN Runs r ON d.RunID = r.RunID;
+\end{lstlisting}
+
+\subsection{Multiple Joins}
+
+\begin{lstlisting}[language=SQL]
+SELECT u.Name, i.Name, COUNT(*) AS n
+FROM Data d
+JOIN Runs r ON d.RunID = r.RunID
+JOIN Users u ON r.UserID = u.UserID
+JOIN Instruments i ON r.InstrumentID = i.InsID
+GROUP BY u.Name, i.Name;
+\end{lstlisting}
+
+\begin{remark}
+Joins enable combining relational data across tables.
+\end{remark}
+
+\section{Subqueries}
+
+\begin{definition}[Subquery]
+A subquery is a query nested inside another query.
+\end{definition}
+
+\begin{example}
+\begin{lstlisting}[language=SQL]
+SELECT *
+FROM Data
+WHERE RunID IN (
+    SELECT RunID FROM Runs WHERE UserID = 1
+);
+\end{lstlisting}
+\end{example}
+
+\section{Common Table Expressions (CTEs)}
+
+\begin{definition}[CTE]
+A Common Table Expression defines a temporary result set for use within a query.
+\end{definition}
+
+\begin{example}
+\begin{lstlisting}[language=SQL]
+WITH RunCounts AS (
+    SELECT RunID, COUNT(*) AS n
+    FROM Data
+    GROUP BY RunID
+)
+SELECT *
+FROM RunCounts
+WHERE n > 10;
+\end{lstlisting}
+\end{example}
+
+\begin{remark}
+CTEs improve readability and modularity of complex queries.
+\end{remark}
+
+\section{Relational Algebra Perspective}
+
+SQL operations correspond to relational algebra:
+
+\begin{itemize}
+    \item SELECT (projection): choose columns
+    \item WHERE (selection): filter rows
+    \item JOIN: combine relations
+    \item GROUP BY: aggregation
+\end{itemize}
+
+\begin{remark}
+Relational algebra provides a formal foundation for database queries.
+\end{remark}
+
+\section{Table Creation and Modification}
+
+\subsection{Creating Tables}
+
+\begin{lstlisting}[language=SQL]
+CREATE TABLE Users (
+    UserID INTEGER PRIMARY KEY,
+    Name TEXT
+);
+\end{lstlisting}
+
+\subsection{Inserting Data}
+
+\begin{lstlisting}[language=SQL]
+INSERT INTO Users (UserID, Name)
+VALUES (1, 'Alice');
+\end{lstlisting}
+
+\subsection{Updating Data}
+
+\begin{lstlisting}[language=SQL]
+UPDATE Users
+SET Name = 'Bob'
+WHERE UserID = 1;
+\end{lstlisting}
+
+\subsection{Deleting Data}
+
+\begin{lstlisting}[language=SQL]
+DELETE FROM Users
+WHERE UserID = 1;
+\end{lstlisting}
+
+\section{Transactions}
+
+\begin{definition}[Transaction]
+A transaction is a sequence of operations executed as a single unit.
+\end{definition}
+
+\begin{lstlisting}[language=SQL]
+BEGIN TRANSACTION;
+
+INSERT INTO Data (X, Y, RunID)
+VALUES (1.0, 2.0, 3);
+
+COMMIT;
+\end{lstlisting}
+
+\begin{remark}
+Transactions ensure:
+\begin{itemize}
+    \item Atomicity
+    \item Consistency
+    \item Isolation
+    \item Durability (ACID properties)
+\end{itemize}
+\end{remark}
+
+\section{Python Integration}
+
+\begin{lstlisting}[language=Python]
+import sqlite3
+
+conn = sqlite3.connect(":memory:")
+cursor = conn.cursor()
+
+cursor.execute("SELECT * FROM Data")
+rows = cursor.fetchall()
+
+conn.close()
+\end{lstlisting}
+
+\begin{remark}
+SQLite integrates seamlessly with Python for building lightweight data pipelines and experiments.
+\end{remark}
 
 \end{document}
