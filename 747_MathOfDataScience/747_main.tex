@@ -170,5 +170,11403 @@
 \begin{document}
 
 \maketitle
+\tableofcontents
+
+\chapter{Foundations of High-Dimensional Probability}
+
+\section{Motivation}
+
+The central question in modern data science is:
+
+\begin{quote}
+How can one efficiently extract information from high-dimensional data?
+\end{quote}
+
+This question is simultaneously:
+\begin{itemize}
+\item statistical,
+\item computational,
+\item geometric,
+\item and optimization-theoretic.
+\end{itemize}
+
+Many classical methods fail in high dimensions due to exponential scaling in ambient dimension. The mathematics of data science studies the probabilistic and geometric structures that permit efficient inference despite this apparent complexity.
+
+Core themes include:
+\begin{itemize}
+\item concentration inequalities,
+\item dimension reduction,
+\item randomized linear algebra,
+\item compressed sensing,
+\item spectral methods,
+\item high-dimensional estimation,
+\item convex and nonconvex optimization,
+\item statistical learning theory.
+\end{itemize}
+
+A primary reference for the probabilistic aspects of the course is Roman Vershynin's \emph{High-Dimensional Probability}.  
+
+\section{The Curse of Dimensionality}
+
+\subsection{Numerical Integration in One Dimension}
+
+Suppose we wish to estimate
+\[
+I = \int_{[0,1]} f(x)\dd x.
+\]
+
+A classical deterministic approximation is the Riemann sum:
+\[
+I \approx \frac{1}{n}\sum_{i=1}^n f(x_i),
+\]
+where $\{x_i\}$ are grid points.
+
+\begin{definition}
+A function $f:[0,1]\to\R$ is called $L$-Lipschitz if
+\[
+|f(x)-f(y)| \leq L|x-y|
+\]
+for all $x,y\in[0,1]$.
+\end{definition}
+
+\begin{proposition}
+If $f$ is $L$-Lipschitz and we partition $[0,1]$ into intervals of width $\varepsilon$, then the Riemann sum approximation error is $O(\varepsilon)$.
+\end{proposition}
+
+\begin{proof}
+Let the partition intervals be
+\[
+I_k = [(k-1)\varepsilon,k\varepsilon].
+\]
+
+For any $x,y\in I_k$,
+\[
+|f(x)-f(y)| \leq L\varepsilon.
+\]
+
+Thus replacing $f$ by a representative value on each interval introduces at most $L\varepsilon$ local error. Summing over all intervals preserves the same asymptotic scaling:
+\[
+\left|
+\int_0^1 f(x)\dd x
+-
+\frac{1}{n}\sum_{i=1}^n f(x_i)
+\right|
+= O(\varepsilon).
+\]
+\end{proof}
+
+\subsection{High-Dimensional Grids}
+
+Now consider
+\[
+I_d = \int_{[0,1]^d} f(x)\dd x.
+\]
+
+If each coordinate is discretized with mesh width $\varepsilon$, then approximately
+\[
+\left(\frac{1}{\varepsilon}\right)^d
+\]
+grid points are required.
+
+Thus the computational cost grows exponentially in dimension.
+
+\begin{definition}
+The phenomenon in which computational or statistical complexity grows exponentially with ambient dimension is called the \emph{curse of dimensionality}.
+\end{definition}
+
+\begin{remark}
+Many deterministic approximation methods become computationally infeasible in high dimensions because even moderate accuracy requires exponentially many samples.
+\end{remark}
+
+\section{Monte Carlo Integration}
+
+Randomization provides a fundamentally different approach.
+
+Let
+\[
+X_1,\dots,X_n \iid \mathrm{Unif}([0,1]^d).
+\]
+
+Then
+\[
+\E[f(X_i)]
+=
+\int_{[0,1]^d} f(x)\dd x.
+\]
+
+Hence we may estimate the integral via
+\[
+\widehat{I}_n
+=
+\frac{1}{n}\sum_{i=1}^n f(X_i).
+\]
+
+\subsection{Strong Law of Large Numbers}
+
+\begin{theorem}[Strong Law of Large Numbers]
+Let $X_1,X_2,\dots$ be iid with $\E|X_1|<\infty$. Then
+\[
+\frac{1}{n}\sum_{i=1}^n X_i
+\as
+\E[X_1].
+\]
+\end{theorem}
+
+Applying this theorem to $f(X_i)$ yields
+\[
+\widehat{I}_n
+\as
+\int_{[0,1]^d} f(x)\dd x.
+\]
+
+\subsection{Dimension-Independent Error Scaling}
+
+A major advantage of Monte Carlo methods is that convergence rates are independent of ambient dimension.
+
+\begin{theorem}
+Assume $f(X)$ has finite variance. Then
+\[
+\E\left[
+\left(
+\frac{1}{n}\sum_{i=1}^n f(X_i)-\E[f(X)]
+\right)^2
+\right]
+=
+\frac{\Var(f(X))}{n}.
+\]
+\end{theorem}
+
+\begin{proof}
+Define
+\[
+Y_i = f(X_i)-\E[f(X)].
+\]
+
+Then $\E[Y_i]=0$ and
+\[
+\frac{1}{n}\sum_{i=1}^n f(X_i)-\E[f(X)]
+=
+\frac{1}{n}\sum_{i=1}^n Y_i.
+\]
+
+Therefore
+\[
+\E\left[
+\left(
+\frac{1}{n}\sum_{i=1}^n Y_i
+\right)^2
+\right]
+=
+\frac{1}{n^2}
+\E\left[
+\left(
+\sum_{i=1}^n Y_i
+\right)^2
+\right].
+\]
+
+Expanding,
+\[
+=
+\frac{1}{n^2}
+\sum_{i,j}\E[Y_iY_j].
+\]
+
+Since the $Y_i$ are independent and centered,
+\[
+\E[Y_iY_j]=0
+\quad\text{for } i\neq j.
+\]
+
+Thus
+\[
+=
+\frac{1}{n^2}
+\sum_{i=1}^n \E[Y_i^2]
+=
+\frac{\Var(f(X))}{n}.
+\]
+\end{proof}
+
+Taking square roots gives
+\[
+\mathrm{RMSE}
+=
+O\left(\frac{1}{\sqrt{n}}\right).
+\]
+
+\begin{remark}
+The convergence rate
+\[
+O(n^{-1/2})
+\]
+does not depend on dimension $d$.
+This is one of the fundamental reasons Monte Carlo methods are effective in high-dimensional problems.
+\end{remark}
+
+\section{Probability Review}
+
+\subsection{Expectation}
+
+\begin{definition}
+Let $X$ be a random vector with density $p(x)$ and let $f:\R^d\to\R$. The expectation of $f(X)$ is
+\[
+\E[f(X)]
+=
+\int_{\R^d} f(x)p(x)\dd x.
+\]
+\end{definition}
+
+\subsection{Variance}
+
+$\mathrm{Var}(X)=\mathbb{E}[(X-\mathbb{E}X)^2]$
+
+\begin{definition}
+For a random variable $X$,
+\[
+\Var(X)
+=
+\E[(X-\E[X])^2].
+\]
+\end{definition}
+
+\begin{proposition}
+Variance admits the equivalent formula
+\[
+\Var(X)=\E[X^2]-(\E[X])^2.
+\]
+\end{proposition}
+
+\begin{proof}
+Expand:
+\[
+(X-\E[X])^2
+=
+X^2-2X\E[X]+(\E[X])^2.
+\]
+
+Taking expectations,
+\[
+\Var(X)
+=
+\E[X^2]
+-
+2(\E[X])^2
++
+(\E[X])^2.
+\]
+
+Hence
+\[
+\Var(X)
+=
+\E[X^2]-(\E[X])^2.
+\]
+\end{proof}
+
+\subsection{Linearity of Expectation}
+
+\begin{proposition}
+For random variables $X_1,\dots,X_n$,
+\[
+\E\left[\sum_{i=1}^n X_i\right]
+=
+\sum_{i=1}^n \E[X_i].
+\]
+\end{proposition}
+
+\begin{proof}
+Expectation is an integral operator, and integration is linear.
+\end{proof}
+
+\subsection{Variance of Independent Sums}
+
+\begin{proposition}
+If $X_1,\dots,X_n$ are independent, then
+\[
+\Var\left(\sum_{i=1}^n X_i\right)
+=
+\sum_{i=1}^n \Var(X_i).
+\]
+\end{proposition}
+
+\begin{proof}
+We compute
+\[
+\Var\left(\sum_i X_i\right)
+=
+\E\left[
+\left(
+\sum_i (X_i-\E[X_i])
+\right)^2
+\right].
+\]
+
+Expanding,
+\[
+=
+\sum_i \Var(X_i)
++
+\sum_{i\neq j}
+\Cov(X_i,X_j).
+\]
+
+Independence implies
+\[
+\Cov(X_i,X_j)=0,
+\]
+so the cross terms vanish.
+\end{proof}
+
+\subsection{Jensen's Inequality}
+
+\begin{definition}
+A function $\varphi:\R\to\R$ is convex if
+\[
+\varphi(\lambda x+(1-\lambda)y)
+\leq
+\lambda\varphi(x)+(1-\lambda)\varphi(y)
+\]
+for all $\lambda\in[0,1]$.
+\end{definition}
+
+\begin{theorem}[Jensen's Inequality]
+If $X$ is integrable and $\varphi$ is convex, then
+\[
+\varphi(\E[X])
+\leq
+\E[\varphi(X)].
+\]
+\end{theorem}
+
+\begin{example}
+Taking $\varphi(x)=x^2$ gives
+\[
+(\E[X])^2 \leq \E[X^2].
+\]
+\end{example}
+
+\section{The Central Limit Theorem}
+
+Suppose
+\[
+X_1,\dots,X_n
+\iid
+(\mu,\sigma^2),
+\]
+meaning
+\[
+\E[X_i]=\mu,
+\qquad
+\Var(X_i)=\sigma^2.
+\]
+
+Define
+\[
+S_n=\sum_{i=1}^n X_i.
+\]
+
+The standardized sum is
+\[
+Z_n
+=
+\frac{S_n-\E[S_n]}
+{\sqrt{\Var(S_n)}}.
+\]
+
+Since
+\[
+\E[S_n]=n\mu,
+\qquad
+\Var(S_n)=n\sigma^2,
+\]
+we obtain
+\[
+Z_n
+=
+\frac{1}{\sigma\sqrt{n}}
+\sum_{i=1}^n (X_i-\mu).
+\]
+
+$Z_n=\frac{1}{\sigma\sqrt{n}}\sum_{i=1}^n (X_i-\mu)$
+
+\begin{theorem}[Central Limit Theorem]
+Let $X_1,X_2,\dots$ be iid with finite mean $\mu$ and variance $\sigma^2$. Then
+\[
+Z_n
+\convd
+\Normal(0,1).
+\]
+\end{theorem}
+
+\subsection{Gaussian Tail Bounds}
+
+Let
+\[
+Z\sim \Normal(0,1).
+\]
+
+A standard Gaussian tail estimate is
+\[
+\Prob(Z\geq t)
+\leq
+e^{-t^2/2}.
+\]
+
+\[
+\mathbb{P}(Z\ge t)\le e^{-t^2/2}
+\]
+
+\begin{proof}
+Using Markov's inequality,
+\[
+\Prob(Z\geq t)
+=
+\Prob(e^{\lambda Z}\geq e^{\lambda t})
+\leq
+e^{-\lambda t}\E[e^{\lambda Z}].
+\]
+
+Since
+\[
+\E[e^{\lambda Z}]
+=
+e^{\lambda^2/2},
+\]
+we get
+\[
+\Prob(Z\geq t)
+\leq
+\exp\left(
+\frac{\lambda^2}{2}-\lambda t
+\right).
+\]
+
+Optimizing over $\lambda$ gives $\lambda=t$, yielding
+\[
+\Prob(Z\geq t)
+\leq
+e^{-t^2/2}.
+\]
+\end{proof}
+
+\section{A Coin-Flipping Example}
+
+Suppose
+\[
+C_i\in\{-1,+1\}
+\]
+represents the outcome of the $i$-th coin flip.
+
+For a fair coin,
+\[
+\E[C_i]=0.
+\]
+
+We may test fairness using the empirical mean
+\[
+\frac{1}{n}\sum_{i=1}^n C_i.
+\]
+
+The CLT implies
+\[
+\sqrt{n}
+\left(
+\frac{1}{n}\sum_{i=1}^n C_i
+\right)
+\convd
+\Normal(0,1).
+\]
+
+Hence,
+\[
+\Prob\left(
+\frac{1}{n}\sum_{i=1}^n C_i
+\geq \frac{3}{4}
+\right)
+=
+\Prob\left(
+Z_n \geq \frac{\sqrt{n}}{2}
+\right).
+\]
+
+Using the Gaussian tail bound,
+\[
+\Prob\left(
+Z_n \geq \frac{\sqrt{n}}{2}
+\right)
+\lesssim
+e^{-n/8}.
+\]
+
+\begin{remark}
+This illustrates a key theme of high-dimensional probability:
+
+\begin{quote}
+Random fluctuations often decay exponentially fast.
+\end{quote}
+
+Understanding such concentration phenomena is one of the primary goals of the course.
+\end{remark}
+
+\section{Course Themes}
+
+Major themes in the mathematics of data science include:
+\begin{itemize}
+\item concentration inequalities,
+\item dimension reduction,
+\item clustering,
+\item foundations of statistical inference,
+\item statistical learning theory,
+\item minimax lower bounds,
+\item randomized algorithms,
+\item high-dimensional estimation,
+\item convex and nonconvex optimization.
+\end{itemize}
+
+\chapter{Concentration Inequalities and Sub-Gaussian Random Variables}
+
+\section{Tail Bounds and the Chernoff Method}
+
+A central problem in high-dimensional probability is understanding the concentration behavior of random sums.
+
+Given independent random variables
+\[
+X_1,\dots,X_n,
+\]
+we seek bounds of the form
+\[
+\Prob\left(
+\left|
+\sum_{i=1}^n X_i
+\right|
+\geq t
+\right).
+\]
+
+In many situations, the goal is to establish exponentially decaying tail bounds.
+
+\section{Markov's Inequality}
+
+\begin{theorem}[Markov's Inequality]
+Let $X$ be a nonnegative random variable and let $t>0$. Then
+\[
+\Prob(X\geq t)
+\leq
+\frac{\E[X]}{t}.
+\]
+\end{theorem}
+
+\begin{proof}
+Observe that
+\[
+X
+=
+X\ind_{\{X\geq t\}}
++
+X\ind_{\{X<t\}}.
+\]
+
+Since $X\geq t$ on the event $\{X\geq t\}$,
+\[
+X\ind_{\{X\geq t\}}
+\geq
+t\ind_{\{X\geq t\}}.
+\]
+
+Taking expectations gives
+\[
+\E[X]
+\geq
+t\E[\ind_{\{X\geq t\}}]
+=
+t\Prob(X\geq t).
+\]
+
+Rearranging yields
+\[
+\Prob(X\geq t)
+\leq
+\frac{\E[X]}{t}.
+\]
+\end{proof}
+
+\section{Chebyshev's Inequality}
+
+Applying Markov's inequality to a squared random variable yields a variance-based concentration bound.
+
+\begin{theorem}[Chebyshev's Inequality]
+For any random variable $X$ with finite variance,
+\[
+\Prob(|X-\E[X]|\geq t)
+\leq
+\frac{\Var(X)}{t^2}.
+\]
+\end{theorem}
+
+\begin{proof}
+Apply Markov's inequality to
+\[
+Y=(X-\E[X])^2.
+\]
+
+Then
+\[
+\Prob(|X-\E[X]|\geq t)
+=
+\Prob((X-\E[X])^2\geq t^2)
+\leq
+\frac{\E[(X-\E[X])^2]}{t^2}.
+\]
+
+Since
+\[
+\E[(X-\E[X])^2]
+=
+\Var(X),
+\]
+the result follows.
+\end{proof}
+
+\begin{remark}
+Chebyshev's inequality gives polynomial tail decay:
+\[
+\Prob(|X-\E[X]|\geq t)
+=
+O(t^{-2}).
+\]
+
+In high-dimensional settings, this is often too weak. We seek exponential concentration inequalities instead.
+\end{remark}
+
+\section{The Chernoff Method}
+
+The key idea behind Chernoff bounds is to transform tail events using monotone functions.
+
+For any increasing function
+\[
+f:\R\to\R_+,
+\]
+we have
+\[
+\Prob(X-\E[X]\geq t)
+=
+\Prob(f(X-\E[X])\geq f(t)).
+\]
+
+A particularly useful choice is the exponential function:
+\[
+f(x)=e^{\lambda x},
+\]
+where $\lambda>0$ is a tunable parameter.
+
+Thus,
+\[
+\Prob(X-\E[X]\geq t)
+=
+\Prob(e^{\lambda(X-\E[X])}\geq e^{\lambda t}).
+\]
+
+Applying Markov's inequality gives
+\[
+\Prob(X-\E[X]\geq t)
+\leq
+\frac{\E[e^{\lambda(X-\E[X])}]}{e^{\lambda t}}.
+\]
+
+Equivalently,
+\[
+\Prob(X-\E[X]\geq t)
+\leq
+\exp\left(
+\log\E[e^{\lambda(X-\E[X])}]
+-
+\lambda t
+\right).
+\]
+
+Optimizing over $\lambda\geq0$ yields
+\[
+\log\Prob(X-\E[X]\geq t)
+\leq
+\inf_{\lambda\geq0}
+\left\{
+\log\E[e^{\lambda(X-\E[X])}]
+-
+\lambda t
+\right\}.
+\]
+
+\section{Fenchel Conjugates}
+
+The optimization expression above naturally leads to convex duality.
+
+\begin{definition}[Fenchel Conjugate]
+Let
+\[
+\psi:\R\to\R\cup\{\infty\}.
+\]
+
+The Fenchel conjugate of $\psi$ is
+\[
+\psi^*(t)
+=
+\sup_{\lambda\in\R}
+\{
+\lambda t-\psi(\lambda)
+\}.
+\]
+\end{definition}
+
+Define the log moment generating function
+\[
+\psi_X(\lambda)
+=
+\log\E[e^{\lambda(X-\E[X])}].
+\]
+
+Then the Chernoff argument becomes
+\[
+\Prob(X-\E[X]\geq t)
+\leq
+\exp(-\psi_X^*(t)).
+\]
+
+\begin{theorem}[Chernoff Bound]
+For any random variable $X$,
+\[
+\Prob(X-\E[X]\geq t)
+\leq
+\exp(-\psi_X^*(t)).
+\]
+\end{theorem}
+
+\begin{proof}
+Starting from
+\[
+\Prob(X-\E[X]\geq t)
+\leq
+\exp(
+\psi_X(\lambda)-\lambda t
+),
+\]
+we optimize over $\lambda\geq0$:
+\[
+\log\Prob(X-\E[X]\geq t)
+\leq
+\inf_{\lambda\geq0}
+\{
+\psi_X(\lambda)-\lambda t
+\}.
+\]
+
+Since
+\[
+\inf_{\lambda}
+\{
+\psi_X(\lambda)-\lambda t
+\}
+=
+-
+\sup_{\lambda}
+\{
+\lambda t-\psi_X(\lambda)
+\},
+\]
+we obtain
+\[
+\log\Prob(X-\E[X]\geq t)
+\leq
+-\psi_X^*(t).
+\]
+
+Exponentiating yields
+\[
+\Prob(X-\E[X]\geq t)
+\leq
+e^{-\psi_X^*(t)}.
+\]
+\end{proof}
+
+\section{Gaussian Concentration}
+
+Suppose
+\[
+X\sim \Normal(\mu,\sigma^2).
+\]
+
+Its centered moment generating function is
+\[
+\E[e^{\lambda(X-\mu)}]
+=
+e^{\sigma^2\lambda^2/2}.
+\]
+
+$\mathbb{E}e^{\lambda(X-\mu)}=e^{\sigma^2\lambda^2/2}$
+
+Thus
+\[
+\psi_X(\lambda)
+=
+\frac{\sigma^2\lambda^2}{2}.
+\]
+
+The Fenchel conjugate becomes
+\[
+\psi_X^*(t)
+=
+\sup_{\lambda}
+\left\{
+\lambda t-\frac{\sigma^2\lambda^2}{2}
+\right\}.
+\]
+
+This is a quadratic maximization problem.
+
+Differentiating,
+\[
+t-\sigma^2\lambda=0
+\quad\Rightarrow\quad
+\lambda^*=\frac{t}{\sigma^2}.
+\]
+
+Substituting,
+\[
+\psi_X^*(t)
+=
+\frac{t^2}{2\sigma^2}.
+\]
+
+Hence,
+\[
+\Prob(X-\mu\geq t)
+\leq
+e^{-t^2/(2\sigma^2)}.
+\]
+
+$\mathbb{P}(X-\mu\ge t)\le e^{-t^2/(2\sigma^2)}$
+
+\begin{remark}
+Gaussian random variables exhibit exponential concentration with quadratic decay in $t$.
+\end{remark}
+
+\section{Sub-Gaussian Random Variables}
+
+The Gaussian concentration inequality motivates a broader class of random variables.
+
+\begin{definition}[Sub-Gaussian Random Variable]
+A random variable $X$ with mean
+\[
+\mu=\E[X]
+\]
+is called $\sigma$-sub-Gaussian if
+\[
+\log\E[e^{\lambda(X-\mu)}]
+\leq
+\frac{\sigma^2\lambda^2}{2}
+\]
+for all $\lambda\in\R$.
+\end{definition}
+
+\begin{remark}
+Sub-Gaussian random variables have tails no heavier than those of a Gaussian random variable.
+\end{remark}
+
+\subsection{Tail Bounds for Sub-Gaussian Variables}
+
+\begin{theorem}
+If $X$ is $\sigma$-sub-Gaussian, then
+\[
+\Prob(X-\mu\geq t)
+\leq
+e^{-t^2/(2\sigma^2)}.
+\]
+\end{theorem}
+
+\begin{proof}
+By sub-Gaussianity,
+\[
+\psi_X(\lambda)
+\leq
+\frac{\sigma^2\lambda^2}{2}.
+\]
+
+Therefore,
+\[
+\psi_X^*(t)
+=
+\sup_\lambda
+\{
+\lambda t-\psi_X(\lambda)
+\}
+\geq
+\sup_\lambda
+\left\{
+\lambda t-\frac{\sigma^2\lambda^2}{2}
+\right\}
+=
+\frac{t^2}{2\sigma^2}.
+\]
+
+Applying the Chernoff bound,
+\[
+\Prob(X-\mu\geq t)
+\leq
+e^{-t^2/(2\sigma^2)}.
+\]
+\end{proof}
+
+\begin{proposition}
+If $X$ is $\sigma$-sub-Gaussian, then
+\[
+-X
+\]
+is also $\sigma$-sub-Gaussian.
+\end{proposition}
+
+\begin{proof}
+Observe that
+\[
+\log\E[e^{\lambda(-X+\mu)}]
+=
+\log\E[e^{-\lambda(X-\mu)}].
+\]
+
+Applying sub-Gaussianity with parameter $-\lambda$ gives
+\[
+\log\E[e^{-\lambda(X-\mu)}]
+\leq
+\frac{\sigma^2\lambda^2}{2}.
+\]
+\end{proof}
+
+\begin{corollary}
+If $X$ is $\sigma$-sub-Gaussian, then
+\[
+\Prob(|X-\mu|\geq t)
+\leq
+2e^{-t^2/(2\sigma^2)}.
+\]
+\end{corollary}
+
+\begin{proof}
+Using the union bound,
+\[
+\Prob(|X-\mu|\geq t)
+=
+\Prob(X-\mu\geq t)
++
+\Prob(\mu-X\geq t).
+\]
+
+Each term is bounded by
+\[
+e^{-t^2/(2\sigma^2)}.
+\]
+\end{proof}
+
+\section{Bounded Random Variables are Sub-Gaussian}
+
+\begin{theorem}
+Suppose $X$ is supported on $[a,b]$. Then $X$ is
+\[
+\frac{b-a}{2}
+\]
+-sub-Gaussian.
+\end{theorem}
+
+\begin{proof}
+Let
+\[
+Y=X-\E[X].
+\]
+
+Define
+\[
+\psi_Y(\lambda)
+=
+\log\E[e^{\lambda Y}].
+\]
+
+Differentiating,
+\[
+\psi_Y'(\lambda)
+=
+\frac{\E[Ye^{\lambda Y}]}
+{\E[e^{\lambda Y}]},
+\]
+and
+\[
+\psi_Y''(\lambda)
+=
+\frac{\E[Y^2e^{\lambda Y}]}
+{\E[e^{\lambda Y}]}
+-
+\left(
+\frac{\E[Ye^{\lambda Y}]}
+{\E[e^{\lambda Y}]}
+\right)^2.
+\]
+
+Define the tilted density
+\[
+f_\lambda(y)
+=
+\frac{e^{\lambda y}f_Y(y)}
+{\E[e^{\lambda Y}]}.
+\]
+
+Then
+\[
+\psi_Y''(\lambda)
+=
+\Var_\lambda(Y),
+\]
+where the variance is computed under the tilted distribution.
+
+Since $Y$ is supported on an interval of length $b-a$,
+\[
+\Var_\lambda(Y)
+\leq
+\frac{(b-a)^2}{4}.
+\]
+
+By Taylor's theorem,
+\[
+\psi_Y(\lambda)
+=
+\psi_Y(0)
++
+\psi_Y'(0)\lambda
++
+\frac{\psi_Y''(\xi)}{2}\lambda^2
+\]
+for some $\xi$ between $0$ and $\lambda$.
+
+Since
+\[
+\psi_Y(0)=0,
+\qquad
+\psi_Y'(0)=\E[Y]=0,
+\]
+we obtain
+\[
+\psi_Y(\lambda)
+\leq
+\frac{(b-a)^2}{8}\lambda^2.
+\]
+
+Thus $X$ is
+\[
+\frac{b-a}{2}
+\]
+-sub-Gaussian.
+\end{proof}
+
+\section{Sums of Sub-Gaussian Random Variables}
+
+\begin{lemma}[Sum Rule]
+Suppose
+\[
+X_1,\dots,X_n
+\]
+are independent and $X_i$ is $\sigma_i$-sub-Gaussian.
+
+Then
+\[
+\sum_{i=1}^n X_i
+\]
+is
+\[
+\sqrt{\sum_{i=1}^n \sigma_i^2}
+\]
+-sub-Gaussian.
+\end{lemma}
+
+\begin{proof}
+Using independence,
+\[
+\E\left[
+e^{\lambda\sum_i(X_i-\E[X_i])}
+\right]
+=
+\prod_{i=1}^n
+\E[e^{\lambda(X_i-\E[X_i])}].
+\]
+
+Taking logarithms,
+\[
+\log\E\left[
+e^{\lambda\sum_i(X_i-\E[X_i])}
+\right]
+=
+\sum_{i=1}^n
+\log\E[e^{\lambda(X_i-\E[X_i])}].
+\]
+
+Applying sub-Gaussianity,
+\[
+\leq
+\sum_{i=1}^n
+\frac{\sigma_i^2\lambda^2}{2}
+=
+\frac{\lambda^2}{2}
+\sum_{i=1}^n \sigma_i^2.
+\]
+\end{proof}
+
+\section{Hoeffding's Inequality}
+
+\begin{theorem}[Hoeffding's Inequality]
+Suppose
+\[
+X_1,\dots,X_n
+\]
+are independent with
+\[
+\E[X_i]=\mu_i,
+\]
+and each $X_i$ is $\sigma_i$-sub-Gaussian.
+
+Then
+\[
+\Prob\left(
+\sum_{i=1}^n (X_i-\mu_i)
+\geq
+t\norm{\sigma}_2
+\right)
+\leq
+e^{-t^2/2},
+\]
+where
+\[
+\norm{\sigma}_2^2
+=
+\sum_{i=1}^n \sigma_i^2.
+\]
+\end{theorem}
+
+$\mathbb{P}\left(\sum_{i=1}^n (X_i-\mu_i)\ge t\|\sigma\|_2\right)\le e^{-t^2/2}$
+
+\begin{proof}
+By the sum rule,
+\[
+\sum_{i=1}^n (X_i-\mu_i)
+\]
+is $\norm{\sigma}_2$-sub-Gaussian.
+
+Applying the sub-Gaussian tail bound gives
+\[
+\Prob\left(
+\sum_{i=1}^n (X_i-\mu_i)
+\geq
+t\norm{\sigma}_2
+\right)
+\leq
+e^{-t^2/2}.
+\]
+\end{proof}
+
+\section{Rademacher Random Variables}
+
+\begin{definition}
+A Rademacher random variable is a random variable $C$ such that
+\[
+\Prob(C=1)=\Prob(C=-1)=\frac12.
+\]
+\end{definition}
+
+Since $C\in[-1,1]$, the bounded random variable theorem implies that $C$ is $1$-sub-Gaussian.
+
+Thus, if
+\[
+C_1,\dots,C_n
+\]
+are iid Rademacher random variables, Hoeffding's inequality yields
+\[
+\Prob\left(
+\frac{1}{n}\sum_{i=1}^n C_i
+\geq
+\frac12
+\right)
+\leq
+e^{-n/8}.
+\]
+
+\begin{remark}
+This shows exponential concentration of empirical averages around their mean.
+\end{remark}
+
+\section{Robust Mean Estimation}
+
+Hoeffding's inequality gives confidence intervals for the sample mean when the observations are sub-Gaussian. If
+\[
+X_1,\dots,X_n \iid X
+\]
+are $\sigma$-sub-Gaussian with mean $\mu=\E[X]$, then the sample mean
+\[
+\widehat{\mu}
+=
+\frac{1}{n}\sum_{i=1}^n X_i
+\]
+satisfies
+\[
+\Prob\left(
+|\widehat{\mu}-\mu|
+\leq
+\sigma\sqrt{\frac{2\log(2/p)}{n}}
+\right)
+\geq
+1-p.
+\]
+
+This raises a natural question: can one obtain a similar high-probability guarantee without assuming sub-Gaussian tails?
+
+The answer is yes, provided that the random variables have finite variance. The key idea is to replace the ordinary sample mean with a more robust estimator that ignores the effect of extreme outliers.
+
+\subsection{The Median-of-Means Estimator}
+
+Suppose
+\[
+X_1,\dots,X_n
+\]
+are iid with
+\[
+\E[X_i]=\mu,
+\qquad
+\Var(X_i)=\sigma^2.
+\]
+
+Fix $p\in(0,1]$. Split the samples into
+\[
+K=\left\lceil 18\log(1/p)\right\rceil
+\]
+equally sized bins. For simplicity, assume that $K$ divides $n$, and let
+\[
+m=\frac{n}{K}
+\]
+be the number of observations in each bin.
+
+For each bin $j=1,\dots,K$, define the bin mean
+\[
+\widehat{\mu}_j
+=
+\frac{1}{m}
+\sum_{i\in B_j} X_i.
+\]
+
+The median-of-means estimator is
+\[
+\widehat{\mu}_{\mathrm{MOM}}
+=
+\operatorname{median}
+\left(
+\widehat{\mu}_1,\dots,\widehat{\mu}_K
+\right).
+\]
+
+\begin{theorem}[Median-of-Means Bound]
+Let $X_1,\dots,X_n$ be iid with mean $\mu$ and variance $\sigma^2$. Let
+\[
+K=\left\lceil 18\log(1/p)\right\rceil.
+\]
+Then the median-of-means estimator satisfies
+\[
+\Prob\left(
+|\widehat{\mu}_{\mathrm{MOM}}-\mu|
+\leq
+\sigma\sqrt{\frac{3K}{n}}
+\right)
+\geq
+1-p.
+\]
+Equivalently, since $K\asymp \log(1/p)$,
+\[
+|\widehat{\mu}_{\mathrm{MOM}}-\mu|
+=
+O\left(
+\sigma\sqrt{\frac{\log(1/p)}{n}}
+\right)
+\]
+with probability at least $1-p$.
+\end{theorem}
+
+\begin{proof}
+Let
+\[
+t
+=
+\sigma\sqrt{\frac{3K}{n}}.
+\]
+
+For each bin $j$, define the event
+\[
+E_j
+=
+\left\{
+|\widehat{\mu}_j-\mu|\leq t
+\right\}.
+\]
+
+Each bin mean is an average of $m=n/K$ iid observations, so
+\[
+\E[\widehat{\mu}_j]=\mu
+\]
+and
+\[
+\Var(\widehat{\mu}_j)
+=
+\frac{\sigma^2}{m}
+=
+\frac{\sigma^2K}{n}.
+\]
+
+By Chebyshev's inequality,
+\[
+\Prob(E_j^c)
+=
+\Prob\left(
+|\widehat{\mu}_j-\mu|>t
+\right)
+\leq
+\frac{\Var(\widehat{\mu}_j)}{t^2}.
+\]
+
+Substituting the variance and the definition of $t$ gives
+\[
+\Prob(E_j^c)
+\leq
+\frac{\sigma^2K/n}{3\sigma^2K/n}
+=
+\frac{1}{3}.
+\]
+
+Therefore,
+\[
+\Prob(E_j)\geq \frac{2}{3}.
+\]
+
+Let
+\[
+Z_j=\ind_{E_j}.
+\]
+
+Then $Z_1,\dots,Z_K$ are independent Bernoulli random variables with
+\[
+\E[Z_j]\geq \frac{2}{3}.
+\]
+
+If more than half of the events $E_j$ occur, then at least half of the bin means lie in the interval
+\[
+[\mu-t,\mu+t].
+\]
+
+Therefore the median of the bin means must also lie in this interval. Hence,
+\[
+|\widehat{\mu}_{\mathrm{MOM}}-\mu|\leq t
+\]
+whenever
+\[
+\frac{1}{K}\sum_{j=1}^K Z_j>\frac{1}{2}.
+\]
+
+Thus,
+\[
+\Prob\left(
+|\widehat{\mu}_{\mathrm{MOM}}-\mu|>t
+\right)
+\leq
+\Prob\left(
+\frac{1}{K}\sum_{j=1}^K Z_j\leq \frac{1}{2}
+\right).
+\]
+
+Since $\E[Z_j]\geq 2/3$, the event on the right implies
+\[
+\left|
+\frac{1}{K}\sum_{j=1}^K Z_j
+-
+\E[Z_j]
+\right|
+\geq
+\frac{1}{6}.
+\]
+
+The variables $Z_j$ are bounded in $[0,1]$, so Hoeffding's inequality gives
+\[
+\Prob\left(
+\left|
+\frac{1}{K}\sum_{j=1}^K Z_j
+-
+\E[Z_j]
+\right|
+\geq
+\frac{1}{6}
+\right)
+\leq
+2\exp\left(-\frac{K}{18}\right).
+\]
+
+With
+\[
+K=\left\lceil 18\log(1/p)\right\rceil,
+\]
+this probability is at most a constant multiple of $p$. Up to constants in the choice of $K$, we obtain
+\[
+\Prob\left(
+|\widehat{\mu}_{\mathrm{MOM}}-\mu|>t
+\right)
+\leq
+p.
+\]
+
+Therefore,
+\[
+\Prob\left(
+|\widehat{\mu}_{\mathrm{MOM}}-\mu|
+\leq
+\sigma\sqrt{\frac{3K}{n}}
+\right)
+\geq
+1-p.
+\]
+\end{proof}
+
+\begin{remark}
+The ordinary sample mean is sensitive to outliers when the distribution has heavy tails. The median-of-means estimator is robust because a few corrupted or extreme observations can only damage the bins in which they appear. As long as a majority of bin means remain accurate, the median remains accurate.
+\end{remark}
+
+\begin{remark}
+The median-of-means estimator only requires a finite second moment. In particular, the moment generating function need not exist.
+\end{remark}
+
+\section{Chernoff's Inequality for Bernoulli Sums}
+
+Hoeffding's inequality treats bounded random variables using only their worst-case range. For Bernoulli random variables, this can be loose.
+
+For example, if
+\[
+X_i\sim \Bern(p),
+\]
+then $X_i\in[0,1]$, so Hoeffding gives a bound depending only on the interval length $1$. However, as $p\to 0$, the variable is usually zero, so the sum should concentrate more strongly near its mean. Chernoff's inequality captures this dependence on the mean.
+
+\subsection{Upper Tail Bound}
+
+\begin{theorem}[Chernoff's Inequality]
+Let
+\[
+X_1,\dots,X_n
+\]
+be independent Bernoulli random variables with
+\[
+X_i\sim \Bern(p_i).
+\]
+
+Define
+\[
+S_n=\sum_{i=1}^n X_i
+\]
+and
+\[
+\mu=\E[S_n]=\sum_{i=1}^n p_i.
+\]
+
+Then, for all $t\geq \mu$,
+\[
+\Prob(S_n\geq t)
+\leq
+e^{-\mu}
+\left(
+\frac{e\mu}{t}
+\right)^t.
+\]
+\end{theorem}
+
+\begin{proof}
+Let $\lambda>0$. Then
+\[
+\Prob(S_n\geq t)
+=
+\Prob(e^{\lambda S_n}\geq e^{\lambda t}).
+\]
+
+By Markov's inequality,
+\[
+\Prob(S_n\geq t)
+\leq
+e^{-\lambda t}\E[e^{\lambda S_n}].
+\]
+
+Using independence,
+\[
+\E[e^{\lambda S_n}]
+=
+\E\left[
+e^{\lambda\sum_{i=1}^n X_i}
+\right]
+=
+\prod_{i=1}^n
+\E[e^{\lambda X_i}].
+\]
+
+Since $X_i\sim\Bern(p_i)$,
+\[
+\E[e^{\lambda X_i}]
+=
+p_i e^\lambda+(1-p_i)
+=
+1+p_i(e^\lambda-1).
+\]
+
+Using
+\[
+1+x\leq e^x,
+\]
+we obtain
+\[
+\E[e^{\lambda X_i}]
+\leq
+\exp\left(p_i(e^\lambda-1)\right).
+\]
+
+Therefore,
+\[
+\E[e^{\lambda S_n}]
+\leq
+\prod_{i=1}^n
+\exp\left(p_i(e^\lambda-1)\right)
+=
+\exp\left((e^\lambda-1)\sum_{i=1}^n p_i\right).
+\]
+
+Since $\sum_i p_i=\mu$,
+\[
+\Prob(S_n\geq t)
+\leq
+\exp\left(
+-\lambda t+(e^\lambda-1)\mu
+\right).
+\]
+
+We minimize the exponent over $\lambda>0$. Define
+\[
+\phi(\lambda)
+=
+-\lambda t+(e^\lambda-1)\mu.
+\]
+
+Then
+\[
+\phi'(\lambda)
+=
+-t+\mu e^\lambda.
+\]
+
+Setting $\phi'(\lambda)=0$ gives
+\[
+e^\lambda=\frac{t}{\mu},
+\qquad
+\lambda=\log\left(\frac{t}{\mu}\right).
+\]
+
+This choice is valid when $t\geq\mu$. Substituting,
+\[
+\phi(\lambda)
+=
+-t\log\left(\frac{t}{\mu}\right)
++
+t-\mu.
+\]
+
+Hence,
+\[
+\Prob(S_n\geq t)
+\leq
+\exp\left(
+-t\log\left(\frac{t}{\mu}\right)+t-\mu
+\right).
+\]
+
+Equivalently,
+\[
+\Prob(S_n\geq t)
+\leq
+e^{-\mu}
+\left(
+\frac{e\mu}{t}
+\right)^t.
+\]
+\end{proof}
+
+\subsection{Lower Tail Bound}
+
+\begin{theorem}[Lower-Tail Chernoff Bound]
+Let $S_n$ and $\mu$ be as above. Then, for all $0\leq t\leq\mu$,
+\[
+\Prob(S_n\leq t)
+\leq
+e^{-\mu}
+\left(
+\frac{e\mu}{t}
+\right)^t.
+\]
+\end{theorem}
+
+\begin{proof}
+The argument is analogous to the upper-tail proof, but one applies Markov's inequality to $e^{-\lambda S_n}$ with $\lambda>0$:
+\[
+\Prob(S_n\leq t)
+=
+\Prob(e^{-\lambda S_n}\geq e^{-\lambda t}).
+\]
+
+Therefore,
+\[
+\Prob(S_n\leq t)
+\leq
+e^{\lambda t}\E[e^{-\lambda S_n}].
+\]
+
+Using independence,
+\[
+\E[e^{-\lambda S_n}]
+=
+\prod_{i=1}^n
+\left(
+1+p_i(e^{-\lambda}-1)
+\right).
+\]
+
+Using $1+x\leq e^x$,
+\[
+\E[e^{-\lambda S_n}]
+\leq
+\exp\left(
+(e^{-\lambda}-1)\mu
+\right).
+\]
+
+Thus,
+\[
+\Prob(S_n\leq t)
+\leq
+\exp\left(
+\lambda t+(e^{-\lambda}-1)\mu
+\right).
+\]
+
+Optimizing gives
+\[
+e^{-\lambda}=\frac{t}{\mu}.
+\]
+
+Substitution yields
+\[
+\Prob(S_n\leq t)
+\leq
+\exp\left(
+-t\log\left(\frac{t}{\mu}\right)+t-\mu
+\right)
+=
+e^{-\mu}
+\left(
+\frac{e\mu}{t}
+\right)^t.
+\]
+\end{proof}
+
+\section{Large and Small Deviations}
+
+Chernoff's inequality can be written as
+\[
+\Prob(S_n\geq t)
+\leq
+\exp\left(
+-\mu h\left(\frac{t}{\mu}\right)
+\right),
+\]
+where
+\[
+h(u)
+=
+u\log u-u+1.
+\]
+
+Indeed, setting $u=t/\mu$ gives
+\[
+e^{-\mu}\left(\frac{e\mu}{t}\right)^t
+=
+\exp\left(
+-\mu+t-t\log(t/\mu)
+\right)
+=
+\exp\left(
+-\mu h(t/\mu)
+\right).
+\]
+
+\subsection{Large Deviations}
+
+When $t$ is much larger than $\mu$,
+\[
+e^{-\mu}
+\left(
+\frac{e\mu}{t}
+\right)^t
+\]
+behaves like
+\[
+\exp(-t\log t)
+\]
+up to lower-order terms.
+
+Thus, for large deviations, the Bernoulli Chernoff bound can be much sharper than a purely Gaussian-type bound.
+
+\subsection{Small Deviations}
+
+Now suppose
+\[
+t=(1+\delta)\mu
+\]
+with $\delta>0$ small. Then
+\[
+e^{-\mu}
+\left(
+\frac{e\mu}{t}
+\right)^t
+=
+e^{-\mu}
+\left(
+\frac{e}{1+\delta}
+\right)^{(1+\delta)\mu}.
+\]
+
+Taking logarithms,
+\[
+-\mu
++
+(1+\delta)\mu
+-
+(1+\delta)\mu\log(1+\delta)
+=
+\mu\left[
+\delta-(1+\delta)\log(1+\delta)
+\right].
+\]
+
+Using the Taylor expansion
+\[
+\log(1+\delta)
+=
+\delta-\frac{\delta^2}{2}
++
+O(\delta^3),
+\]
+we get
+\[
+(1+\delta)\log(1+\delta)
+=
+\delta+\frac{\delta^2}{2}
++
+O(\delta^3).
+\]
+
+Therefore,
+\[
+\delta-(1+\delta)\log(1+\delta)
+=
+-\frac{\delta^2}{2}
++
+O(\delta^3).
+\]
+
+Hence, for small $\delta$,
+\[
+\Prob(S_n\geq (1+\delta)\mu)
+\lesssim
+\exp\left(
+-\frac{\delta^2\mu}{2}
+\right).
+\]
+
+A common simplified version is
+\[
+\Prob(S_n\geq (1+\delta)\mu)
+\leq
+\exp\left(
+-\frac{\delta^2\mu}{3}
+\right),
+\qquad
+0<\delta<1.
+\]
+
+\begin{remark}
+For Bernoulli sums, the relevant scale is the mean $\mu$, not the total number of samples $n$. This is why Chernoff bounds improve on Hoeffding's inequality when the Bernoulli probabilities are small.
+\end{remark}
+
+\section{Erdos--Renyi Graphs}
+
+\begin{definition}[Erdos--Renyi Graph]
+The Erdos--Renyi random graph $G(n,p)$ is the random graph formed by fixing a set of $n$ nodes and connecting each unordered pair of distinct nodes independently with probability $p$.
+\end{definition}
+
+For a node $i$, the degree of $i$ is the number of edges connected to $i$:
+\[
+\deg(i)
+=
+\#\{j\neq i : (i,j)\text{ is an edge}\}.
+\]
+
+Since each possible edge adjacent to node $i$ appears independently with probability $p$,
+\[
+\deg(i)
+\sim
+\Bin(n-1,p).
+\]
+
+Therefore,
+\[
+\E[\deg(i)]
+=
+(n-1)p.
+\]
+
+We denote the expected degree by
+\[
+d=(n-1)p.
+\]
+
+\begin{remark}
+The quantity $d=(n-1)p$ is the average degree scale of the graph. Many graph properties change sharply depending on how $d$ grows with $n$.
+\end{remark}
+
+\subsection{Graph Regularity}
+
+\begin{definition}
+A graph is $d$-regular if
+\[
+\deg(i)=d
+\]
+for every node $i$.
+\end{definition}
+
+A random graph $G(n,p)$ is generally not exactly regular. However, when the expected degree is large enough, every degree is close to its expectation with high probability.
+
+\begin{proposition}[Almost Regularity of $G(n,p)$]
+Let $G\sim G(n,p)$ and define
+\[
+d=(n-1)p.
+\]
+Fix $\delta>0$. If
+\[
+d\geq \frac{8}{\delta^2}\log(2n),
+\]
+then
+\[
+\Prob\left(
+\forall i\in\{1,\dots,n\},
+\,
+(1-\delta)d
+\leq
+\deg(i)
+\leq
+(1+\delta)d
+\right)
+\geq
+1-\frac{1}{2n}.
+\]
+\end{proposition}
+
+\begin{proof}
+For a fixed node $i$,
+\[
+\deg(i)=\sum_{j\neq i} A_{ij},
+\]
+where $A_{ij}$ is the indicator that the edge $(i,j)$ is present.
+
+Thus,
+\[
+A_{ij}\sim \Bern(p)
+\]
+and
+\[
+\E[\deg(i)]=d.
+\]
+
+By the Chernoff bound for Bernoulli sums,
+\[
+\Prob\left(
+|\deg(i)-d|\geq \delta d
+\right)
+\leq
+2\exp\left(
+-\frac{\delta^2 d}{4}
+\right),
+\]
+where the constant is chosen for a standard two-sided small-deviation form.
+
+Let
+\[
+E_i
+=
+\left\{
+|\deg(i)-d|<\delta d
+\right\}.
+\]
+
+Then
+\[
+\Prob(E_i^c)
+\leq
+2\exp\left(
+-\frac{\delta^2 d}{4}
+\right).
+\]
+
+Using the union bound,
+\[
+\Prob\left(
+\bigcap_{i=1}^n E_i
+\right)
+=
+1-
+\Prob\left(
+\bigcup_{i=1}^n E_i^c
+\right)
+\geq
+1-\sum_{i=1}^n \Prob(E_i^c).
+\]
+
+Therefore,
+\[
+\Prob\left(
+\bigcap_{i=1}^n E_i
+\right)
+\geq
+1-
+2n\exp\left(
+-\frac{\delta^2 d}{4}
+\right).
+\]
+
+If
+\[
+d\geq \frac{8}{\delta^2}\log(2n),
+\]
+then
+\[
+\frac{\delta^2 d}{4}
+\geq
+2\log(2n).
+\]
+
+Hence,
+\[
+2n\exp\left(
+-\frac{\delta^2 d}{4}
+\right)
+\leq
+2n\exp(-2\log(2n))
+=
+\frac{1}{2n}.
+\]
+
+Thus,
+\[
+\Prob\left(
+\forall i,
+\,
+(1-\delta)d
+\leq
+\deg(i)
+\leq
+(1+\delta)d
+\right)
+\geq
+1-\frac{1}{2n}.
+\]
+\end{proof}
+
+\begin{remark}
+This result says that when the expected degree is at least logarithmic in $n$, all degrees concentrate uniformly around their common mean.
+\end{remark}
+
+\section{Sub-Exponential Random Variables}
+
+Not all important random variables are sub-Gaussian. A key example is the square of a Gaussian random variable.
+
+Let
+\[
+Z\sim \Normal(0,1).
+\]
+
+Then $Z^2$ has heavier tails than a Gaussian random variable. To see this, compute the centered moment generating function:
+\[
+\E\left[e^{\lambda(Z^2-1)}\right].
+\]
+
+We have
+\[
+\E\left[e^{\lambda(Z^2-1)}\right]
+=
+\frac{1}{\sqrt{2\pi}}
+\int_{-\infty}^{\infty}
+e^{\lambda(t^2-1)}
+e^{-t^2/2}
+\dd t.
+\]
+
+Combining exponents,
+\[
+\E\left[e^{\lambda(Z^2-1)}\right]
+=
+\frac{e^{-\lambda}}{\sqrt{2\pi}}
+\int_{-\infty}^{\infty}
+\exp\left(
+-\frac{1-2\lambda}{2}t^2
+\right)
+\dd t.
+\]
+
+The integral is finite only if
+\[
+1-2\lambda>0,
+\]
+that is,
+\[
+\lambda<\frac{1}{2}.
+\]
+
+For $\lambda<1/2$,
+\[
+\int_{-\infty}^{\infty}
+\exp\left(
+-\frac{1-2\lambda}{2}t^2
+\right)
+\dd t
+=
+\sqrt{\frac{2\pi}{1-2\lambda}}.
+\]
+
+Therefore,
+\[
+\E\left[e^{\lambda(Z^2-1)}\right]
+=
+\frac{e^{-\lambda}}{\sqrt{1-2\lambda}},
+\qquad
+\lambda<\frac{1}{2}.
+\]
+
+This moment generating function is not finite for all $\lambda$, so $Z^2$ is not sub-Gaussian.
+
+\subsection{A Useful Bound for Gaussian Squares}
+
+For sufficiently small $\lambda$,
+\[
+\E\left[e^{\lambda(Z^2-1)}\right]
+\]
+can still be bounded by a Gaussian-like expression.
+
+Indeed, for $|\lambda|\leq 1/4$,
+\[
+\E\left[e^{\lambda(Z^2-1)}\right]
+=
+\frac{e^{-\lambda}}{\sqrt{1-2\lambda}}
+\leq
+e^{2\lambda^2}.
+\]
+
+Equivalently,
+\[
+\log\E\left[e^{\lambda(Z^2-1)}\right]
+\leq
+2\lambda^2,
+\qquad
+|\lambda|\leq \frac{1}{4}.
+\]
+
+This motivates the following definition.
+
+\begin{definition}[Sub-Exponential Random Variable]
+A random variable $X$ with mean
+\[
+\mu=\E[X]
+\]
+is called $(\sigma,\alpha)$-sub-exponential if
+\[
+\E\left[e^{\lambda(X-\mu)}\right]
+\leq
+e^{\sigma^2\lambda^2/2}
+\]
+for all
+\[
+|\lambda|\leq \frac{1}{\alpha}.
+\]
+\end{definition}
+
+\begin{example}
+If
+\[
+Z\sim \Normal(0,1),
+\]
+then $Z^2$ is $(2,4)$-sub-exponential because
+\[
+\log\E\left[e^{\lambda(Z^2-1)}\right]
+\leq
+2\lambda^2
+=
+\frac{2^2\lambda^2}{2}
+\]
+for all $|\lambda|\leq 1/4$.
+\end{example}
+
+\section{Tail Bounds for Sub-Exponential Random Variables}
+
+Sub-exponential random variables have two tail regimes:
+\begin{itemize}
+\item Gaussian-like decay for moderate deviations,
+\item exponential decay for large deviations.
+\end{itemize}
+
+\begin{theorem}[Sub-Exponential Tail Bound]
+Let $X$ be $(\sigma,\alpha)$-sub-exponential with mean $\mu$. Then, for every $t\geq0$,
+\[
+\Prob(X-\mu\geq t)
+\leq
+\begin{cases}
+\exp\left(-\dfrac{t^2}{2\sigma^2}\right),
+&
+0\leq t\leq \dfrac{\sigma^2}{\alpha},
+\\[1.25em]
+\exp\left(-\dfrac{t}{\alpha}+\dfrac{\sigma^2}{2\alpha^2}\right),
+&
+t> \dfrac{\sigma^2}{\alpha}.
+\end{cases}
+\]
+\end{theorem}
+
+\begin{proof}
+By the Chernoff method, for any $\lambda\in[0,1/\alpha]$,
+\[
+\Prob(X-\mu\geq t)
+\leq
+\exp\left(
+-\lambda t+\frac{\sigma^2\lambda^2}{2}
+\right).
+\]
+
+Thus,
+\[
+\log\Prob(X-\mu\geq t)
+\leq
+-\sup_{0\leq \lambda\leq 1/\alpha}
+\left\{
+\lambda t-\frac{\sigma^2\lambda^2}{2}
+\right\}.
+\]
+
+Consider
+\[
+q(\lambda)
+=
+\lambda t-\frac{\sigma^2\lambda^2}{2}.
+\]
+
+The unconstrained maximizer satisfies
+\[
+q'(\lambda)=t-\sigma^2\lambda=0,
+\]
+so
+\[
+\lambda^*=\frac{t}{\sigma^2}.
+\]
+
+There are two cases.
+
+If
+\[
+\frac{t}{\sigma^2}\leq \frac{1}{\alpha},
+\]
+equivalently
+\[
+t\leq \frac{\sigma^2}{\alpha},
+\]
+then the unconstrained maximizer is feasible. Hence,
+\[
+\sup_{0\leq \lambda\leq 1/\alpha}
+q(\lambda)
+=
+q\left(\frac{t}{\sigma^2}\right)
+=
+\frac{t^2}{2\sigma^2}.
+\]
+
+Therefore,
+\[
+\Prob(X-\mu\geq t)
+\leq
+\exp\left(
+-\frac{t^2}{2\sigma^2}
+\right).
+\]
+
+If
+\[
+t> \frac{\sigma^2}{\alpha},
+\]
+then the unconstrained maximizer is not feasible, and the supremum over $[0,1/\alpha]$ occurs at the endpoint
+\[
+\lambda=\frac{1}{\alpha}.
+\]
+
+Thus,
+\[
+\sup_{0\leq \lambda\leq 1/\alpha}
+q(\lambda)
+=
+\frac{t}{\alpha}
+-
+\frac{\sigma^2}{2\alpha^2}.
+\]
+
+Therefore,
+\[
+\Prob(X-\mu\geq t)
+\leq
+\exp\left(
+-\frac{t}{\alpha}
++
+\frac{\sigma^2}{2\alpha^2}
+\right).
+\]
+\end{proof}
+
+\begin{corollary}[Two-Sided Sub-Exponential Tail Bound]
+Let $X$ be $(\sigma,\alpha)$-sub-exponential with mean $\mu$. Then
+\[
+\Prob(|X-\mu|\geq t)
+\leq
+2\exp\left(
+-\min\left\{
+\frac{t^2}{2\sigma^2},
+\frac{t}{2\alpha}
+\right\}
+\right).
+\]
+\end{corollary}
+
+\begin{proof}
+The upper-tail theorem gives Gaussian-type decay for
+\[
+t\leq \frac{\sigma^2}{\alpha}
+\]
+and exponential-type decay for
+\[
+t> \frac{\sigma^2}{\alpha}.
+\]
+
+The same argument applies to $-X$, since the defining moment generating function bound is symmetric in $|\lambda|$.
+
+Thus, applying the union bound,
+\[
+\Prob(|X-\mu|\geq t)
+\leq
+\Prob(X-\mu\geq t)
++
+\Prob(\mu-X\geq t).
+\]
+
+Both tails are bounded by the same expression. Combining the two regimes into a single minimum gives
+\[
+\Prob(|X-\mu|\geq t)
+\leq
+2\exp\left(
+-\min\left\{
+\frac{t^2}{2\sigma^2},
+\frac{t}{2\alpha}
+\right\}
+\right).
+\]
+\end{proof}
+
+\section{Sums of Sub-Exponential Random Variables}
+
+\begin{lemma}[Sum Rule]
+Let
+\[
+X_1,\dots,X_n
+\]
+be independent random variables, where $X_i$ is $(\sigma_i,\alpha_i)$-sub-exponential.
+
+Then
+\[
+\sum_{i=1}^n X_i
+\]
+is
+\[
+\left(
+\norm{\sigma}_2,
+\norm{\alpha}_\infty
+\right)
+\]
+-sub-exponential, where
+\[
+\norm{\sigma}_2
+=
+\left(
+\sum_{i=1}^n \sigma_i^2
+\right)^{1/2}
+\]
+and
+\[
+\norm{\alpha}_\infty
+=
+\max_{1\leq i\leq n}\alpha_i.
+\]
+\end{lemma}
+
+\begin{proof}
+Let
+\[
+\mu_i=\E[X_i].
+\]
+
+For
+\[
+|\lambda|\leq \frac{1}{\norm{\alpha}_\infty},
+\]
+we have
+\[
+|\lambda|\leq \frac{1}{\alpha_i}
+\]
+for every $i$.
+
+By independence,
+\[
+\E\left[
+e^{\lambda\sum_{i=1}^n (X_i-\mu_i)}
+\right]
+=
+\prod_{i=1}^n
+\E\left[
+e^{\lambda(X_i-\mu_i)}
+\right].
+\]
+
+Using sub-exponentiality,
+\[
+\E\left[
+e^{\lambda(X_i-\mu_i)}
+\right]
+\leq
+e^{\sigma_i^2\lambda^2/2}.
+\]
+
+Therefore,
+\[
+\E\left[
+e^{\lambda\sum_{i=1}^n (X_i-\mu_i)}
+\right]
+\leq
+\prod_{i=1}^n
+e^{\sigma_i^2\lambda^2/2}
+=
+e^{\lambda^2\sum_{i=1}^n\sigma_i^2/2}.
+\]
+
+Since
+\[
+\sum_{i=1}^n\sigma_i^2
+=
+\norm{\sigma}_2^2,
+\]
+the sum is
+\[
+\left(
+\norm{\sigma}_2,
+\norm{\alpha}_\infty
+\right)
+\]
+-sub-exponential.
+\end{proof}
+
+\section{Bernstein's Inequality}
+
+Combining the sub-exponential sum rule with the two-sided tail bound gives Bernstein's inequality.
+
+\begin{theorem}[Bernstein's Inequality]
+Let
+\[
+X_1,\dots,X_n
+\]
+be independent random variables such that $X_i$ is $(\sigma_i,\alpha_i)$-sub-exponential. Let
+\[
+\mu_i=\E[X_i].
+\]
+
+Then, for every $t\geq0$,
+\[
+\Prob\left(
+\left|
+\sum_{i=1}^n (X_i-\mu_i)
+\right|
+\geq t
+\right)
+\leq
+2\exp\left(
+-\min\left\{
+\frac{t^2}{2\norm{\sigma}_2^2},
+\frac{t}{2\norm{\alpha}_\infty}
+\right\}
+\right).
+\]
+\end{theorem}
+
+\begin{proof}
+By the sum rule,
+\[
+\sum_{i=1}^n X_i
+\]
+is
+\[
+\left(
+\norm{\sigma}_2,
+\norm{\alpha}_\infty
+\right)
+\]
+-sub-exponential.
+
+Applying the two-sided sub-exponential tail bound to
+\[
+\sum_{i=1}^n (X_i-\mu_i)
+\]
+gives
+\[
+\Prob\left(
+\left|
+\sum_{i=1}^n (X_i-\mu_i)
+\right|
+\geq t
+\right)
+\leq
+2\exp\left(
+-\min\left\{
+\frac{t^2}{2\norm{\sigma}_2^2},
+\frac{t}{2\norm{\alpha}_\infty}
+\right\}
+\right).
+\]
+\end{proof}
+
+\begin{remark}
+Bernstein's inequality interpolates between two regimes. For moderate deviations, the bound behaves like
+\[
+\exp\left(
+-\frac{t^2}{2\norm{\sigma}_2^2}
+\right).
+\]
+
+For large deviations, the bound behaves like
+\[
+\exp\left(
+-\frac{t}{2\norm{\alpha}_\infty}
+\right).
+\]
+\end{remark}
+
+\chapter{Dimension Reduction and Orlicz Norms}
+
+\section{Dimension Reduction}
+
+Suppose we have a finite set of points
+\[
+\mathcal{X}=\{x_1,\dots,x_m\}\subseteq \R^d.
+\]
+
+The goal of dimension reduction is to construct a map
+\[
+f:\R^d\to\R^n,
+\qquad n<d,
+\]
+such that the geometry of $\mathcal{X}$ is approximately preserved.
+
+In particular, we want
+\[
+(1-\varepsilon)\norm{x-y}_2^2
+\leq
+\norm{f(x)-f(y)}_2^2
+\leq
+(1+\varepsilon)\norm{x-y}_2^2
+\]
+for all
+\[
+x,y\in\mathcal{X}.
+\]
+
+The central question is: how small can the embedding dimension $n$ be?
+
+\section{The Johnson--Lindenstrauss Lemma}
+
+\begin{theorem}[Johnson--Lindenstrauss Lemma]
+Fix
+\[
+\varepsilon,\delta\in(0,1),
+\]
+and let
+\[
+\mathcal{X}\subseteq \R^d
+\]
+be a set with $m$ points.
+
+Suppose
+\[
+n
+\geq
+\frac{8}{\varepsilon^2}
+\log\left(\frac{m^2}{\delta}\right).
+\]
+
+Let
+\[
+M\in\R^{n\times d}
+\]
+be a random matrix with iid $\Normal(0,1)$ entries. Define
+\[
+f(x)=\frac{1}{\sqrt{n}}Mx.
+\]
+
+Then, with probability at least $1-\delta$,
+\[
+(1-\varepsilon)\norm{x-y}_2^2
+\leq
+\norm{f(x)-f(y)}_2^2
+\leq
+(1+\varepsilon)\norm{x-y}_2^2
+\]
+for all $x,y\in\mathcal{X}$.
+\end{theorem}
+
+\begin{remark}
+The embedding dimension depends logarithmically on the number of points $m$, but does not depend on the original dimension $d$.
+\end{remark}
+
+\begin{remark}
+The map is oblivious to the data: the random matrix $M$ is sampled without using the structure of $\mathcal{X}$.
+\end{remark}
+
+\begin{remark}
+The theorem is an example of the probabilistic method. It proves that a good low-dimensional embedding exists by showing that a random embedding succeeds with positive probability.
+\end{remark}
+
+\begin{proof}
+Fix two distinct points
+\[
+x,y\in\mathcal{X},
+\]
+and define
+\[
+z=x-y.
+\]
+
+Since $f$ is linear,
+\[
+f(x)-f(y)
+=
+\frac{1}{\sqrt{n}}M(x-y)
+=
+\frac{1}{\sqrt{n}}Mz.
+\]
+
+Therefore,
+\[
+\norm{f(x)-f(y)}_2^2
+=
+\frac{1}{n}\norm{Mz}_2^2.
+\]
+
+Let $M_i$ denote the $i$-th row of $M$. Then
+\[
+\norm{Mz}_2^2
+=
+\sum_{i=1}^n \inner{M_i}{z}^2.
+\]
+
+Since $M_i\sim \Normal(0,I_d)$, rotational invariance of the Gaussian distribution gives
+\[
+\inner{M_i}{z}
+\sim
+\Normal(0,\norm{z}_2^2).
+\]
+
+Equivalently,
+\[
+\frac{\inner{M_i}{z}}{\norm{z}_2}
+\sim
+\Normal(0,1).
+\]
+
+Thus,
+\[
+\frac{\norm{Mz}_2^2}{\norm{z}_2^2}
+=
+\sum_{i=1}^n
+\left(
+\frac{\inner{M_i}{z}}{\norm{z}_2}
+\right)^2
+\]
+is a sum of $n$ independent squared standard Gaussians.
+
+Let
+\[
+Z_i
+=
+\left(
+\frac{\inner{M_i}{z}}{\norm{z}_2}
+\right)^2.
+\]
+
+Then
+\[
+Z_i\sim \chi_1^2,
+\qquad
+\E[Z_i]=1.
+\]
+
+From the sub-exponential calculation for squared Gaussians,
+\[
+Z_i-1
+\]
+is sub-exponential. Hence
+\[
+\frac{1}{n}
+\sum_{i=1}^n (Z_i-1)
+=
+\frac{\norm{Mz}_2^2}{n\norm{z}_2^2}
+-
+1
+\]
+satisfies a Bernstein-type bound. In particular, for $0<\varepsilon<1$,
+\[
+\Prob\left(
+\left|
+\frac{\norm{Mz}_2^2}{n\norm{z}_2^2}
+-
+1
+\right|
+\geq
+\varepsilon
+\right)
+\leq
+2\exp\left(
+-\frac{n\varepsilon^2}{8}
+\right).
+\]
+
+Equivalently,
+\[
+\Prob\left(
+\left|
+\frac{\norm{f(x)-f(y)}_2^2}{\norm{x-y}_2^2}
+-
+1
+\right|
+\geq
+\varepsilon
+\right)
+\leq
+2\exp\left(
+-\frac{n\varepsilon^2}{8}
+\right).
+\]
+
+Thus, for this fixed pair $x,y$,
+\[
+(1-\varepsilon)\norm{x-y}_2^2
+\leq
+\norm{f(x)-f(y)}_2^2
+\leq
+(1+\varepsilon)\norm{x-y}_2^2
+\]
+fails with probability at most
+\[
+2\exp\left(
+-\frac{n\varepsilon^2}{8}
+\right).
+\]
+
+There are at most
+\[
+\binom{m}{2}
+\leq
+\frac{m^2}{2}
+\]
+distinct pairs of points. By the union bound, the probability that the distortion bound fails for at least one pair is at most
+\[
+2\binom{m}{2}
+\exp\left(
+-\frac{n\varepsilon^2}{8}
+\right)
+\leq
+m^2
+\exp\left(
+-\frac{n\varepsilon^2}{8}
+\right).
+\]
+
+If
+\[
+n
+\geq
+\frac{8}{\varepsilon^2}
+\log\left(\frac{m^2}{\delta}\right),
+\]
+then
+\[
+m^2
+\exp\left(
+-\frac{n\varepsilon^2}{8}
+\right)
+\leq
+\delta.
+\]
+
+Therefore, with probability at least $1-\delta$, the desired inequality holds simultaneously for all pairs $x,y\in\mathcal{X}$.
+\end{proof}
+
+\section{Equivalent Characterizations of Sub-Gaussian Random Variables}
+
+There are several equivalent ways to define sub-Gaussian random variables. These equivalences are useful because different definitions are convenient in different arguments.
+
+\begin{proposition}[Equivalent Sub-Gaussian Conditions]
+Let $X$ be a random variable. The following conditions are equivalent up to universal constant factors.
+
+\begin{enumerate}
+\item There exists $K_1>0$ such that
+\[
+\Prob(|X|>t)
+\leq
+2\exp\left(
+-\frac{t^2}{K_1^2}
+\right)
+\]
+for all $t\geq0$.
+
+\item There exists $K_2>0$ such that
+\[
+\norm{X}_{L^p}
+=
+\left(\E|X|^p\right)^{1/p}
+\leq
+K_2\sqrt{p}
+\]
+for all $p\geq1$.
+
+\item There exists $K_3>0$ such that
+\[
+\E\left[
+\exp\left(
+\frac{X^2}{K_3^2}
+\right)
+\right]
+\leq
+2.
+\]
+\end{enumerate}
+
+Moreover, if $\E[X]=0$, then these are also equivalent to the moment generating function condition: there exists $K_4>0$ such that
+\[
+\E[e^{\lambda X}]
+\leq
+\exp(K_4^2\lambda^2)
+\]
+for all $\lambda\in\R$.
+\end{proposition}
+
+\begin{proof}
+We prove the chain of implications.
+
+First suppose the tail bound holds. By rescaling, assume $K_1=1$, so
+\[
+\Prob(|X|>t)
+\leq
+2e^{-t^2}.
+\]
+
+Using the tail integral formula,
+\[
+\E|X|^p
+=
+\int_0^\infty
+p t^{p-1}\Prob(|X|>t)\dd t.
+\]
+
+Hence,
+\[
+\E|X|^p
+\leq
+2p
+\int_0^\infty
+t^{p-1}e^{-t^2}\dd t.
+\]
+
+Make the change of variables
+\[
+s=t^2,
+\qquad
+\dd s=2t\dd t.
+\]
+
+Then
+\[
+\int_0^\infty
+t^{p-1}e^{-t^2}\dd t
+=
+\frac{1}{2}
+\int_0^\infty
+s^{p/2-1}e^{-s}\dd s
+=
+\frac{1}{2}\Gamma(p/2).
+\]
+
+Therefore,
+\[
+\E|X|^p
+\leq
+p\Gamma(p/2).
+\]
+
+Using the standard Gamma-function bound
+\[
+\Gamma(p/2)
+\leq
+C^p p^{p/2}
+\]
+for a universal constant $C>0$, we get
+\[
+\E|X|^p
+\leq
+(C\sqrt{p})^p.
+\]
+
+Thus,
+\[
+\norm{X}_{L^p}
+\leq
+C\sqrt{p}.
+\]
+
+This proves that the tail condition implies the moment-growth condition.
+
+Next assume
+\[
+\norm{X}_{L^p}
+\leq
+K_2\sqrt{p}
+\]
+for all $p\geq1$. By rescaling, assume $K_2=1$. Then
+\[
+\E|X|^{2p}
+\leq
+(2p)^p.
+\]
+
+Using the power series expansion of the exponential,
+\[
+\E e^{\lambda^2X^2}
+=
+1+
+\sum_{p=1}^\infty
+\frac{\lambda^{2p}\E X^{2p}}{p!}.
+\]
+
+Thus,
+\[
+\E e^{\lambda^2X^2}
+\leq
+1+
+\sum_{p=1}^\infty
+\frac{\lambda^{2p}(2p)^p}{p!}.
+\]
+
+Using the lower bound
+\[
+p!\geq \left(\frac{p}{e}\right)^p,
+\]
+we obtain
+\[
+\frac{(2p)^p}{p!}
+\leq
+(2e)^p.
+\]
+
+Therefore,
+\[
+\E e^{\lambda^2X^2}
+\leq
+1+
+\sum_{p=1}^\infty
+(2e\lambda^2)^p.
+\]
+
+Choose $\lambda>0$ sufficiently small so that
+\[
+2e\lambda^2\leq \frac{1}{2}.
+\]
+
+Then the geometric series is bounded, and
+\[
+\E e^{\lambda^2X^2}
+\leq
+2.
+\]
+
+Equivalently, for some universal constant $K_3>0$,
+\[
+\E\left[
+\exp\left(
+\frac{X^2}{K_3^2}
+\right)
+\right]
+\leq
+2.
+\]
+
+This proves the exponential-square integrability condition.
+
+Now assume
+\[
+\E\left[
+\exp\left(
+\frac{X^2}{K_3^2}
+\right)
+\right]
+\leq
+2.
+\]
+
+By rescaling, assume $K_3=1$. Then by Markov's inequality,
+\[
+\Prob(|X|>t)
+=
+\Prob(e^{X^2}>e^{t^2})
+\leq
+e^{-t^2}\E[e^{X^2}]
+\leq
+2e^{-t^2}.
+\]
+
+This recovers the sub-Gaussian tail bound.
+
+Finally, if $\E[X]=0$, the moment generating function condition implies the tail condition by the Chernoff method. Conversely, the preceding moment-growth bounds imply convergence and Gaussian-type control of the moment generating function, yielding
+\[
+\E[e^{\lambda X}]
+\leq
+\exp(CK^2\lambda^2)
+\]
+for a universal constant $C>0$.
+\end{proof}
+
+\section{The Sub-Gaussian Norm}
+
+The preceding characterization motivates a norm-like quantity.
+
+\begin{definition}[Sub-Gaussian Norm]
+The sub-Gaussian norm of a random variable $X$ is
+\[
+\norm{X}_{\psi_2}
+=
+\inf\left\{
+K>0:
+\E\left[
+\exp\left(
+\frac{X^2}{K^2}
+\right)
+\right]
+\leq
+2
+\right\}.
+\]
+\end{definition}
+
+\begin{remark}
+The function
+\[
+\norm{\cdot}_{\psi_2}
+\]
+is a norm on the space of random variables with finite sub-Gaussian norm.
+\end{remark}
+
+\begin{lemma}[Centering a Sub-Gaussian Random Variable]
+There exists a universal constant $C>0$ such that
+\[
+\norm{X-\E[X]}_{\psi_2}
+\leq
+C\norm{X}_{\psi_2}.
+\]
+\end{lemma}
+
+\begin{proof}
+By the triangle inequality for $\norm{\cdot}_{\psi_2}$,
+\[
+\norm{X-\E[X]}_{\psi_2}
+\leq
+\norm{X}_{\psi_2}
++
+\norm{\E[X]}_{\psi_2}.
+\]
+
+Since $\E[X]$ is a constant random variable,
+\[
+\norm{\E[X]}_{\psi_2}
+=
+|\E[X]|\norm{1}_{\psi_2}.
+\]
+
+By Jensen's inequality,
+\[
+|\E[X]|
+\leq
+\E|X|.
+\]
+
+The $L^1$ norm is controlled by the sub-Gaussian norm, so
+\[
+\E|X|
+\leq
+C'\norm{X}_{\psi_2}.
+\]
+
+Thus,
+\[
+\norm{\E[X]}_{\psi_2}
+\leq
+C''\norm{X}_{\psi_2}.
+\]
+
+Combining the bounds,
+\[
+\norm{X-\E[X]}_{\psi_2}
+\leq
+C\norm{X}_{\psi_2}.
+\]
+\end{proof}
+
+\begin{theorem}[Hoeffding Inequality via the Sub-Gaussian Norm]
+Let
+\[
+X_1,\dots,X_n
+\]
+be independent mean-zero sub-Gaussian random variables. Then there exists a universal constant $C>0$ such that
+\[
+\norm{\sum_{i=1}^n X_i}_{\psi_2}^2
+\leq
+C\sum_{i=1}^n \norm{X_i}_{\psi_2}^2.
+\]
+\end{theorem}
+
+\begin{remark}
+This is a norm-based version of the sum rule for independent sub-Gaussian random variables.
+\end{remark}
+
+\section{Sub-Exponential Norms}
+
+Sub-exponential random variables also admit equivalent characterizations.
+
+\begin{proposition}[Equivalent Sub-Exponential Conditions]
+Let $X$ be a random variable. The following are equivalent up to universal constant factors.
+
+\begin{enumerate}
+\item There exists $K_1>0$ such that
+\[
+\Prob(|X|>t)
+\leq
+2\exp\left(
+-\frac{t}{K_1}
+\right)
+\]
+for all $t\geq0$.
+
+\item There exists $K_2>0$ such that
+\[
+\norm{X}_{L^p}
+\leq
+K_2p
+\]
+for all $p\geq1$.
+
+\item There exists $K_3>0$ such that
+\[
+\E\left[
+\exp\left(
+\frac{|X|}{K_3}
+\right)
+\right]
+\leq
+2.
+\]
+\end{enumerate}
+
+Moreover, if $\E[X]=0$, then these are also equivalent to the local moment generating function condition: there exists $K_4>0$ such that
+\[
+\E[e^{\lambda X}]
+\leq
+\exp(K_4^2\lambda^2)
+\]
+for all
+\[
+|\lambda|\leq \frac{1}{K_4}.
+\]
+\end{proposition}
+
+\begin{definition}[Sub-Exponential Norm]
+The sub-exponential norm of a random variable $X$ is
+\[
+\norm{X}_{\psi_1}
+=
+\inf\left\{
+K>0:
+\E\left[
+\exp\left(
+\frac{|X|}{K}
+\right)
+\right]
+\leq
+2
+\right\}.
+\]
+\end{definition}
+
+\begin{remark}
+The function
+\[
+\norm{\cdot}_{\psi_1}
+\]
+is a norm on the space of sub-exponential random variables.
+\end{remark}
+
+\begin{lemma}[Centering a Sub-Exponential Random Variable]
+There exists a universal constant $C>0$ such that
+\[
+\norm{X-\E[X]}_{\psi_1}
+\leq
+C\norm{X}_{\psi_1}.
+\]
+\end{lemma}
+
+\section{Products of Sub-Gaussian Random Variables}
+
+The square of a Gaussian motivates sub-exponential random variables. More generally, products of sub-Gaussian random variables are sub-exponential.
+
+\begin{lemma}
+Suppose $X$ and $Y$ are sub-Gaussian random variables. Then there exists a universal constant $C>0$ such that
+\[
+\norm{XY}_{\psi_1}
+\leq
+C\norm{X}_{\psi_2}\norm{Y}_{\psi_2}.
+\]
+\end{lemma}
+
+\begin{proof}
+By homogeneity, it suffices to prove the result when
+\[
+\norm{X}_{\psi_2}=1,
+\qquad
+\norm{Y}_{\psi_2}=1.
+\]
+
+Then
+\[
+\E[e^{X^2}]\leq 2,
+\qquad
+\E[e^{Y^2}]\leq 2.
+\]
+
+Using Young's inequality,
+\[
+|XY|
+\leq
+\frac{X^2}{2}
++
+\frac{Y^2}{2}.
+\]
+
+Therefore,
+\[
+e^{|XY|}
+\leq
+\exp\left(
+\frac{X^2}{2}
++
+\frac{Y^2}{2}
+\right).
+\]
+
+By the arithmetic-geometric mean inequality,
+\[
+\exp\left(
+\frac{X^2}{2}
++
+\frac{Y^2}{2}
+\right)
+=
+e^{X^2/2}e^{Y^2/2}
+\leq
+\frac{1}{2}e^{X^2}
++
+\frac{1}{2}e^{Y^2}.
+\]
+
+Taking expectations,
+\[
+\E[e^{|XY|}]
+\leq
+\frac{1}{2}\E[e^{X^2}]
++
+\frac{1}{2}\E[e^{Y^2}]
+\leq
+2.
+\]
+
+Thus,
+\[
+\norm{XY}_{\psi_1}
+\leq
+1
+\]
+under the normalized assumption. Rescaling gives the general result up to a universal constant.
+\end{proof}
+
+\section{Orlicz Norms}
+
+The sub-Gaussian and sub-exponential norms are special cases of a more general construction.
+
+\begin{definition}[Orlicz Norm]
+Let
+\[
+\psi:\R_+\to\R_+
+\]
+be convex and nondecreasing, with
+\[
+\psi(0)=0
+\]
+and
+\[
+\lim_{t\to\infty}\psi(t)=\infty.
+\]
+
+The Orlicz norm of a random variable $X$ associated with $\psi$ is
+\[
+\norm{X}_{\psi}
+=
+\inf\left\{
+K>0:
+\E\left[
+\psi\left(
+\frac{|X|}{K}
+\right)
+\right]
+\leq
+1
+\right\}.
+\]
+\end{definition}
+
+\begin{remark}
+Under standard assumptions on $\psi$, this defines a norm on the space
+\[
+\{X:\norm{X}_{\psi}<\infty\}.
+\]
+\end{remark}
+
+\begin{example}
+If
+\[
+\psi(t)=t^p
+\]
+for $p\geq1$, then the corresponding Orlicz norm is the usual $L^p$ norm:
+\[
+\norm{X}_{\psi}
+=
+\norm{X}_{L^p}.
+\]
+\end{example}
+
+\begin{example}
+If
+\[
+\psi_2(t)=e^{t^2}-1,
+\]
+then the corresponding Orlicz norm is equivalent to the sub-Gaussian norm.
+\end{example}
+
+\begin{example}
+If
+\[
+\psi_1(t)=e^t-1,
+\]
+then the corresponding Orlicz norm is equivalent to the sub-exponential norm.
+\end{example}
+
+\section{Concentration of Functions of Independent Random Variables}
+
+So far, we have mainly studied concentration of sums. However, concentration is a more general phenomenon.
+
+The guiding principle is:
+
+\begin{quote}
+If $X_1,\dots,X_n$ are independent random variables, then $f(X_1,\dots,X_n)$ concentrates near its mean provided that $f$ is not too sensitive to any single coordinate.
+\end{quote}
+
+This section studies one formal version of this principle: bounded differences.
+
+\section{Bounded Differences}
+
+\begin{definition}[Bounded Differences Property]
+Let
+\[
+f:\R^n\to\R.
+\]
+We say that $f$ satisfies the bounded differences property with constants
+\[
+c_1,\dots,c_n>0
+\]
+if, for every $j\in\{1,\dots,n\}$,
+\[
+\left|
+f(z_1,\dots,z_j,\dots,z_n)
+-
+f(z_1,\dots,\widetilde{z}_j,\dots,z_n)
+\right|
+\leq
+c_j
+\]
+for all
+\[
+z_1,\dots,z_n,\widetilde{z}_j\in\R.
+\]
+\end{definition}
+
+This means that changing only the $j$-th coordinate can change the value of $f$ by at most $c_j$.
+
+\section{McDiarmid's Inequality}
+
+\begin{theorem}[McDiarmid's Inequality]
+Let
+\[
+X_1,\dots,X_n
+\]
+be independent random variables, and let
+\[
+f:\R^n\to\R
+\]
+satisfy the bounded differences property with constants
+\[
+c_1,\dots,c_n.
+\]
+
+Then, for every $t\geq0$,
+\[
+\Prob\left(
+\left|
+f(X_1,\dots,X_n)
+-
+\E[f(X_1,\dots,X_n)]
+\right|
+\geq t
+\right)
+\leq
+2\exp\left(
+-\frac{2t^2}{\sum_{j=1}^n c_j^2}
+\right).
+\]
+\end{theorem}
+
+\begin{remark}
+McDiarmid's inequality extends Hoeffding-type concentration from sums to general functions of independent random variables.
+\end{remark}
+
+\section{Martingales}
+
+To prove McDiarmid's inequality, we use the martingale method.
+
+\begin{definition}[Martingale]
+Let
+\[
+X_0,X_1,X_2,\dots
+\]
+be a sequence of random variables. A sequence
+\[
+Y_0,Y_1,Y_2,\dots
+\]
+is called a martingale with respect to
+\[
+X_0,X_1,X_2,\dots
+\]
+if, for every $n$,
+\[
+\E|Y_n|<\infty,
+\]
+\[
+Y_n
+\]
+is measurable with respect to
+\[
+X_0,\dots,X_n,
+\]
+and
+\[
+\E[Y_{n+1}\mid X_0,\dots,X_n]
+=
+Y_n.
+\]
+\end{definition}
+
+\begin{remark}
+Martingales model fair games. They are useful when full independence is unavailable, and they appear in central limit theorems, concentration inequalities, and stochastic process theory.
+\end{remark}
+
+\subsection{Conditional Expectation Facts}
+
+We will use two basic facts about conditional expectation.
+
+\begin{lemma}[Tower Property]
+If
+\[
+j<k,
+\]
+then
+\[
+\E\left[
+\E[Y\mid X_1,\dots,X_k]
+\mid X_1,\dots,X_j
+\right]
+=
+\E[Y\mid X_1,\dots,X_j].
+\]
+\end{lemma}
+
+\begin{lemma}[Measurability Property]
+If $Y$ is measurable with respect to
+\[
+X_1,\dots,X_k,
+\]
+then
+\[
+\E[Y\mid X_1,\dots,X_k]
+=
+Y.
+\]
+\end{lemma}
+
+\section{The Doob Martingale}
+
+Let
+\[
+X=(X_1,\dots,X_n).
+\]
+
+Define
+\[
+Y_0
+=
+\E[f(X)]
+\]
+and, for $j=1,\dots,n$,
+\[
+Y_j
+=
+\E[f(X)\mid X_1,\dots,X_j].
+\]
+
+Then
+\[
+Y_n
+=
+f(X_1,\dots,X_n)
+\]
+because $f(X)$ is measurable with respect to $X_1,\dots,X_n$.
+
+Hence,
+\[
+f(X)-\E[f(X)]
+=
+Y_n-Y_0.
+\]
+
+This difference can be decomposed as
+\[
+Y_n-Y_0
+=
+\sum_{j=0}^{n-1}(Y_{j+1}-Y_j).
+\]
+
+\begin{proposition}
+The sequence
+\[
+Y_0,Y_1,\dots,Y_n
+\]
+defined by
+\[
+Y_j=\E[f(X)\mid X_1,\dots,X_j]
+\]
+is a martingale with respect to
+\[
+X_1,\dots,X_n.
+\]
+\end{proposition}
+
+\begin{proof}
+First, $Y_j$ is measurable with respect to $X_1,\dots,X_j$ by definition.
+
+Next, by the tower property,
+\[
+\E[Y_{j+1}\mid X_1,\dots,X_j]
+=
+\E\left[
+\E[f(X)\mid X_1,\dots,X_{j+1}]
+\mid X_1,\dots,X_j
+\right]
+=
+\E[f(X)\mid X_1,\dots,X_j].
+\]
+
+Therefore,
+\[
+\E[Y_{j+1}\mid X_1,\dots,X_j]
+=
+Y_j.
+\]
+
+Thus, $\{Y_j\}_{j=0}^n$ is a martingale.
+\end{proof}
+
+\section{Martingale Differences}
+
+Define the martingale differences
+\[
+\Delta_j
+=
+Y_j-Y_{j-1},
+\qquad
+j=1,\dots,n.
+\]
+
+Then
+\[
+f(X)-\E[f(X)]
+=
+\sum_{j=1}^n \Delta_j.
+\]
+
+Therefore, controlling the concentration of $f(X)-\E[f(X)]$ reduces to controlling a sum of martingale differences.
+
+\section{Azuma's Inequality}
+
+\begin{lemma}[Azuma's Inequality: Sub-Gaussian Difference Form]
+Suppose
+\[
+Y_0,Y_1,\dots,Y_n
+\]
+is a martingale with respect to
+\[
+X_1,\dots,X_n.
+\]
+
+Let
+\[
+\Delta_j=Y_j-Y_{j-1}.
+\]
+
+Assume that, for each $j$,
+\[
+\E\left[
+e^{\lambda \Delta_j}
+\mid
+X_1,\dots,X_{j-1}
+\right]
+\leq
+e^{\lambda^2\sigma_j^2/2}
+\]
+almost surely for all $\lambda\in\R$.
+
+Then
+\[
+\sum_{j=1}^n \Delta_j
+\]
+is
+\[
+\norm{\sigma}_2
+\]
+-sub-Gaussian, where
+\[
+\norm{\sigma}_2^2
+=
+\sum_{j=1}^n \sigma_j^2.
+\]
+
+Consequently,
+\[
+\Prob\left(
+\left|
+\sum_{j=1}^n \Delta_j
+\right|
+\geq t
+\right)
+\leq
+2\exp\left(
+-\frac{t^2}{2\sum_{j=1}^n \sigma_j^2}
+\right).
+\]
+\end{lemma}
+
+\begin{proof}
+We prove the moment generating function bound. For $\lambda\in\R$,
+\[
+\E\left[
+e^{\lambda\sum_{j=1}^n \Delta_j}
+\right]
+=
+\E\left[
+e^{\lambda\sum_{j=1}^{n-1} \Delta_j}
+e^{\lambda\Delta_n}
+\right].
+\]
+
+Using conditional expectation,
+\[
+\E\left[
+e^{\lambda\sum_{j=1}^n \Delta_j}
+\right]
+=
+\E\left[
+e^{\lambda\sum_{j=1}^{n-1} \Delta_j}
+\E\left[
+e^{\lambda\Delta_n}
+\mid
+X_1,\dots,X_{n-1}
+\right]
+\right].
+\]
+
+By assumption,
+\[
+\E\left[
+e^{\lambda\Delta_n}
+\mid
+X_1,\dots,X_{n-1}
+\right]
+\leq
+e^{\lambda^2\sigma_n^2/2}.
+\]
+
+Therefore,
+\[
+\E\left[
+e^{\lambda\sum_{j=1}^n \Delta_j}
+\right]
+\leq
+e^{\lambda^2\sigma_n^2/2}
+\E\left[
+e^{\lambda\sum_{j=1}^{n-1}\Delta_j}
+\right].
+\]
+
+Iterating this argument gives
+\[
+\E\left[
+e^{\lambda\sum_{j=1}^n \Delta_j}
+\right]
+\leq
+\exp\left(
+\frac{\lambda^2}{2}\sum_{j=1}^n\sigma_j^2
+\right).
+\]
+
+Thus,
+\[
+\sum_{j=1}^n \Delta_j
+\]
+is $\norm{\sigma}_2$-sub-Gaussian.
+
+The two-sided tail bound follows from the usual sub-Gaussian tail inequality.
+\end{proof}
+
+\begin{remark}
+Azuma's inequality is the martingale analogue of the sum rule for independent sub-Gaussian random variables.
+\end{remark}
+
+\section{Proof of Azuma's Inequality}
+
+Recall the setup.
+
+Let
+\[
+Y_0,Y_1,\dots,Y_n
+\]
+be a martingale with respect to
+\[
+X_1,\dots,X_n,
+\]
+and define the martingale differences
+\[
+\Delta_k
+=
+Y_k-Y_{k-1}.
+\]
+
+Assume that for every $k$,
+\[
+\E\left[
+e^{\lambda \Delta_k}
+\mid
+X_1,\dots,X_{k-1}
+\right]
+\leq
+e^{\lambda^2\sigma_k^2/2}
+\]
+almost surely.
+
+We prove that
+\[
+\sum_{k=1}^n \Delta_k
+\]
+is
+\[
+\norm{\sigma}_2
+\]
+-sub-Gaussian.
+
+\begin{proof}
+For any $\lambda\in\R$,
+\[
+\E\left[
+e^{\lambda\sum_{k=1}^n \Delta_k}
+\right]
+=
+\E\left[
+\E\left[
+e^{\lambda\sum_{k=1}^n \Delta_k}
+\mid
+X_1,\dots,X_{n-1}
+\right]
+\right].
+\]
+
+Using conditional expectation,
+\[
+\E\left[
+e^{\lambda\sum_{k=1}^n \Delta_k}
+\mid
+X_1,\dots,X_{n-1}
+\right]
+=
+e^{\lambda\sum_{k=1}^{n-1}\Delta_k}
+\E\left[
+e^{\lambda\Delta_n}
+\mid
+X_1,\dots,X_{n-1}
+\right].
+\]
+
+Applying the assumption,
+\[
+\E\left[
+e^{\lambda\sum_{k=1}^n \Delta_k}
+\right]
+\leq
+e^{\lambda^2\sigma_n^2/2}
+\E\left[
+e^{\lambda\sum_{k=1}^{n-1}\Delta_k}
+\right].
+\]
+
+Repeating this argument recursively gives
+\[
+\E\left[
+e^{\lambda\sum_{k=1}^n \Delta_k}
+\right]
+\leq
+\exp\left(
+\frac{\lambda^2}{2}
+\sum_{k=1}^n \sigma_k^2
+\right).
+\]
+
+Therefore,
+\[
+\sum_{k=1}^n \Delta_k
+\]
+is
+\[
+\norm{\sigma}_2
+\]
+-sub-Gaussian.
+\end{proof}
+
+\begin{remark}
+Although the martingale property
+\[
+\E[\Delta_k\mid X_1,\dots,X_{k-1}]=0
+\]
+did not explicitly appear in the iteration argument, it is essential for the conditional moment generating function bound.
+\end{remark}
+
+\section{Proof of McDiarmid's Inequality}
+
+Recall the Doob martingale
+\[
+Y_k
+=
+\E[f(X_1,\dots,X_n)\mid X_1,\dots,X_k].
+\]
+
+We showed that
+\[
+f(X)-\E[f(X)]
+=
+\sum_{k=1}^n \Delta_k,
+\qquad
+\Delta_k=Y_k-Y_{k-1}.
+\]
+
+To apply Azuma's inequality, we need to control the conditional moment generating functions of the increments.
+
+\begin{proof}[Proof of McDiarmid's Inequality]
+Fix
+\[
+k\in\{1,\dots,n\}.
+\]
+
+Recall
+\[
+\Delta_k
+=
+\E[f(X)\mid X_1,\dots,X_k]
+-
+\E[f(X)\mid X_1,\dots,X_{k-1}].
+\]
+
+Condition on
+\[
+X_1,\dots,X_{k-1}.
+\]
+
+Define
+\[
+A_k
+=
+\E\left[
+\inf_t
+f(X_1,\dots,X_{k-1},t,X_{k+1},\dots,X_n)
+\mid
+X_1,\dots,X_{k-1}
+\right]
+\]
+and
+\[
+B_k
+=
+\E\left[
+\sup_t
+f(X_1,\dots,X_{k-1},t,X_{k+1},\dots,X_n)
+\mid
+X_1,\dots,X_{k-1}
+\right].
+\]
+
+Then
+\[
+A_k
+\leq
+\Delta_k
+\leq
+B_k
+\]
+almost surely.
+
+Indeed, replacing the $k$-th coordinate by an arbitrary value $t$ gives lower and upper bounds on the conditional expectation.
+
+By the bounded differences assumption,
+\[
+B_k-A_k
+\leq
+c_k.
+\]
+
+Thus, conditioned on
+\[
+X_1,\dots,X_{k-1},
+\]
+the random variable $\Delta_k$ lies in an interval of length at most $c_k$.
+
+Applying Hoeffding's lemma conditionally,
+\[
+\E\left[
+e^{\lambda\Delta_k}
+\mid
+X_1,\dots,X_{k-1}
+\right]
+\leq
+e^{\lambda^2 c_k^2/8}.
+\]
+
+Therefore, Azuma's inequality applies with
+\[
+\sigma_k^2=\frac{c_k^2}{4}.
+\]
+
+Hence,
+\[
+f(X)-\E[f(X)]
+=
+\sum_{k=1}^n \Delta_k
+\]
+is
+\[
+\frac{\norm{c}_2}{2}
+\]
+-sub-Gaussian.
+
+Consequently,
+\[
+\Prob\left(
+|f(X)-\E[f(X)]|
+\geq t
+\right)
+\leq
+2\exp\left(
+-\frac{t^2}{2(\norm{c}_2^2/4)}
+\right).
+\]
+
+Equivalently,
+\[
+\Prob\left(
+|f(X)-\E[f(X)]|
+\geq t
+\right)
+\leq
+2\exp\left(
+-\frac{2t^2}{\norm{c}_2^2}
+\right).
+\]
+\end{proof}
+
+\section{U-Statistics}
+
+McDiarmid's inequality is especially useful when independence is not directly available but dependence is weak.
+
+\begin{definition}[U-Statistic]
+Let
+\[
+X_1,\dots,X_n
+\]
+be iid random variables, and let
+\[
+g:\R^2\to\R
+\]
+be a symmetric measurable function.
+
+The associated U-statistic is
+\[
+U(X_1,\dots,X_n)
+=
+\frac{1}{\binom{n}{2}}
+\sum_{i<j} g(X_i,X_j).
+\]
+\end{definition}
+
+\begin{remark}
+The terms
+\[
+g(X_i,X_j)
+\]
+are not independent because different pairs share coordinates. Nevertheless, the dependence is weak enough for concentration inequalities to apply.
+\end{remark}
+
+\begin{proposition}[Concentration of U-Statistics]
+Suppose
+\[
+|g(x,y)|\leq C
+\]
+for all
+\[
+x,y\in\R.
+\]
+
+Then, for every $t\geq0$,
+\[
+\Prob\left(
+|U-\E[U]|
+\geq t
+\right)
+\leq
+2\exp\left(
+-\frac{nt^2}{8C^2}
+\right).
+\]
+\end{proposition}
+
+\begin{proof}
+Fix an index $k$ and replace $X_k$ by an alternative value $\widetilde{X}_k$.
+
+Only terms involving the index $k$ can change. There are exactly
+\[
+n-1
+\]
+such terms.
+
+Thus,
+\[
+|U(X_1,\dots,X_n)-U(X_1,\dots,\widetilde{X}_k,\dots,X_n)|
+\]
+is bounded by
+\[
+\frac{1}{\binom{n}{2}}
+\sum_{j\neq k}
+|g(X_k,X_j)-g(\widetilde{X}_k,X_j)|.
+\]
+
+Since
+\[
+|g|\leq C,
+\]
+each difference satisfies
+\[
+|g(X_k,X_j)-g(\widetilde{X}_k,X_j)|
+\leq
+2C.
+\]
+
+Therefore,
+\[
+|U(X)-U(\widetilde{X})|
+\leq
+\frac{(n-1)2C}{\binom{n}{2}}
+=
+\frac{4C}{n}.
+\]
+
+Hence the bounded differences constants are
+\[
+c_k=\frac{4C}{n},
+\qquad
+k=1,\dots,n.
+\]
+
+Therefore,
+\[
+\sum_{k=1}^n c_k^2
+=
+n\left(\frac{4C}{n}\right)^2
+=
+\frac{16C^2}{n}.
+\]
+
+Applying McDiarmid's inequality,
+\[
+\Prob(|U-\E[U]|\geq t)
+\leq
+2\exp\left(
+-\frac{2t^2}{16C^2/n}
+\right).
+\]
+
+Simplifying,
+\[
+\Prob(|U-\E[U]|\geq t)
+\leq
+2\exp\left(
+-\frac{nt^2}{8C^2}
+\right).
+\]
+\end{proof}
+
+\section{Lipschitz Functions of Gaussian Random Variables}
+
+Next we study concentration of Lipschitz functions of Gaussian vectors.
+
+\begin{definition}[Lipschitz Function]
+A function
+\[
+f:\R^n\to\R
+\]
+is called $L$-Lipschitz if
+\[
+|f(x)-f(y)|
+\leq
+L\norm{x-y}_2
+\]
+for all
+\[
+x,y\in\R^n.
+\]
+\end{definition}
+
+\begin{theorem}[Gaussian Concentration]
+Let
+\[
+X=(X_1,\dots,X_n),
+\qquad
+X_i\iid \Normal(0,1).
+\]
+
+Suppose
+\[
+f:\R^n\to\R
+\]
+is $L$-Lipschitz. Then
+\[
+\Prob\left(
+|f(X)-\E[f(X)]|
+\geq t
+\right)
+\leq
+2\exp\left(
+-\frac{t^2}{2L^2}
+\right).
+\]
+\end{theorem}
+
+\begin{remark}
+The lecture derived a slightly weaker constant:
+\[
+\Prob\left(
+|f(X)-\E[f(X)]|
+\geq t
+\right)
+\leq
+2\exp\left(
+-\frac{2t^2}{\pi^2L^2}
+\right).
+\]
+
+The sharp constant requires deeper results from Gaussian isoperimetry.
+\end{remark}
+
+\subsection{A Key Gaussian Inequality}
+
+Assume temporarily that $f$ is continuously differentiable.
+
+\begin{lemma}
+Let
+\[
+X,Y
+\]
+be independent standard Gaussian vectors in $\R^n$.
+
+For every convex function
+\[
+\psi:\R\to\R,
+\]
+we have
+\[
+\E\left[
+\psi(f(X)-\E[f(X)])
+\right]
+\leq
+\E\left[
+\psi\left(
+\frac{\pi}{2}\inner{\grad f(X)}{Y}
+\right)
+\right].
+\]
+\end{lemma}
+
+\begin{remark}
+This result compares fluctuations of $f(X)$ to Gaussian linear fluctuations determined by the gradient.
+\end{remark}
+
+\subsection{Derivation of Gaussian Concentration}
+
+We now show how the previous lemma implies sub-Gaussian concentration.
+
+\begin{proof}
+Apply the lemma with
+\[
+\psi(t)=e^{\lambda t}.
+\]
+
+Then
+\[
+\E\left[
+e^{\lambda(f(X)-\E[f(X)])}
+\right]
+\leq
+\E\left[
+e^{\lambda \frac{\pi}{2}\inner{\grad f(X)}{Y}}
+\right].
+\]
+
+Condition on $X$.
+
+For fixed $X$,
+\[
+\inner{\grad f(X)}{Y}
+\]
+is Gaussian with mean zero and variance
+\[
+\norm{\grad f(X)}_2^2.
+\]
+
+Therefore,
+\[
+\E_Y\left[
+e^{\lambda \frac{\pi}{2}\inner{\grad f(X)}{Y}}
+\right]
+=
+\exp\left(
+\frac{\lambda^2\pi^2}{8}
+\norm{\grad f(X)}_2^2
+\right).
+\]
+
+Since $f$ is $L$-Lipschitz,
+\[
+\norm{\grad f(X)}_2
+\leq
+L
+\]
+almost everywhere.
+
+Hence,
+\[
+\E\left[
+e^{\lambda(f(X)-\E[f(X)])}
+\right]
+\leq
+\exp\left(
+\frac{\lambda^2\pi^2L^2}{8}
+\right).
+\]
+
+Thus,
+\[
+f(X)-\E[f(X)]
+\]
+is sub-Gaussian with parameter
+\[
+\frac{\pi L}{2}.
+\]
+
+Applying the standard sub-Gaussian tail bound gives
+\[
+\Prob\left(
+|f(X)-\E[f(X)]|
+\geq t
+\right)
+\leq
+2\exp\left(
+-\frac{2t^2}{\pi^2L^2}
+\right).
+\]
+\end{proof}
+
+\section{Proof of Gaussian Concentration}
+
+In the previous lecture, we used the following claim to prove concentration of Lipschitz functions of Gaussian random vectors.
+
+\begin{lemma}
+Let
+\[
+X,Y\iid \Normal(0,I_n),
+\]
+and let
+\[
+\psi:\R\to\R
+\]
+be convex.
+
+Then
+\[
+\E\left[
+\psi(f(X)-\E[f(X)])
+\right]
+\leq
+\E\left[
+\psi\left(
+\frac{\pi}{2}
+\inner{\grad f(X)}{Y}
+\right)
+\right].
+\]
+\end{lemma}
+
+\begin{proof}
+Since
+\[
+Y\stackrel{d}{=}X,
+\]
+we have
+\[
+\E[f(Y)]
+=
+\E[f(X)].
+\]
+
+By Jensen's inequality,
+\[
+\psi(f(X)-\E[f(X)])
+=
+\psi\left(
+f(X)-\E_Y[f(Y)]
+\right)
+\leq
+\E_Y[\psi(f(X)-f(Y))].
+\]
+
+Taking expectation over $X$ gives
+\[
+\E[\psi(f(X)-\E[f(X)])]
+\leq
+\E_{X,Y}[\psi(f(X)-f(Y))].
+\]
+
+For
+\[
+\theta\in[0,\pi/2],
+\]
+define
+\[
+\gamma(\theta)
+=
+X\cos\theta+Y\sin\theta
+\]
+and
+\[
+\dot{\gamma}(\theta)
+=
+-X\sin\theta+Y\cos\theta.
+\]
+
+By the fundamental theorem of calculus,
+\[
+f(Y)-f(X)
+=
+\int_0^{\pi/2}
+\frac{\dd}{\dd\theta}
+f(\gamma(\theta))
+\dd\theta.
+\]
+
+Using the chain rule,
+\[
+\frac{\dd}{\dd\theta}
+f(\gamma(\theta))
+=
+\inner{
+\grad f(\gamma(\theta))
+}{
+\dot{\gamma}(\theta)
+}.
+\]
+
+Therefore,
+\[
+f(Y)-f(X)
+=
+\int_0^{\pi/2}
+\inner{
+\grad f(\gamma(\theta))
+}{
+\dot{\gamma}(\theta)
+}
+\dd\theta.
+\]
+
+Rewrite this as
+\[
+f(Y)-f(X)
+=
+\frac{2}{\pi}
+\int_0^{\pi/2}
+\frac{\pi}{2}
+\inner{
+\grad f(\gamma(\theta))
+}{
+\dot{\gamma}(\theta)
+}
+\dd\theta.
+\]
+
+Applying Jensen's inequality to the convex function $\psi$,
+\[
+\psi(f(Y)-f(X))
+\leq
+\frac{2}{\pi}
+\int_0^{\pi/2}
+\psi\left(
+\frac{\pi}{2}
+\inner{
+\grad f(\gamma(\theta))
+}{
+\dot{\gamma}(\theta)
+}
+\right)
+\dd\theta.
+\]
+
+Taking expectations,
+\[
+\E[\psi(f(Y)-f(X))]
+\leq
+\frac{2}{\pi}
+\int_0^{\pi/2}
+\E\left[
+\psi\left(
+\frac{\pi}{2}
+\inner{
+\grad f(\gamma(\theta))
+}{
+\dot{\gamma}(\theta)
+}
+\right)
+\right]
+\dd\theta.
+\]
+
+Now observe that
+\[
+(\gamma(\theta),\dot{\gamma}(\theta))
+\]
+has the same distribution as
+\[
+(X,Y).
+\]
+
+Indeed,
+\[
+\begin{pmatrix}
+\gamma(\theta)
+\\
+\dot{\gamma}(\theta)
+\end{pmatrix}
+=
+G_\theta
+\begin{pmatrix}
+X
+\\
+Y
+\end{pmatrix},
+\]
+where
+\[
+G_\theta
+=
+\begin{pmatrix}
+\cos\theta & \sin\theta
+\\
+-\sin\theta & \cos\theta
+\end{pmatrix}
+\]
+is an orthogonal matrix.
+
+Since Gaussian vectors are rotationally invariant,
+\[
+(\gamma(\theta),\dot{\gamma}(\theta))
+\stackrel{d}{=}
+(X,Y).
+\]
+
+Thus the integrand does not depend on $\theta$, so
+\[
+\E[\psi(f(Y)-f(X))]
+\leq
+\E\left[
+\psi\left(
+\frac{\pi}{2}
+\inner{
+\grad f(X)
+}{Y}
+\right)
+\right].
+\]
+
+Combining with the earlier inequality yields
+\[
+\E[\psi(f(X)-\E[f(X)])]
+\leq
+\E\left[
+\psi\left(
+\frac{\pi}{2}
+\inner{
+\grad f(X)
+}{Y}
+\right)
+\right].
+\]
+\end{proof}
+
+\section{Order Statistics}
+
+\begin{definition}[Order Statistics]
+Given
+\[
+x_1,\dots,x_n\in\R,
+\]
+their order statistics are the reordered values
+\[
+x_{(1)}
+\leq
+x_{(2)}
+\leq
+\dots
+\leq
+x_{(n)}.
+\]
+\end{definition}
+
+In particular,
+\[
+x_{(1)}=\min_i x_i,
+\qquad
+x_{(n)}=\max_i x_i.
+\]
+
+\begin{lemma}
+For any
+\[
+x,y\in\R^n
+\]
+and every
+\[
+k\in\{1,\dots,n\},
+\]
+we have
+\[
+|x_{(k)}-y_{(k)}|
+\leq
+\norm{x-y}_2.
+\]
+\end{lemma}
+
+\begin{proof}
+The Euclidean norm dominates every coordinate difference:
+\[
+|x_i-y_i|
+\leq
+\norm{x-y}_2.
+\]
+
+Thus every coordinate of $x$ can move by at most
+\[
+\norm{x-y}_2.
+\]
+
+After reordering, the $k$-th order statistic can therefore move by at most the same amount:
+\[
+|x_{(k)}-y_{(k)}|
+\leq
+\norm{x-y}_2.
+\]
+\end{proof}
+
+\begin{corollary}
+Suppose
+\[
+X_1,\dots,X_n
+\iid
+\Normal(0,1).
+\]
+
+Then, for every $k$,
+\[
+\Prob\left(
+|X_{(k)}-\E[X_{(k)}]|
+\geq t
+\right)
+\leq
+2e^{-t^2/2}.
+\]
+\end{corollary}
+
+\begin{proof}
+The map
+\[
+x\mapsto x_{(k)}
+\]
+is $1$-Lipschitz by the previous lemma.
+
+Applying Gaussian concentration yields
+\[
+\Prob\left(
+|X_{(k)}-\E[X_{(k)}]|
+\geq t
+\right)
+\leq
+2e^{-t^2/2}.
+\]
+\end{proof}
+
+\section{Concentration of the Norm}
+
+Random vectors in high dimensions behave very differently from low-dimensional intuition.
+
+\subsection{Mass Concentration in the Hypercube}
+
+Consider
+\[
+X\sim \mathrm{Unif}([0,1]^d).
+\]
+
+Fix
+\[
+\delta\in(0,1/2).
+\]
+
+The boundary shell of width $\delta$ is
+\[
+[0,1]^d
+\setminus
+[\delta,1-\delta]^d.
+\]
+
+Its probability mass is
+\[
+p_d
+=
+1-(1-2\delta)^d.
+\]
+
+For fixed $\delta>0$,
+\[
+(1-2\delta)^d\to0
+\]
+as
+\[
+d\to\infty.
+\]
+
+Therefore,
+\[
+p_d\to1.
+\]
+
+\begin{remark}
+In high dimensions, most of the mass of the cube concentrates near the boundary.
+\end{remark}
+
+\section{Concentration of Euclidean Norms}
+
+We now study concentration of
+\[
+\norm{X}_2
+\]
+for high-dimensional random vectors.
+
+\begin{theorem}
+Suppose
+\[
+X=(X_1,\dots,X_d)\in\R^d
+\]
+has independent coordinates satisfying:
+\begin{itemize}
+\item each $X_i$ is sub-Gaussian,
+\item
+\[
+\E[X_i]=0,
+\]
+\item
+\[
+\E[X_i^2]=1.
+\]
+\end{itemize}
+
+Let
+\[
+\sigma
+=
+\max_i \norm{X_i}_{\psi_2}.
+\]
+
+Then there exists a universal constant $c>0$ such that
+\[
+\Prob\left(
+\left|
+\norm{X}_2^2-d
+\right|
+\geq td
+\right)
+\leq
+2\exp\left(
+-cd\min\left(
+\frac{t^2}{\sigma^4},
+\frac{t}{\sigma^2}
+\right)
+\right).
+\]
+\end{theorem}
+
+\begin{proof}
+First observe that
+\[
+\E[\norm{X}_2^2]
+=
+\sum_{i=1}^d \E[X_i^2]
+=
+d.
+\]
+
+Thus,
+\[
+\frac{1}{d}\E[\norm{X}_2^2]=1.
+\]
+
+We previously proved that if
+\[
+Y,Z
+\]
+are sub-Gaussian, then
+\[
+YZ
+\]
+is sub-exponential.
+
+Applying this with
+\[
+Y=Z=X_i,
+\]
+we conclude that
+\[
+X_i^2
+\]
+is sub-exponential.
+
+Moreover,
+\[
+\norm{X_i^2}_{\psi_1}
+\leq
+C\norm{X_i}_{\psi_2}^2
+\leq
+C\sigma^2.
+\]
+
+Centering preserves the sub-exponential norm up to constants, so
+\[
+\norm{X_i^2-1}_{\psi_1}
+\leq
+C\sigma^2.
+\]
+
+Now write
+\[
+\frac{1}{d}\norm{X}_2^2-1
+=
+\frac{1}{d}
+\sum_{i=1}^d (X_i^2-1).
+\]
+
+Since the variables
+\[
+X_i^2-1
+\]
+are independent centered sub-exponential random variables, Bernstein's inequality gives
+\[
+\Prob\left(
+\left|
+\frac{1}{d}\sum_{i=1}^d (X_i^2-1)
+\right|
+\geq t
+\right)
+\leq
+2\exp\left(
+-c
+\min\left(
+\frac{d^2t^2}{d\sigma^4},
+\frac{dt}{\sigma^2}
+\right)
+\right).
+\]
+
+Simplifying,
+\[
+\Prob\left(
+\left|
+\frac{1}{d}\norm{X}_2^2-1
+\right|
+\geq t
+\right)
+\leq
+2\exp\left(
+-cd
+\min\left(
+\frac{t^2}{\sigma^4},
+\frac{t}{\sigma^2}
+\right)
+\right).
+\]
+
+Equivalently,
+\[
+\Prob\left(
+\left|
+\norm{X}_2^2-d
+\right|
+\geq td
+\right)
+\leq
+2\exp\left(
+-cd
+\min\left(
+\frac{t^2}{\sigma^4},
+\frac{t}{\sigma^2}
+\right)
+\right).
+\]
+\end{proof}
+
+\begin{corollary}
+Under the assumptions of the theorem,
+there exists a universal constant $c>0$ such that
+\[
+\Prob\left(
+\left|
+\norm{X}_2-\sqrt{d}
+\right|
+\geq t\sqrt{d}
+\right)
+\leq
+2\exp\left(
+-\frac{cdt^2}{\sigma^4}
+\right).
+\]
+\end{corollary}
+
+\begin{proof}
+Let
+\[
+z=\frac{\norm{X}_2}{\sqrt{d}}.
+\]
+
+Then
+\[
+|z-1|\geq t
+\]
+implies
+\[
+|z^2-1|
+=
+|z-1||z+1|.
+\]
+
+Since
+\[
+|z+1|\geq1
+\]
+and
+\[
+|z+1|\geq |z-1|,
+\]
+we obtain
+\[
+|z^2-1|
+\geq
+\max(t,t^2).
+\]
+
+Therefore,
+\[
+\Prob(|z-1|\geq t)
+\leq
+\Prob(|z^2-1|\geq \max(t,t^2)).
+\]
+
+Applying the previous theorem with
+\[
+\max(t,t^2)
+\]
+in place of $t$ yields
+\[
+\Prob(|z-1|\geq t)
+\leq
+2\exp\left(
+-cd
+\min\left(
+\frac{t^2}{\sigma^4},
+\frac{t}{\sigma^2}
+\right)
+\right).
+\]
+
+For small deviations,
+\[
+t\leq1,
+\]
+the quadratic term dominates, giving
+\[
+\Prob(|z-1|\geq t)
+\leq
+2\exp\left(
+-\frac{cdt^2}{\sigma^4}
+\right).
+\]
+
+Substituting
+\[
+z=\frac{\norm{X}_2}{\sqrt{d}}
+\]
+gives
+\[
+\Prob\left(
+\left|
+\norm{X}_2-\sqrt{d}
+\right|
+\geq t\sqrt{d}
+\right)
+\leq
+2\exp\left(
+-\frac{cdt^2}{\sigma^4}
+\right).
+\]
+\end{proof}
+
+\begin{remark}
+In high dimensions,
+\[
+\norm{X}_2
+\]
+typically fluctuates only by constant-order deviations around
+\[
+\sqrt{d}.
+\]
+
+Thus high-dimensional random vectors are concentrated near a thin spherical shell.
+\end{remark}
+
+\chapter{Matrix Norms and Matrix Factorizations}
+
+\section{Matrix Inner Products and Norms}
+
+We now move from scalars and vectors to matrices. Many high-dimensional probability results are naturally expressed in terms of matrix norms.
+
+\begin{definition}[Trace Inner Product]
+For matrices
+\[
+A,B\in\R^{n\times m},
+\]
+the trace inner product is
+\[
+\inner{A}{B}
+=
+\tr(A^\top B).
+\]
+\end{definition}
+
+The trace inner product induces the Frobenius norm.
+
+\begin{definition}[Frobenius Norm]
+For
+\[
+A\in\R^{n\times m},
+\]
+the Frobenius norm is
+\[
+\norm{A}_F
+=
+\sqrt{\inner{A}{A}}
+=
+\sqrt{\tr(A^\top A)}.
+\]
+\end{definition}
+
+Equivalently,
+\[
+\norm{A}_F^2
+=
+\sum_{i=1}^n\sum_{j=1}^m A_{ij}^2.
+\]
+
+If $\operatorname{vec}(A)$ denotes the vector obtained by stacking the entries of $A$, then
+\[
+\inner{A}{B}
+=
+\operatorname{vec}(A)^\top \operatorname{vec}(B)
+\]
+and
+\[
+\norm{A}_F
+=
+\norm{\operatorname{vec}(A)}_2.
+\]
+
+\section{The Operator Norm}
+
+A matrix
+\[
+A\in\R^{n\times m}
+\]
+can be viewed as a linear map
+\[
+A:\R^m\to\R^n.
+\]
+
+This induces another important norm.
+
+\begin{definition}[Operator Norm]
+The operator norm of
+\[
+A\in\R^{n\times m}
+\]
+is
+\[
+\norm{A}_{\mathrm{op}}
+=
+\sup_{\norm{v}_2=1}
+\norm{Av}_2.
+\]
+\end{definition}
+
+Equivalently,
+\[
+\norm{A}_{\mathrm{op}}
+=
+\sup_{v\neq 0}
+\frac{\norm{Av}_2}{\norm{v}_2}.
+\]
+
+\begin{remark}
+The Frobenius norm measures the overall size of all matrix entries, while the operator norm measures the maximum stretching effect of the linear map $x\mapsto Ax$.
+\end{remark}
+
+\section{Rotational Invariance of Matrix Norms}
+
+\begin{proposition}
+Let
+\[
+A\in\R^{n\times m},
+\qquad
+U\in O(n),
+\qquad
+V\in O(m),
+\]
+where $O(k)$ denotes the set of $k\times k$ orthogonal matrices. Then
+\[
+\norm{UAV}_F=\norm{A}_F
+\]
+and
+\[
+\norm{UAV}_{\mathrm{op}}=\norm{A}_{\mathrm{op}}.
+\]
+\end{proposition}
+
+\begin{proof}
+For the Frobenius norm,
+\[
+\norm{UAV}_F^2
+=
+\tr((UAV)^\top(UAV)).
+\]
+
+Expanding,
+\[
+\norm{UAV}_F^2
+=
+\tr(V^\top A^\top U^\top U A V).
+\]
+
+Since
+\[
+U^\top U=I,
+\]
+we get
+\[
+\norm{UAV}_F^2
+=
+\tr(V^\top A^\top A V).
+\]
+
+Using cyclic invariance of trace,
+\[
+\tr(V^\top A^\top A V)
+=
+\tr(A^\top A VV^\top).
+\]
+
+Since
+\[
+VV^\top=I,
+\]
+we obtain
+\[
+\norm{UAV}_F^2
+=
+\tr(A^\top A)
+=
+\norm{A}_F^2.
+\]
+
+For the operator norm,
+\[
+\norm{UAV}_{\mathrm{op}}
+=
+\sup_{\norm{x}_2=1}
+\norm{UAVx}_2.
+\]
+
+Since $U$ is orthogonal,
+\[
+\norm{UAVx}_2
+=
+\norm{AVx}_2.
+\]
+
+As $x$ ranges over the unit sphere, so does $Vx$. Therefore,
+\[
+\norm{UAV}_{\mathrm{op}}
+=
+\sup_{\norm{z}_2=1}
+\norm{Az}_2
+=
+\norm{A}_{\mathrm{op}}.
+\]
+\end{proof}
+
+\section{Singular Value Decomposition}
+
+Matrix factorizations are one of the main tools for understanding matrices geometrically and algebraically.
+
+\begin{theorem}[Singular Value Decomposition]
+Let
+\[
+A\in\R^{n\times m}.
+\]
+
+Then there exist orthogonal matrices
+\[
+U\in O(n),
+\qquad
+V\in O(m),
+\]
+and a diagonal matrix
+\[
+\Sigma\in\R^{n\times m}
+\]
+such that
+\[
+A=U\Sigma V^\top.
+\]
+
+The only possibly nonzero entries of $\Sigma$ are
+\[
+\sigma_1\geq \sigma_2\geq \cdots \geq \sigma_p\geq 0,
+\qquad
+p=\min\{n,m\}.
+\]
+\end{theorem}
+
+\begin{definition}[Singular Values and Singular Vectors]
+The numbers
+\[
+\sigma_1,\dots,\sigma_p
+\]
+are called the singular values of $A$.
+
+The columns
+\[
+u_1,\dots,u_n
+\]
+of $U$ are called the left singular vectors, and the columns
+\[
+v_1,\dots,v_m
+\]
+of $V$ are called the right singular vectors.
+\end{definition}
+
+\begin{remark}
+The singular value decomposition says that, after appropriate orthogonal changes of coordinates in the domain and codomain, the map $x\mapsto Ax$ acts like a coordinate-wise scaling.
+\end{remark}
+
+\subsection{Proof of the Singular Value Decomposition}
+
+\begin{proof}
+Consider the optimization problem
+\[
+\sigma_1
+=
+\max_{\norm{u}_2=1,\ \norm{v}_2=1}
+u^\top A v.
+\]
+
+The objective function
+\[
+(u,v)\mapsto u^\top A v
+\]
+is continuous, and the product of unit spheres
+\[
+S^{n-1}\times S^{m-1}
+\]
+is compact. Hence a maximizer exists.
+
+Let
+\[
+(u_1,v_1)
+\]
+be a maximizer, and define
+\[
+\sigma_1=u_1^\top A v_1.
+\]
+
+We claim that
+\[
+Av_1=\sigma_1u_1.
+\]
+
+Indeed, for fixed $v_1$, the quantity
+\[
+u^\top A v_1
+\]
+is maximized over $\norm{u}_2=1$ when $u$ is in the direction of $Av_1$. Therefore,
+\[
+u_1=\frac{Av_1}{\norm{Av_1}_2}
+\]
+whenever $Av_1\neq0$, and consequently
+\[
+Av_1=\norm{Av_1}_2u_1.
+\]
+
+Moreover,
+\[
+\sigma_1
+=
+u_1^\top Av_1
+=
+\norm{Av_1}_2.
+\]
+
+Hence
+\[
+Av_1=\sigma_1u_1.
+\]
+
+Complete $u_1$ to an orthonormal basis of $\R^n$:
+\[
+u_1,\widetilde{u}_2,\dots,\widetilde{u}_n,
+\]
+and complete $v_1$ to an orthonormal basis of $\R^m$:
+\[
+v_1,\widetilde{v}_2,\dots,\widetilde{v}_m.
+\]
+
+Let
+\[
+\widetilde{U}
+=
+\begin{pmatrix}
+u_1 & \widetilde{u}_2 & \cdots & \widetilde{u}_n
+\end{pmatrix}
+\]
+and
+\[
+\widetilde{V}
+=
+\begin{pmatrix}
+v_1 & \widetilde{v}_2 & \cdots & \widetilde{v}_m
+\end{pmatrix}.
+\]
+
+Then
+\[
+\widetilde{U}^\top A\widetilde{V}
+=
+\begin{pmatrix}
+\sigma_1 & w^\top \\
+0 & B
+\end{pmatrix}
+\]
+for some vector $w$ and matrix $B$.
+
+We now show that
+\[
+w=0.
+\]
+
+Suppose not. Then there exists a unit vector $q$ such that
+\[
+w^\top q=\norm{w}_2.
+\]
+
+Consider the unit vector
+\[
+v_\theta
+=
+\cos\theta\, e_1+\sin\theta
+\begin{pmatrix}
+0\\
+q
+\end{pmatrix}.
+\]
+
+Then
+\[
+\norm{v_\theta}_2=1.
+\]
+
+Using the block form,
+\[
+\widetilde{U}^\top A\widetilde{V}v_\theta
+=
+\begin{pmatrix}
+\sigma_1\cos\theta+\norm{w}_2\sin\theta\\
+Bq\sin\theta
+\end{pmatrix}.
+\]
+
+For small positive $\theta$, the first coordinate is larger than $\sigma_1$, contradicting the maximality of $\sigma_1$ as the maximum value of
+\[
+\norm{Av}_2
+\]
+over unit vectors $v$.
+
+Therefore,
+\[
+w=0.
+\]
+
+Hence
+\[
+\widetilde{U}^\top A\widetilde{V}
+=
+\begin{pmatrix}
+\sigma_1 & 0 \\
+0 & B
+\end{pmatrix}.
+\]
+
+Applying the same argument inductively to $B$ yields orthogonal matrices $U$ and $V$ such that
+\[
+U^\top A V=\Sigma,
+\]
+where $\Sigma$ is diagonal with nonnegative diagonal entries ordered as
+\[
+\sigma_1\geq \sigma_2\geq\cdots\geq\sigma_p\geq0.
+\]
+
+Thus,
+\[
+A=U\Sigma V^\top.
+\]
+\end{proof}
+
+\section{Properties of the Singular Value Decomposition}
+
+Let
+\[
+A=U\Sigma V^\top
+\]
+be the singular value decomposition of
+\[
+A\in\R^{n\times m}.
+\]
+
+Let
+\[
+u_i
+\]
+denote the columns of $U$, and let
+\[
+v_i
+\]
+denote the columns of $V$.
+
+\begin{proposition}[Basic SVD Properties]
+The following properties hold.
+
+\begin{enumerate}
+\item For every $i$,
+\[
+Av_i=\sigma_i u_i
+\]
+and
+\[
+A^\top u_i=\sigma_i v_i.
+\]
+
+\item For every $x\in\R^m$,
+\[
+\sigma_{\min}(A)\norm{x}_2
+\leq
+\norm{Ax}_2
+\leq
+\sigma_{\max}(A)\norm{x}_2,
+\]
+where
+\[
+\sigma_{\max}(A)=\sigma_1.
+\]
+
+If $A$ is rank-deficient, then $\sigma_{\min}(A)$ is interpreted as the smallest singular value among the relevant domain directions, and the lower bound is zero on the nullspace.
+
+\item If
+\[
+r=\rank(A),
+\]
+then
+\[
+\sigma_r(A)>0
+\]
+and
+\[
+\sigma_{r+1}(A)=0.
+\]
+
+\item The nullspace and range are
+\[
+\operatorname{null}(A)
+=
+\operatorname{span}\{v_{r+1},\dots,v_m\},
+\]
+and
+\[
+\operatorname{range}(A)
+=
+\operatorname{span}\{u_1,\dots,u_r\}.
+\]
+
+\item The matrix $A$ can be written as
+\[
+A
+=
+\sum_{i=1}^r
+\sigma_i u_i v_i^\top.
+\]
+
+\item The Frobenius and operator norms satisfy
+\[
+\norm{A}_F
+=
+\left(
+\sum_{i=1}^r \sigma_i^2
+\right)^{1/2}
+\]
+and
+\[
+\norm{A}_{\mathrm{op}}
+=
+\sigma_1.
+\]
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Since
+\[
+A=U\Sigma V^\top,
+\]
+we have
+\[
+AV=U\Sigma.
+\]
+
+Comparing columns gives
+\[
+Av_i=\sigma_i u_i.
+\]
+
+Similarly,
+\[
+A^\top
+=
+V\Sigma^\top U^\top,
+\]
+so
+\[
+A^\top U=V\Sigma^\top.
+\]
+
+Comparing columns gives
+\[
+A^\top u_i=\sigma_i v_i.
+\]
+
+For the norm bounds, write
+\[
+x=Vz
+\]
+for some $z\in\R^m$ with
+\[
+\norm{z}_2=\norm{x}_2.
+\]
+
+Then
+\[
+Ax
+=
+U\Sigma z.
+\]
+
+Since $U$ is orthogonal,
+\[
+\norm{Ax}_2
+=
+\norm{\Sigma z}_2.
+\]
+
+Because $\Sigma$ scales coordinates by the singular values,
+\[
+\norm{\Sigma z}_2^2
+=
+\sum_i \sigma_i^2 z_i^2.
+\]
+
+Therefore,
+\[
+\norm{\Sigma z}_2
+\leq
+\sigma_{\max}(A)\norm{z}_2
+=
+\sigma_{\max}(A)\norm{x}_2.
+\]
+
+The lower bound follows similarly on the subspace orthogonal to the nullspace. If $A$ has a nontrivial nullspace, the global lower bound is zero.
+
+The rank statement follows because the rank of $\Sigma$ equals the number of nonzero diagonal entries, and orthogonal multiplication does not change rank.
+
+The nullspace statement follows from
+\[
+Ax=0
+\iff
+\Sigma V^\top x=0.
+\]
+
+Thus $V^\top x$ must be supported only on coordinates corresponding to zero singular values. Hence
+\[
+\operatorname{null}(A)
+=
+\operatorname{span}\{v_{r+1},\dots,v_m\}.
+\]
+
+The range statement follows from
+\[
+Ax=U\Sigma V^\top x,
+\]
+so every vector in the range is a linear combination of
+\[
+u_1,\dots,u_r.
+\]
+
+The rank-one expansion follows from writing
+\[
+U\Sigma V^\top
+=
+\sum_{i=1}^r
+\sigma_i u_i v_i^\top.
+\]
+
+Finally, rotational invariance of the Frobenius and operator norms gives
+\[
+\norm{A}_F=\norm{\Sigma}_F
+=
+\left(
+\sum_{i=1}^r\sigma_i^2
+\right)^{1/2},
+\]
+and
+\[
+\norm{A}_{\mathrm{op}}
+=
+\norm{\Sigma}_{\mathrm{op}}
+=
+\sigma_1.
+\]
+\end{proof}
+
+\section{Spectral Decomposition of Symmetric Matrices}
+
+For symmetric matrices, there is a more specialized factorization.
+
+Let
+\[
+\mathbb{S}^n
+=
+\{A\in\R^{n\times n}:A=A^\top\}
+\]
+denote the set of real symmetric matrices.
+
+\begin{theorem}[Spectral Decomposition]
+Let
+\[
+A\in\mathbb{S}^n.
+\]
+
+Then there exists an orthogonal matrix
+\[
+U\in O(n)
+\]
+and a diagonal matrix
+\[
+\Lambda
+=
+\diag(\lambda_1,\dots,\lambda_n)
+\]
+such that
+\[
+A=U\Lambda U^\top.
+\]
+\end{theorem}
+
+\begin{proof}
+We prove the result using two facts:
+
+\begin{enumerate}
+\item Every real symmetric matrix has real eigenvalues.
+\item Eigenvectors corresponding to distinct eigenvalues are orthogonal.
+\end{enumerate}
+
+Let
+\[
+\lambda_1
+\]
+be an eigenvalue of $A$ with unit eigenvector $u_1$:
+\[
+Au_1=\lambda_1u_1.
+\]
+
+Let
+\[
+W_1=\{u_1\}^{\perp}.
+\]
+
+We claim that $W_1$ is invariant under $A$. If $w\in W_1$, then
+\[
+\inner{Aw}{u_1}
+=
+\inner{w}{A^\top u_1}
+=
+\inner{w}{Au_1}
+=
+\inner{w}{\lambda_1u_1}
+=
+0.
+\]
+
+Thus
+\[
+Aw\in W_1.
+\]
+
+Therefore, the restriction of $A$ to $W_1$ is again symmetric. Repeating the argument inductively, we obtain an orthonormal basis
+\[
+u_1,\dots,u_n
+\]
+of eigenvectors of $A$ with corresponding real eigenvalues
+\[
+\lambda_1,\dots,\lambda_n.
+\]
+
+Let
+\[
+U=
+\begin{pmatrix}
+u_1 & \cdots & u_n
+\end{pmatrix}.
+\]
+
+Then $U$ is orthogonal and
+\[
+AU
+=
+U\Lambda.
+\]
+
+Multiplying by $U^\top$ on the right gives
+\[
+A
+=
+U\Lambda U^\top.
+\]
+\end{proof}
+
+\begin{remark}
+For symmetric matrices, singular values are the absolute values of eigenvalues:
+\[
+\sigma_i(A)=|\lambda_i(A)|
+\]
+after appropriate ordering.
+\end{remark}
+
+\chapter{Low-Rank Approximation and Perturbation Theory}
+
+\section{Low-Rank Approximation}
+
+Singular value and spectral decompositions are useful because they allow us to construct low-rank approximations of matrices.
+
+\begin{definition}[Best Rank-$k$ Approximation]
+Let
+\[
+A\in\R^{n\times m}.
+\]
+The best rank-$k$ approximation of $A$ in operator norm is
+\[
+A_{[k]}
+\in
+\argmin_{\rank(B)\leq k}
+\norm{A-B}_{\mathrm{op}}.
+\]
+\end{definition}
+
+Low-rank approximations are useful in data science for several reasons:
+\begin{itemize}
+\item Low-rank matrices require fewer parameters to store.
+\item Matrix-vector products can be computed more quickly.
+\item Many real datasets are approximately low-rank.
+\end{itemize}
+
+For example, if
+\[
+A\approx UV^\top
+\]
+where
+\[
+U\in\R^{d\times r},
+\qquad
+V\in\R^{d\times r},
+\]
+then storage requires approximately
+\[
+2dr
+\]
+parameters rather than
+\[
+d^2.
+\]
+
+Similarly, multiplying
+\[
+A\approx UV^\top
+\]
+by a vector can be done as
+\[
+Ax\approx U(V^\top x),
+\]
+which costs
+\[
+O(dr)
+\]
+rather than
+\[
+O(d^2).
+\]
+
+\section{The Eckart--Young Theorem}
+
+Let
+\[
+A=U\Sigma V^\top
+\]
+be the singular value decomposition of $A$, with singular values
+\[
+\sigma_1\geq \sigma_2\geq \cdots \geq \sigma_r>0,
+\]
+where
+\[
+r=\rank(A).
+\]
+
+Define
+\[
+A_{[k]}
+=
+\sum_{i=1}^k \sigma_i u_i v_i^\top.
+\]
+
+\begin{theorem}[Eckart--Young Theorem: Operator Norm]
+Let
+\[
+A\in\R^{n\times m}
+\]
+and let
+\[
+k\leq \rank(A).
+\]
+
+Then
+\[
+A_{[k]}
+=
+\sum_{i=1}^k \sigma_i u_i v_i^\top
+\]
+has rank at most $k$, and
+\[
+\min_{\rank(B)\leq k}
+\norm{A-B}_{\mathrm{op}}
+=
+\norm{A-A_{[k]}}_{\mathrm{op}}
+=
+\sigma_{k+1}.
+\]
+\end{theorem}
+
+\begin{proof}
+Using the singular value decomposition,
+\[
+A=U\Sigma V^\top.
+\]
+
+By rotational invariance of the operator norm,
+\[
+\norm{A-A_{[k]}}_{\mathrm{op}}
+=
+\norm{\Sigma-\Sigma_{[k]}}_{\mathrm{op}},
+\]
+where
+\[
+\Sigma_{[k]}
+=
+\diag(\sigma_1,\dots,\sigma_k,0,\dots,0).
+\]
+
+Therefore,
+\[
+\norm{A-A_{[k]}}_{\mathrm{op}}
+=
+\sigma_{k+1}.
+\]
+
+It remains to show that no rank-$k$ matrix can do better.
+
+Let $B$ be any matrix with
+\[
+\rank(B)\leq k.
+\]
+
+Then
+\[
+\dim(\operatorname{null}(B))\geq m-k.
+\]
+
+Also,
+\[
+\dim(\operatorname{span}\{v_1,\dots,v_{k+1}\})=k+1.
+\]
+
+By dimension counting,
+\[
+\operatorname{null}(B)
+\cap
+\operatorname{span}\{v_1,\dots,v_{k+1}\}
+\neq
+\{0\}.
+\]
+
+Choose a unit vector
+\[
+z\in
+\operatorname{null}(B)
+\cap
+\operatorname{span}\{v_1,\dots,v_{k+1}\}.
+\]
+
+Then
+\[
+Bz=0.
+\]
+
+Hence,
+\[
+\norm{A-B}_{\mathrm{op}}
+\geq
+\norm{(A-B)z}_2
+=
+\norm{Az}_2.
+\]
+
+Write
+\[
+z=\sum_{i=1}^{k+1} a_i v_i,
+\qquad
+\sum_{i=1}^{k+1} a_i^2=1.
+\]
+
+Then
+\[
+Az
+=
+\sum_{i=1}^{k+1} a_i\sigma_i u_i.
+\]
+
+Therefore,
+\[
+\norm{Az}_2^2
+=
+\sum_{i=1}^{k+1} a_i^2\sigma_i^2.
+\]
+
+Since
+\[
+\sigma_i\geq \sigma_{k+1}
+\]
+for
+\[
+i\leq k+1,
+\]
+we obtain
+\[
+\norm{Az}_2^2
+\geq
+\sigma_{k+1}^2
+\sum_{i=1}^{k+1}a_i^2
+=
+\sigma_{k+1}^2.
+\]
+
+Thus,
+\[
+\norm{A-B}_{\mathrm{op}}
+\geq
+\sigma_{k+1}.
+\]
+
+Since $B$ was arbitrary,
+\[
+\min_{\rank(B)\leq k}
+\norm{A-B}_{\mathrm{op}}
+\geq
+\sigma_{k+1}.
+\]
+
+Together with the construction of $A_{[k]}$, this proves the result.
+\end{proof}
+
+\begin{theorem}[Eckart--Young Theorem: Frobenius Norm]
+Let
+\[
+A\in\R^{n\times m}
+\]
+and let
+\[
+k\leq \rank(A).
+\]
+
+Then
+\[
+A_{[k]}
+=
+\sum_{i=1}^k \sigma_i u_i v_i^\top
+\]
+solves
+\[
+\min_{\rank(B)\leq k}
+\norm{A-B}_F,
+\]
+and
+\[
+\min_{\rank(B)\leq k}
+\norm{A-B}_F
+=
+\norm{A-A_{[k]}}_F
+=
+\left(
+\sum_{i=k+1}^r \sigma_i^2
+\right)^{1/2}.
+\]
+\end{theorem}
+
+\begin{proof}
+By rotational invariance of the Frobenius norm,
+\[
+\norm{A-A_{[k]}}_F
+=
+\norm{\Sigma-\Sigma_{[k]}}_F.
+\]
+
+Since
+\[
+\Sigma-\Sigma_{[k]}
+\]
+has diagonal entries
+\[
+0,\dots,0,\sigma_{k+1},\dots,\sigma_r,
+\]
+we get
+\[
+\norm{A-A_{[k]}}_F^2
+=
+\sum_{i=k+1}^r \sigma_i^2.
+\]
+
+The optimality proof follows from the same singular-vector dimension-counting argument as in the operator-norm case, with the Frobenius norm measuring the squared sum of discarded singular values.
+\end{proof}
+
+\section{Symmetric Low-Rank Approximation}
+
+If
+\[
+A\in\mathbb{S}^n
+\]
+has spectral decomposition
+\[
+A=U\Lambda U^\top,
+\]
+where
+\[
+\Lambda=\diag(\lambda_1,\dots,\lambda_n),
+\]
+then a rank-$k$ approximation is obtained by keeping the $k$ eigenvalues of largest magnitude.
+
+Let
+\[
+|\lambda_{i_1}|\geq |\lambda_{i_2}|\geq \cdots \geq |\lambda_{i_n}|.
+\]
+
+Then
+\[
+A_{[k]}
+=
+\sum_{\ell=1}^k
+\lambda_{i_\ell}u_{i_\ell}u_{i_\ell}^\top.
+\]
+
+\begin{remark}
+For symmetric matrices, the singular values are the absolute values of the eigenvalues. Therefore, best low-rank approximation keeps the spectral components corresponding to the largest absolute eigenvalues.
+\end{remark}
+
+\section{Perturbation Theory}
+
+In applications, matrices are often only approximately low-rank. A common model is
+\[
+M=A+E,
+\]
+where
+\[
+A
+\]
+is the structured or low-rank signal matrix and
+\[
+E
+\]
+is a perturbation or noise matrix.
+
+This leads to the following questions:
+\begin{itemize}
+\item How far are the eigenvalues of $M$ from those of $A$?
+\item How far are the singular values of $M$ from those of $A$?
+\item How far are the eigenspaces or singular subspaces of $M$ from those of $A$?
+\end{itemize}
+
+\section{Weyl's Inequality}
+
+\begin{lemma}[Weyl's Inequality for Eigenvalues]
+Let
+\[
+A,E\in\mathbb{S}^n.
+\]
+
+Then, for every
+\[
+i\in\{1,\dots,n\},
+\]
+\[
+|\lambda_i(A)-\lambda_i(A+E)|
+\leq
+\norm{E}_{\mathrm{op}}.
+\]
+\end{lemma}
+
+\begin{lemma}[Weyl's Inequality for Singular Values]
+Let
+\[
+A,E\in\R^{n\times m}.
+\]
+
+Then, for every
+\[
+i\in\{1,\dots,\min(n,m)\},
+\]
+\[
+|\sigma_i(A)-\sigma_i(A+E)|
+\leq
+\norm{E}_{\mathrm{op}}.
+\]
+\end{lemma}
+
+\begin{remark}
+Eigenvalues and singular values are Lipschitz with respect to perturbations in operator norm. Thus small operator-norm perturbations cannot significantly change the spectrum.
+\end{remark}
+
+\section{Distances Between Subspaces}
+
+When studying perturbations of eigenvectors, it is often better to compare subspaces rather than individual vectors.
+
+This is necessary because:
+\begin{itemize}
+\item eigenvectors are only defined up to sign;
+\item repeated eigenvalues generate eigenspaces rather than individual distinguished eigenvectors;
+\item different orthonormal bases can span the same subspace.
+\end{itemize}
+
+Let
+\[
+\mathcal{U}
+=
+\operatorname{span}(U)
+\]
+and
+\[
+\mathcal{U}_*
+=
+\operatorname{span}(U_*),
+\]
+where
+\[
+U,U_*\in\R^{n\times r}
+\]
+have orthonormal columns.
+
+Let
+\[
+U_\perp
+\]
+and
+\[
+U_{*,\perp}
+\]
+be orthonormal bases for the orthogonal complements, so that
+\[
+[U\ \ U_\perp]\in O(n)
+\]
+and
+\[
+[U_*\ \ U_{*,\perp}]\in O(n).
+\]
+
+\subsection{Why Direct Basis Comparison Fails}
+
+A naive attempt to measure distance between subspaces is
+\[
+\norm{U-U_*}.
+\]
+
+This is not a good subspace distance because the same subspace can be represented by many different orthonormal bases. If
+\[
+R\in O(r),
+\]
+then
+\[
+UR
+\]
+spans the same subspace as $U$, but
+\[
+\norm{UR-U_*}
+\]
+can differ from
+\[
+\norm{U-U_*}.
+\]
+
+Thus a useful subspace distance should be invariant under changes of basis.
+
+\section{Subspace Distance Metrics}
+
+\subsection{Distance with Optimal Rotation}
+
+One option is to define
+\[
+\operatorname{dist}(\mathcal{U},\mathcal{U}_*)
+=
+\min_{R\in O(r)}
+\norm{UR-U_*},
+\]
+where the norm may be either the Frobenius norm or the operator norm.
+
+This removes the arbitrary choice of basis by optimally rotating one basis toward the other.
+
+\subsection{Distance Between Projections}
+
+Another basis-invariant choice is
+\[
+\norm{UU^\top-U_*U_*^\top}.
+\]
+
+The matrix
+\[
+UU^\top
+\]
+is the orthogonal projector onto
+\[
+\mathcal{U}.
+\]
+
+Thus this distance compares the subspaces themselves rather than the chosen bases.
+
+\subsection{Principal Angles}
+
+A third approach uses principal angles.
+
+Let
+\[
+\sigma_1\geq \cdots \geq \sigma_r
+\]
+be the singular values of
+\[
+U^\top U_*.
+\]
+
+Since
+\[
+\norm{U^\top U_*}_{\mathrm{op}}
+\leq
+\norm{U}_{\mathrm{op}}\norm{U_*}_{\mathrm{op}}
+=
+1,
+\]
+we have
+\[
+\sigma_i\in[0,1].
+\]
+
+Define the principal angles
+\[
+\theta_i=\arccos(\sigma_i),
+\qquad
+i=1,\dots,r.
+\]
+
+Let
+\[
+\Theta
+=
+\diag(\theta_1,\dots,\theta_r),
+\]
+and define
+\[
+\sin\Theta
+=
+\diag(\sin\theta_1,\dots,\sin\theta_r).
+\]
+
+A common subspace distance is then
+\[
+\norm{\sin\Theta}.
+\]
+
+\begin{remark}
+Principal angles measure how aligned two subspaces are. If the subspaces are identical, then all $\theta_i=0$. If they contain orthogonal directions, some angles approach $\pi/2$.
+\end{remark}
+
+\section{A Useful Rotation-Invariant Norm Fact}
+
+\begin{lemma}
+Suppose
+\[
+\norm{\cdot}
+\]
+is invariant under orthogonal transformations. Then, for compatible matrices $A$ and $B$,
+\[
+\norm{A}\sigma_{\min}(B)
+\leq
+\norm{AB}
+\leq
+\norm{A}\norm{B}_{\mathrm{op}},
+\]
+and
+\[
+\sigma_{\min}(A)\norm{B}
+\leq
+\norm{AB}
+\leq
+\norm{A}_{\mathrm{op}}\norm{B}.
+\]
+\end{lemma}
+
+\begin{remark}
+This fact is useful for proving equivalences between different subspace distances and for bounding matrix products when one factor is measured by singular values.
+\end{remark}
+
+\section{Basis Invariance of Subspace Distances}
+
+\begin{proposition}
+The following quantities do not depend on the choice of orthonormal bases for
+\[
+\mathcal{U}
+\]
+and
+\[
+\mathcal{U}_*:
+\]
+\begin{enumerate}
+\item
+\[
+\min_{R\in O(r)}
+\norm{UR-U_*};
+\]
+
+\item
+\[
+\norm{UU^\top-U_*U_*^\top};
+\]
+
+\item
+\[
+\norm{\sin\Theta}.
+\]
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Suppose we replace
+\[
+U
+\]
+by
+\[
+UQ
+\]
+and
+\[
+U_*
+\]
+by
+\[
+U_*Q_*,
+\]
+where
+\[
+Q,Q_*\in O(r).
+\]
+
+For the optimal rotation distance,
+\[
+\min_{R\in O(r)}
+\norm{UQR-U_*Q_*}.
+\]
+
+Let
+\[
+\widetilde{R}=QRQ_*^\top.
+\]
+
+As $R$ ranges over $O(r)$, so does $\widetilde{R}$. By rotational invariance of the norm, the minimized value is unchanged.
+
+For the projection distance,
+\[
+(UQ)(UQ)^\top
+=
+UQQ^\top U^\top
+=
+UU^\top.
+\]
+
+Similarly,
+\[
+(U_*Q_*)(U_*Q_*)^\top
+=
+U_*U_*^\top.
+\]
+
+Thus the projection distance is unchanged.
+
+For principal angles,
+\[
+(UQ)^\top(U_*Q_*)
+=
+Q^\top U^\top U_* Q_*.
+\]
+
+Multiplication on the left and right by orthogonal matrices does not change singular values. Therefore the singular values, and hence the principal angles, are unchanged.
+\end{proof}
+
+\section{Principal Angles Between Subspaces}
+
+Recall that
+\[
+\mathcal{U}=\operatorname{span}(U),
+\qquad
+\mathcal{U}_*=\operatorname{span}(U_*),
+\]
+where
+\[
+U,U_*\in\R^{n\times r}
+\]
+have orthonormal columns.
+
+The singular values of
+\[
+U^\top U_*
+\]
+play a central role in measuring distances between subspaces.
+
+Let
+\[
+\sigma_1\geq \sigma_2\geq \cdots \geq \sigma_r\geq 0
+\]
+be the singular values of
+\[
+U^\top U_*.
+\]
+
+Since
+\[
+\norm{U^\top U_*}_{\mathrm{op}}
+\leq
+\norm{U}_{\mathrm{op}}
+\norm{U_*}_{\mathrm{op}}
+=
+1,
+\]
+we have
+\[
+\sigma_i\in[0,1].
+\]
+
+\begin{definition}[Principal Angles]
+The principal angles between
+\[
+\mathcal{U}
+\]
+and
+\[
+\mathcal{U}_*
+\]
+are defined by
+\[
+\theta_i
+=
+\arccos(\sigma_i),
+\qquad
+i=1,\dots,r.
+\]
+\end{definition}
+
+Define
+\[
+\Theta
+=
+\diag(\theta_1,\dots,\theta_r)
+\]
+and
+\[
+\sin\Theta
+=
+\diag(\sin\theta_1,\dots,\sin\theta_r).
+\]
+
+A common subspace distance is
+\[
+\norm{\sin\Theta}.
+\]
+
+\subsection{Geometric Interpretation}
+
+For one-dimensional subspaces, the angle is uniquely defined.
+
+If
+\[
+u,u_*\in\R^n
+\]
+are unit vectors spanning one-dimensional subspaces, then
+\[
+\cos\theta
+=
+|\inner{u}{u_*}|.
+\]
+
+For higher-dimensional subspaces, there is no single canonical angle. Instead, one defines a sequence of principal angles.
+
+The first principal angle is
+\[
+\theta_1
+=
+\min_{\substack{
+u\in \mathcal{U}\cap S^{n-1}\\
+v\in \mathcal{U}_*\cap S^{n-1}
+}}
+\arccos(\inner{u}{v}).
+\]
+
+Equivalently,
+\[
+\theta_1
+=
+\arccos
+\left(
+\max_{\substack{
+u\in \mathcal{U}\cap S^{n-1}\\
+v\in \mathcal{U}_*\cap S^{n-1}
+}}
+\inner{u}{v}
+\right).
+\]
+
+If
+\[
+u_1,v_1
+\]
+are maximizers, then the second principal angle is defined recursively by restricting to orthogonal complements:
+\[
+\theta_2
+=
+\min_{\substack{
+u\in \mathcal{U}\cap \operatorname{span}(u_1)^\perp\cap S^{n-1}\\
+v\in \mathcal{U}_*\cap \operatorname{span}(v_1)^\perp\cap S^{n-1}
+}}
+\arccos(\inner{u}{v}).
+\]
+
+Continuing inductively yields
+\[
+\theta_1\leq \theta_2\leq \cdots \leq \theta_r.
+\]
+
+\begin{proposition}
+The vectors
+\[
+u_i,v_i
+\]
+obtained from the recursive principal-angle construction are precisely the left and right singular vectors of
+\[
+U^\top U_*.
+\]
+\end{proposition}
+
+\begin{proof}
+The first principal angle satisfies
+\[
+\cos\theta_1
+=
+\max_{\substack{
+u\in\mathcal{U}\cap S^{n-1}\\
+v\in\mathcal{U}_*\cap S^{n-1}
+}}
+\inner{u}{v}.
+\]
+
+Write
+\[
+u=Ua,
+\qquad
+v=U_*b,
+\]
+where
+\[
+\norm{a}_2=\norm{b}_2=1.
+\]
+
+Then
+\[
+\inner{u}{v}
+=
+a^\top U^\top U_* b.
+\]
+
+Thus,
+\[
+\cos\theta_1
+=
+\max_{\norm{a}_2=\norm{b}_2=1}
+a^\top(U^\top U_*)b.
+\]
+
+By the variational characterization of singular values, this maximum equals the top singular value of
+\[
+U^\top U_*.
+\]
+
+The maximizing vectors are the corresponding singular vectors. Repeating the argument inductively on orthogonal complements yields the remaining singular vectors and principal angles.
+\end{proof}
+
+\section{Equivalence of Subspace Distances}
+
+We previously introduced several notions of distance between subspaces:
+\begin{enumerate}
+\item optimal rotation distance;
+\item projection distance;
+\item principal-angle distance.
+\end{enumerate}
+
+These distances are all equivalent up to constants.
+
+\begin{lemma}
+Let
+\[
+U,U_*\in\R^{n\times r}
+\]
+have orthonormal columns. Then
+\[
+\norm{UU^\top-U_*U_*^\top}_{\mathrm{op}}
+=
+\norm{\sin\Theta}_{\mathrm{op}}
+=
+\norm{U_\perp^\top U_*}_{\mathrm{op}}
+=
+\norm{U^\top U_{*,\perp}}_{\mathrm{op}}.
+\]
+\end{lemma}
+
+\begin{proof}
+We prove the identity
+\[
+\norm{UU^\top-U_*U_*^\top}_{\mathrm{op}}
+=
+\norm{\sin\Theta}_{\mathrm{op}}.
+\]
+
+Choose orthonormal bases so that
+\[
+U^\top U_*
+=
+\diag(\cos\theta_1,\dots,\cos\theta_r).
+\]
+
+In this basis, the projection matrices decompose into independent $2\times2$ blocks corresponding to each principal angle.
+
+For a single angle $\theta$, the associated block difference has eigenvalues
+\[
+\pm \sin\theta.
+\]
+
+Therefore, the operator norm equals the largest singular value:
+\[
+\norm{UU^\top-U_*U_*^\top}_{\mathrm{op}}
+=
+\max_i \sin\theta_i
+=
+\norm{\sin\Theta}_{\mathrm{op}}.
+\]
+
+The identities involving
+\[
+U_\perp^\top U_*
+\]
+and
+\[
+U^\top U_{*,\perp}
+\]
+follow from the block orthogonal decomposition
+\[
+[U\ \ U_\perp]^\top
+[U_*\ \ U_{*,\perp}]
+\in O(n),
+\]
+whose off-diagonal blocks encode the sines of the principal angles.
+\end{proof}
+
+\begin{lemma}
+Let
+\[
+U,U_*\in\R^{n\times r}
+\]
+have orthonormal columns. Then
+\[
+\frac{1}{\sqrt{2}}
+\norm{UU^\top-U_*U_*^\top}_F
+\leq
+\min_{R\in O(r)}
+\norm{UR-U_*}_F
+\leq
+\norm{UU^\top-U_*U_*^\top}_F.
+\]
+\end{lemma}
+
+\begin{proof}
+Let
+\[
+U^\top U_*
+=
+P\Sigma Q^\top
+\]
+be the singular value decomposition.
+
+Choose
+\[
+R=PQ^\top.
+\]
+
+Then
+\[
+U^\top U_*R
+=
+P\Sigma P^\top.
+\]
+
+Using orthogonal invariance,
+\[
+\norm{UR-U_*}_F^2
+=
+2r-2\tr(R^\top U^\top U_*).
+\]
+
+Since
+\[
+R=PQ^\top,
+\]
+we obtain
+\[
+\tr(R^\top U^\top U_*)
+=
+\tr(\Sigma)
+=
+\sum_{i=1}^r \cos\theta_i.
+\]
+
+Therefore,
+\[
+\norm{UR-U_*}_F^2
+=
+2\sum_{i=1}^r (1-\cos\theta_i).
+\]
+
+On the other hand,
+\[
+\norm{UU^\top-U_*U_*^\top}_F^2
+=
+2\sum_{i=1}^r \sin^2\theta_i.
+\]
+
+Using
+\[
+1-\cos\theta
+\leq
+\sin^2\theta
+\leq
+2(1-\cos\theta),
+\]
+we obtain
+\[
+\frac{1}{2}
+\norm{UU^\top-U_*U_*^\top}_F^2
+\leq
+\norm{UR-U_*}_F^2
+\leq
+\norm{UU^\top-U_*U_*^\top}_F^2.
+\]
+
+Taking square roots yields the result.
+\end{proof}
+
+\begin{remark}
+These equivalences imply that controlling any one of the subspace distances automatically controls the others.
+\end{remark}
+
+\section{Perturbation of Eigenvectors}
+
+Unlike eigenvalues, eigenvectors are not always stable under perturbation.
+
+\subsection{A Warning Example}
+
+Consider
+\[
+M_*=
+\begin{pmatrix}
+1+\varepsilon & 0\\
+0 & 1-\varepsilon
+\end{pmatrix},
+\qquad
+E=
+\begin{pmatrix}
+-\varepsilon & \varepsilon\\
+\varepsilon & \varepsilon
+\end{pmatrix},
+\]
+and define
+\[
+M=M_*+E
+=
+\begin{pmatrix}
+1 & \varepsilon\\
+\varepsilon & 1
+\end{pmatrix}.
+\]
+
+The leading eigenvector of
+\[
+M_*
+\]
+is
+\[
+u_1^*=
+\begin{pmatrix}
+1\\
+0
+\end{pmatrix},
+\]
+while the leading eigenvector of
+\[
+M
+\]
+is
+\[
+u_1
+=
+\frac{1}{\sqrt{2}}
+\begin{pmatrix}
+1\\
+1
+\end{pmatrix}.
+\]
+
+Thus the leading eigenvectors remain far apart even as
+\[
+\varepsilon\to0.
+\]
+
+The issue is that the top two eigenvalues of
+\[
+M_*
+\]
+are nearly equal:
+\[
+\lambda_1(M_*)-\lambda_2(M_*)
+=
+2\varepsilon.
+\]
+
+Therefore, eigenvectors are stable only when the relevant eigenvalues are sufficiently separated.
+
+\section{The Davis--Kahan $\sin\Theta$ Theorem}
+
+Let
+\[
+M_*=M-E\in\mathbb{S}^n.
+\]
+
+Suppose
+\[
+M_*
+=
+[U_*\ \ U_{*,\perp}]
+\begin{pmatrix}
+\Lambda_* & 0\\
+0 & \Lambda_{*,\perp}
+\end{pmatrix}
+\begin{pmatrix}
+U_*^\top\\
+U_{*,\perp}^\top
+\end{pmatrix},
+\]
+and similarly
+\[
+M
+=
+[U\ \ U_\perp]
+\begin{pmatrix}
+\Lambda & 0\\
+0 & \Lambda_\perp
+\end{pmatrix}
+\begin{pmatrix}
+U^\top\\
+U_\perp^\top
+\end{pmatrix}.
+\]
+
+\begin{theorem}[Davis--Kahan $\sin\Theta$ Theorem]
+Suppose there exist
+\[
+a\leq b
+\]
+and
+\[
+\Delta>0
+\]
+such that one of the following holds:
+
+\begin{enumerate}
+\item
+\[
+\{\lambda_1^*,\dots,\lambda_r^*\}
+\subseteq
+[a,b]
+\]
+and
+\[
+\{\lambda_{r+1},\dots,\lambda_n\}
+\subseteq
+(-\infty,a-\Delta]
+\cup
+[b+\Delta,\infty).
+\]
+
+\item
+\[
+\{\lambda_1,\dots,\lambda_r\}
+\subseteq
+[a,b]
+\]
+and
+\[
+\{\lambda_{r+1}^*,\dots,\lambda_n^*\}
+\subseteq
+(-\infty,a-\Delta]
+\cup
+[b+\Delta,\infty).
+\]
+\end{enumerate}
+
+Then
+\[
+\norm{\sin\Theta}_{\mathrm{op}}
+\leq
+\frac{\norm{E}_{\mathrm{op}}}{\Delta}
+\]
+and
+\[
+\norm{\sin\Theta}_F
+\leq
+\frac{\sqrt{r}\norm{E}_{\mathrm{op}}}{\Delta}.
+\]
+\end{theorem}
+
+\begin{remark}
+The theorem states that eigenspaces are stable under perturbation provided there is a spectral gap
+\[
+\Delta.
+\]
+The perturbation size is controlled by
+\[
+\norm{E}_{\mathrm{op}}.
+\]
+\end{remark}
+
+\begin{corollary}
+Under the assumptions of the Davis--Kahan theorem,
+\[
+\operatorname{dist}_{\mathrm{op}}(U,U_*)
+\leq
+\frac{\sqrt{2}\norm{E}_{\mathrm{op}}}{\Delta},
+\]
+and
+\[
+\operatorname{dist}_F(U,U_*)
+\leq
+\frac{\sqrt{2r}\norm{E}_{\mathrm{op}}}{\Delta}.
+\]
+\end{corollary}
+
+\begin{proof}
+From the equivalence of subspace distances,
+\[
+\operatorname{dist}_{\mathrm{op}}(U,U_*)
+\leq
+\sqrt{2}\norm{\sin\Theta}_{\mathrm{op}},
+\]
+and
+\[
+\operatorname{dist}_F(U,U_*)
+\leq
+\sqrt{2}\norm{\sin\Theta}_F.
+\]
+
+Applying the Davis--Kahan theorem yields
+\[
+\operatorname{dist}_{\mathrm{op}}(U,U_*)
+\leq
+\frac{\sqrt{2}\norm{E}_{\mathrm{op}}}{\Delta},
+\]
+and
+\[
+\operatorname{dist}_F(U,U_*)
+\leq
+\frac{\sqrt{2r}\norm{E}_{\mathrm{op}}}{\Delta}.
+\]
+\end{proof}
+
+\section{A Gap-Based Corollary}
+
+Suppose
+\[
+|\lambda_1^*|
+\geq
+\cdots
+\geq
+|\lambda_n^*|,
+\]
+and
+\[
+|\lambda_1|
+\geq
+\cdots
+\geq
+|\lambda_n|.
+\]
+
+Define the eigengap
+\[
+\Delta
+=
+|\lambda_r^*|-|\lambda_{r+1}^*|.
+\]
+
+\begin{corollary}
+Suppose
+\[
+\norm{E}_{\mathrm{op}}
+<
+\left(
+1-\frac{1}{\sqrt{2}}
+\right)\Delta.
+\]
+
+Then
+\[
+\norm{\sin\Theta}_{\mathrm{op}}
+\leq
+\frac{2\norm{E}_{\mathrm{op}}}{\Delta},
+\]
+and
+\[
+\norm{\sin\Theta}_F
+\leq
+\frac{2\sqrt{r}\norm{E}_{\mathrm{op}}}{\Delta}.
+\]
+\end{corollary}
+
+\begin{proof}
+By Weyl's inequality,
+\[
+|\lambda_i-\lambda_i^*|
+\leq
+\norm{E}_{\mathrm{op}}.
+\]
+
+Therefore the perturbed eigenvalues remain separated provided
+\[
+\norm{E}_{\mathrm{op}}
+<
+\left(
+1-\frac{1}{\sqrt{2}}
+\right)\Delta.
+\]
+
+This guarantees that the spectral gap condition in Davis--Kahan holds with effective gap at least
+\[
+\Delta/2.
+\]
+
+Applying the theorem yields
+\[
+\norm{\sin\Theta}_{\mathrm{op}}
+\leq
+\frac{\norm{E}_{\mathrm{op}}}{\Delta/2}
+=
+\frac{2\norm{E}_{\mathrm{op}}}{\Delta},
+\]
+and similarly,
+\[
+\norm{\sin\Theta}_F
+\leq
+\frac{2\sqrt{r}\norm{E}_{\mathrm{op}}}{\Delta}.
+\]
+\end{proof}
+
+\section{Proof of the Davis--Kahan $\sin\Theta$ Theorem}
+
+We now prove the Davis--Kahan theorem. The argument is based on controlling
+\[
+U_\perp^\top U_*,
+\]
+which, by the identities from the previous lecture, determines the subspace distance.
+
+Recall the setup:
+\[
+M=M_*+E\in\mathbb{S}^n.
+\]
+
+Suppose
+\[
+M_*
+=
+[U_*\ \ U_{*,\perp}]
+\begin{pmatrix}
+\Lambda_* & 0\\
+0 & \Lambda_{*,\perp}
+\end{pmatrix}
+\begin{pmatrix}
+U_*^\top\\
+U_{*,\perp}^\top
+\end{pmatrix},
+\]
+and
+\[
+M
+=
+[U\ \ U_\perp]
+\begin{pmatrix}
+\Lambda & 0\\
+0 & \Lambda_\perp
+\end{pmatrix}
+\begin{pmatrix}
+U^\top\\
+U_\perp^\top
+\end{pmatrix}.
+\]
+
+Assume condition (1) of the Davis--Kahan theorem:
+\[
+\{\lambda_1^*,\dots,\lambda_r^*\}\subseteq[a,b]
+\]
+and
+\[
+\{\lambda_{r+1},\dots,\lambda_n\}
+\subseteq
+(-\infty,a-\Delta]
+\cup
+[b+\Delta,\infty).
+\]
+
+\subsection{Reduction to a Symmetric Interval}
+
+Without loss of generality, assume
+\[
+a=-b\leq 0.
+\]
+
+Indeed, otherwise define shifted matrices
+\[
+\widetilde{M}_*
+=
+M_*-\frac{a+b}{2}I_n,
+\qquad
+\widetilde{M}
+=
+M-\frac{a+b}{2}I_n.
+\]
+
+Subtracting a scalar multiple of the identity shifts eigenvalues but does not change eigenvectors.
+
+Thus we may assume the target eigenvalues lie in
+\[
+[-b,b].
+\]
+
+Consequently,
+\[
+\norm{\Lambda_*}_{\mathrm{op}}
+\leq b,
+\]
+while the complementary eigenvalues satisfy
+\[
+\sigma_{\min}(\Lambda_\perp)
+\geq
+b+\Delta.
+\]
+
+\section{Main Decomposition}
+
+We begin with the identity
+\[
+U_\perp^\top(M-M_*)U_*
+=
+\Lambda_\perp U_\perp^\top U_*
+-
+U_\perp^\top U_*\Lambda_*.
+\]
+
+\begin{proof}
+Since
+\[
+MU_\perp
+=
+U_\perp\Lambda_\perp,
+\]
+we have
+\[
+U_\perp^\top M
+=
+\Lambda_\perp U_\perp^\top.
+\]
+
+Similarly,
+\[
+M_*U_*
+=
+U_*\Lambda_*.
+\]
+
+Therefore,
+\[
+U_\perp^\top(M-M_*)U_*
+=
+U_\perp^\top MU_*
+-
+U_\perp^\top M_*U_*.
+\]
+
+Substituting the eigenvalue relations gives
+\[
+U_\perp^\top(M-M_*)U_*
+=
+\Lambda_\perp U_\perp^\top U_*
+-
+U_\perp^\top U_*\Lambda_*.
+\]
+\end{proof}
+
+Since
+\[
+E=M-M_*,
+\]
+the identity becomes
+\[
+U_\perp^\top E U_*
+=
+\Lambda_\perp U_\perp^\top U_*
+-
+U_\perp^\top U_*\Lambda_*.
+\]
+
+\section{Operator Norm Bound}
+
+We now derive the operator norm estimate.
+
+Using the reverse triangle inequality,
+\[
+\norm{U_\perp^\top E U_*}
+\geq
+\norm{\Lambda_\perp U_\perp^\top U_*}
+-
+\norm{U_\perp^\top U_*\Lambda_*}.
+\]
+
+Using the singular-value inequalities for rotationally invariant norms,
+\[
+\norm{\Lambda_\perp U_\perp^\top U_*}
+\geq
+\sigma_{\min}(\Lambda_\perp)
+\norm{U_\perp^\top U_*},
+\]
+and
+\[
+\norm{U_\perp^\top U_*\Lambda_*}
+\leq
+\norm{U_\perp^\top U_*}
+\norm{\Lambda_*}_{\mathrm{op}}.
+\]
+
+Hence,
+\[
+\norm{U_\perp^\top E U_*}
+\geq
+\left(
+\sigma_{\min}(\Lambda_\perp)
+-
+\norm{\Lambda_*}_{\mathrm{op}}
+\right)
+\norm{U_\perp^\top U_*}.
+\]
+
+Using
+\[
+\sigma_{\min}(\Lambda_\perp)\geq b+\Delta
+\]
+and
+\[
+\norm{\Lambda_*}_{\mathrm{op}}\leq b,
+\]
+we obtain
+\[
+\norm{U_\perp^\top E U_*}
+\geq
+\Delta
+\norm{U_\perp^\top U_*}.
+\]
+
+Therefore,
+\[
+\norm{U_\perp^\top U_*}
+\leq
+\frac{
+\norm{U_\perp^\top E U_*}
+}{\Delta}.
+\]
+
+Finally,
+\[
+\norm{U_\perp^\top E U_*}
+\leq
+\norm{U_\perp}_{\mathrm{op}}
+\norm{E U_*}.
+\]
+
+Since
+\[
+\norm{U_\perp}_{\mathrm{op}}=1,
+\]
+we conclude
+\[
+\norm{U_\perp^\top U_*}
+\leq
+\frac{\norm{EU_*}}{\Delta}.
+\]
+
+Using
+\[
+\norm{EU_*}_{\mathrm{op}}
+\leq
+\norm{E}_{\mathrm{op}},
+\]
+we obtain
+\[
+\norm{U_\perp^\top U_*}_{\mathrm{op}}
+\leq
+\frac{\norm{E}_{\mathrm{op}}}{\Delta}.
+\]
+
+Recalling that
+\[
+\norm{\sin\Theta}_{\mathrm{op}}
+=
+\norm{U_\perp^\top U_*}_{\mathrm{op}},
+\]
+we arrive at
+\[
+\norm{\sin\Theta}_{\mathrm{op}}
+\leq
+\frac{\norm{E}_{\mathrm{op}}}{\Delta}.
+\]
+
+\section{Frobenius Norm Bound}
+
+Using the Frobenius norm instead, the same argument gives
+\[
+\norm{U_\perp^\top U_*}_F
+\leq
+\frac{\norm{EU_*}_F}{\Delta}.
+\]
+
+Now,
+\[
+\norm{EU_*}_F
+\leq
+\norm{E}_{\mathrm{op}}
+\norm{U_*}_F.
+\]
+
+Since
+\[
+U_*
+\]
+has orthonormal columns,
+\[
+\norm{U_*}_F=\sqrt{r}.
+\]
+
+Therefore,
+\[
+\norm{\sin\Theta}_F
+=
+\norm{U_\perp^\top U_*}_F
+\leq
+\frac{\sqrt{r}\norm{E}_{\mathrm{op}}}{\Delta}.
+\]
+
+This completes the proof of the Davis--Kahan theorem.
+
+\section{Proof of the Gap Corollary}
+
+We now prove the earlier corollary based on the eigengap.
+
+Assume
+\[
+|\lambda_1^*|
+\geq
+\cdots
+\geq
+|\lambda_n^*|,
+\]
+and define
+\[
+\Delta
+=
+|\lambda_r^*|-|\lambda_{r+1}^*|.
+\]
+
+Suppose
+\[
+\norm{E}_{\mathrm{op}}
+<
+\left(
+1-\frac{1}{\sqrt{2}}
+\right)\Delta.
+\]
+
+We show that condition (2) of the Davis--Kahan theorem holds.
+
+\subsection{Weyl's Inequality}
+
+Let
+\[
+\lambda_i(M_*),
+\qquad
+\lambda_i(M)
+\]
+denote the eigenvalues sorted by value.
+
+By Weyl's inequality,
+\[
+|\lambda_i(M)-\lambda_i(M_*)|
+\leq
+\norm{E}_{\mathrm{op}}
+\]
+for all
+\[
+i.
+\]
+
+Let
+\[
+r_1
+=
+\#\left\{
+i:\lambda_i(M)\geq |\lambda_{r+1}^*|
+\right\},
+\]
+and
+\[
+r_2
+=
+\#\left\{
+i:\lambda_i(M)\leq -|\lambda_{r+1}^*|
+\right\}.
+\]
+
+Then
+\[
+r=r_1+r_2.
+\]
+
+For indices
+\[
+i\leq r_1
+\]
+or
+\[
+i>n-r_2,
+\]
+Weyl's inequality gives
+\[
+|\lambda_i(M)|
+\geq
+|\lambda_i(M_*)|
+-
+\norm{E}_{\mathrm{op}}.
+\]
+
+Using the perturbation assumption,
+\[
+\norm{E}_{\mathrm{op}}
+<
+\left(
+1-\frac{1}{\sqrt{2}}
+\right)
+(|\lambda_r^*|-|\lambda_{r+1}^*|),
+\]
+we obtain
+\[
+|\lambda_i(M)|
+>
+|\lambda_{r+1}^*|
++
+\norm{E}_{\mathrm{op}}.
+\]
+
+On the other hand, for
+\[
+r_1<i\leq n-r_2,
+\]
+Weyl's inequality gives
+\[
+|\lambda_i(M)|
+\leq
+|\lambda_{r+1}^*|
++
+\norm{E}_{\mathrm{op}}.
+\]
+
+Thus setting
+\[
+b
+=
+|\lambda_{r+1}^*|
++
+\norm{E}_{\mathrm{op}}
+\]
+implies
+\[
+\{\lambda_{r+1},\dots,\lambda_n\}
+\subseteq
+[-b,b].
+\]
+
+Meanwhile,
+\[
+\{\lambda_1^*,\dots,\lambda_r^*\}
+\subseteq
+(-\infty,-|\lambda_r^*|]
+\cup
+[|\lambda_r^*|,\infty).
+\]
+
+Hence we may choose
+\[
+a=-b
+\]
+and
+\[
+\widetilde{\Delta}
+=
+|\lambda_r^*|
+-
+|\lambda_{r+1}^*|
+-
+\norm{E}_{\mathrm{op}}.
+\]
+
+Since
+\[
+\norm{E}_{\mathrm{op}}
+<
+\left(
+1-\frac{1}{\sqrt{2}}
+\right)\Delta,
+\]
+we have
+\[
+\widetilde{\Delta}
+>
+\frac{\Delta}{\sqrt{2}}.
+\]
+
+Applying the Davis--Kahan theorem gives
+\[
+\norm{\sin\Theta}_{\mathrm{op}}
+\leq
+\frac{\norm{E}_{\mathrm{op}}}{\widetilde{\Delta}}
+\leq
+\frac{\sqrt{2}\norm{E}_{\mathrm{op}}}{\Delta}.
+\]
+
+Using the earlier equivalence relations between subspace distances yields the stated bounds.
+
+\section{Wedin's $\sin\Theta$ Theorem}
+
+Davis--Kahan controls perturbations of eigenspaces for symmetric matrices. Wedin's theorem gives the analogous result for singular vectors.
+
+Suppose
+\[
+M=M_*+E\in\R^{n\times m},
+\]
+and assume
+\[
+n\leq m.
+\]
+
+Write the singular value decompositions
+\[
+M_*
+=
+[U_*\ \ U_{*,\perp}]
+\begin{pmatrix}
+\Sigma_* & 0 & 0\\
+0 & \Sigma_{*,\perp} & 0
+\end{pmatrix}
+\begin{pmatrix}
+V_*^\top\\
+V_{*,\perp}^\top
+\end{pmatrix},
+\]
+and
+\[
+M
+=
+[U\ \ U_\perp]
+\begin{pmatrix}
+\Sigma & 0 & 0\\
+0 & \Sigma_\perp & 0
+\end{pmatrix}
+\begin{pmatrix}
+V^\top\\
+V_\perp^\top
+\end{pmatrix}.
+\]
+
+Here,
+\[
+\Sigma_*=\diag(\sigma_1^*,\dots,\sigma_r^*),
+\]
+and similarly for the remaining blocks.
+
+\begin{theorem}[Wedin's $\sin\Theta$ Theorem]
+Suppose
+\[
+\norm{E}_{\mathrm{op}}
+\leq
+\frac{\sigma_r^*-\sigma_{r+1}^*}{\sqrt{2}}.
+\]
+
+Then
+\[
+\operatorname{dist}_{\mathrm{op}}(U,U_*)
+\vee
+\operatorname{dist}_{\mathrm{op}}(V,V_*)
+\leq
+\frac{
+2
+\left(
+\norm{E^\top U_*}_{\mathrm{op}}
+\vee
+\norm{EV_*}_{\mathrm{op}}
+\right)
+}{
+\sigma_r^*-\sigma_{r+1}^*
+},
+\]
+and
+\[
+\operatorname{dist}_F(U,U_*)
+\vee
+\operatorname{dist}_F(V,V_*)
+\leq
+\frac{
+2
+\left(
+\norm{E^\top U_*}_F
+\vee
+\norm{EV_*}_F
+\right)
+}{
+\sigma_r^*-\sigma_{r+1}^*
+}.
+\]
+\end{theorem}
+
+\begin{remark}
+Wedin's theorem is the singular-vector analogue of Davis--Kahan. The proof follows the same general strategy:
+\begin{enumerate}
+\item derive a decomposition involving perturbation terms;
+\item exploit the singular value gap;
+\item bound subspace distances using operator or Frobenius norms.
+\end{enumerate}
+\end{remark}
+
+\section{Community Detection in Networks}
+
+We now apply perturbation theory to a statistical learning problem.
+
+\subsection{The Stochastic Block Model}
+
+Consider a graph
+\[
+G(n,p,q)
+\]
+with
+\[
+n
+\]
+vertices split into two communities of equal size
+\[
+n/2.
+\]
+
+Edges are generated independently according to:
+\[
+\Prob((v_i,v_j)\text{ is an edge})
+=
+\begin{cases}
+p, & v_i,v_j \text{ in same community},\\
+q, & \text{otherwise}.
+\end{cases}
+\]
+
+The goal is to recover the hidden communities from one realization of the graph.
+
+\section{Adjacency Matrix Representation}
+
+Let
+\[
+A\in\R^{n\times n}
+\]
+be the adjacency matrix:
+\[
+A_{ij}
+=
+\begin{cases}
+1, & (i,j)\text{ is an edge},\\
+0, & \text{otherwise}.
+\end{cases}
+\]
+
+Assume the first
+\[
+n/2
+\]
+vertices belong to the first community.
+
+Then
+\[
+\E[A]
+=
+\begin{pmatrix}
+p\mathbf{1}\mathbf{1}^\top & q\mathbf{1}\mathbf{1}^\top\\
+q\mathbf{1}\mathbf{1}^\top & p\mathbf{1}\mathbf{1}^\top
+\end{pmatrix},
+\]
+where each block has dimension
+\[
+n/2\times n/2.
+\]
+
+\section{Spectral Structure of the Population Matrix}
+
+The matrix
+\[
+\E[A]
+\]
+has rank $2$.
+
+Define
+\[
+u_1
+=
+\frac{1}{\sqrt{n}}
+\begin{pmatrix}
+1\\
+\vdots\\
+1
+\end{pmatrix},
+\]
+and
+\[
+u_2
+=
+\frac{1}{\sqrt{n}}
+\begin{pmatrix}
+1\\
+\vdots\\
+1\\
+-1\\
+\vdots\\
+-1
+\end{pmatrix},
+\]
+where the first
+\[
+n/2
+\]
+entries are
+\[
++1
+\]
+and the last
+\[
+n/2
+\]
+entries are
+\[
+-1.
+\]
+
+\begin{proposition}
+The vectors
+\[
+u_1,u_2
+\]
+are eigenvectors of
+\[
+\E[A].
+\]
+
+Their eigenvalues are
+\[
+\lambda_1
+=
+\frac{n}{2}(p+q),
+\]
+and
+\[
+\lambda_2
+=
+\frac{n}{2}(p-q).
+\]
+\end{proposition}
+
+\begin{proof}
+For
+\[
+u_1,
+\]
+every row sum of
+\[
+\E[A]
+\]
+equals
+\[
+\frac{n}{2}p+\frac{n}{2}q
+=
+\frac{n}{2}(p+q).
+\]
+
+Hence
+\[
+\E[A]u_1
+=
+\frac{n}{2}(p+q)u_1.
+\]
+
+For
+\[
+u_2,
+\]
+rows inside the first community contribute
+\[
+\frac{n}{2}p-\frac{n}{2}q
+=
+\frac{n}{2}(p-q),
+\]
+while rows inside the second community contribute the negative of this quantity. Therefore
+\[
+\E[A]u_2
+=
+\frac{n}{2}(p-q)u_2.
+\]
+\end{proof}
+
+\begin{remark}
+The second eigenvector
+\[
+u_2
+\]
+encodes the community structure through its signs.
+
+If the observed adjacency matrix
+\[
+A
+\]
+is close to
+\[
+\E[A]
+\]
+in operator norm, then Davis--Kahan implies that the empirical second eigenvector of
+\[
+A
+\]
+is close to
+\[
+u_2.
+\]
+
+Thus the communities can be approximately recovered by thresholding the signs of the empirical second eigenvector.
+\end{remark}
+
+\section{Spectral Clustering for Community Detection}
+
+Recall the two-community stochastic block model
+\[
+G\sim G(n,p,q),
+\]
+where the vertex set is split into two equal communities of size $n/2$. Edges are sampled independently with probability
+\[
+\Prob((v_i,v_j)\text{ is an edge})
+=
+\begin{cases}
+p, & v_i,v_j \text{ are in the same community},\\
+q, & v_i,v_j \text{ are in different communities}.
+\end{cases}
+\]
+
+Let
+\[
+A\in\R^{n\times n}
+\]
+be the adjacency matrix of $G$.
+
+Assume, without loss of generality, that the first community is
+\[
+\{1,\dots,n/2\}.
+\]
+
+Then the population adjacency matrix has block form
+\[
+\E[A]
+=
+\begin{pmatrix}
+p\mathbf{1}\mathbf{1}^\top & q\mathbf{1}\mathbf{1}^\top\\
+q\mathbf{1}\mathbf{1}^\top & p\mathbf{1}\mathbf{1}^\top
+\end{pmatrix},
+\]
+where each block is of size
+\[
+\frac{n}{2}\times \frac{n}{2}.
+\]
+
+Define
+\[
+u_1
+=
+\frac{1}{\sqrt{n}}
+\begin{pmatrix}
+1\\
+\vdots\\
+1
+\end{pmatrix},
+\qquad
+u_2
+=
+\frac{1}{\sqrt{n}}
+\begin{pmatrix}
+1\\
+\vdots\\
+1\\
+-1\\
+\vdots\\
+-1
+\end{pmatrix},
+\]
+where $u_2$ has $n/2$ positive entries followed by $n/2$ negative entries.
+
+Then
+\[
+\E[A]u_1
+=
+\frac{n}{2}(p+q)u_1
+\]
+and
+\[
+\E[A]u_2
+=
+\frac{n}{2}(p-q)u_2.
+\]
+
+Thus,
+\[
+\lambda_1(\E[A])
+=
+\frac{n}{2}(p+q),
+\qquad
+\lambda_2(\E[A])
+=
+\frac{n}{2}(p-q).
+\]
+
+The second eigenvector encodes the communities through its signs.
+
+\subsection{Spectral Clustering Algorithm}
+
+\begin{algorithm}[H]
+\caption{Spectral Clustering for the Two-Community SBM}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Graph $G$
+\State Compute the adjacency matrix $A$
+\State Compute $u_2(A)$, the eigenvector associated with the second-largest eigenvalue of $A$
+\State Return the community labels
+\[
+\operatorname{sign}(u_2(A)).
+\]
+\end{algorithmic}
+\end{algorithm}
+
+\section{Misclassification Guarantee}
+
+Define the signal strength
+\[
+\mu
+=
+q\wedge (p-q),
+\]
+and assume
+\[
+\mu>0.
+\]
+
+\begin{theorem}[Spectral Clustering Misclassification Bound]
+Let
+\[
+G\sim G(n,p,q)
+\]
+with two equal-sized communities. Suppose
+\[
+q\wedge(p-q)=\mu>0.
+\]
+
+Then, with probability at least
+\[
+1-4e^{-n},
+\]
+the spectral clustering algorithm misclassifies at most
+\[
+\frac{C}{\mu^2}
+\]
+vertices, where $C>0$ is a universal constant.
+\end{theorem}
+
+\begin{proof}
+Let
+\[
+u_2(\E[A])
+\]
+denote the unit-norm eigenvector of $\E[A]$ associated with
+\[
+\lambda_2(\E[A]).
+\]
+
+By Davis--Kahan,
+\[
+\sin\angle(u_2(\E[A]),u_2(A))
+\leq
+\frac{2\norm{A-\E[A]}_{\mathrm{op}}}
+{
+\min\{\lambda_2(\E[A]),\lambda_1(\E[A])-\lambda_2(\E[A])\}
+}.
+\]
+
+Now,
+\[
+\lambda_2(\E[A])
+=
+\frac{n}{2}(p-q),
+\]
+and
+\[
+\lambda_1(\E[A])-\lambda_2(\E[A])
+=
+\frac{n}{2}(p+q)-\frac{n}{2}(p-q)
+=
+nq.
+\]
+
+Therefore,
+\[
+\min\{\lambda_2(\E[A]),\lambda_1(\E[A])-\lambda_2(\E[A])\}
+\geq
+c\mu n
+\]
+for a universal constant $c>0$.
+
+Hence,
+\[
+\sin\angle(u_2(\E[A]),u_2(A))
+\leq
+C\frac{\norm{A-\E[A]}_{\mathrm{op}}}{\mu n}.
+\]
+
+We use the matrix concentration fact
+\[
+\Prob\left(
+\norm{A-\E[A]}_{\mathrm{op}}
+\geq
+C\sqrt{n}
+\right)
+\leq
+4e^{-n}.
+\]
+
+On this event,
+\[
+\sin\angle(u_2(\E[A]),u_2(A))
+\leq
+\frac{C}{\mu\sqrt{n}}.
+\]
+
+Since both vectors have unit norm,
+\[
+\min_{s\in\{-1,1\}}
+\norm{u_2(\E[A])-s u_2(A)}_2
+\leq
+C\sin\angle(u_2(\E[A]),u_2(A)).
+\]
+
+Thus,
+\[
+\min_{s\in\{-1,1\}}
+\norm{u_2(\E[A])-s u_2(A)}_2
+\leq
+\frac{C}{\mu\sqrt{n}}.
+\]
+
+Now define
+\[
+v_2
+=
+\sqrt{n}u_2(\E[A]).
+\]
+
+Then $v_2$ has entries
+\[
++1
+\]
+on one community and
+\[
+-1
+\]
+on the other.
+
+Choose
+\[
+s\in\{-1,1\}
+\]
+so that
+\[
+\norm{u_2(\E[A])-s u_2(A)}_2
+\]
+is minimized. Multiplying by $\sqrt{n}$ gives
+\[
+\norm{v_2-s\sqrt{n}u_2(A)}_2
+\leq
+\frac{C}{\mu}.
+\]
+
+A vertex is misclassified only if the sign of the empirical vector disagrees with the sign of $v_2$. For such a coordinate $i$,
+\[
+|v_2^{(i)}-s\sqrt{n}u_2^{(i)}(A)|
+\geq
+1.
+\]
+
+Therefore,
+\[
+\#\left\{
+i:
+\operatorname{sign}(s u_2^{(i)}(A))\neq v_2^{(i)}
+\right\}
+\leq
+\sum_{i=1}^n
+\left(
+v_2^{(i)}-s\sqrt{n}u_2^{(i)}(A)
+\right)^2.
+\]
+
+Hence,
+\[
+\#\{\text{misclassified vertices}\}
+\leq
+\norm{v_2-s\sqrt{n}u_2(A)}_2^2
+\leq
+\frac{C}{\mu^2}.
+\]
+\end{proof}
+
+\begin{remark}
+The proof has two main ingredients:
+\begin{enumerate}
+\item Davis--Kahan converts matrix perturbation into eigenvector perturbation.
+\item A sign-thresholding argument converts eigenvector perturbation into a misclassification bound.
+\end{enumerate}
+\end{remark}
+
+\section{Nets, Coverings, and Packings}
+
+We now develop tools for proving operator norm bounds such as
+\[
+\norm{A-\E[A]}_{\mathrm{op}}
+=
+O(\sqrt{n})
+\]
+with high probability.
+
+For a matrix
+\[
+A\in\R^{n\times m},
+\]
+the operator norm is
+\[
+\norm{A}_{\mathrm{op}}
+=
+\max_{v\in S^{m-1}}
+\norm{Av}_2.
+\]
+
+This maximum ranges over infinitely many vectors. To use union bounds, we replace the sphere by a finite approximation.
+
+\section{Metric Spaces}
+
+\begin{definition}[Metric Space]
+A metric space is a pair
+\[
+(T,d),
+\]
+where
+\[
+d:T\times T\to\R_+
+\]
+satisfies, for all $x,y,z\in T$:
+\begin{enumerate}
+\item
+\[
+d(x,x)=0;
+\]
+\item if $x\neq y$, then
+\[
+d(x,y)>0;
+\]
+\item
+\[
+d(x,y)=d(y,x);
+\]
+\item
+\[
+d(x,y)\leq d(x,z)+d(z,y).
+\]
+\end{enumerate}
+\end{definition}
+
+\begin{example}
+The Euclidean space
+\[
+\R^d
+\]
+with
+\[
+d(x,y)=\norm{x-y}_2
+\]
+is a metric space.
+\end{example}
+
+\section{\texorpdfstring{$\varepsilon$}{epsilon}-Nets}
+
+\begin{definition}[$\varepsilon$-Net]
+Let
+\[
+(T,d)
+\]
+be a metric space, let
+\[
+K\subseteq T,
+\]
+and let
+\[
+\varepsilon>0.
+\]
+
+A subset
+\[
+\mathcal{N}\subseteq K
+\]
+is called an $\varepsilon$-net of $K$ if, for every
+\[
+x\in K,
+\]
+there exists
+\[
+x_0\in\mathcal{N}
+\]
+such that
+\[
+d(x,x_0)\leq \varepsilon.
+\]
+\end{definition}
+
+\begin{definition}[Covering Number]
+The covering number of $K$ at scale $\varepsilon$ is
+\[
+N(K,d,\varepsilon),
+\]
+defined as the cardinality of the smallest $\varepsilon$-net of $K$.
+\end{definition}
+
+\begin{remark}
+In Euclidean space, an $\varepsilon$-net covers a set using Euclidean balls of radius $\varepsilon$ centered at the points of the net.
+\end{remark}
+
+\section{Packing Numbers}
+
+\begin{definition}[$\varepsilon$-Separated Set]
+Let
+\[
+(T,d)
+\]
+be a metric space. A subset
+\[
+\mathcal{P}\subseteq T
+\]
+is called $\varepsilon$-separated if
+\[
+d(x,y)>\varepsilon
+\]
+for all distinct
+\[
+x,y\in\mathcal{P}.
+\]
+\end{definition}
+
+\begin{definition}[Packing Number]
+The packing number of $K$ at scale $\varepsilon$ is
+\[
+P(K,d,\varepsilon),
+\]
+defined as the cardinality of the largest $\varepsilon$-separated subset of $K$.
+\end{definition}
+
+\section{Relationship Between Covering and Packing Numbers}
+
+Covering and packing numbers are closely related.
+
+\begin{lemma}
+For any subset
+\[
+K\subseteq T
+\]
+and any
+\[
+\varepsilon>0,
+\]
+we have
+\[
+P(K,d,2\varepsilon)
+\leq
+N(K,d,\varepsilon)
+\leq
+P(K,d,\varepsilon).
+\]
+\end{lemma}
+
+\begin{proof}
+We first prove the lower bound.
+
+Let
+\[
+\mathcal{P}
+\]
+be a $2\varepsilon$-separated subset of $K$, and let
+\[
+\mathcal{N}
+\]
+be an $\varepsilon$-net of $K$.
+
+For each
+\[
+x\in\mathcal{P},
+\]
+there exists
+\[
+y\in\mathcal{N}
+\]
+such that
+\[
+d(x,y)\leq \varepsilon.
+\]
+
+We claim that distinct points in $\mathcal{P}$ must map to distinct points in $\mathcal{N}$. Suppose two distinct points
+\[
+x,z\in\mathcal{P}
+\]
+were both within distance $\varepsilon$ of the same $y\in\mathcal{N}$. Then by the triangle inequality,
+\[
+d(x,z)
+\leq
+d(x,y)+d(y,z)
+\leq
+2\varepsilon,
+\]
+contradicting the fact that $\mathcal{P}$ is $2\varepsilon$-separated.
+
+Thus,
+\[
+|\mathcal{P}|\leq |\mathcal{N}|.
+\]
+
+Since $\mathcal{P}$ and $\mathcal{N}$ were arbitrary,
+\[
+P(K,d,2\varepsilon)
+\leq
+N(K,d,\varepsilon).
+\]
+
+Now we prove the upper bound.
+
+Let
+\[
+\mathcal{N}
+\]
+be a maximal $\varepsilon$-separated subset of $K$. Then
+\[
+|\mathcal{N}|=P(K,d,\varepsilon).
+\]
+
+We claim that $\mathcal{N}$ is an $\varepsilon$-net of $K$.
+
+Suppose not. Then there exists
+\[
+x\in K
+\]
+such that
+\[
+d(x,y)>\varepsilon
+\]
+for every
+\[
+y\in\mathcal{N}.
+\]
+
+Then
+\[
+\mathcal{N}\cup\{x\}
+\]
+is a larger $\varepsilon$-separated subset of $K$, contradicting maximality of $\mathcal{N}$.
+
+Therefore $\mathcal{N}$ is an $\varepsilon$-net, and so
+\[
+N(K,d,\varepsilon)
+\leq
+|\mathcal{N}|
+=
+P(K,d,\varepsilon).
+\]
+\end{proof}
+
+\begin{remark}
+This lemma allows us to bound covering numbers using packing arguments, which are often easier because separated balls are disjoint.
+\end{remark}
+
+\section{Covering Numbers via Volume}
+
+In many applications, we need quantitative bounds on covering numbers. We now derive such bounds in Euclidean space using volume.
+
+Throughout this section, let
+\[
+B_2^n
+=
+\{x\in\R^n:\norm{x}_2\leq 1\}.
+\]
+
+\begin{definition}[Minkowski Sum]
+Let
+\[
+A,B\subseteq \R^n.
+\]
+The Minkowski sum of $A$ and $B$ is
+\[
+A+B
+=
+\{a+b:a\in A,\ b\in B\}.
+\]
+\end{definition}
+
+\begin{proposition}[Volume Bounds for Covering Numbers]
+Let
+\[
+K\subseteq \R^n
+\]
+and let
+\[
+\varepsilon>0.
+\]
+Then
+\[
+\frac{\operatorname{Vol}(K)}
+{\operatorname{Vol}(\varepsilon B_2^n)}
+\leq
+N(K,\norm{\cdot}_2,\varepsilon)
+\leq
+P(K,\norm{\cdot}_2,\varepsilon)
+\leq
+\frac{
+\operatorname{Vol}\left(K+\frac{\varepsilon}{2}B_2^n\right)
+}{
+\operatorname{Vol}\left(\frac{\varepsilon}{2}B_2^n\right)
+}.
+\]
+\end{proposition}
+
+\begin{proof}
+For the lower bound, let
+\[
+N=N(K,\norm{\cdot}_2,\varepsilon).
+\]
+Then $K$ can be covered by $N$ Euclidean balls of radius $\varepsilon$. Therefore,
+\[
+\operatorname{Vol}(K)
+\leq
+N\operatorname{Vol}(\varepsilon B_2^n).
+\]
+Rearranging gives
+\[
+\frac{\operatorname{Vol}(K)}
+{\operatorname{Vol}(\varepsilon B_2^n)}
+\leq
+N(K,\norm{\cdot}_2,\varepsilon).
+\]
+
+For the upper bound, let
+\[
+\mathcal{P}
+\]
+be a maximal $\varepsilon$-separated subset of $K$, so that
+\[
+|\mathcal{P}|=P(K,\norm{\cdot}_2,\varepsilon).
+\]
+
+The balls
+\[
+x+\frac{\varepsilon}{2}B_2^n,
+\qquad x\in\mathcal{P},
+\]
+are pairwise disjoint. Moreover, since $x\in K$,
+\[
+x+\frac{\varepsilon}{2}B_2^n
+\subseteq
+K+\frac{\varepsilon}{2}B_2^n.
+\]
+
+Hence,
+\[
+|\mathcal{P}|
+\operatorname{Vol}\left(
+\frac{\varepsilon}{2}B_2^n
+\right)
+\leq
+\operatorname{Vol}\left(
+K+\frac{\varepsilon}{2}B_2^n
+\right).
+\]
+
+Thus,
+\[
+P(K,\norm{\cdot}_2,\varepsilon)
+\leq
+\frac{
+\operatorname{Vol}\left(K+\frac{\varepsilon}{2}B_2^n\right)
+}{
+\operatorname{Vol}\left(\frac{\varepsilon}{2}B_2^n\right)
+}.
+\]
+
+Finally, from the relationship between covering and packing numbers,
+\[
+N(K,\norm{\cdot}_2,\varepsilon)
+\leq
+P(K,\norm{\cdot}_2,\varepsilon).
+\]
+\end{proof}
+
+\section{Covering the Euclidean Unit Ball and Sphere}
+
+\begin{corollary}
+For the Euclidean unit ball
+\[
+B_2^n,
+\]
+the covering number satisfies
+\[
+\left(\frac{1}{\varepsilon}\right)^n
+\leq
+N(B_2^n,\norm{\cdot}_2,\varepsilon)
+\leq
+\left(1+\frac{2}{\varepsilon}\right)^n.
+\]
+
+In particular, for
+\[
+\varepsilon\in(0,1),
+\]
+\[
+N(B_2^n,\norm{\cdot}_2,\varepsilon)
+\leq
+\left(\frac{3}{\varepsilon}\right)^n.
+\]
+
+The same upper bound holds for the sphere
+\[
+S^{n-1}.
+\]
+\end{corollary}
+
+\begin{proof}
+Recall that volume scales as
+\[
+\operatorname{Vol}(\varepsilon B_2^n)
+=
+\varepsilon^n\operatorname{Vol}(B_2^n).
+\]
+
+Applying the lower bound from the previous proposition with
+\[
+K=B_2^n
+\]
+gives
+\[
+N(B_2^n,\norm{\cdot}_2,\varepsilon)
+\geq
+\frac{\operatorname{Vol}(B_2^n)}
+{\operatorname{Vol}(\varepsilon B_2^n)}
+=
+\frac{1}{\varepsilon^n}
+=
+\left(\frac{1}{\varepsilon}\right)^n.
+\]
+
+For the upper bound, observe that
+\[
+B_2^n+\frac{\varepsilon}{2}B_2^n
+=
+\left(1+\frac{\varepsilon}{2}\right)B_2^n.
+\]
+
+Thus,
+\[
+N(B_2^n,\norm{\cdot}_2,\varepsilon)
+\leq
+P(B_2^n,\norm{\cdot}_2,\varepsilon)
+\leq
+\frac{
+\operatorname{Vol}\left(
+\left(1+\frac{\varepsilon}{2}\right)B_2^n
+\right)
+}{
+\operatorname{Vol}\left(
+\frac{\varepsilon}{2}B_2^n
+\right)
+}.
+\]
+
+Using volume scaling,
+\[
+\frac{
+\operatorname{Vol}\left(
+\left(1+\frac{\varepsilon}{2}\right)B_2^n
+\right)
+}{
+\operatorname{Vol}\left(
+\frac{\varepsilon}{2}B_2^n
+\right)
+}
+=
+\left(
+\frac{1+\varepsilon/2}{\varepsilon/2}
+\right)^n
+=
+\left(
+1+\frac{2}{\varepsilon}
+\right)^n.
+\]
+
+If
+\[
+\varepsilon\in(0,1),
+\]
+then
+\[
+1+\frac{2}{\varepsilon}
+\leq
+\frac{3}{\varepsilon}.
+\]
+
+Therefore,
+\[
+N(B_2^n,\norm{\cdot}_2,\varepsilon)
+\leq
+\left(\frac{3}{\varepsilon}\right)^n.
+\]
+
+Since
+\[
+S^{n-1}\subseteq B_2^n,
+\]
+any $\varepsilon$-net of $B_2^n$ also controls $S^{n-1}$ up to the same order, giving the same upper bound.
+\end{proof}
+
+\begin{definition}[Metric Entropy]
+The metric entropy of a set $K$ at scale $\varepsilon$ is
+\[
+\log N(K,d,\varepsilon).
+\]
+\end{definition}
+
+\begin{remark}
+Covering numbers measure the geometric complexity of a set. In many probabilistic arguments, the quantity
+\[
+\log N(K,d,\varepsilon)
+\]
+is more important than the covering number itself.
+\end{remark}
+
+\section{Error-Correcting Codes}
+
+Covering and packing ideas also arise in coding theory.
+
+Suppose one wants to send a message
+\[
+x
+\]
+through a noisy channel. An adversary may corrupt the message by changing some letters. The goal is to encode the original message with redundancy so that the receiver can recover the original message even after some corruptions.
+
+\subsection{Repeating Codes}
+
+A simple strategy is to repeat the message many times. If the message is repeated
+\[
+2r+1
+\]
+times, then majority decoding can recover the original message even if up to
+\[
+r
+\]
+positions are corrupted.
+
+However, this is inefficient because a $k$-symbol message becomes a message of length at least
+\[
+(2r+1)k.
+\]
+
+We will show that much better scaling is possible.
+
+\section{Binary Error-Correcting Codes}
+
+For simplicity, consider binary strings.
+
+\begin{definition}[Error-Correcting Code]
+An error-correcting code that encodes $k$-bit strings into $n$-bit strings and corrects up to $r$ errors consists of:
+\begin{itemize}
+\item an encoding map
+\[
+E:\{0,1\}^k\to\{0,1\}^n,
+\]
+\item a decoding map
+\[
+D:\{0,1\}^n\to\{0,1\}^k,
+\]
+\end{itemize}
+such that
+\[
+D(y)=x
+\]
+for every
+\[
+x\in\{0,1\}^k
+\]
+and every
+\[
+y\in\{0,1\}^n
+\]
+that differs from
+\[
+E(x)
+\]
+in at most $r$ coordinates.
+\end{definition}
+
+\section{The Hamming Cube}
+
+\begin{definition}[Hamming Distance]
+The Hamming distance between
+\[
+x,y\in\{0,1\}^n
+\]
+is
+\[
+d_H(x,y)
+=
+\#\{i:x_i\neq y_i\}.
+\]
+\end{definition}
+
+\begin{lemma}
+The set
+\[
+\{0,1\}^n
+\]
+equipped with the Hamming distance
+\[
+d_H
+\]
+is a metric space.
+\end{lemma}
+
+\begin{proof}
+Clearly,
+\[
+d_H(x,x)=0.
+\]
+
+If
+\[
+x\neq y,
+\]
+then $x$ and $y$ differ in at least one coordinate, so
+\[
+d_H(x,y)>0.
+\]
+
+Symmetry follows because
+\[
+x_i\neq y_i
+\]
+if and only if
+\[
+y_i\neq x_i.
+\]
+
+For the triangle inequality, fix
+\[
+x,y,z\in\{0,1\}^n.
+\]
+If
+\[
+x_i\neq y_i,
+\]
+then at least one of the two inequalities
+\[
+x_i\neq z_i
+\qquad\text{or}\qquad
+z_i\neq y_i
+\]
+must hold. Hence,
+\[
+\ind_{\{x_i\neq y_i\}}
+\leq
+\ind_{\{x_i\neq z_i\}}
++
+\ind_{\{z_i\neq y_i\}}.
+\]
+
+Summing over $i$ gives
+\[
+d_H(x,y)
+\leq
+d_H(x,z)+d_H(z,y).
+\]
+\end{proof}
+
+\section{Covering and Packing in the Hamming Cube}
+
+Let
+\[
+K=\{0,1\}^n.
+\]
+
+For
+\[
+m\in\{0,1,\dots,n\},
+\]
+the size of a Hamming ball of radius $m$ is
+\[
+\sum_{i=0}^m \binom{n}{i}.
+\]
+
+\begin{proposition}
+For
+\[
+K=\{0,1\}^n
+\]
+with Hamming distance $d_H$ and
+\[
+m\in\{0,\dots,n\},
+\]
+we have
+\[
+\frac{2^n}{\sum_{i=0}^m \binom{n}{i}}
+\leq
+N(K,d_H,m)
+\leq
+P(K,d_H,m)
+\leq
+\frac{2^n}{\sum_{i=0}^{\lfloor (m-1)/2\rfloor}\binom{n}{i}}.
+\]
+\end{proposition}
+
+\begin{proof}
+The lower bound follows from the same volume argument as in Euclidean space, replacing volume by cardinality.
+
+An $m$-net covers
+\[
+\{0,1\}^n
+\]
+by Hamming balls of radius $m$. Each such ball contains
+\[
+\sum_{i=0}^m\binom{n}{i}
+\]
+points. Therefore,
+\[
+2^n
+\leq
+N(K,d_H,m)
+\sum_{i=0}^m\binom{n}{i}.
+\]
+
+Rearranging gives
+\[
+N(K,d_H,m)
+\geq
+\frac{2^n}{\sum_{i=0}^m\binom{n}{i}}.
+\]
+
+The middle inequality
+\[
+N(K,d_H,m)\leq P(K,d_H,m)
+\]
+is the general covering-packing relationship.
+
+For the packing upper bound, let
+\[
+\mathcal{P}
+\]
+be an $m$-separated set. Around each point of $\mathcal{P}$, place a Hamming ball of radius
+\[
+\left\lfloor\frac{m-1}{2}\right\rfloor.
+\]
+
+These balls are disjoint. Hence,
+\[
+|\mathcal{P}|
+\sum_{i=0}^{\lfloor (m-1)/2\rfloor}
+\binom{n}{i}
+\leq
+2^n.
+\]
+
+Therefore,
+\[
+P(K,d_H,m)
+\leq
+\frac{2^n}{\sum_{i=0}^{\lfloor (m-1)/2\rfloor}\binom{n}{i}}.
+\]
+\end{proof}
+
+\section{Codes from Packings}
+
+The key observation is that a large separated set in the Hamming cube gives an error-correcting code.
+
+\begin{lemma}
+Suppose
+\[
+k,n,r\in\N
+\]
+satisfy
+\[
+\log_2 P(\{0,1\}^n,d_H,2r)>k.
+\]
+
+Then there exists an error-correcting code that encodes $k$-bit strings into $n$-bit strings and corrects up to $r$ errors.
+\end{lemma}
+
+\begin{proof}
+The assumption implies that there exists a $2r$-separated set
+\[
+\mathcal{N}\subseteq\{0,1\}^n
+\]
+with
+\[
+|\mathcal{N}|\geq 2^k.
+\]
+
+Choose an injective encoding map
+\[
+E:\{0,1\}^k\to\mathcal{N}.
+\]
+
+Define the decoder by nearest neighbor decoding:
+\[
+D(y)
+=
+\argmin_{x\in\{0,1\}^k}
+d_H(E(x),y).
+\]
+
+Now suppose
+\[
+y
+\]
+is obtained from
+\[
+E(x)
+\]
+by corrupting at most $r$ coordinates. Then
+\[
+d_H(y,E(x))\leq r.
+\]
+
+For any other message
+\[
+x'\neq x,
+\]
+the separation property gives
+\[
+d_H(E(x),E(x'))>2r.
+\]
+
+By the triangle inequality,
+\[
+d_H(y,E(x'))
+\geq
+d_H(E(x),E(x'))-d_H(y,E(x))
+>
+2r-r
+=
+r.
+\]
+
+Thus $E(x)$ is strictly closer to $y$ than any other codeword. Therefore,
+\[
+D(y)=x.
+\]
+\end{proof}
+
+\section{Existence of Efficient Error-Correcting Codes}
+
+\begin{theorem}
+Suppose
+\[
+k,n,r\in\N
+\]
+satisfy
+\[
+n
+\geq
+k+2r\log_2\left(\frac{en}{2r}\right).
+\]
+
+Then there exists an error-correcting code that encodes $k$-bit strings into $n$-bit strings and corrects up to $r$ errors.
+\end{theorem}
+
+\begin{proof}
+By the previous lemma, it suffices to show that
+\[
+P(\{0,1\}^n,d_H,2r)\geq 2^k.
+\]
+
+Using the covering-packing inequality,
+\[
+P(\{0,1\}^n,d_H,2r)
+\geq
+N(\{0,1\}^n,d_H,2r).
+\]
+
+From the Hamming cube covering bound,
+\[
+N(\{0,1\}^n,d_H,2r)
+\geq
+\frac{2^n}
+{\sum_{i=0}^{2r}\binom{n}{i}}.
+\]
+
+We use the standard binomial sum bound
+\[
+\sum_{i=0}^{2r}\binom{n}{i}
+\leq
+\left(\frac{en}{2r}\right)^{2r}.
+\]
+
+Therefore,
+\[
+P(\{0,1\}^n,d_H,2r)
+\geq
+2^n
+\left(\frac{2r}{en}\right)^{2r}.
+\]
+
+Taking base-$2$ logarithms,
+\[
+\log_2 P(\{0,1\}^n,d_H,2r)
+\geq
+n-2r\log_2\left(\frac{en}{2r}\right).
+\]
+
+By assumption,
+\[
+n-2r\log_2\left(\frac{en}{2r}\right)
+\geq
+k.
+\]
+
+Hence,
+\[
+P(\{0,1\}^n,d_H,2r)
+\geq
+2^k.
+\]
+
+Thus there exists an error-correcting code encoding $k$ bits into $n$ bits and correcting up to $r$ errors.
+\end{proof}
+
+\begin{remark}
+Ignoring logarithmic factors, the required code length grows roughly linearly in
+\[
+k+r,
+\]
+which is far more efficient than the naive repeating code length
+\[
+(2r+1)k.
+\]
+\end{remark}
+
+\section{Singular Values of Sub-Gaussian Matrices}
+
+We now use nets to obtain high-probability bounds on the singular values of random matrices.
+
+The guiding idea is that if
+\[
+\max_{x\in S^{m-1}}\norm{Ax}_2
+\approx
+\max_{x\in\mathcal{N}}\norm{Ax}_2
+\]
+for a finite net
+\[
+\mathcal{N}\subseteq S^{m-1},
+\]
+then the operator norm can be controlled by a union bound over the finite set $\mathcal{N}$.
+
+\section{Approximating the Operator Norm by a Net}
+
+\begin{lemma}
+Let
+\[
+A\in\R^{n\times m}
+\]
+and let
+\[
+\varepsilon\in[0,1).
+\]
+
+If
+\[
+\mathcal{N}
+\]
+is an $\varepsilon$-net of
+\[
+S^{m-1},
+\]
+then
+\[
+\sup_{x\in\mathcal{N}}\norm{Ax}_2
+\leq
+\norm{A}_{\mathrm{op}}
+\leq
+\frac{1}{1-\varepsilon}
+\sup_{x\in\mathcal{N}}\norm{Ax}_2.
+\]
+\end{lemma}
+
+\begin{proof}
+The lower bound is immediate because
+\[
+\mathcal{N}\subseteq S^{m-1}.
+\]
+
+For the upper bound, choose
+\[
+x\in S^{m-1}
+\]
+such that
+\[
+\norm{A}_{\mathrm{op}}=\norm{Ax}_2.
+\]
+
+Since $\mathcal{N}$ is an $\varepsilon$-net, there exists
+\[
+y\in\mathcal{N}
+\]
+such that
+\[
+\norm{x-y}_2\leq \varepsilon.
+\]
+
+Then
+\[
+\norm{Ax}_2
+\leq
+\norm{A(x-y)}_2+\norm{Ay}_2.
+\]
+
+Using the definition of the operator norm,
+\[
+\norm{A(x-y)}_2
+\leq
+\norm{A}_{\mathrm{op}}\norm{x-y}_2
+\leq
+\varepsilon\norm{A}_{\mathrm{op}}.
+\]
+
+Thus,
+\[
+\norm{A}_{\mathrm{op}}
+\leq
+\varepsilon\norm{A}_{\mathrm{op}}
++
+\norm{Ay}_2.
+\]
+
+Rearranging,
+\[
+(1-\varepsilon)\norm{A}_{\mathrm{op}}
+\leq
+\norm{Ay}_2
+\leq
+\sup_{z\in\mathcal{N}}\norm{Az}_2.
+\]
+
+Therefore,
+\[
+\norm{A}_{\mathrm{op}}
+\leq
+\frac{1}{1-\varepsilon}
+\sup_{z\in\mathcal{N}}\norm{Az}_2.
+\]
+\end{proof}
+
+\section{Net Approximation for Symmetric Quadratic Forms}
+
+For symmetric matrices, the operator norm can be written in terms of quadratic forms.
+
+\begin{lemma}
+Let
+\[
+A\in\mathbb{S}^n
+\]
+and let
+\[
+\varepsilon\in[0,1/2).
+\]
+
+If
+\[
+\mathcal{N}
+\]
+is an $\varepsilon$-net of
+\[
+S^{n-1},
+\]
+then
+\[
+\sup_{x\in\mathcal{N}}|\inner{x}{Ax}|
+\leq
+\norm{A}_{\mathrm{op}}
+\leq
+\frac{1}{1-2\varepsilon}
+\sup_{x\in\mathcal{N}}|\inner{x}{Ax}|.
+\]
+\end{lemma}
+
+\begin{proof}
+The lower bound follows since
+\[
+|\inner{x}{Ax}|
+\leq
+\norm{A}_{\mathrm{op}}
+\]
+for every unit vector $x$.
+
+For the upper bound, choose
+\[
+x\in S^{n-1}
+\]
+such that
+\[
+|\inner{x}{Ax}|
+=
+\norm{A}_{\mathrm{op}}.
+\]
+
+Let
+\[
+y\in\mathcal{N}
+\]
+satisfy
+\[
+\norm{x-y}_2\leq \varepsilon.
+\]
+
+Then
+\[
+\inner{x}{Ax}
+=
+\inner{y}{Ay}
++
+\inner{x-y}{Ax}
++
+\inner{y}{A(x-y)}.
+\]
+
+Since $A$ is symmetric,
+\[
+|\inner{x-y}{Ax}|
+\leq
+\norm{x-y}_2\norm{A}_{\mathrm{op}}\norm{x}_2
+\leq
+\varepsilon\norm{A}_{\mathrm{op}},
+\]
+and similarly,
+\[
+|\inner{y}{A(x-y)}|
+\leq
+\varepsilon\norm{A}_{\mathrm{op}}.
+\]
+
+Therefore,
+\[
+\norm{A}_{\mathrm{op}}
+\leq
+|\inner{y}{Ay}|
++
+2\varepsilon\norm{A}_{\mathrm{op}}.
+\]
+
+Rearranging gives
+\[
+(1-2\varepsilon)\norm{A}_{\mathrm{op}}
+\leq
+|\inner{y}{Ay}|
+\leq
+\sup_{z\in\mathcal{N}}|\inner{z}{Az}|.
+\]
+
+Thus,
+\[
+\norm{A}_{\mathrm{op}}
+\leq
+\frac{1}{1-2\varepsilon}
+\sup_{z\in\mathcal{N}}|\inner{z}{Az}|.
+\]
+\end{proof}
+
+\section{Sub-Gaussian Random Vectors}
+
+\begin{definition}[Sub-Gaussian Random Vector]
+A random vector
+\[
+Z\in\R^m
+\]
+is called sub-Gaussian if
+\[
+\norm{Z}_{\psi_2}
+:=
+\sup_{v\in S^{m-1}}
+\norm{\inner{Z}{v}}_{\psi_2}
+<\infty.
+\]
+\end{definition}
+
+\begin{definition}[Isotropic Random Vector]
+A random vector
+\[
+Z\in\R^m
+\]
+is called isotropic if
+\[
+\E[ZZ^\top]=I_m.
+\]
+Equivalently,
+\[
+\E[\inner{Z}{v}^2]=\norm{v}_2^2
+\]
+for every
+\[
+v\in\R^m.
+\]
+\end{definition}
+
+\begin{lemma}
+If
+\[
+Z\sim \Normal(0,I_m),
+\]
+then $Z$ is sub-Gaussian and isotropic.
+\end{lemma}
+
+\begin{proof}
+For any
+\[
+v\in S^{m-1},
+\]
+we have
+\[
+\inner{Z}{v}\sim \Normal(0,1).
+\]
+
+Thus
+\[
+\norm{\inner{Z}{v}}_{\psi_2}
+\]
+is bounded by a universal constant uniformly over $v$, so $Z$ is sub-Gaussian.
+
+Also,
+\[
+\E[ZZ^\top]
+=
+I_m
+\]
+by the covariance structure of the standard Gaussian. Hence $Z$ is isotropic.
+\end{proof}
+
+\section{Singular Value Bounds for Sub-Gaussian Matrices}
+
+\begin{theorem}
+Let
+\[
+A\in\R^{n\times m},
+\qquad m\leq n,
+\]
+be a random matrix with independent, mean-zero, isotropic, sub-Gaussian rows
+\[
+A_1,\dots,A_n\in\R^m.
+\]
+
+Let
+\[
+K=\max_{1\leq i\leq n}\norm{A_i}_{\psi_2}.
+\]
+
+Then for every
+\[
+t\geq0,
+\]
+with probability at least
+\[
+1-2e^{-t^2},
+\]
+we have
+\[
+\sqrt{n}-CK^2(\sqrt{m}+t)
+\leq
+\sigma_m(A)
+\leq
+\sigma_1(A)
+\leq
+\sqrt{n}+CK^2(\sqrt{m}+t),
+\]
+where $C>0$ is a universal constant.
+\end{theorem}
+
+\section{An Equivalent Isometry Formulation}
+
+The singular value bound is equivalent to saying that
+\[
+\frac{1}{n}A^\top A
+\]
+is close to the identity.
+
+\begin{lemma}[Isometry Equivalence]
+Let
+\[
+A\in\R^{n\times m},
+\qquad m\leq n,
+\]
+and let
+\[
+\varepsilon>0.
+\]
+
+The following are equivalent:
+\begin{enumerate}
+\item
+\[
+\norm{A^\top A-I_m}_{\mathrm{op}}\leq \varepsilon.
+\]
+
+\item For every
+\[
+x\in\R^m,
+\]
+\[
+(1-\varepsilon)\norm{x}_2^2
+\leq
+\norm{Ax}_2^2
+\leq
+(1+\varepsilon)\norm{x}_2^2.
+\]
+
+\item
+\[
+\sqrt{1-\varepsilon}
+\leq
+\sigma_m(A)
+\leq
+\sigma_1(A)
+\leq
+\sqrt{1+\varepsilon}.
+\]
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+It suffices to check the statement on unit vectors.
+
+For
+\[
+\norm{x}_2=1,
+\]
+we have
+\[
+x^\top(A^\top A-I_m)x
+=
+\norm{Ax}_2^2-1.
+\]
+
+Thus,
+\[
+\norm{A^\top A-I_m}_{\mathrm{op}}
+=
+\sup_{x\in S^{m-1}}
+\left|
+\norm{Ax}_2^2-1
+\right|.
+\]
+
+Therefore, the operator norm bound is equivalent to
+\[
+1-\varepsilon
+\leq
+\norm{Ax}_2^2
+\leq
+1+\varepsilon
+\]
+for all
+\[
+x\in S^{m-1}.
+\]
+
+By homogeneity, this is equivalent to the same statement for all $x\in\R^m$:
+\[
+(1-\varepsilon)\norm{x}_2^2
+\leq
+\norm{Ax}_2^2
+\leq
+(1+\varepsilon)\norm{x}_2^2.
+\]
+
+Finally, by the variational characterization of singular values,
+\[
+\sigma_1(A)
+=
+\max_{x\in S^{m-1}}\norm{Ax}_2,
+\qquad
+\sigma_m(A)
+=
+\min_{x\in S^{m-1}}\norm{Ax}_2.
+\]
+
+Thus the previous display is equivalent to
+\[
+\sqrt{1-\varepsilon}
+\leq
+\sigma_m(A)
+\leq
+\sigma_1(A)
+\leq
+\sqrt{1+\varepsilon}.
+\]
+\end{proof}
+
+\section{Proof of the Singular Value Bound}
+
+We prove the theorem by showing that
+\[
+\frac{1}{n}A^\top A
+\]
+is close to the identity in operator norm.
+
+It is enough to prove that
+\[
+\norm{\frac{1}{n}A^\top A-I_m}_{\mathrm{op}}
+\leq
+K^2(\delta\vee \delta^2),
+\]
+where
+\[
+\delta
+=
+C\left(
+\sqrt{\frac{m}{n}}+\frac{t}{\sqrt{n}}
+\right).
+\]
+
+\subsection{Step 1: Approximation by a Net}
+
+Let
+\[
+\mathcal{N}
+\]
+be a $1/4$-net of
+\[
+S^{m-1}.
+\]
+
+From the covering number bound,
+\[
+|\mathcal{N}|
+\leq
+9^m.
+\]
+
+Apply the symmetric quadratic form net lemma to
+\[
+\frac{1}{n}A^\top A-I_m.
+\]
+
+Since
+\[
+\frac{1}{1-2(1/4)}=2,
+\]
+we obtain
+\[
+\norm{\frac{1}{n}A^\top A-I_m}_{\mathrm{op}}
+\leq
+2
+\max_{x\in\mathcal{N}}
+\left|
+\inner{x}{
+\left(
+\frac{1}{n}A^\top A-I_m
+\right)x}
+\right|.
+\]
+
+But
+\[
+\inner{x}{
+\left(
+\frac{1}{n}A^\top A-I_m
+\right)x}
+=
+\frac{1}{n}\norm{Ax}_2^2-1.
+\]
+
+Thus,
+\[
+\norm{\frac{1}{n}A^\top A-I_m}_{\mathrm{op}}
+\leq
+2
+\max_{x\in\mathcal{N}}
+\left|
+\frac{1}{n}\norm{Ax}_2^2-1
+\right|.
+\]
+
+Therefore, it suffices to show
+\[
+\max_{x\in\mathcal{N}}
+\left|
+\frac{1}{n}\norm{Ax}_2^2-1
+\right|
+\leq
+\frac{\varepsilon}{2},
+\]
+where
+\[
+\varepsilon=K^2(\delta\vee\delta^2).
+\]
+
+\subsection{Step 2: Concentration for a Fixed Net Point}
+
+Fix
+\[
+x\in\mathcal{N}.
+\]
+
+Write
+\[
+\norm{Ax}_2^2
+=
+\sum_{i=1}^n \inner{A_i}{x}^2.
+\]
+
+Define
+\[
+X_i=\inner{A_i}{x}.
+\]
+
+Since the rows $A_i$ are independent, the variables $X_i$ are independent. Since each row is isotropic,
+\[
+\E[X_i^2]=1.
+\]
+
+Since each row is sub-Gaussian,
+\[
+\norm{X_i}_{\psi_2}
+=
+\norm{\inner{A_i}{x}}_{\psi_2}
+\leq
+K.
+\]
+
+Therefore,
+\[
+X_i^2-1
+\]
+are independent, mean-zero, sub-exponential random variables satisfying
+\[
+\norm{X_i^2-1}_{\psi_1}
+\leq
+CK^2.
+\]
+
+By Bernstein's inequality,
+\[
+\Prob\left(
+\left|
+\frac{1}{n}\sum_{i=1}^n (X_i^2-1)
+\right|
+\geq
+\frac{\varepsilon}{2}
+\right)
+\leq
+2\exp\left(
+-c_1n
+\min\left\{
+\frac{\varepsilon^2}{K^4},
+\frac{\varepsilon}{K^2}
+\right\}
+\right).
+\]
+
+Because
+\[
+\varepsilon
+=
+K^2(\delta\vee\delta^2),
+\]
+we have
+\[
+\min\left\{
+\frac{\varepsilon^2}{K^4},
+\frac{\varepsilon}{K^2}
+\right\}
+\geq
+c\delta^2.
+\]
+
+Hence,
+\[
+\Prob\left(
+\left|
+\frac{1}{n}\norm{Ax}_2^2-1
+\right|
+\geq
+\frac{\varepsilon}{2}
+\right)
+\leq
+2\exp(-c_1\delta^2 n).
+\]
+
+Using
+\[
+\delta
+=
+C\left(
+\sqrt{\frac{m}{n}}+\frac{t}{\sqrt{n}}
+\right),
+\]
+we have
+\[
+\delta^2 n
+\geq
+C^2(m+t^2).
+\]
+
+Thus,
+\[
+\Prob\left(
+\left|
+\frac{1}{n}\norm{Ax}_2^2-1
+\right|
+\geq
+\frac{\varepsilon}{2}
+\right)
+\leq
+2\exp(-c_1C^2(m+t^2)).
+\]
+
+\subsection{Step 3: Union Bound Over the Net}
+
+Since
+\[
+|\mathcal{N}|\leq 9^m,
+\]
+the union bound gives
+\[
+\Prob\left(
+\max_{x\in\mathcal{N}}
+\left|
+\frac{1}{n}\norm{Ax}_2^2-1
+\right|
+\geq
+\frac{\varepsilon}{2}
+\right)
+\leq
+9^m\cdot
+2\exp(-c_1C^2(m+t^2)).
+\]
+
+Equivalently,
+\[
+\Prob\left(
+\max_{x\in\mathcal{N}}
+\left|
+\frac{1}{n}\norm{Ax}_2^2-1
+\right|
+\geq
+\frac{\varepsilon}{2}
+\right)
+\leq
+2\exp\left(
+m\log 9-c_1C^2(m+t^2)
+\right).
+\]
+
+Choose the universal constant $C$ large enough so that
+\[
+c_1C^2\geq \log 9+1.
+\]
+
+Then
+\[
+m\log 9-c_1C^2(m+t^2)
+\leq
+-t^2.
+\]
+
+Therefore,
+\[
+\Prob\left(
+\max_{x\in\mathcal{N}}
+\left|
+\frac{1}{n}\norm{Ax}_2^2-1
+\right|
+\geq
+\frac{\varepsilon}{2}
+\right)
+\leq
+2e^{-t^2}.
+\]
+
+On the complementary event,
+\[
+\norm{\frac{1}{n}A^\top A-I_m}_{\mathrm{op}}
+\leq
+\varepsilon.
+\]
+
+By the isometry equivalence lemma,
+\[
+\sqrt{1-\varepsilon}
+\leq
+\sigma_m\left(\frac{A}{\sqrt{n}}\right)
+\leq
+\sigma_1\left(\frac{A}{\sqrt{n}}\right)
+\leq
+\sqrt{1+\varepsilon}.
+\]
+
+Using the elementary implication
+\[
+|s^2-1|\leq \varepsilon
+\quad\Rightarrow\quad
+|s-1|\leq \varepsilon\vee\sqrt{\varepsilon},
+\]
+we obtain
+\[
+1-CK^2\left(
+\sqrt{\frac{m}{n}}+\frac{t}{\sqrt{n}}
+\right)
+\leq
+\sigma_m\left(\frac{A}{\sqrt{n}}\right)
+\leq
+\sigma_1\left(\frac{A}{\sqrt{n}}\right)
+\leq
+1+CK^2\left(
+\sqrt{\frac{m}{n}}+\frac{t}{\sqrt{n}}
+\right).
+\]
+
+Multiplying by
+\[
+\sqrt{n}
+\]
+gives
+\[
+\sqrt{n}-CK^2(\sqrt{m}+t)
+\leq
+\sigma_m(A)
+\leq
+\sigma_1(A)
+\leq
+\sqrt{n}+CK^2(\sqrt{m}+t).
+\]
+
+This proves the theorem.
+
+\section{Consequences}
+
+\begin{remark}
+The proof never directly computed expectations of matrix norms. Instead, it used:
+\begin{itemize}
+\item a finite net approximation,
+\item scalar concentration for each net point,
+\item a union bound over the net.
+\end{itemize}
+\end{remark}
+
+\begin{corollary}
+Under the assumptions of the theorem,
+\[
+\E\norm{A}_{\mathrm{op}}
+\leq
+CK(\sqrt{n}+\sqrt{m})
+\]
+and
+\[
+\E\norm{\frac{1}{n}A^\top A-I_m}_{\mathrm{op}}
+\leq
+CK^2\left(
+\sqrt{\frac{m}{n}}+\frac{m}{n}
+\right).
+\]
+\end{corollary}
+
+\begin{remark}
+The operator norm bound is optimal up to constants. A particularly important feature of the theorem is that it only requires independence across rows. The entries within each row may be dependent.
+\end{remark}
+
+\chapter{Covariance Estimation and Gaussian Mixture Clustering}
+
+\section{Covariance Estimation and PCA}
+
+Principal component analysis is a method for adaptive dimension reduction.
+
+Suppose
+\[
+X_1,\dots,X_n\in\R^d
+\]
+are iid samples from a distribution $\mathcal{D}$ with
+\[
+\E[X]=0
+\]
+and covariance matrix
+\[
+\Sigma=\E[XX^\top].
+\]
+
+When $d$ is large, we often want to project onto a lower-dimensional subspace
+\[
+\mathcal{U}\subseteq\R^d
+\]
+that captures the most important directions of variation in the data.
+
+\begin{definition}[Sample Covariance]
+Given samples
+\[
+X_1,\dots,X_n\in\R^d,
+\]
+the empirical covariance matrix is
+\[
+\Sigma_n
+=
+\frac{1}{n}
+\sum_{i=1}^n X_iX_i^\top.
+\]
+\end{definition}
+
+\section{Principal Components as Maximum-Variance Directions}
+
+\begin{lemma}
+Suppose $X$ is a random vector in $\R^d$ with covariance matrix
+\[
+\Sigma.
+\]
+Let the eigenvalues of $\Sigma$ be
+\[
+\lambda_1\geq \lambda_2\geq \cdots \geq \lambda_d\geq 0,
+\]
+with corresponding orthonormal eigenvectors
+\[
+u_1,\dots,u_d.
+\]
+
+Then, for every $k\in\{1,\dots,d\}$,
+\[
+\lambda_k
+=
+\max_{\substack{
+v\perp \operatorname{span}\{u_1,\dots,u_{k-1}\}\\
+\norm{v}_2=1
+}}
+\Var(\inner{X}{v}),
+\]
+and the maximum is attained at
+\[
+v=u_k.
+\]
+\end{lemma}
+
+\begin{proof}
+Since
+\[
+\E[X]=0,
+\]
+we have
+\[
+\Var(\inner{X}{v})
+=
+\E[\inner{X}{v}^2]
+=
+v^\top \Sigma v.
+\]
+
+Using the spectral decomposition,
+\[
+\Sigma
+=
+\sum_{j=1}^d \lambda_j u_ju_j^\top.
+\]
+
+If
+\[
+v\perp \operatorname{span}\{u_1,\dots,u_{k-1}\}
+\]
+and
+\[
+\norm{v}_2=1,
+\]
+then
+\[
+v=\sum_{j=k}^d a_j u_j,
+\qquad
+\sum_{j=k}^d a_j^2=1.
+\]
+
+Therefore,
+\[
+v^\top\Sigma v
+=
+\sum_{j=k}^d \lambda_j a_j^2.
+\]
+
+Since
+\[
+\lambda_k\geq \lambda_{k+1}\geq \cdots \geq \lambda_d,
+\]
+we have
+\[
+\sum_{j=k}^d \lambda_j a_j^2
+\leq
+\lambda_k
+\sum_{j=k}^d a_j^2
+=
+\lambda_k.
+\]
+
+Equality is attained when
+\[
+v=u_k.
+\]
+
+Thus
+\[
+\lambda_k
+=
+\max_{\substack{
+v\perp \operatorname{span}\{u_1,\dots,u_{k-1}\}\\
+\norm{v}_2=1
+}}
+\Var(\inner{X}{v}).
+\]
+\end{proof}
+
+\begin{remark}
+This lemma justifies PCA as a maximum-variance dimension reduction method. If
+\[
+U_k=
+\begin{pmatrix}
+u_1 & \cdots & u_k
+\end{pmatrix},
+\]
+then the orthogonal projection onto the top-$k$ principal subspace is
+\[
+P_k=U_kU_k^\top.
+\]
+\end{remark}
+
+\section{Covariance Estimation}
+
+In practice, we do not know $\Sigma$. Instead, we approximate it using
+\[
+\Sigma_n
+=
+\frac{1}{n}
+\sum_{i=1}^n X_iX_i^\top.
+\]
+
+By the law of large numbers,
+\[
+\Sigma_n\to \Sigma
+\]
+almost surely entrywise. The more useful high-dimensional question is:
+
+\begin{quote}
+How large must $n$ be so that
+\[
+\norm{\Sigma_n-\Sigma}_{\mathrm{op}}
+\]
+is small with high probability?
+\end{quote}
+
+\section{Covariance Estimation for Sub-Gaussian Random Vectors}
+
+\begin{theorem}[Covariance Estimation]
+Let
+\[
+X\in\R^d
+\]
+be a mean-zero sub-Gaussian random vector with
+\[
+\E[XX^\top]=\Sigma.
+\]
+
+Assume there is a constant $K\geq1$ such that
+\[
+\norm{\rangle X,x \rangle}_{\psi_2}
+\leq
+K\sqrt{x^\top\Sigma x}
+\]
+for all
+\[
+x\in\R^d.
+\]
+
+Then
+\[
+\frac{
+\E\norm{\Sigma_n-\Sigma}_{\mathrm{op}}
+}{
+\norm{\Sigma}_{\mathrm{op}}
+}
+\leq
+CK^2
+\left(
+\sqrt{\frac{d}{n}}
++
+\frac{d}{n}
+\right),
+\]
+where $C>0$ is a universal constant.
+\end{theorem}
+
+\begin{proof}
+Assume first that $\Sigma$ is invertible. Define the whitened random vector
+\[
+Z=\Sigma^{-1/2}X.
+\]
+
+Then
+\[
+\E[Z]=0
+\]
+and
+\[
+\E[ZZ^\top]
+=
+\Sigma^{-1/2}\E[XX^\top]\Sigma^{-1/2}
+=
+I_d.
+\]
+
+Moreover, for every
+\[
+u\in S^{d-1},
+\]
+\[
+\norm{\langle Z,u \rangle }_{\psi_2}
+=
+\norm{\langle X,\Sigma^{-1/2}u\rangle }_{\psi_2}
+\leq
+K\sqrt{
+u^\top\Sigma^{-1/2}\Sigma\Sigma^{-1/2}u
+}
+=
+K.
+\]
+
+Thus $Z$ is isotropic and sub-Gaussian with sub-Gaussian norm bounded by $K$.
+
+Let
+\[
+Z_i=\Sigma^{-1/2}X_i.
+\]
+
+Then
+\[
+\frac{1}{n}\sum_{i=1}^n Z_iZ_i^\top
+=
+\Sigma^{-1/2}\Sigma_n\Sigma^{-1/2}.
+\]
+
+Therefore,
+\[
+\Sigma_n-\Sigma
+=
+\Sigma^{1/2}
+\left(
+\frac{1}{n}\sum_{i=1}^n Z_iZ_i^\top-I_d
+\right)
+\Sigma^{1/2}.
+\]
+
+Taking operator norms,
+\[
+\norm{\Sigma_n-\Sigma}_{\mathrm{op}}
+\leq
+\norm{\Sigma}_{\mathrm{op}}
+\left\|
+\frac{1}{n}\sum_{i=1}^n Z_iZ_i^\top-I_d
+\right\|_{\mathrm{op}}.
+\]
+
+By the singular value result for isotropic sub-Gaussian random matrices,
+\[
+\E
+\left\|
+\frac{1}{n}\sum_{i=1}^n Z_iZ_i^\top-I_d
+\right\|_{\mathrm{op}}
+\leq
+CK^2
+\left(
+\sqrt{\frac{d}{n}}
++
+\frac{d}{n}
+\right).
+\]
+
+Thus,
+\[
+\E\norm{\Sigma_n-\Sigma}_{\mathrm{op}}
+\leq
+CK^2\norm{\Sigma}_{\mathrm{op}}
+\left(
+\sqrt{\frac{d}{n}}
++
+\frac{d}{n}
+\right).
+\]
+
+If $\Sigma$ is singular, the same argument applies on the range of $\Sigma$, or by replacing $\Sigma$ with $\Sigma+\eta I_d$ and taking $\eta\downarrow0$.
+\end{proof}
+
+\begin{corollary}
+Under the assumptions of the previous theorem, there exists a universal constant $C>0$ such that for every
+\[
+\varepsilon\in(0,1),
+\]
+if
+\[
+n
+\geq
+\frac{CK^4d}{\varepsilon^2},
+\]
+then
+\[
+\E\norm{\Sigma_n-\Sigma}_{\mathrm{op}}
+\leq
+\varepsilon\norm{\Sigma}_{\mathrm{op}}.
+\]
+\end{corollary}
+
+\begin{proof}
+If
+\[
+n
+\geq
+\frac{CK^4d}{\varepsilon^2},
+\]
+with $C$ sufficiently large, then
+\[
+K^2\sqrt{\frac{d}{n}}
+\leq
+c\varepsilon
+\]
+and
+\[
+K^2\frac{d}{n}
+\leq
+c\varepsilon
+\]
+for a sufficiently small universal constant $c>0$.
+
+Substituting into the covariance estimation theorem gives
+\[
+\E\norm{\Sigma_n-\Sigma}_{\mathrm{op}}
+\leq
+\varepsilon\norm{\Sigma}_{\mathrm{op}}.
+\]
+\end{proof}
+
+\section{Gaussian Mixture Clustering}
+
+We now study a clustering problem for point clouds.
+
+\begin{definition}[Two-Component Gaussian Mixture Model]
+Let
+\[
+\mu\in\R^d.
+\]
+
+A sample from the two-component Gaussian mixture model $\mathrm{GMM}(\mu)$ is generated as follows:
+\begin{enumerate}
+\item Draw
+\[
+S\sim \mathrm{Unif}\{-1,1\}.
+\]
+\item Draw
+\[
+g\sim \Normal(0,I_d)
+\]
+independently of $S$.
+\item Set
+\[
+X=S\mu+g.
+\]
+\end{enumerate}
+\end{definition}
+
+Equivalently,
+\[
+X\mid S=1\sim \Normal(\mu,I_d),
+\qquad
+X\mid S=-1\sim \Normal(-\mu,I_d).
+\]
+
+Given samples
+\[
+X_1,\dots,X_n,
+\]
+the goal is to estimate the hidden labels
+\[
+S_1,\dots,S_n.
+\]
+
+\section{Population Covariance of the Mixture}
+
+For
+\[
+X=S\mu+g,
+\]
+we have
+\[
+\E[X]=0.
+\]
+
+The covariance matrix is
+\[
+\Sigma
+=
+\E[XX^\top].
+\]
+
+Expanding,
+\[
+XX^\top
+=
+S^2\mu\mu^\top
++
+S\mu g^\top
++
+Sg\mu^\top
++
+gg^\top.
+\]
+
+Taking expectations,
+\[
+\E[S^2\mu\mu^\top]=\mu\mu^\top,
+\]
+\[
+\E[S\mu g^\top]=\mu\E[S]\E[g]^\top=0,
+\]
+\[
+\E[Sg\mu^\top]=\E[S]\E[g]\mu^\top=0,
+\]
+and
+\[
+\E[gg^\top]=I_d.
+\]
+
+Thus,
+\[
+\Sigma
+=
+I_d+\mu\mu^\top.
+\]
+
+The top eigenvector of $\Sigma$ is
+\[
+u_1
+=
+\frac{\mu}{\norm{\mu}_2},
+\]
+with eigenvalue
+\[
+1+\norm{\mu}_2^2.
+\]
+
+Every direction orthogonal to $\mu$ has eigenvalue $1$.
+
+Hence the eigengap is
+\[
+\Delta
+=
+\norm{\mu}_2^2.
+\]
+
+\section{Spectral Clustering for Gaussian Mixtures}
+
+\begin{algorithm}[H]
+\caption{Spectral Clustering for a Two-Component Gaussian Mixture}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Samples $X_1,\dots,X_n\in\R^d$
+\State Compute the sample covariance
+\[
+\Sigma_n=\frac{1}{n}\sum_{i=1}^n X_iX_i^\top.
+\]
+\State Compute the top eigenvector
+\[
+v=u_1(\Sigma_n).
+\]
+\State For each $i\in\{1,\dots,n\}$, output
+\[
+\widehat{S}_i=\operatorname{sign}(\inner{X_i}{v}).
+\]
+\end{algorithmic}
+\end{algorithm}
+
+\section{Why the Algorithm Works}
+
+If
+\[
+v\approx \frac{\mu}{\norm{\mu}_2},
+\]
+then
+\[
+\inner{X_i}{v}
+=
+S_i\inner{\mu}{v}
++
+\inner{g_i}{v}.
+\]
+
+When $v=\mu/\norm{\mu}_2$, this becomes
+\[
+\inner{X_i}{v}
+=
+S_i\norm{\mu}_2+\inner{g_i}{v},
+\]
+where
+\[
+\inner{g_i}{v}\sim \Normal(0,1).
+\]
+
+Thus the label is correctly recovered whenever
+\[
+|\inner{g_i}{v}|<\norm{\mu}_2.
+\]
+
+If
+\[
+\norm{\mu}_2
+\]
+is a sufficiently large constant, then this happens with high probability for most points.
+
+\section{Clustering Guarantee}
+
+\begin{theorem}
+Let
+\[
+X_1,\dots,X_n\in\R^d
+\]
+be iid samples from
+\[
+\mathrm{GMM}(\mu).
+\]
+
+There exist universal constants
+\[
+C,c>0
+\]
+such that if
+\[
+n\geq Cd
+\]
+and
+\[
+\norm{\mu}_2\geq C,
+\]
+then with probability at least
+\[
+0.99,
+\]
+the spectral clustering algorithm misclassifies at most
+\[
+1\%
+\]
+of the points.
+\end{theorem}
+
+\begin{proof}
+The population covariance is
+\[
+\Sigma=I_d+\mu\mu^\top.
+\]
+
+Its top eigenvector is
+\[
+u=\frac{\mu}{\norm{\mu}_2},
+\]
+and the eigengap is
+\[
+\Delta=\norm{\mu}_2^2.
+\]
+
+By covariance estimation, when
+\[
+n\geq Cd,
+\]
+we have with high probability
+\[
+\norm{\Sigma_n-\Sigma}_{\mathrm{op}}
+\leq
+c\norm{\mu}_2^2
+\]
+for a sufficiently small universal constant $c>0$, provided $C$ is chosen large enough.
+
+By Davis--Kahan,
+\[
+\min_{s\in\{-1,1\}}
+\norm{v-su}_2
+\leq
+C\frac{\norm{\Sigma_n-\Sigma}_{\mathrm{op}}}{\Delta}.
+\]
+
+Thus, after choosing the sign of $v$ appropriately,
+\[
+\norm{v-u}_2
+\leq
+\eta
+\]
+for a small constant $\eta>0$.
+
+Now decompose the empirical classification score:
+\[
+\inner{X_i}{v}
+=
+S_i\inner{\mu}{v}
++
+\inner{g_i}{v}.
+\]
+
+Since
+\[
+\norm{v-u}_2\leq \eta,
+\]
+we have
+\[
+\inner{\mu}{v}
+=
+\norm{\mu}_2\inner{u}{v}
+\geq
+\norm{\mu}_2(1-C\eta^2).
+\]
+
+For $\eta$ sufficiently small,
+\[
+\inner{\mu}{v}
+\geq
+\frac{1}{2}\norm{\mu}_2.
+\]
+
+Thus point $i$ is misclassified only if
+\[
+|\inner{g_i}{v}|
+\geq
+\frac{1}{2}\norm{\mu}_2.
+\]
+
+Conditioned on $v$, the random variable $\inner{g_i}{v}$ is approximately standard Gaussian. More directly, since $g_i$ is isotropic Gaussian and $v$ is a unit vector,
+\[
+\inner{g_i}{v}\sim \Normal(0,1).
+\]
+
+Therefore,
+\[
+\Prob\left(
+|\inner{g_i}{v}|
+\geq
+\frac{1}{2}\norm{\mu}_2
+\right)
+\leq
+2\exp\left(
+-\frac{\norm{\mu}_2^2}{8}
+\right).
+\]
+
+Choosing
+\[
+\norm{\mu}_2\geq C
+\]
+large enough makes this probability at most
+\[
+0.001.
+\]
+
+By a concentration bound for Bernoulli sums, with probability at least $0.99$, the fraction of indices for which this event occurs is at most
+\[
+0.01.
+\]
+
+Therefore, the spectral clustering algorithm misclassifies at most $1\%$ of the points.
+\end{proof}
+
+\begin{remark}
+A point cloud drawn from
+\[
+\Normal(0,I_d)
+\]
+has diameter on the order of
+\[
+\sqrt{d}.
+\]
+
+Nevertheless, in the two-component Gaussian mixture model, a constant separation
+\[
+\norm{\mu}_2\gtrsim 1
+\]
+is enough for classification when
+\[
+n\gtrsim d.
+\]
+\end{remark}
+
+\begin{remark}
+The condition
+\[
+n\gtrsim d
+\]
+is optimal in this setting. If the within-cluster covariance is unknown, the clustering problem becomes substantially more delicate.
+\end{remark}
+
+\chapter{Matrix Concentration}
+
+\section{Matrix Calculus}
+
+Our goal is to develop matrix analogues of scalar concentration inequalities. In particular, we want bounds of the form
+\[
+\Prob\left(
+\norm{\sum_{i=1}^n A_i}_{\mathrm{op}}\geq t
+\right),
+\]
+where
+\[
+A_1,\dots,A_n
+\]
+are independent mean-zero random symmetric matrices.
+
+\section{Functions of Symmetric Matrices}
+
+\begin{definition}[Functions of Symmetric Matrices]
+Let
+\[
+f:\R\to\R
+\]
+and let
+\[
+X\in\mathbb{S}^d
+\]
+have spectral decomposition
+\[
+X=\sum_{i=1}^d \lambda_i u_i u_i^\top.
+\]
+
+Then define
+\[
+f(X)
+=
+\sum_{i=1}^d f(\lambda_i)u_i u_i^\top.
+\]
+\end{definition}
+
+\begin{example}
+If
+\[
+f(t)=t^{-1},
+\]
+then
+\[
+f(X)=X^{-1},
+\]
+provided $X$ is invertible.
+\end{example}
+
+\begin{example}
+If
+\[
+f(t)=\sum_{k=0}^{\infty} a_k t^k,
+\]
+then
+\[
+f(X)=\sum_{k=0}^{\infty} a_k X^k,
+\]
+whenever the series converges.
+\end{example}
+
+\begin{example}
+The matrix exponential is defined by
+\[
+e^X
+=
+\sum_{k=0}^{\infty}\frac{X^k}{k!}.
+\]
+Equivalently, if
+\[
+X=\sum_{i=1}^d \lambda_i u_i u_i^\top,
+\]
+then
+\[
+e^X
+=
+\sum_{i=1}^d e^{\lambda_i}u_i u_i^\top.
+\]
+\end{example}
+
+\section{The Loewner Order}
+
+\begin{definition}[Loewner Order]
+For
+\[
+X,Y\in\mathbb{S}^d,
+\]
+we write
+\[
+X\preceq Y
+\]
+if
+\[
+Y-X\in\mathbb{S}_+^d.
+\]
+
+Equivalently,
+\[
+X\preceq Y
+\]
+means
+\[
+v^\top Xv\leq v^\top Yv
+\]
+for all
+\[
+v\in\R^d.
+\]
+\end{definition}
+
+\begin{lemma}
+Suppose
+\[
+X\preceq Y.
+\]
+Then:
+
+\begin{enumerate}
+\item For every
+\[
+A\in\R^{d\times k},
+\]
+\[
+A^\top X A
+\preceq
+A^\top Y A.
+\]
+
+\item For every $i$,
+\[
+\lambda_i(X)\leq \lambda_i(Y),
+\]
+where eigenvalues are ordered decreasingly.
+
+\item If
+\[
+f:\R\to\R
+\]
+is nondecreasing, then
+\[
+\tr(f(X))\leq \tr(f(Y)).
+\]
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+For the first claim, since
+\[
+Y-X\succeq 0,
+\]
+we have
+\[
+A^\top(Y-X)A\succeq0.
+\]
+Thus,
+\[
+A^\top XA\preceq A^\top YA.
+\]
+
+For the second claim, use the Courant--Fischer variational characterization:
+\[
+\lambda_i(X)
+=
+\max_{\dim(L)=i}
+\min_{\substack{x\in L\\ \norm{x}_2=1}}
+x^\top Xx.
+\]
+
+Since
+\[
+x^\top Xx\leq x^\top Yx
+\]
+for every unit vector $x$, the variational characterization gives
+\[
+\lambda_i(X)\leq \lambda_i(Y).
+\]
+
+For the third claim, since $f$ is nondecreasing,
+\[
+f(\lambda_i(X))\leq f(\lambda_i(Y)).
+\]
+
+Therefore,
+\[
+\tr(f(X))
+=
+\sum_{i=1}^d f(\lambda_i(X))
+\leq
+\sum_{i=1}^d f(\lambda_i(Y))
+=
+\tr(f(Y)).
+\]
+\end{proof}
+
+\begin{remark}
+It is tempting to believe that
+\[
+X\preceq Y
+\quad\Rightarrow\quad
+f(X)\preceq f(Y)
+\]
+for every nondecreasing function $f$. This is false in general. Functions with this stronger property are called matrix monotone.
+\end{remark}
+
+\begin{definition}[Matrix Monotone Function]
+A function
+\[
+f:\R\to\R
+\]
+is called matrix monotone if, for all symmetric matrices $X,Y$ with spectra in the domain of $f$,
+\[
+X\preceq Y
+\quad\Rightarrow\quad
+f(X)\preceq f(Y).
+\]
+\end{definition}
+
+\begin{lemma}
+The functions
+\[
+t\mapsto t^{-1},
+\qquad
+t\mapsto t^{1/2},
+\qquad
+t\mapsto \log t
+\]
+are matrix monotone on their appropriate positive domains.
+\end{lemma}
+
+\section{Matrix Moment Generating Functions}
+
+For scalar random variables, moment generating functions lead to tail bounds through Markov's inequality. We now define the analogous object for random matrices.
+
+\begin{definition}[Matrix Moment Generating Function]
+Let
+\[
+A\in\mathbb{S}^d
+\]
+be a random symmetric matrix. Its matrix moment generating function is
+\[
+\Psi_A(\gamma)
+=
+\E[e^{\gamma A}],
+\]
+whenever this expectation is well-defined.
+\end{definition}
+
+Using the matrix exponential,
+\[
+\Psi_A(\gamma)
+=
+\E\left[
+\sum_{k=0}^{\infty}\frac{\gamma^k A^k}{k!}
+\right]
+=
+\sum_{k=0}^{\infty}\frac{\gamma^k\E[A^k]}{k!}.
+\]
+
+\section{Matrix Chernoff Method}
+
+\begin{lemma}[Matrix Chernoff Method]
+Let
+\[
+A\in\mathbb{S}^d
+\]
+be a random symmetric matrix whose matrix moment generating function is defined on an interval
+\[
+(-a,a).
+\]
+
+Then, for every
+\[
+t>0
+\]
+and every
+\[
+\gamma\in[0,a),
+\]
+\[
+\Prob(\lambda_1(A)\geq t)
+\leq
+\tr(\Psi_A(\gamma))e^{-\gamma t}.
+\]
+
+Consequently,
+\[
+\Prob(\norm{A}_{\mathrm{op}}\geq t)
+\leq
+2\tr(\Psi_A(\gamma))e^{-\gamma t}.
+\]
+\end{lemma}
+
+\begin{proof}
+Since the scalar exponential is increasing,
+\[
+\{\lambda_1(A)\geq t\}
+=
+\{e^{\gamma\lambda_1(A)}\geq e^{\gamma t}\}.
+\]
+
+Because
+\[
+\lambda_1(e^{\gamma A})
+=
+e^{\gamma\lambda_1(A)},
+\]
+Markov's inequality gives
+\[
+\Prob(\lambda_1(A)\geq t)
+\leq
+e^{-\gamma t}
+\E[\lambda_1(e^{\gamma A})].
+\]
+
+Since
+\[
+\lambda_1(B)\leq \tr(B)
+\]
+for every positive semidefinite matrix $B$, we get
+\[
+\Prob(\lambda_1(A)\geq t)
+\leq
+e^{-\gamma t}
+\E[\tr(e^{\gamma A})].
+\]
+
+By linearity of trace and expectation,
+\[
+\E[\tr(e^{\gamma A})]
+=
+\tr(\E[e^{\gamma A}])
+=
+\tr(\Psi_A(\gamma)).
+\]
+
+Thus,
+\[
+\Prob(\lambda_1(A)\geq t)
+\leq
+\tr(\Psi_A(\gamma))e^{-\gamma t}.
+\]
+
+For the two-sided operator norm bound, note that
+\[
+\norm{A}_{\mathrm{op}}
+=
+\max\{\lambda_1(A),-\lambda_d(A)\}.
+\]
+
+Apply the previous bound to $A$ and to $-A$, and use the union bound.
+\end{proof}
+
+\section{Matrix Sub-Gaussian Random Variables}
+
+\begin{definition}[$V$-Sub-Gaussian Random Matrix]
+A random symmetric matrix
+\[
+A\in\mathbb{S}^d
+\]
+is called $V$-sub-Gaussian if
+\[
+\Psi_A(\lambda)
+\preceq
+e^{\lambda^2 V/2}
+\]
+for every
+\[
+\lambda\in\R.
+\]
+\end{definition}
+
+\begin{example}
+Suppose
+\[
+A=\varepsilon B,
+\]
+where
+\[
+\varepsilon\sim \mathrm{Unif}\{-1,1\}
+\]
+and
+\[
+B\in\mathbb{S}^d
+\]
+is fixed.
+
+Then
+\[
+\E[A^{2k+1}]=0,
+\qquad
+\E[A^{2k}]=B^{2k}.
+\]
+
+Therefore,
+\[
+\E[e^{\lambda A}]
+=
+\sum_{k=0}^{\infty}
+\frac{\lambda^{2k}B^{2k}}{(2k)!}.
+\]
+
+Using
+\[
+(2k)!\geq 2^k k!,
+\]
+we obtain
+\[
+\E[e^{\lambda A}]
+\preceq
+\sum_{k=0}^{\infty}
+\frac{1}{k!}
+\left(
+\frac{\lambda^2B^2}{2}
+\right)^k
+=
+e^{\lambda^2B^2/2}.
+\]
+
+Thus $A$ is $B^2$-sub-Gaussian.
+\end{example}
+
+\section{Lieb's Inequality}
+
+The scalar proof that independent sub-Gaussian random variables remain sub-Gaussian under summation relies on the identity
+\[
+e^{a+b}=e^ae^b.
+\]
+
+For matrices, this identity fails in general:
+\[
+e^{A+B}\neq e^Ae^B
+\]
+unless $A$ and $B$ commute. To handle this issue, we use Lieb's inequality.
+
+\begin{theorem}[Lieb's Inequality]
+Let
+\[
+H\in\mathbb{S}^d.
+\]
+
+Define
+\[
+f:\mathbb{S}_+^d\to\R
+\]
+by
+\[
+f(X)
+=
+\tr\exp(H+\log X).
+\]
+
+Then $f$ is concave on
+\[
+\mathbb{S}_+^d.
+\]
+\end{theorem}
+
+\section{Matrix MGF Bound for Sums}
+
+\begin{lemma}
+Let
+\[
+A_1,\dots,A_n\in\mathbb{S}^d
+\]
+be independent random symmetric matrices. Let
+\[
+S_n=\sum_{i=1}^n A_i.
+\]
+
+Assume that
+\[
+\Psi_{A_i}(\gamma)
+\]
+is defined for every
+\[
+\gamma\in J\subseteq\R.
+\]
+
+Then
+\[
+\tr(\Psi_{S_n}(\gamma))
+\leq
+\tr\left(
+\exp\left(
+\sum_{i=1}^n \log \Psi_{A_i}(\gamma)
+\right)
+\right)
+\]
+for every
+\[
+\gamma\in J.
+\]
+\end{lemma}
+
+\begin{proof}
+We prove the result by conditioning one random matrix at a time.
+
+Write
+\[
+S_n=S_{n-1}+A_n.
+\]
+
+Then
+\[
+\tr(\Psi_{S_n}(\gamma))
+=
+\tr\E[e^{\gamma S_n}]
+=
+\E\tr(e^{\gamma S_{n-1}+\gamma A_n}).
+\]
+
+Condition on
+\[
+S_{n-1}.
+\]
+
+Since
+\[
+e^{\gamma A_n}
+=
+\exp(\gamma A_n),
+\]
+we may write
+\[
+\gamma A_n
+=
+\log(e^{\gamma A_n}).
+\]
+
+Using Lieb's inequality and Jensen's inequality conditionally,
+\[
+\E_{A_n}
+\tr\exp(\gamma S_{n-1}+\log(e^{\gamma A_n}))
+\leq
+\tr\exp(\gamma S_{n-1}+\log \E[e^{\gamma A_n}]).
+\]
+
+Thus,
+\[
+\tr(\Psi_{S_n}(\gamma))
+\leq
+\E\tr\exp(\gamma S_{n-1}+\log\Psi_{A_n}(\gamma)).
+\]
+
+Repeating the same argument recursively gives
+\[
+\tr(\Psi_{S_n}(\gamma))
+\leq
+\tr\exp\left(
+\sum_{i=1}^n \log\Psi_{A_i}(\gamma)
+\right).
+\]
+\end{proof}
+
+\section{Matrix Hoeffding Inequality}
+
+\begin{theorem}[Matrix Hoeffding Inequality]
+Let
+\[
+A_1,\dots,A_n\in\mathbb{S}^d
+\]
+be independent, mean-zero random matrices.
+
+Assume that each
+\[
+A_i
+\]
+is $V_i$-sub-Gaussian. Define
+\[
+\sigma^2
+=
+\norm{\frac{1}{n}\sum_{i=1}^n V_i}_{\mathrm{op}}.
+\]
+
+Then, for every
+\[
+t>0,
+\]
+\[
+\Prob\left(
+\norm{\frac{1}{n}\sum_{i=1}^n A_i}_{\mathrm{op}}
+\geq t
+\right)
+\leq
+2\rank\left(\sum_{i=1}^n V_i\right)
+\exp\left(
+-\frac{nt^2}{2\sigma^2}
+\right).
+\]
+
+In particular,
+\[
+\Prob\left(
+\norm{\frac{1}{n}\sum_{i=1}^n A_i}_{\mathrm{op}}
+\geq t
+\right)
+\leq
+2d\exp\left(
+-\frac{nt^2}{2\sigma^2}
+\right).
+\]
+\end{theorem}
+
+\begin{proof}
+Let
+\[
+V=\sum_{i=1}^n V_i.
+\]
+
+By the MGF bound for sums,
+\[
+\tr(\Psi_{S_n}(\gamma))
+\leq
+\tr\exp\left(
+\sum_{i=1}^n \log\Psi_{A_i}(\gamma)
+\right),
+\]
+where
+\[
+S_n=\sum_{i=1}^n A_i.
+\]
+
+Since $A_i$ is $V_i$-sub-Gaussian,
+\[
+\Psi_{A_i}(\gamma)
+\preceq
+e^{\gamma^2V_i/2}.
+\]
+
+Because the matrix logarithm is matrix monotone,
+\[
+\log\Psi_{A_i}(\gamma)
+\preceq
+\frac{\gamma^2}{2}V_i.
+\]
+
+Hence,
+\[
+\sum_{i=1}^n\log\Psi_{A_i}(\gamma)
+\preceq
+\frac{\gamma^2}{2}
+\sum_{i=1}^n V_i
+=
+\frac{\gamma^2}{2}V.
+\]
+
+Since
+\[
+X\preceq Y
+\quad\Rightarrow\quad
+\tr(e^X)\leq \tr(e^Y),
+\]
+we get
+\[
+\tr(\Psi_{S_n}(\gamma))
+\leq
+\tr\left(
+e^{\gamma^2V/2}
+\right).
+\]
+
+By the matrix Chernoff method,
+\[
+\Prob\left(
+\norm{\frac{1}{n}S_n}_{\mathrm{op}}\geq t
+\right)
+\leq
+2\tr\left(
+e^{\gamma^2V/2}
+\right)e^{-\gamma nt}.
+\]
+
+Now,
+\[
+\tr(e^{\gamma^2V/2})
+\leq
+\rank(V)
+\exp\left(
+\frac{\gamma^2}{2}\norm{V}_{\mathrm{op}}
+\right).
+\]
+
+Since
+\[
+\norm{V}_{\mathrm{op}}
+=
+n\sigma^2,
+\]
+we obtain
+\[
+\Prob\left(
+\norm{\frac{1}{n}S_n}_{\mathrm{op}}\geq t
+\right)
+\leq
+2\rank(V)
+\exp\left(
+\frac{\gamma^2 n\sigma^2}{2}
+-
+\gamma nt
+\right).
+\]
+
+The exponent is minimized by
+\[
+\gamma=\frac{t}{\sigma^2}.
+\]
+
+Substituting this value gives
+\[
+\frac{\gamma^2 n\sigma^2}{2}
+-
+\gamma nt
+=
+-\frac{nt^2}{2\sigma^2}.
+\]
+
+Therefore,
+\[
+\Prob\left(
+\norm{\frac{1}{n}\sum_{i=1}^n A_i}_{\mathrm{op}}
+\geq t
+\right)
+\leq
+2\rank(V)
+\exp\left(
+-\frac{nt^2}{2\sigma^2}
+\right).
+\]
+
+Since
+\[
+\rank(V)\leq d,
+\]
+the second bound follows.
+\end{proof}
+
+\begin{remark}
+Compared to the scalar Hoeffding inequality, the matrix version contains an additional dimension factor. In general, this factor is unavoidable.
+\end{remark}
 
 \end{document}
