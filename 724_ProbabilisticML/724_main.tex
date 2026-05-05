@@ -3185,6 +3185,1784 @@ Tempering and particle methods address the same core issue:
     \item Particle methods: propagate distributions across temperatures
 \end{itemize}
 
+\section{Variational Methods}
 
+\subsection{MCMC vs Variational Inference}
+
+Two paradigms for approximate inference:
+
+\begin{itemize}
+    \item \textbf{MCMC:}
+    \begin{itemize}
+        \item Constructs a Markov chain with stationary distribution $p$
+        \item Asymptotically exact
+        \item Slow mixing; hard to diagnose convergence
+    \end{itemize}
+    
+    \item \textbf{Variational methods:}
+    \begin{itemize}
+        \item Solve an optimization problem over distributions
+        \item Fast and scalable
+        \item Approximate; may converge to local optima
+    \end{itemize}
+\end{itemize}
+
+\begin{remark}
+MCMC: accuracy $\uparrow$, speed $\downarrow$ \\
+Variational inference: speed $\uparrow$, accuracy $\downarrow$ (approximation bias)
+\end{remark}
+
+\subsection{Gibbs Variational Principle}
+
+Let
+\[
+p(x) = \frac{e^{f(x)}}{Z}, \quad Z = \int e^{f(x)} dx.
+\]
+
+\begin{lemma}[Gibbs variational principle]
+\[
+\ln Z = \max_{q} \left\{ H(q) + \E_{x \sim q}[f(x)] \right\}.
+\]
+The maximum is attained at $q = p$.
+\end{lemma}
+
+\begin{proof}
+Compute:
+\[
+\mathrm{KL}(q \| p)
+=
+\int q(x) \log \frac{q(x)}{p(x)} dx
+=
+\int q(x)\log q(x) dx - \int q(x) f(x) dx + \log Z.
+\]
+
+Rearrange:
+\[
+\log Z = H(q) + \E_q[f(x)] + \mathrm{KL}(q \| p).
+\]
+
+Since $\mathrm{KL}(q \| p) \ge 0$,
+\[
+\log Z \ge H(q) + \E_q[f(x)],
+\]
+with equality iff $q = p$.
+\end{proof}
+
+\subsection{Variational Relaxation}
+
+We cannot optimize over all distributions $q$. Restrict to a class $\mathcal{Q}$:
+\[
+\log Z \ge \max_{q \in \mathcal{Q}} \left\{ H(q) + \E_q[f(x)] \right\}.
+\]
+
+\begin{remark}
+Tradeoff:
+\begin{itemize}
+    \item Larger $\mathcal{Q}$: better approximation, harder optimization
+    \item Smaller $\mathcal{Q}$: easier optimization, worse approximation
+\end{itemize}
+\end{remark}
+
+\subsection{KL Projection Interpretation}
+
+Using the identity:
+\[
+\log Z = \mathrm{KL}(q \| p) + H(q) + \E_q[f(x)],
+\]
+
+we obtain:
+\[
+\argmin_{q \in \mathcal{Q}} \mathrm{KL}(q \| p)
+=
+\argmax_{q \in \mathcal{Q}} \left\{ H(q) + \E_q[f(x)] \right\}.
+\]
+
+\begin{remark}
+Variational inference = \textbf{projection of $p$ onto $\mathcal{Q}$ in KL divergence}.
+\end{remark}
+
+\subsection{Two Use Cases}
+
+\textbf{Partition function approximation:}
+\[
+\log Z \ge \max_{q \in \mathcal{Q}} \left\{ H(q) + \E_q[f(x)] \right\}.
+\]
+
+\textbf{Distribution approximation:}
+\[
+q^* = \argmin_{q \in \mathcal{Q}} \mathrm{KL}(q \| p).
+\]
+
+For latent-variable models:
+\[
+p(x) = \int p(x,z) dz,
+\]
+we obtain:
+\[
+\log p(x)
+=
+\mathrm{KL}(q(z) \| p(z|x))
++
+H(q) + \E_q[\log p(x,z)].
+\]
+
+\subsection{Evidence Lower Bound (ELBO)}
+
+\begin{definition}
+\[
+\mathrm{ELBO}(q)
+=
+H(q) + \E_{z \sim q}[\log p(x,z)].
+\]
+\end{definition}
+
+\[
+\log p(x) \ge \mathrm{ELBO}(q).
+\]
+
+\begin{remark}
+Maximizing ELBO is equivalent to minimizing:
+\[
+\mathrm{KL}(q(z) \| p(z|x)).
+\]
+\end{remark}
+
+\subsection{Mean-Field Variational Inference}
+
+Assume factorization:
+\[
+q(x_1,\dots,x_n) = \prod_{i=1}^n q_i(x_i).
+\]
+
+Optimize coordinate-wise:
+\[
+q_i^*(x_i)
+\propto
+\exp\left( \E_{q_{-i}}[f(x)] \right).
+\]
+
+\begin{algorithm}[H]
+\caption{Coordinate Ascent Variational Inference (CAVI)}
+\begin{algorithmic}[1]
+\State Initialize $q_1,\dots,q_n$
+\Repeat
+    \For{$i = 1,\dots,n$}
+        \State
+        \[
+        q_i(x_i) \propto \exp\left( \E_{q_{-i}}[f(x)] \right)
+        \]
+    \EndFor
+\Until{convergence}
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Approximate Likelihood-Based Learning}
+
+For latent-variable models $p_\theta(x,z)$:
+\[
+\log p_\theta(x)
+=
+\max_q \left\{ H(q) + \E_q[\log p_\theta(x,z)] \right\}.
+\]
+
+Instead optimize:
+\[
+\max_\theta \max_q \sum_{i=1}^N \left[ H(q_i) + \E_{z \sim q_i} \log p_\theta(x_i,z) \right].
+\]
+
+\subsection{Amortized Variational Inference}
+
+Parameterize:
+\[
+q_\phi(z|x).
+\]
+
+Objective:
+\[
+\max_{\theta,\phi} \sum_{i=1}^N \E_{z \sim q_\phi(z|x_i)} \left[
+\log \frac{p_\theta(x_i,z)}{q_\phi(z|x_i)}
+\right].
+\]
+
+\subsection{Variational Autoencoder (VAE)}
+
+\begin{itemize}
+    \item Encoder: $q_\phi(z|x)$
+    \item Decoder: $p_\theta(x|z)$
+\end{itemize}
+
+ELBO:
+\[
+\E_{z \sim q_\phi(z|x)}[\log p_\theta(x|z)]
+-
+\mathrm{KL}(q_\phi(z|x) \| p(z)).
+\]
+
+\begin{remark}
+\begin{itemize}
+    \item First term: reconstruction
+    \item Second term: regularization toward prior
+\end{itemize}
+\end{remark}
+
+\subsection{Gradient Estimators}
+
+\textbf{Score-function (REINFORCE):}
+\[
+\nabla_\phi \E_{z \sim q_\phi}[f(z)]
+=
+\E_{z \sim q_\phi}\left[ f(z)\nabla_\phi \log q_\phi(z) \right].
+\]
+
+\textbf{Reparameterization trick:}
+\[
+z = g(x,\xi,\phi), \quad \xi \sim p(\xi),
+\]
+\[
+\nabla_\phi \E_{z \sim q_\phi}[f(z)]
+=
+\E_\xi[\nabla_\phi f(g(x,\xi,\phi))].
+\]
+
+\begin{example}
+\[
+z \sim \Normal(\mu_\phi(x), \Sigma_\phi(x))
+\quad \Rightarrow \quad
+z = \mu_\phi(x) + \Sigma_\phi^{1/2}(x)\,\xi.
+\]
+\end{example}
+
+\begin{remark}
+\begin{itemize}
+    \item REINFORCE: general but high variance
+    \item Reparameterization: lower variance but requires differentiability
+\end{itemize}
+\end{remark}
+
+\subsection{Expectation Maximization (EM)}
+
+\begin{algorithm}[H]
+\caption{Expectation Maximization}
+\begin{algorithmic}[1]
+\Repeat
+    \State \textbf{E-step:} $q(z) \leftarrow p_\theta(z|x)$
+    \State \textbf{M-step:} $\theta \leftarrow \argmax_\theta \E_q[\log p_\theta(x,z)]$
+\Until{convergence}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+EM is a special case of variational inference with $\mathcal{Q}$ equal to all distributions.
+\end{remark}
+
+\subsection{Key Insight}
+
+Variational inference replaces:
+\[
+\text{sampling} \quad \longrightarrow \quad \text{optimization}.
+\]
+
+\begin{itemize}
+    \item MCMC: asymptotically exact, expensive
+    \item Variational: approximate, scalable
+\end{itemize}
+
+\subsection{Expectation Maximization (EM)}
+
+We consider latent-variable models $p_\theta(x,z)$ with observed data $x_1,\dots,x_n$.
+
+\[
+\max_\theta \sum_{i=1}^n \log p_\theta(x_i)
+=
+\max_\theta \sum_{i=1}^n \log \int p_\theta(x_i,z) dz.
+\]
+
+Using the variational bound,
+\[
+\log p_\theta(x_i)
+\ge
+\max_{q_i} \left[ H(q_i) + \E_{z \sim q_i} \log p_\theta(x_i,z) \right].
+\]
+
+\begin{algorithm}[H]
+\caption{Expectation Maximization (EM)}
+\begin{algorithmic}[1]
+\State Initialize $\theta$
+\Repeat
+\State \textbf{E-step:} 
+\[
+q_i(z) \leftarrow p_\theta(z|x_i)
+\]
+\State \textbf{M-step:}
+\[
+\theta \leftarrow \argmax_\theta \sum_{i=1}^n \E_{z \sim q_i}[\log p_\theta(x_i,z)]
+\]
+\Until{convergence}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+EM alternates between:
+\begin{itemize}
+    \item computing posteriors over latent variables
+    \item maximizing expected complete-data log-likelihood
+\end{itemize}
+\end{remark}
+
+\subsection{Example: Mixture of Gaussians}
+
+Model:
+\[
+Z_m \sim \text{Categorical}(\pi), \quad X_m \sim \Normal(\mu_{Z_m}, \Sigma_{Z_m}).
+\]
+
+\textbf{E-step:} posterior responsibilities
+\[
+z_{mj} := p(Z_m = j | X_m = x_m)
+=
+\frac{\pi_j \, \mathcal{N}(x_m; \mu_j, \Sigma_j)}
+{\sum_{k} \pi_k \, \mathcal{N}(x_m; \mu_k, \Sigma_k)}.
+\]
+
+\textbf{M-step:}
+\[
+\pi_j \leftarrow \frac{1}{n} \sum_{m=1}^n z_{mj},
+\]
+\[
+\mu_j \leftarrow \frac{\sum_{m=1}^n z_{mj} x_m}{\sum_{m=1}^n z_{mj}},
+\]
+\[
+\Sigma_j \leftarrow \frac{\sum_{m=1}^n z_{mj}(x_m - \mu_j)(x_m - \mu_j)^\top}{\sum_{m=1}^n z_{mj}}.
+\]
+
+\subsection{Outer Relaxation}
+
+Instead of optimizing over global distributions $q(x)$, optimize over local marginals.
+
+Let $p(x) \propto \exp\left(\sum_{C} \phi_C(x_C)\right)$.
+
+Define pseudo-marginals $\{q_C\}$:
+\[
+\E_q\left[\sum_C \phi_C(x_C)\right]
+=
+\sum_C \E_{q_C}[\phi_C(x_C)].
+\]
+
+Relaxation:
+\[
+\log Z
+\approx
+\max_{\{q_C\} \in \mathcal{Q}}
+\left[
+H(q) + \sum_C \E_{q_C}[\phi_C(x_C)]
+\right].
+\]
+
+\begin{remark}
+Constraints:
+\begin{itemize}
+    \item consistency between marginals
+    \item $q_C(x_C) \ge 0$, $\sum q_C = 1$
+\end{itemize}
+\end{remark}
+
+\subsection{Marginal Polytope vs Local Polytope}
+
+\begin{itemize}
+    \item \textbf{Marginal polytope:} exact set of realizable marginals (intractable)
+    \item \textbf{Local polytope:} enforce only pairwise consistency
+\end{itemize}
+
+\begin{remark}
+Membership in marginal polytope is NP-hard.
+\end{remark}
+
+\subsection{Tree Case (Exact)}
+
+\begin{lemma}
+If the factor graph is a tree, local consistency implies global consistency.
+\end{lemma}
+
+\[
+q(x)
+=
+\frac{\prod_{a \in F} q_a(x_a)}{\prod_{i \in V} q_i(x_i)^{d_i-1}}.
+\]
+
+\subsection{Bethe Entropy}
+
+\begin{lemma}
+For tree-structured graphs,
+\[
+H(q)
+=
+\sum_{a \in F} H(q_a)
+-
+\sum_{i \in V} (d_i - 1) H(q_i).
+\]
+\end{lemma}
+
+\begin{definition}
+The RHS defines the \textbf{Bethe entropy}:
+\[
+H_{\text{Bethe}}(\{q_a\}) := \sum_a H(q_a) - \sum_i (d_i - 1) H(q_i).
+\]
+\end{definition}
+
+\subsection{Bethe Free Energy}
+
+Optimization problem:
+\[
+\max_{\{q_a\} \in \mathcal{Q}}
+\left[
+H_{\text{Bethe}}(\{q_a\})
++
+\sum_a \E_{q_a}[\phi_a(x_a)]
+\right].
+\]
+
+\begin{remark}
+\begin{itemize}
+    \item Exact on trees
+    \item Approximate on loopy graphs
+    \item Not necessarily convex
+\end{itemize}
+\end{remark}
+
+\begin{note}
+Stationary points correspond to fixed points of loopy belief propagation.
+\end{note}
+
+\subsection{KL Projections}
+
+Two types:
+
+\begin{itemize}
+    \item \textbf{I-projection:}
+    \[
+    \min_{q \in \mathcal{Q}} \mathrm{KL}(q \| p)
+    \]
+    underestimates variance
+    
+    \item \textbf{M-projection:}
+    \[
+    \min_{q \in \mathcal{Q}} \mathrm{KL}(p \| q)
+    \]
+    matches moments
+\end{itemize}
+
+\subsection{M-Projection for Exponential Families}
+
+Let
+\[
+q_\theta(x) = \frac{\exp(\langle \theta, \phi(x)\rangle)}{Z(\theta)}.
+\]
+
+\begin{lemma}[Moment matching]
+\[
+\argmin_\theta \mathrm{KL}(p \| q_\theta)
+=
+\theta^*
+\quad \text{s.t.} \quad
+\E_{q_{\theta^*}}[\phi(x)] = \E_p[\phi(x)].
+\]
+\end{lemma}
+
+\subsection{Belief Propagation as Variational Inference}
+
+Messages correspond to approximate marginals:
+\[
+\nu_{i \to a}(x_i)
+\approx
+\text{marginal of } x_i.
+\]
+
+Updates correspond to projections onto exponential family approximations.
+
+\begin{remark}
+Variational view:
+\begin{itemize}
+    \item BP = coordinate ascent on Bethe free energy
+    \item Loopy BP = approximate inference via Bethe relaxation
+\end{itemize}
+\end{remark}
+
+\subsection{Example: Bayesian Linear Model}
+
+\[
+y = Ax + w, \quad w \sim \Normal(0, \sigma^2 I).
+\]
+
+Posterior:
+\[
+p(x|y) \propto \exp\left(-\frac{1}{2\sigma^2}\|y - Ax\|^2\right) p_0(x).
+\]
+
+If
+\[
+p_0(x) \propto e^{-\beta \|x\|_1},
+\]
+then MAP becomes:
+\[
+\min_x \|y - Ax\|^2 + \lambda \|x\|_1,
+\]
+i.e., LASSO.
+
+\subsection{Approximate Message Passing (AMP)}
+
+To obtain tractable updates:
+
+\begin{itemize}
+    \item Assume large random matrix $A$
+    \item Use Gaussian approximations for messages
+\end{itemize}
+
+\begin{remark}
+AMP emerges as a simplification of belief propagation under high-dimensional limits.
+\end{remark}
+
+\chapter{Modern Deep Generative Models}
+
+\section{Overview of Deep Generative Modeling}
+
+Goal: learn a distribution $p_\theta(x)$ from samples $\{x_i\}_{i=1}^N$ such that we can generate new samples.
+
+Two broad paradigms:
+
+\begin{itemize}
+    \item \textbf{Likelihood-based methods:}
+    \begin{itemize}
+        \item Energy-based models (EBM)
+        \item Variational autoencoders (VAE)
+        \item Normalizing flows
+    \end{itemize}
+    
+    \item \textbf{Non-likelihood-based methods:}
+    \begin{itemize}
+        \item Generative adversarial networks (GAN)
+        \item Noise contrastive estimation (NCE)
+        \item Score-based / diffusion models
+    \end{itemize}
+\end{itemize}
+
+\begin{remark}
+Likelihood-based methods require evaluating or approximating $p_\theta(x)$, often needing inference (MCMC or variational).
+\end{remark}
+
+\section{Generative Modeling via Transformations}
+
+Let $z \sim p_0(z)$ be a simple distribution (e.g., $\Normal(0,I)$), and define
+\[
+x = g_\theta(z).
+\]
+
+Then $p_\theta$ is the pushforward:
+\[
+p_\theta = (g_\theta)_\# p_0.
+\]
+
+If $g_\theta$ is invertible:
+\[
+p_\theta(x)
+=
+p_0(g_\theta^{-1}(x)) \left| \det D g_\theta^{-1}(x) \right|.
+\]
+
+\begin{remark}
+This is the foundation of \textbf{normalizing flows}.
+\end{remark}
+
+\section{Normalizing Flows}
+
+\subsection{Definition}
+
+Let $z \sim p_0(z)$ and $x = g(z)$ with invertible $g$. Then:
+\[
+\log p(x)
+=
+\log p_0(z) + \log \left| \det D g^{-1}(x) \right|.
+\]
+
+\begin{remark}
+Key requirement: efficient computation of $\det D g^{-1}(x)$.
+\end{remark}
+
+\subsection{Composition of Flows}
+
+Let
+\[
+g = g_L \circ \cdots \circ g_1.
+\]
+
+Then:
+\[
+\log \left| \det D g^{-1}(x) \right|
+=
+\sum_{\ell=1}^L \log \left| \det D f_\ell(x_\ell) \right|,
+\]
+where $f_\ell = g_\ell^{-1}$.
+
+\begin{remark}
+Design principle: compose simple invertible transformations with tractable Jacobians.
+\end{remark}
+
+\section{Building Blocks for Flows}
+
+\subsection{Affine Transformations}
+
+\[
+f(x) = Ax + b.
+\]
+
+\begin{itemize}
+    \item $\det Df = \det A$
+    \item Efficient if $A$ is triangular
+    \item Limited expressivity
+\end{itemize}
+
+\subsection{Coordinate-wise Transformations}
+
+\[
+f(x) = (f_1(x_1), \dots, f_d(x_d)).
+\]
+
+\[
+\det Df = \prod_{i=1}^d f_i'(x_i).
+\]
+
+\begin{remark}
+Keeps coordinates independent $\Rightarrow$ limited modeling power.
+\end{remark}
+
+\section{Affine Coupling Layers}
+
+Partition variables:
+\[
+x = (x_1, x_2).
+\]
+
+Define:
+\[
+z_1 = x_1, \quad
+z_2 = x_2 \odot \exp(s(x_1)) + t(x_1).
+\]
+
+Jacobian is triangular:
+\[
+\log |\det Df(x)| = \sum_i s_i(x_1).
+\]
+
+\begin{remark}
+\begin{itemize}
+    \item Efficient determinant: $\mathcal{O}(d)$
+    \item Used in NICE, RealNVP, Glow
+\end{itemize}
+\end{remark}
+
+\section{Residual Flows}
+
+\begin{lemma}
+Let $f(x) = x + F(x)$ where $F$ is $L$-Lipschitz with $L < 1$. Then $f$ is bijective.
+\end{lemma}
+
+\begin{theorem}[Banach fixed point]
+If $T$ is a contraction, then it has a unique fixed point.
+\end{theorem}
+
+\begin{remark}
+Residual flows ensure invertibility via contraction mappings.
+\end{remark}
+
+\section{Efficient Log-Determinant Computation}
+
+\[
+\log \det (I + DF)
+=
+\sum_{k=1}^\infty \frac{(-1)^{k+1}}{k} \operatorname{Tr}((DF)^k).
+\]
+
+\subsection{Hutchinson Trace Estimator}
+
+\begin{lemma}
+For $v \sim \Normal(0,I)$:
+\[
+\operatorname{Tr}(A) = \E[v^\top A v].
+\]
+\end{lemma}
+
+\begin{remark}
+Allows stochastic estimation of log-determinants in high dimensions.
+\end{remark}
+
+\section{Flows in Variational Inference}
+
+Let
+\[
+z = f_\phi(u,x), \quad u \sim \Normal(0,I).
+\]
+
+Then ELBO becomes:
+\[
+\E_{u} \left[
+\log p_\theta(x, f_\phi(u,x)) - \log q_\phi(f_\phi(u,x)|x)
+\right].
+\]
+
+\begin{remark}
+Flows increase expressivity of variational distributions.
+\end{remark}
+
+\section{Pros and Cons of Normalizing Flows}
+
+\textbf{Pros:}
+\begin{itemize}
+    \item Exact likelihood evaluation
+    \item Efficient sampling
+    \item Invertible mapping enables interpolation
+\end{itemize}
+
+\textbf{Cons:}
+\begin{itemize}
+    \item Requires invertibility constraints
+    \item Jacobian computation can be costly
+    \item May struggle with topological mismatch
+\end{itemize}
+
+\section{Continuous-Time Flows (Neural ODEs)}
+
+Define dynamics:
+\[
+\frac{dx(t)}{dt} = F(x(t), t), \quad x(0) = x_0.
+\]
+
+\begin{theorem}[Picard–Lindelöf]
+If $F$ is Lipschitz, then the ODE has a unique solution.
+\end{theorem}
+
+\begin{remark}
+Defines a continuous flow:
+\[
+x(T) = f_T(x_0).
+\]
+\end{remark}
+
+\section{Density Evolution}
+
+Change of variables:
+\[
+\frac{d}{dt} \log p_t(x)
+=
+- \nabla \cdot F(x,t).
+\]
+
+\begin{remark}
+Leads to the \textbf{continuity equation}.
+\end{remark}
+
+\section{Score-Based Modeling}
+
+\subsection{Score Function}
+
+\begin{definition}
+The score function is:
+\[
+s(x) = \nabla \log p(x).
+\]
+\end{definition}
+
+\subsection{Score Matching}
+
+\[
+L(\theta) = \E_{x \sim p} \| \nabla \log p(x) - s_\theta(x) \|^2.
+\]
+
+\begin{remark}
+Avoids computing normalization constant.
+\end{remark}
+
+\subsection{Integration by Parts Trick}
+
+\[
+\E \|\nabla \log p(x) - s_\theta(x)\|^2
+=
+\E \left[ \|s_\theta(x)\|^2 + \operatorname{Tr}(\nabla s_\theta(x)) \right].
+\]
+
+\section{Denoising Score Matching}
+
+Add noise:
+\[
+y = x + \varepsilon, \quad \varepsilon \sim \Normal(0, \sigma^2 I).
+\]
+
+\begin{proposition}
+Optimal estimator satisfies:
+\[
+s(y) = \frac{1}{\sigma^2} (\E[x|y] - y).
+\]
+\end{proposition}
+
+\begin{remark}
+Links score estimation to denoising.
+\end{remark}
+
+\section{Diffusion Models (Preview)}
+
+Forward process:
+\[
+dx_t = \sqrt{2} dB_t.
+\]
+
+Reverse process depends on score:
+\[
+dx_t = \nabla \log p_t(x) dt + \sqrt{2} dB_t.
+\]
+
+\begin{remark}
+Learning the score allows sampling from $p$ via reverse-time SDE.
+\end{remark}
+
+\section{Summary}
+
+\begin{itemize}
+    \item Normalizing flows: exact likelihood via invertible maps
+    \item Neural ODEs: continuous-time flows
+    \item Score-based models: learn $\nabla \log p$
+    \item Diffusion: simulate reverse-time dynamics
+\end{itemize}
+
+\chapter{Modern Deep Generative Models (II): Diffusion and Score-Based Methods}
+
+\section{Statistical Complexity of Score Matching}
+
+\begin{definition}
+The \textbf{log-Sobolev constant} of a distribution $Q$ on $\R^d$ is the smallest $C_{\mathrm{LS}}$ such that for all distributions $P$,
+\[
+\mathrm{KL}(P \| Q) \le C_{\mathrm{LS}} \, \mathrm{FI}(P \| Q),
+\]
+where $\mathrm{FI}$ is the Fisher divergence.
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+    \item Stronger than Poincaré inequality
+    \item Implies exponential convergence of Langevin diffusion:
+    \[
+    \mathrm{KL}(P_t \| Q) \le e^{-t / C_{\mathrm{LS}}} \mathrm{KL}(P_0 \| Q)
+    \]
+\end{itemize}
+\end{remark}
+
+\subsection{Statistical Efficiency of Score Matching}
+
+\begin{theorem}[Forbes \& Lauritzen, 2015]
+Let $X_1,\dots,X_N \sim P_{\theta^*}$. Then the score matching estimator
+\[
+\hat{\theta}_{\mathrm{SM}} = \argmin_\theta \sum_{i=1}^N 
+\left[
+\frac{1}{2}\|\nabla \log p_\theta(X_i)\|^2 + \operatorname{Tr}(\nabla^2 \log p_\theta(X_i))
+\right]
+\]
+satisfies
+\[
+\sqrt{N}(\hat{\theta}_{\mathrm{SM}} - \theta^*) \convd \Normal(0, \Gamma_{\mathrm{SM}}).
+\]
+\end{theorem}
+
+\begin{remark}
+Score matching is typically less statistically efficient than MLE.
+\end{remark}
+
+\begin{theorem}[Koehler et al., 2022]
+If $P_{\theta^*}$ satisfies a restricted Poincaré inequality, then
+\[
+\|\Gamma_{\mathrm{SM}}\| \lesssim C_P^2 \, \|I(\theta)\|^{-1} \cdot \text{(moment terms)}.
+\]
+\end{theorem}
+
+\begin{remark}
+Statistical gap depends on smoothness and functional inequalities.
+\end{remark}
+
+\section{Score Matching on Discrete Spaces}
+
+\begin{definition}
+Let $G=(V,E)$ be a graph. Define the discrete gradient:
+\[
+\nabla f(v) = (f(w) - f(v))_{w \in N(v)}.
+\]
+\end{definition}
+
+Example (hypercube $\{\pm1\}^n$):
+\[
+\nabla_i f(x) = f(x^{(i)}) - f(x),
+\]
+where $x^{(i)}$ flips coordinate $i$.
+
+\section{Pseudo-Likelihood}
+
+\begin{definition}
+The pseudo-likelihood objective:
+\[
+L_P(q) = \sum_{i=1}^d \E_{X \sim p}[\log q(X_i | X_{-i})].
+\]
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+    \item Maximized at $q=p$
+    \item Avoids global normalization
+    \item Used in Ising models and graphical models
+\end{itemize}
+\end{remark}
+
+\subsection{Generalized Pseudo-Likelihood}
+
+Partition coordinates into blocks $S_1,\dots,S_k$:
+\[
+L_P(q) = \sum_{i=1}^k \E_{X \sim p}[\log q(X_{S_i} | X_{S_i^c})].
+\]
+
+\section{Diffusion Models}
+
+\subsection{Goal}
+
+Learn $p(x)$ and generate samples by transforming noise into data.
+
+\subsection{Forward Process}
+
+Define an SDE:
+\[
+dx_t = f(x_t,t) dt + G(x_t,t) dW_t.
+\]
+
+This gradually transforms data into noise.
+
+\subsection{Reverse Process}
+
+\begin{theorem}[Anderson, 1982]
+The reverse-time SDE is:
+\[
+dy_t =
+\left[
+f(y_t,t) - \nabla \cdot (G G^\top p_t)(y_t) / p_t(y_t)
+\right] dt
++
+G(y_t,t) d\widetilde{W}_t.
+\]
+\end{theorem}
+
+\begin{remark}
+Reverse process depends on score $\nabla \log p_t(x)$.
+\end{remark}
+
+\subsection{Reverse Brownian Motion}
+
+\[
+dy_t = f(y_t,t) dt + G(y_t,t) d\widetilde{W}_t
+\]
+is Brownian motion run backwards in time.
+
+\section{Score-Based Diffusion Framework}
+
+\begin{enumerate}
+    \item Define forward SDE:
+    \[
+    dx_t = f(x_t,t) dt + g(t) dW_t
+    \]
+    
+    \item Learn score $s_\theta(x,t) \approx \nabla \log p_t(x)$
+    
+    \item Simulate reverse SDE:
+    \[
+    dx_t =
+    \left[
+    f(x_t,t) - g(t)^2 s_\theta(x_t,t)
+    \right] dt
+    +
+    g(t) d\widetilde{W}_t
+    \]
+\end{enumerate}
+
+\section{Variance Exploding (VE)}
+
+Forward process:
+\[
+dx_t = g(t) dW_t
+\]
+
+\[
+x_t = x_0 + \sigma(t)\epsilon, \quad \epsilon \sim \Normal(0,I)
+\]
+
+Variance increases over time.
+
+\section{Variance Preserving (VP)}
+
+\[
+dx_t = -\frac{1}{2}\beta(t)x_t dt + \sqrt{\beta(t)} dW_t
+\]
+
+\begin{remark}
+Ornstein–Uhlenbeck process.
+\end{remark}
+
+\section{Discrete-Time Diffusion (DDPM)}
+
+Forward:
+\[
+x_t = \sqrt{\alpha_t} x_{t-1} + \sqrt{1-\alpha_t}\epsilon
+\]
+
+Reverse:
+\[
+p(x_{t-1}|x_t)
+\approx \Normal(\mu_\theta(x_t,t), \Sigma_t).
+\]
+
+\section{Connection to VAE}
+
+\begin{remark}
+Diffusion models can be interpreted as hierarchical VAEs:
+\[
+p(x_0,\dots,x_T) = p(x_T)\prod_{t=1}^T p(x_{t-1}|x_t).
+\]
+\end{remark}
+
+Training objective resembles ELBO:
+\[
+\sum_t \E[\| \epsilon - \epsilon_\theta(x_t,t)\|^2].
+\]
+
+\section{Challenges with SDEs}
+
+\begin{itemize}
+    \item Brownian motion is not smooth
+    \item Step size must be very small:
+    \[
+    h = \mathcal{O}(1/d)
+    \]
+\end{itemize}
+
+\section{Probability Flow ODE}
+
+We can replace SDE with deterministic ODE:
+\[
+dx_t = \left[f(x_t,t) - g(t)^2 \nabla \log p_t(x_t)\right] dt.
+\]
+
+\begin{remark}
+\begin{itemize}
+    \item Same marginals as SDE
+    \item Faster sampling (no noise)
+    \item Sometimes less stable
+\end{itemize}
+\end{remark}
+
+\section{Fokker--Planck Equation}
+
+Density evolution:
+\[
+\frac{\partial p_t}{\partial t}
+=
+- \nabla \cdot (f p_t)
++
+\frac{1}{2} \nabla^2 (G G^\top p_t).
+\]
+
+\section{Summary of Diffusion Models}
+
+\begin{itemize}
+    \item Learn score function $\nabla \log p_t(x)$
+    \item Simulate reverse-time process
+    \item Two main variants:
+    \begin{itemize}
+        \item Variance exploding (VE)
+        \item Variance preserving (VP / DDPM)
+    \end{itemize}
+    \item Alternative: probability flow ODE
+\end{itemize}
+
+\section{Score vs Likelihood-Based Learning}
+
+\begin{itemize}
+    \item Score matching:
+    \begin{itemize}
+        \item avoids normalization constant
+        \item less statistically efficient
+    \end{itemize}
+    
+    \item MLE:
+    \begin{itemize}
+        \item statistically optimal
+        \item computationally hard
+    \end{itemize}
+\end{itemize}
+
+\begin{remark}
+Functional inequalities (Poincaré, log-Sobolev) govern both:
+\begin{itemize}
+    \item mixing of Markov chains
+    \item statistical efficiency of learning
+\end{itemize}
+\end{remark}
+
+\section{Probability Flow ODE and Sampling Refinements}
+
+\subsection{Probability Flow ODE}
+
+\begin{definition}
+Given the forward SDE
+\[
+dx_t = f(x_t,t)\,dt + g(t)\,dW_t,
+\]
+the \textbf{probability flow ODE} is
+\[
+dx_t = \left[f(x_t,t) - g(t)^2 \nabla \log p_t(x_t)\right] dt.
+\]
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+    \item Shares the same marginal distributions as the SDE.
+    \item Deterministic $\Rightarrow$ faster sampling (no stochastic noise).
+    \item Can compute likelihood via change-of-variables.
+    \item May be less stable than SDE sampling.
+\end{itemize}
+\end{remark}
+
+\subsection{Predictor–Corrector Methods}
+
+\begin{itemize}
+    \item \textbf{Predictor (P):} simulate reverse SDE/ODE step:
+    \[
+    x_{t+h} \approx \text{reverse dynamics}
+    \]
+    
+    \item \textbf{Corrector (C):} apply MCMC (Langevin step):
+    \[
+    x \leftarrow x + h \nabla \log p_t(x) + \sqrt{2h}\,\xi, \quad \xi \sim \Normal(0,I).
+    \]
+    
+    \item \textbf{PC scheme:} alternate P and C steps.
+\end{itemize}
+
+\begin{remark}
+Corrector ensures local equilibrium; predictor moves across time.
+\end{remark}
+
+\section{Architecture and Implementation}
+
+\subsection{Score Network}
+
+\begin{itemize}
+    \item Typically parameterized by a neural network $s_\theta(x,t)$
+    \item For images: \textbf{U-Net architecture}
+    \item Multi-scale structure critical for denoising
+\end{itemize}
+
+\subsection{Practical Considerations}
+
+\begin{itemize}
+    \item Higher-order solvers (e.g., Heun)
+    \item Noise schedule design
+    \item Loss weighting across time
+    \item Conditional diffusion models: learn $p(x|z)$
+    \item Latent diffusion (VAE + diffusion)
+\end{itemize}
+
+\section{Generalizing Diffusion Models}
+
+\subsection{Observation Process View}
+
+Let $X \sim P$ be data. Define noisy observations:
+\[
+Y_t = X + \text{noise}
+\]
+
+\begin{itemize}
+    \item As $t \to \infty$: $Y_t$ becomes pure noise
+    \item As $t \to 0$: recover original data
+\end{itemize}
+
+\subsection{Stochastic Localization}
+
+\[
+p(X \mid Y_t)
+\]
+defines evolving distributions that interpolate between prior and data.
+
+\section{Diffusion on Discrete Spaces}
+
+\begin{itemize}
+    \item Embed discrete data into continuous space
+    \item Masking / token corruption (language models)
+    \item Define discrete Markov processes directly
+\end{itemize}
+
+\subsection{Continuous-Time Markov Chain}
+
+Generator matrix $A$:
+\[
+A_{xy} \ge 0,\quad A_{xx} = -\sum_{y\ne x} A_{xy}.
+\]
+
+Generator:
+\[
+\mathcal{L}f(x) = \sum_{y \ne x} A_{xy}(f(y) - f(x)).
+\]
+
+\begin{remark}
+Defines jump process with exponential waiting times.
+\end{remark}
+
+\section{Reversing Markov Processes}
+
+\begin{theorem}
+Let $(P_t)$ be a Markov process with generator $A$ and marginals $p_t$.  
+The reverse process has generator
+\[
+B_t(x,y) = A_{yx} \frac{p_t(y)}{p_t(x)}, \quad x \ne y.
+\]
+\end{theorem}
+
+\begin{remark}
+Discrete analogue of reverse SDE.
+\end{remark}
+
+\subsection{Example: Bit-Flip Process}
+
+On $\{-1,1\}^n$:
+\begin{itemize}
+    \item Forward: flip each coordinate randomly
+    \item Reverse: depends on ratio $\frac{p_t(x^{(i)})}{p_t(x)}$
+\end{itemize}
+
+\section{Stochastic Interpolants}
+
+\begin{definition}
+A \textbf{stochastic interpolant} between distributions $\rho_0,\rho_1$ is:
+\[
+x_t = I(t,x_0,x_1) + \gamma(t) z,
+\quad z \sim \Normal(0,I).
+\]
+\end{definition}
+
+Example:
+\[
+x_t = (1-t)x_0 + t x_1 + \sqrt{2t(1-t)}\,z.
+\]
+
+\begin{remark}
+Generalizes diffusion models to arbitrary endpoints.
+\end{remark}
+
+\subsection{Dynamics}
+
+\begin{itemize}
+    \item ODE: $dx_t = b_t dt$
+    \item SDE: $dx_t = (b_t + s_t)dt + \sqrt{2\epsilon}dW_t$
+\end{itemize}
+
+\section{Schrödinger Bridge}
+
+\subsection{Problem}
+
+Find a stochastic process matching:
+\[
+X_0 \sim \rho_0,\quad X_T \sim \rho_1
+\]
+while minimizing KL divergence to a reference process.
+
+\begin{definition}
+\[
+\pi^* = \argmin_\pi \mathrm{KL}(\pi \| p_{\text{ref}})
+\]
+subject to endpoint constraints.
+\end{definition}
+
+\subsection{Connection to Optimal Transport}
+
+\begin{itemize}
+    \item Equivalent to entropy-regularized OT
+    \item Balances transport cost and entropy
+\end{itemize}
+
+\section{Iterative Proportional Fitting (IPF)}
+
+\begin{itemize}
+    \item Alternate between matching forward/backward marginals
+    \item Converges to Schrödinger bridge solution
+\end{itemize}
+
+\begin{remark}
+Key idea: alternating KL projections.
+\end{remark}
+
+\section{Diffusion vs Schrödinger Bridge}
+
+\begin{itemize}
+    \item Diffusion: fixed prior $\to$ data
+    \item Schrödinger bridge: arbitrary $\rho_0 \to \rho_1$
+    \item More flexible, but computationally heavier
+\end{itemize}
+
+\section{Big Picture}
+
+\begin{itemize}
+    \item Score-based models learn $\nabla \log p_t$
+    \item Reverse-time dynamics generate samples
+    \item Diffusion = special case of stochastic interpolation
+    \item Schrödinger bridge = optimal interpolation
+\end{itemize}
+
+\section{Modern Deep Generative Modeling}
+
+\subsection{Unifying View}
+
+We consider the problem:
+\[
+\text{Learn } p_{\text{data}}(x) \text{ from samples.}
+\]
+
+\begin{itemize}
+    \item \textbf{Likelihood-based:}
+    \begin{itemize}
+        \item Energy-based models (RBM)
+        \item Variational Autoencoders (VAE)
+        \item Normalizing flows
+    \end{itemize}
+    \item \textbf{Non-likelihood-based:}
+    \begin{itemize}
+        \item GANs
+        \item Noise Contrastive Estimation (NCE)
+        \item Diffusion / score-based models
+    \end{itemize}
+\end{itemize}
+
+\section{Generative Adversarial Networks (GANs)}
+
+\subsection{Formulation}
+
+\[
+\min_{g \in \mathcal{G}} \max_{f \in \mathcal{F}} 
+\left[
+\mathbb{E}_{x \sim p_{\text{data}}} \log f(x)
++ \mathbb{E}_{x \sim p_g} \log(1 - f(x))
+\right]
+\]
+
+\begin{itemize}
+    \item $g$: generator, pushes $z \sim p_z$ to $x = g(z)$
+    \item $f$: discriminator, estimates $P(y=1|x)$
+\end{itemize}
+
+\subsection{Optimal Discriminator}
+
+\[
+f^*(x) = \frac{p_{\text{data}}(x)}{p_{\text{data}}(x) + p_g(x)}.
+\]
+
+\subsection{Divergence Interpretation}
+
+\[
+\min_g \; 2\,\mathrm{JS}(p_g, p_{\text{data}})
+\]
+
+\begin{remark}
+GANs minimize Jensen--Shannon divergence.
+\end{remark}
+
+\subsection{Wasserstein GAN}
+
+\[
+\min_g \max_{f \in \text{Lip}(1)} 
+\left[
+\mathbb{E}_{p_{\text{data}}} f(x) - \mathbb{E}_{p_g} f(x)
+\right]
+\]
+
+\begin{itemize}
+    \item Approximates $W_1(p_{\text{data}}, p_g)$
+    \item Requires Lipschitz constraint on $f$
+\end{itemize}
+
+\begin{remark}
+More stable than standard GANs when supports are disjoint.
+\end{remark}
+
+\subsection{Practical Issues}
+
+\begin{itemize}
+    \item Mode collapse
+    \item Training instability (min-max optimization)
+    \item Sensitive to discriminator capacity
+\end{itemize}
+
+\section{Noise Contrastive Estimation (NCE)}
+
+\subsection{Idea}
+
+Reduce density estimation to classification:
+
+\[
+\ell(f) =
+\sum_{i=1}^N \log f(x_i^{\text{data}})
++ \sum_{j=1}^M \log(1 - f(x_j^{\text{noise}})).
+\]
+
+\begin{itemize}
+    \item Data: $x \sim p_{\text{data}}$
+    \item Noise: $x \sim q$
+\end{itemize}
+
+\subsection{Optimal Classifier}
+
+\[
+f^*(x) = \frac{p_{\text{data}}(x)}{p_{\text{data}}(x) + k q(x)}.
+\]
+
+\begin{remark}
+Recovers density ratio $\frac{p_{\text{data}}}{q}$.
+\end{remark}
+
+\subsection{Key Insight}
+
+\begin{itemize}
+    \item Avoids computing partition function
+    \item Choice of $q$ critical (curse of dimensionality)
+\end{itemize}
+
+\subsection{Telescoping Density Ratio Estimation}
+
+Construct intermediate distributions:
+\[
+\frac{p_0}{p_n}
+=
+\frac{p_0}{p_1}
+\cdot
+\frac{p_1}{p_2}
+\cdots
+\frac{p_{n-1}}{p_n}.
+\]
+
+\section{Evaluation Metrics}
+
+\subsection{Inception Score (IS)}
+
+\[
+\mathbb{E}_{x \sim p_g} \mathrm{KL}(p(y|x)\|p(y))
+\]
+
+\begin{itemize}
+    \item High if:
+    \begin{itemize}
+        \item confident predictions (low entropy $p(y|x)$)
+        \item diverse outputs (high entropy $p(y)$)
+    \end{itemize}
+\end{itemize}
+
+\begin{remark}
+Can be gamed (memorization).
+\end{remark}
+
+\subsection{Fréchet Inception Distance (FID)}
+
+\[
+W_2^2 = \|\mu - \mu'\|^2 + \mathrm{Tr}(\Sigma + \Sigma' - 2(\Sigma\Sigma')^{1/2})
+\]
+
+\begin{itemize}
+    \item Compares Gaussian approximations in feature space
+    \item Measures both quality and diversity
+\end{itemize}
+
+\section{Diffusion Models (Modern View)}
+
+\subsection{Score-Based Perspective}
+
+\[
+s(x) = \nabla \log p(x)
+\]
+
+\begin{itemize}
+    \item Learn score via score matching
+    \item Sample via Langevin / reverse SDE
+\end{itemize}
+
+\subsection{Forward / Reverse Processes}
+
+\begin{itemize}
+    \item Forward: add noise until $x_T \sim \Normal(0,I)$
+    \item Reverse: remove noise using learned score
+\end{itemize}
+
+\subsection{Two-Step View}
+
+\begin{enumerate}
+    \item Learn score $s_\theta(x,t)$
+    \item Simulate reverse dynamics to sample
+\end{enumerate}
+
+\section{Probability Flow and Sampling Refinements}
+
+\begin{itemize}
+    \item Reverse SDE (stochastic)
+    \item Probability flow ODE (deterministic)
+    \item Predictor-corrector methods
+\end{itemize}
+
+\section{Score Matching on Discrete Spaces}
+
+Define discrete gradient:
+\[
+\nabla f(x) = (f(x^{(i)}) - f(x))_{i=1}^d.
+\]
+
+Alternative objective:
+\[
+L_p(q) = \sum_{i=1}^d \mathbb{E}_{x \sim p} \log q(x_i | x_{-i}).
+\]
+
+\begin{remark}
+Pseudo-likelihood is discrete analogue of score matching.
+\end{remark}
+
+\section{Statistical Efficiency}
+
+\subsection{MLE vs Score Matching}
+
+\begin{itemize}
+    \item MLE:
+    \begin{itemize}
+        \item statistically optimal
+        \item computationally hard
+    \end{itemize}
+    \item Score matching:
+    \begin{itemize}
+        \item computationally efficient
+        \item statistically suboptimal
+    \end{itemize}
+\end{itemize}
+
+\subsection{Functional Inequalities}
+
+\begin{itemize}
+    \item Poincaré inequality $\Rightarrow$ mixing
+    \item Log-Sobolev inequality $\Rightarrow$ fast convergence
+\end{itemize}
+
+\section{Final Big Picture}
+
+\begin{itemize}
+    \item Generative modeling = learning distributions
+    \item Three main paradigms:
+    \begin{itemize}
+        \item Optimization (VI, flows, GANs)
+        \item Sampling (MCMC, diffusion)
+        \item Hybrid (score-based methods)
+    \end{itemize}
+    \item Tradeoffs:
+    \begin{itemize}
+        \item Statistical efficiency vs computational tractability
+        \item Exactness vs scalability
+    \end{itemize}
+\end{itemize}
+
+\section{Calibration and Conformal Prediction}
+
+\subsection{Calibration}
+
+\textbf{Goal:} Ensure probabilistic predictions reflect true frequencies.
+
+A predictor $f:\mathcal{X} \to [0,1]$ is \textit{calibrated} if
+\[
+\mathbb{P}(Y=1 \mid f(X)=p) = p \quad \forall p \in [0,1].
+\]
+
+\begin{remark}
+Calibration is about \textit{uncertainty correctness}, not accuracy.
+\end{remark}
+
+\begin{itemize}
+    \item Perfect calibration but poor accuracy: always predict $1/2$.
+    \item Good accuracy but poor calibration: overconfident predictions (0 or 1).
+\end{itemize}
+
+\subsection{Calibration in Deep Learning}
+
+\begin{itemize}
+    \item Overparameterized models $\Rightarrow$ overconfidence.
+    \item Minimizing loss $\not\Rightarrow$ calibrated probabilities.
+    \item Post-training (e.g., RLHF) can worsen calibration.
+\end{itemize}
+
+\section{Proper Scoring Rules}
+
+A scoring rule $S$ is \textit{proper} if:
+\[
+\arg\max_{\hat p} \mathbb{E}[S(\hat p, Y)] = p.
+\]
+
+Examples:
+\begin{itemize}
+    \item Log score: $S(p)=\log p$
+    \item Brier score: $S(p)=-(1-p)^2$
+\end{itemize}
+
+\begin{remark}
+Proper scoring rules incentivize truthful probabilities.
+\end{remark}
+
+\section{Measuring Calibration}
+
+\subsection{Expected Calibration Error (ECE)}
+
+\[
+\mathrm{ECE}(f)
+=
+\mathbb{E}\big[\,|\mathbb{E}[Y \mid f(X)] - f(X)|\,\big].
+\]
+
+\[
+\mathrm{ECE}_2(f)
+=
+\mathbb{E}\big[\,(\mathbb{E}[Y \mid f(X)] - f(X))^2\,\big].
+\]
+
+\begin{remark}
+In practice, estimated via binning (reliability diagrams).
+\end{remark}
+
+\subsection{Decomposition of Error}
+
+\[
+\mathbb{E}[(f(X)-Y)^2]
+=
+\underbrace{\mathbb{E}[(f(X)-\mathbb{E}[Y|f(X)])^2]}_{\text{calibration error}}
++
+\underbrace{\mathbb{E}[(\mathbb{E}[Y|f(X)]-Y)^2]}_{\text{intrinsic noise}}.
+\]
+
+\section{Calibration Algorithms}
+
+Define:
+\[
+\text{calib}(p) = \mathbb{P}(Y=1 \mid f(X)=p).
+\]
+
+Construct calibrated predictor:
+\[
+\hat f(x) = \text{calib}(f(x)).
+\]
+
+\begin{theorem}
+$\hat f$ is calibrated and improves squared loss:
+\[
+L(\hat f) = L(f) - \mathrm{ECE}_2(f).
+\]
+\end{theorem}
+
+\subsection{Practical Methods}
+
+\begin{itemize}
+    \item Binning / histogram calibration
+    \item Isotonic regression
+    \item Temperature scaling:
+    \[
+    \hat f(x) = \frac{e^{\beta f(x)}}{1 + e^{\beta f(x)}}
+    \]
+\end{itemize}
+
+\section{Issues in Continuous Case}
+
+\begin{itemize}
+    \item Cannot directly estimate $\mathbb{P}(Y=1|f(X)=p)$
+    \item ECE is discontinuous
+\end{itemize}
+
+Fixes:
+\begin{itemize}
+    \item Binning
+    \item Smoothing
+    \item Distance to calibration:
+    \[
+    d_{\text{CE}}(f) = \inf_{g \in \text{Cal}} \mathbb{E}|f(X)-g(X)|
+    \]
+\end{itemize}
+
+\section{Extensions}
+
+\begin{itemize}
+    \item Multicalibration (fairness across groups)
+    \item Multiclass calibration
+    \item Decision calibration (task-aware)
+\end{itemize}
+
+\section{Conformal Prediction}
+
+\subsection{Goal}
+
+Construct set-valued predictor $T(x)$ such that:
+\[
+\mathbb{P}(Y \in T(X)) \ge 1 - \delta.
+\]
+
+\subsection{Nonconformity Score}
+
+Define $s(x,y)$ measuring prediction error.
+
+Examples:
+\begin{itemize}
+    \item Regression: $s(x,y)=|f(x)-y|$
+    \item Classification: $s(x,y)=1-f(x,y)$
+\end{itemize}
+
+\subsection{Algorithm}
+
+Given data $(x_i,y_i)_{i=1}^n$:
+
+\[
+\tau = \min \left\{
+t:\sum_{i=1}^n \mathbf{1}_{s(x_i,y_i)\le t}
+\ge (1-\delta)(n+1)
+\right\}.
+\]
+
+Output:
+\[
+T(x) = \{y: s(x,y)\le \tau\}.
+\]
+
+\subsection{Guarantee}
+
+\begin{theorem}
+For new $(x,y)$:
+\[
+1-\delta \le \mathbb{P}(y \in T(x)) \le 1-\delta + \frac{1}{n+1}.
+\]
+\end{theorem}
+
+\subsection{High-Probability Version}
+
+\[
+\tau = \text{quantile}_{1-\delta} + \sqrt{\frac{\ln(2/\gamma)}{2n}}
+\]
+
+\section{Key Insight}
+
+\begin{itemize}
+    \item Calibration $\Rightarrow$ correctness of probabilities
+    \item Conformal prediction $\Rightarrow$ correctness of \textit{sets}
+    \item No distributional assumptions needed (only exchangeability)
+\end{itemize}
+
+\section{Big Picture}
+
+\begin{itemize}
+    \item MCMC / VI: approximate distributions
+    \item Calibration: fix uncertainty of predictions
+    \item Conformal: wrap any model with guarantees
+\end{itemize}
 
 \end{document}
