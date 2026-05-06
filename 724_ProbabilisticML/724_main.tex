@@ -1,30 +1,20 @@
 \documentclass[12pt,oneside]{book}
 
-%============================================================
 % PACKAGES
-%============================================================
-
-%--------------------
-% Page + font
-%--------------------
 \usepackage[margin=1in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
 \usepackage{microtype}
 
-%--------------------
 % Math
-%--------------------
 \usepackage{amsmath, amssymb, amsfonts, amsthm, mathtools}
 \usepackage{bm}
 \usepackage{bbm}
 \usepackage{mathrsfs}
 \usepackage{dsfont}
 
-%--------------------
 % Tables + figures
-%--------------------
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{booktabs}
@@ -34,16 +24,12 @@
 \usepackage{caption}
 \usepackage{subcaption}
 
-%--------------------
 % Lists
-%--------------------
 \usepackage{enumitem}
 \setlist[itemize]{topsep=2pt,itemsep=2pt}
 \setlist[enumerate]{topsep=2pt,itemsep=2pt}
 
-%--------------------
 % Colors + hyperlinks
-%--------------------
 \usepackage[dvipsnames]{xcolor}
 \usepackage[
     colorlinks=true,
@@ -53,17 +39,12 @@
 ]{hyperref}
 \usepackage[nameinlink,capitalise]{cleveref}
 
-%--------------------
 % Algorithms
-%--------------------
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 
-%--------------------
 % Code blocks
-%--------------------
 \usepackage{listings}
-
 \lstdefinestyle{codestyle}{
     basicstyle=\ttfamily\small,
     breaklines=true,
@@ -76,22 +57,16 @@
     showstringspaces=false,
     tabsize=4
 }
-
 \lstset{style=codestyle}
 
-%--------------------
 % Section styling
-%--------------------
 \usepackage{titlesec}
 \usepackage{tocloft}
 
 \setcounter{tocdepth}{2}
 \setcounter{secnumdepth}{3}
 
-%============================================================
 % THEOREMS
-%============================================================
-
 \numberwithin{equation}{section}
 
 \theoremstyle{definition}
@@ -109,10 +84,7 @@
 \theoremstyle{remark}
 \newtheorem*{note}{Note}
 
-%============================================================
 % CUSTOM COMMANDS
-%============================================================
-
 % Sets
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\N}{\mathbb{N}}
@@ -162,17 +134,12 @@
 \newcommand{\Dir}{\mathrm{Dirichlet}}
 \newcommand{\InvGam}{\mathrm{Inv\text{-}Gamma}}
 
-%============================================================
 % TITLE INFO
-%============================================================
 \title{EN.553.724 Probabilistic Machine Learning}
 \author{Jonathan Y. Ma}
 \date{June 2026}
 
-%============================================================
 % DOCUMENT
-%============================================================
-
 \begin{document}
 
 \maketitle
@@ -185,10 +152,10 @@
 
 \subsection{Classical vs.\ Modern Methods}
 
-Classical probabilistic models (e.g.\ graphical models) and modern deep generative models differ primarily in how structure is specified.
+Classical probabilistic models (e.g.\ graphical models) and modern "deep" generative models differ primarily in how structure is specified.
 
 \begin{itemize}
-\item \textbf{Classical approaches}
+\item \textbf{Classical approaches} 
 \begin{itemize}
 \item Leverage domain knowledge to specify model structure.
 \item Work well when the model is correctly specified.
