@@ -11569,4 +11569,6005 @@ the second bound follows.
 Compared to the scalar Hoeffding inequality, the matrix version contains an additional dimension factor. In general, this factor is unavoidable.
 \end{remark}
 
+\chapter{Parametric Estimation and Maximum Likelihood}
+
+\section{Introduction to Estimation}
+
+Suppose we observe iid data
+\[
+Z_1,\dots,Z_n\sim P_\theta,
+\]
+where
+\[
+P_\theta
+\]
+is a probability distribution depending on an unknown object
+\[
+\theta.
+\]
+
+The goal of estimation is to construct a data-dependent rule that approximates
+\[
+\theta
+\]
+accurately.
+
+Common examples include estimating:
+\begin{itemize}
+\item a mean vector,
+\item a covariance matrix,
+\item a cumulative distribution function,
+\item a density,
+\item a regression parameter.
+\end{itemize}
+
+\section{Parametric and Nonparametric Estimation}
+
+\begin{definition}[Parametric Estimation]
+A statistical estimation problem is called parametric if
+\[
+\theta\in\R^k
+\]
+for some finite
+\[
+k,
+\]
+and the family
+\[
+\{P_\theta:\theta\in\Theta\}
+\]
+is described by a finite-dimensional parameter.
+\end{definition}
+
+\begin{example}
+Suppose
+\[
+Z_i\sim \Normal(\theta,I_d),
+\qquad
+\theta\in\R^d.
+\]
+Then estimating
+\[
+\theta
+\]
+is a parametric estimation problem.
+\end{example}
+
+\begin{definition}[Nonparametric Estimation]
+A statistical estimation problem is called nonparametric if the object being estimated does not belong to a fixed finite-dimensional family.
+\end{definition}
+
+\begin{example}
+If the goal is to estimate an unknown density
+\[
+f
+\]
+over
+\[
+\R^d
+\]
+without assuming that
+\[
+f
+\]
+belongs to a finite-dimensional parametric family, then the problem is nonparametric.
+\end{example}
+
+\section{Estimators}
+
+\begin{definition}[Estimator]
+An estimator of
+\[
+\theta
+\]
+is a measurable function of the data:
+\[
+\widehat{\theta}_n
+=
+g(Z_1,\dots,Z_n).
+\]
+\end{definition}
+
+\begin{definition}[Unbiased Estimator]
+An estimator
+\[
+\widehat{\theta}_n
+\]
+is unbiased if
+\[
+\E[\widehat{\theta}_n]=\theta.
+\]
+\end{definition}
+
+\section{Mean Squared Error}
+
+A common way to measure accuracy is the mean squared error.
+
+\begin{definition}[Mean Squared Error]
+The mean squared error of an estimator
+\[
+\widehat{\theta}_n
+\]
+is
+\[
+\operatorname{MSE}(\widehat{\theta}_n)
+=
+\E\norm{\widehat{\theta}_n-\theta}_2^2.
+\]
+\end{definition}
+
+The mean squared error decomposes into bias and variance.
+
+\begin{proposition}[Bias-Variance Decomposition]
+For any estimator
+\[
+\widehat{\theta}_n,
+\]
+\[
+\operatorname{MSE}(\widehat{\theta}_n)
+=
+\norm{\E[\widehat{\theta}_n]-\theta}_2^2
++
+\E\norm{\widehat{\theta}_n-\E[\widehat{\theta}_n]}_2^2.
+\]
+\end{proposition}
+
+\begin{proof}
+Write
+\[
+\widehat{\theta}_n-\theta
+=
+\widehat{\theta}_n-\E[\widehat{\theta}_n]
++
+\E[\widehat{\theta}_n]-\theta.
+\]
+
+Then
+\[
+\norm{\widehat{\theta}_n-\theta}_2^2
+=
+\norm{\widehat{\theta}_n-\E[\widehat{\theta}_n]}_2^2
++
+\norm{\E[\widehat{\theta}_n]-\theta}_2^2
++
+2
+\left\langle
+\widehat{\theta}_n-\E[\widehat{\theta}_n],
+\E[\widehat{\theta}_n]-\theta
+\right\rangle.
+\]
+
+Taking expectations, the cross term vanishes because
+\[
+\E[\widehat{\theta}_n-\E[\widehat{\theta}_n]]=0.
+\]
+
+Therefore,
+\[
+\E\norm{\widehat{\theta}_n-\theta}_2^2
+=
+\E\norm{\widehat{\theta}_n-\E[\widehat{\theta}_n]}_2^2
++
+\norm{\E[\widehat{\theta}_n]-\theta}_2^2.
+\]
+\end{proof}
+
+\begin{definition}[Bias and Variance]
+The squared bias is
+\[
+\operatorname{Bias}(\widehat{\theta}_n)^2
+=
+\norm{\E[\widehat{\theta}_n]-\theta}_2^2.
+\]
+
+The variance term is
+\[
+\operatorname{Var}(\widehat{\theta}_n)
+=
+\E\norm{\widehat{\theta}_n-\E[\widehat{\theta}_n]}_2^2.
+\]
+
+Thus,
+\[
+\operatorname{MSE}(\widehat{\theta}_n)
+=
+\operatorname{Bias}(\widehat{\theta}_n)^2
++
+\operatorname{Var}(\widehat{\theta}_n).
+\]
+\end{definition}
+
+\begin{remark}
+Unbiasedness is not always optimal for mean squared error. Sometimes it is beneficial to introduce bias if the variance reduction is large enough.
+\end{remark}
+
+\section{Maximum Likelihood Estimation}
+
+Maximum likelihood estimation gives a systematic way to construct estimators in parametric models.
+
+Suppose
+\[
+\{f(z;\theta):\theta\in\Theta\}
+\]
+is a parametric family of densities or probability mass functions.
+
+Given observations
+\[
+Z_1,\dots,Z_n,
+\]
+the likelihood function is
+\[
+L_n(\theta)
+=
+\prod_{i=1}^n f(Z_i;\theta).
+\]
+
+The log-likelihood function is
+\[
+\ell_n(\theta)
+=
+\sum_{i=1}^n \log f(Z_i;\theta).
+\]
+
+\begin{definition}[Maximum Likelihood Estimator]
+The maximum likelihood estimator is any solution
+\[
+\widehat{\theta}_{\mathrm{MLE}}
+\in
+\argmax_{\theta\in\Theta} L_n(\theta).
+\]
+
+Equivalently,
+\[
+\widehat{\theta}_{\mathrm{MLE}}
+\in
+\argmax_{\theta\in\Theta} \ell_n(\theta).
+\]
+\end{definition}
+
+\begin{remark}
+Maximizing the likelihood and maximizing the log-likelihood are equivalent because the logarithm is strictly increasing.
+\end{remark}
+
+\section{Example: Bernoulli Model}
+
+Suppose
+\[
+Z_1,\dots,Z_n\iid \Bern(p),
+\]
+where
+\[
+p\in(0,1).
+\]
+
+The probability mass function is
+\[
+f(z;p)
+=
+p^z(1-p)^{1-z},
+\qquad
+z\in\{0,1\}.
+\]
+
+Thus,
+\[
+L_n(p)
+=
+\prod_{i=1}^n p^{Z_i}(1-p)^{1-Z_i}.
+\]
+
+The log-likelihood is
+\[
+\ell_n(p)
+=
+\sum_{i=1}^n Z_i\log p
++
+\sum_{i=1}^n (1-Z_i)\log(1-p).
+\]
+
+Let
+\[
+S_n=\sum_{i=1}^n Z_i.
+\]
+
+Then
+\[
+\ell_n(p)
+=
+S_n\log p
++
+(n-S_n)\log(1-p).
+\]
+
+Differentiating,
+\[
+\ell_n'(p)
+=
+\frac{S_n}{p}
+-
+\frac{n-S_n}{1-p}.
+\]
+
+Setting
+\[
+\ell_n'(p)=0
+\]
+gives
+\[
+\frac{S_n}{p}
+=
+\frac{n-S_n}{1-p}.
+\]
+
+Therefore,
+\[
+S_n(1-p)=p(n-S_n).
+\]
+
+Expanding,
+\[
+S_n-S_np=np-S_np,
+\]
+so
+\[
+S_n=np.
+\]
+
+Hence,
+\[
+\widehat{p}_{\mathrm{MLE}}
+=
+\frac{S_n}{n}
+=
+\frac{1}{n}\sum_{i=1}^n Z_i.
+\]
+
+\begin{remark}
+The Bernoulli maximum likelihood estimator is the sample proportion.
+\end{remark}
+
+\section{Example: Linear Regression with Gaussian Noise}
+
+Suppose
+\[
+\theta\in\R^d
+\]
+and we observe iid pairs
+\[
+Z_i=(X_i,y_i),
+\]
+where
+\[
+y_i
+=
+\theta^\top X_i+\varepsilon_i,
+\qquad
+\varepsilon_i\sim \Normal(0,\sigma^2).
+\]
+
+Equivalently,
+\[
+y_i|X_i\sim \Normal(\theta^\top X_i,\sigma^2).
+\]
+
+The parameter of interest is
+\[
+\theta.
+\]
+
+The variance
+\[
+\sigma^2
+\]
+may be treated as a nuisance parameter if the goal is only to estimate
+\[
+\theta.
+\]
+
+The conditional density of
+\[
+y_i
+\]
+given
+\[
+X_i
+\]
+is
+\[
+f(y_i|X_i;\theta)
+=
+\frac{1}{\sqrt{2\pi\sigma^2}}
+\exp\left(
+-\frac{(y_i-\theta^\top X_i)^2}{2\sigma^2}
+\right).
+\]
+
+Thus, the likelihood is
+\[
+L_n(\theta)
+=
+\prod_{i=1}^n
+\frac{1}{\sqrt{2\pi\sigma^2}}
+\exp\left(
+-\frac{(y_i-\theta^\top X_i)^2}{2\sigma^2}
+\right).
+\]
+
+Therefore,
+\[
+L_n(\theta)
+=
+(2\pi\sigma^2)^{-n/2}
+\exp\left(
+-\frac{1}{2\sigma^2}
+\sum_{i=1}^n
+(y_i-\theta^\top X_i)^2
+\right).
+\]
+
+Taking logs,
+\[
+\ell_n(\theta)
+=
+-\frac{n}{2}\log(2\pi\sigma^2)
+-
+\frac{1}{2\sigma^2}
+\sum_{i=1}^n
+(y_i-\theta^\top X_i)^2.
+\]
+
+The first term does not depend on
+\[
+\theta.
+\]
+
+Since
+\[
+\sigma^2>0,
+\]
+maximizing
+\[
+\ell_n(\theta)
+\]
+over
+\[
+\theta
+\]
+is equivalent to minimizing
+\[
+\sum_{i=1}^n
+(y_i-\theta^\top X_i)^2.
+\]
+
+Thus,
+\[
+\widehat{\theta}_{\mathrm{MLE}}
+\in
+\argmin_{\theta\in\R^d}
+\frac{1}{2n}
+\sum_{i=1}^n
+(y_i-\theta^\top X_i)^2.
+\]
+
+This is precisely the ordinary least squares estimator.
+
+\begin{remark}
+This example shows that least squares can be derived as maximum likelihood estimation under Gaussian noise.
+\end{remark}
+
+\section{Closed Form for Least Squares}
+
+Let
+\[
+X
+=
+\begin{pmatrix}
+X_1^\top\\
+\vdots\\
+X_n^\top
+\end{pmatrix}
+\in\R^{n\times d},
+\qquad
+y
+=
+\begin{pmatrix}
+y_1\\
+\vdots\\
+y_n
+\end{pmatrix}.
+\]
+
+The least squares objective is
+\[
+Q(\theta)
+=
+\frac{1}{2n}\norm{y-X\theta}_2^2.
+\]
+
+Expanding,
+\[
+Q(\theta)
+=
+\frac{1}{2n}
+(y-X\theta)^\top(y-X\theta).
+\]
+
+Differentiating,
+\[
+\nabla Q(\theta)
+=
+-\frac{1}{n}X^\top(y-X\theta).
+\]
+
+Setting
+\[
+\nabla Q(\theta)=0
+\]
+gives the normal equations
+\[
+X^\top X\theta=X^\top y.
+\]
+
+If
+\[
+X^\top X
+\]
+is invertible, then
+\[
+\widehat{\theta}_{\mathrm{LS}}
+=
+(X^\top X)^{-1}X^\top y.
+\]
+
+\section{Statistical Inference}
+
+Beyond estimating a parameter, one may also want to:
+\begin{itemize}
+\item construct confidence intervals,
+\item test hypotheses,
+\item provide high-probability guarantees,
+\item quantify uncertainty.
+\end{itemize}
+
+These tasks are collectively known as statistical inference.
+
+\section{Maximum Likelihood as Empirical Risk Minimization}
+
+The maximum likelihood estimator can be written as an optimization problem.
+
+Since maximizing
+\[
+\ell_n(\theta)
+=
+\sum_{i=1}^n \log f(Z_i;\theta)
+\]
+is equivalent to minimizing the negative log-likelihood,
+\[
+\widehat{\theta}_{\mathrm{MLE}}
+\in
+\argmin_{\theta\in\Theta}
+\frac{1}{n}
+\sum_{i=1}^n
+\bigl[-\log f(Z_i;\theta)\bigr].
+\]
+
+This is an example of empirical risk minimization.
+
+\begin{definition}[Stochastic Optimization Problem]
+Let
+\[
+Z\sim \mathcal{D}
+\]
+and let
+\[
+F:\Theta\times\mathcal{Z}\to\R.
+\]
+
+The population optimization problem is
+\[
+\min_{\theta\in\Theta}
+\E_{Z\sim\mathcal{D}}[F(\theta,Z)].
+\]
+\end{definition}
+
+Since the distribution
+\[
+\mathcal{D}
+\]
+is typically unknown, we replace the population objective with the empirical objective.
+
+\begin{definition}[Empirical Risk Minimization]
+Given iid samples
+\[
+Z_1,\dots,Z_n\sim\mathcal{D},
+\]
+the empirical risk minimization problem is
+\[
+\min_{\theta\in\Theta}
+\frac{1}{n}
+\sum_{i=1}^n F(\theta,Z_i).
+\]
+\end{definition}
+
+Maximum likelihood is empirical risk minimization with
+\[
+F(\theta,z)
+=
+-\log f(z;\theta).
+\]
+
+Least squares is empirical risk minimization with
+\[
+F(\theta,(x,y))
+=
+\frac{1}{2}(y-\theta^\top x)^2.
+\]
+
+\section{Core Questions}
+
+The empirical risk minimization framework raises several important questions:
+
+\begin{itemize}
+\item How do we solve the empirical optimization problem efficiently?
+\item If
+\[
+\widehat{\theta}_n
+\]
+solves the empirical problem and
+\[
+\theta_*
+\]
+solves the population problem, do we have
+\[
+\widehat{\theta}_n\to\theta_*
+\]
+as
+\[
+n\to\infty?
+\]
+\item What convergence rates are possible?
+\item Can we obtain confidence intervals or high-probability guarantees?
+\end{itemize}
+
+The next major goal is to study these questions in the context of linear least squares.
+
+\chapter{Ordinary Least Squares and Excess Risk}
+
+\section{Ordinary Least Squares}
+
+Suppose we observe data
+\[
+(X_1,y_1),\dots,(X_n,y_n),
+\]
+where
+\[
+X_i\in\R^d,
+\qquad
+y_i\in\R,
+\]
+and
+\[
+y_i=\theta_*^\top X_i+\varepsilon_i.
+\]
+
+Assume
+\[
+\varepsilon_i\iid \Normal(0,\sigma^2).
+\]
+
+The empirical risk is
+\[
+R_n(\theta)
+=
+\frac{1}{n}\sum_{i=1}^n
+(y_i-X_i^\top\theta)^2.
+\]
+
+In matrix notation, define
+\[
+y=
+\begin{pmatrix}
+y_1\\
+\vdots\\
+y_n
+\end{pmatrix},
+\qquad
+X=
+\begin{pmatrix}
+X_1^\top\\
+\vdots\\
+X_n^\top
+\end{pmatrix}.
+\]
+
+Then
+\[
+R_n(\theta)
+=
+\frac{1}{n}\norm{y-X\theta}_2^2.
+\]
+
+Assume throughout this section that
+\[
+d\leq n
+\]
+and that $X$ has rank $d$.
+
+\begin{definition}[Ordinary Least Squares Estimator]
+The ordinary least squares estimator is any solution of
+\[
+\widehat{\theta}_{\mathrm{OLS}}
+\in
+\argmin_{\theta\in\R^d}
+R_n(\theta).
+\]
+\end{definition}
+
+\begin{lemma}
+The ordinary least squares estimator exists, is unique, and is given by
+\[
+\widehat{\theta}_{\mathrm{OLS}}
+=
+(X^\top X)^{-1}X^\top y.
+\]
+\end{lemma}
+
+\begin{proof}
+Since $X$ has rank $d$,
+\[
+X^\top X
+\]
+is positive definite. Hence
+\[
+R_n(\theta)
+=
+\frac{1}{n}\norm{y-X\theta}_2^2
+\]
+is strongly convex in $\theta$, so the minimizer exists and is unique.
+
+Differentiating,
+\[
+\nabla R_n(\theta)
+=
+\frac{2}{n}X^\top(X\theta-y).
+\]
+
+At the minimizer,
+\[
+0
+=
+\nabla R_n(\widehat{\theta}_{\mathrm{OLS}})
+=
+\frac{2}{n}X^\top(X\widehat{\theta}_{\mathrm{OLS}}-y).
+\]
+
+Thus,
+\[
+X^\top X\widehat{\theta}_{\mathrm{OLS}}
+=
+X^\top y.
+\]
+
+Since $X^\top X$ is invertible,
+\[
+\widehat{\theta}_{\mathrm{OLS}}
+=
+(X^\top X)^{-1}X^\top y.
+\]
+\end{proof}
+
+\section{Geometric Interpretation of OLS}
+
+\begin{lemma}
+The fitted values
+\[
+X\widehat{\theta}_{\mathrm{OLS}}
+\]
+are the orthogonal projection of $y$ onto
+\[
+\operatorname{range}(X)\subseteq\R^n.
+\]
+Specifically,
+\[
+X\widehat{\theta}_{\mathrm{OLS}}
+=
+X(X^\top X)^{-1}X^\top y.
+\]
+\end{lemma}
+
+\begin{proof}
+Define
+\[
+P_X
+=
+X(X^\top X)^{-1}X^\top.
+\]
+
+We show that $P_X$ is the orthogonal projector onto $\operatorname{range}(X)$.
+
+First,
+\[
+P_X^\top
+=
+\left(
+X(X^\top X)^{-1}X^\top
+\right)^\top
+=
+X(X^\top X)^{-1}X^\top
+=
+P_X.
+\]
+
+Second,
+\[
+P_X^2
+=
+X(X^\top X)^{-1}X^\top
+X(X^\top X)^{-1}X^\top
+=
+X(X^\top X)^{-1}X^\top
+=
+P_X.
+\]
+
+Thus $P_X$ is an orthogonal projector. Since
+\[
+P_Xy\in\operatorname{range}(X),
+\]
+and
+\[
+y-P_Xy
+\]
+is orthogonal to $\operatorname{range}(X)$, $P_Xy$ is the orthogonal projection of $y$ onto $\operatorname{range}(X)$.
+
+Finally,
+\[
+X\widehat{\theta}_{\mathrm{OLS}}
+=
+X(X^\top X)^{-1}X^\top y
+=
+P_Xy.
+\]
+\end{proof}
+
+\begin{remark}
+The OLS estimator can be interpreted in two steps:
+\begin{enumerate}
+\item project $y$ onto the column space of $X$;
+\item solve
+\[
+X\theta=\widehat{y}
+\]
+inside that column space.
+\end{enumerate}
+\end{remark}
+
+\section{Population Risk and Excess Risk}
+
+The empirical risk approximates the population risk
+\[
+R(\theta)
+=
+\E[R_n(\theta)].
+\]
+
+In the fixed-design setting, $X$ is treated as deterministic and the expectation is only over the noise
+\[
+\varepsilon=
+\begin{pmatrix}
+\varepsilon_1\\
+\vdots\\
+\varepsilon_n
+\end{pmatrix}.
+\]
+
+The excess risk of an estimator is
+\[
+R(\widehat{\theta})-\min_{\theta\in\R^d}R(\theta).
+\]
+
+\section{Fixed-Design Risk Geometry}
+
+Define
+\[
+\widehat{\Sigma}
+=
+\frac{1}{n}X^\top X.
+\]
+
+Since $X$ has rank $d$,
+\[
+\widehat{\Sigma}
+\]
+is positive definite.
+
+This matrix induces an inner product
+\[
+\langle \theta,\theta'\rangle_{\widehat{\Sigma}}
+=
+\theta^\top\widehat{\Sigma}\theta'
+\]
+and corresponding norm
+\[
+\norm{\theta}_{\widehat{\Sigma}}^2
+=
+\theta^\top\widehat{\Sigma}\theta
+=
+\frac{1}{n}\norm{X\theta}_2^2.
+\]
+
+\begin{lemma}
+Suppose $X$ is fixed. Then, for every
+\[
+\theta\in\R^d,
+\]
+\[
+R(\theta)-R^*
+=
+\norm{\theta-\theta_*}_{\widehat{\Sigma}}^2,
+\]
+where
+\[
+R^*
+=
+\min_{\theta\in\R^d}R(\theta)
+=
+\sigma^2.
+\]
+\end{lemma}
+
+\begin{proof}
+Since
+\[
+y=X\theta_*+\varepsilon,
+\]
+we have
+\[
+y-X\theta
+=
+X(\theta_*-\theta)+\varepsilon.
+\]
+
+Therefore,
+\[
+R(\theta)
+=
+\frac{1}{n}
+\E_\varepsilon
+\norm{X(\theta_*-\theta)+\varepsilon}_2^2.
+\]
+
+Expanding,
+\[
+R(\theta)
+=
+\frac{1}{n}\norm{X(\theta_*-\theta)}_2^2
++
+\frac{2}{n}
+\E_\varepsilon
+\left[
+\varepsilon^\top X(\theta_*-\theta)
+\right]
++
+\frac{1}{n}
+\E_\varepsilon\norm{\varepsilon}_2^2.
+\]
+
+The cross term is zero because
+\[
+\E[\varepsilon]=0.
+\]
+
+Also,
+\[
+\E\norm{\varepsilon}_2^2
+=
+\sum_{i=1}^n \E[\varepsilon_i^2]
+=
+n\sigma^2.
+\]
+
+Thus,
+\[
+R(\theta)
+=
+\frac{1}{n}\norm{X(\theta_*-\theta)}_2^2
++
+\sigma^2.
+\]
+
+Using the definition of $\widehat{\Sigma}$,
+\[
+\frac{1}{n}\norm{X(\theta_*-\theta)}_2^2
+=
+(\theta-\theta_*)^\top\widehat{\Sigma}(\theta-\theta_*)
+=
+\norm{\theta-\theta_*}_{\widehat{\Sigma}}^2.
+\]
+
+Hence,
+\[
+R(\theta)
+=
+\norm{\theta-\theta_*}_{\widehat{\Sigma}}^2+\sigma^2.
+\]
+
+The minimum is attained at
+\[
+\theta=\theta_*,
+\]
+so
+\[
+R^*=\sigma^2.
+\]
+\end{proof}
+
+\section{Bias and Variance of OLS}
+
+\begin{lemma}
+Suppose $X$ is fixed. Then
+\[
+\E[\widehat{\theta}_{\mathrm{OLS}}]=\theta_*,
+\]
+so the OLS estimator is unbiased. Moreover,
+\[
+\E\left[
+(\widehat{\theta}_{\mathrm{OLS}}-\theta_*)
+(\widehat{\theta}_{\mathrm{OLS}}-\theta_*)^\top
+\right]
+=
+\sigma^2(X^\top X)^{-1}
+=
+\frac{\sigma^2}{n}\widehat{\Sigma}^{-1}.
+\]
+\end{lemma}
+
+\begin{proof}
+Using
+\[
+y=X\theta_*+\varepsilon,
+\]
+we get
+\[
+\widehat{\theta}_{\mathrm{OLS}}
+=
+(X^\top X)^{-1}X^\top y
+=
+(X^\top X)^{-1}X^\top(X\theta_*+\varepsilon).
+\]
+
+Thus,
+\[
+\widehat{\theta}_{\mathrm{OLS}}
+=
+\theta_*+(X^\top X)^{-1}X^\top\varepsilon.
+\]
+
+Taking expectations,
+\[
+\E[\widehat{\theta}_{\mathrm{OLS}}]
+=
+\theta_*+(X^\top X)^{-1}X^\top\E[\varepsilon]
+=
+\theta_*.
+\]
+
+Therefore the estimator is unbiased.
+
+For the covariance,
+\[
+\widehat{\theta}_{\mathrm{OLS}}-\theta_*
+=
+(X^\top X)^{-1}X^\top\varepsilon.
+\]
+
+Hence,
+\[
+\E\left[
+(\widehat{\theta}_{\mathrm{OLS}}-\theta_*)
+(\widehat{\theta}_{\mathrm{OLS}}-\theta_*)^\top
+\right]
+=
+(X^\top X)^{-1}X^\top
+\E[\varepsilon\varepsilon^\top]
+X(X^\top X)^{-1}.
+\]
+
+Since
+\[
+\E[\varepsilon\varepsilon^\top]=\sigma^2I_n,
+\]
+we obtain
+\[
+\E\left[
+(\widehat{\theta}_{\mathrm{OLS}}-\theta_*)
+(\widehat{\theta}_{\mathrm{OLS}}-\theta_*)^\top
+\right]
+=
+\sigma^2(X^\top X)^{-1}X^\top X(X^\top X)^{-1}.
+\]
+
+Therefore,
+\[
+\E\left[
+(\widehat{\theta}_{\mathrm{OLS}}-\theta_*)
+(\widehat{\theta}_{\mathrm{OLS}}-\theta_*)^\top
+\right]
+=
+\sigma^2(X^\top X)^{-1}.
+\]
+
+Since
+\[
+X^\top X=n\widehat{\Sigma},
+\]
+we also have
+\[
+\sigma^2(X^\top X)^{-1}
+=
+\frac{\sigma^2}{n}\widehat{\Sigma}^{-1}.
+\]
+\end{proof}
+
+\section{Expected Excess Risk of OLS}
+
+\begin{corollary}
+Suppose $X$ is fixed. Then
+\[
+\E[R(\widehat{\theta}_{\mathrm{OLS}})]-R^*
+=
+\frac{d\sigma^2}{n}.
+\]
+\end{corollary}
+
+\begin{proof}
+By the fixed-design risk identity,
+\[
+R(\widehat{\theta}_{\mathrm{OLS}})-R^*
+=
+\norm{\widehat{\theta}_{\mathrm{OLS}}-\theta_*}_{\widehat{\Sigma}}^2.
+\]
+
+Taking expectations,
+\[
+\E[R(\widehat{\theta}_{\mathrm{OLS}})]-R^*
+=
+\E\left[
+(\widehat{\theta}_{\mathrm{OLS}}-\theta_*)^\top
+\widehat{\Sigma}
+(\widehat{\theta}_{\mathrm{OLS}}-\theta_*)
+\right].
+\]
+
+Using the trace identity
+\[
+a^\top Ba=\tr(Baa^\top),
+\]
+we get
+\[
+\E[R(\widehat{\theta}_{\mathrm{OLS}})]-R^*
+=
+\tr\left(
+\widehat{\Sigma}
+\E[
+(\widehat{\theta}_{\mathrm{OLS}}-\theta_*)
+(\widehat{\theta}_{\mathrm{OLS}}-\theta_*)^\top
+]
+\right).
+\]
+
+Substituting the covariance formula,
+\[
+\E[R(\widehat{\theta}_{\mathrm{OLS}})]-R^*
+=
+\tr\left(
+\widehat{\Sigma}
+\frac{\sigma^2}{n}\widehat{\Sigma}^{-1}
+\right).
+\]
+
+Therefore,
+\[
+\E[R(\widehat{\theta}_{\mathrm{OLS}})]-R^*
+=
+\frac{\sigma^2}{n}\tr(I_d)
+=
+\frac{d\sigma^2}{n}.
+\]
+\end{proof}
+
+\begin{remark}
+In fixed-design ordinary least squares, the expected excess risk depends only on the noise variance $\sigma^2$, the dimension $d$, and the sample size $n$. It does not depend on the conditioning of $X^\top X$, as long as the prediction risk is measured in the $\widehat{\Sigma}$-norm.
+\end{remark}
+
+\section{Training Error of OLS}
+
+A natural question is how close the empirical risk
+\[
+R_n(\widehat{\theta}_{\mathrm{OLS}})
+\]
+is to the population risk
+\[
+R(\widehat{\theta}_{\mathrm{OLS}}).
+\]
+
+\begin{lemma}
+Suppose $X$ is fixed. Then
+\[
+\E[R_n(\widehat{\theta}_{\mathrm{OLS}})]
+=
+\sigma^2-\frac{d\sigma^2}{n}
+=
+\sigma^2\left(1-\frac{d}{n}\right).
+\]
+\end{lemma}
+
+\begin{proof}
+Let
+\[
+P_X=X(X^\top X)^{-1}X^\top
+\]
+be the orthogonal projector onto
+\[
+\operatorname{range}(X).
+\]
+
+Then
+\[
+X\widehat{\theta}_{\mathrm{OLS}}
+=
+P_Xy.
+\]
+
+Therefore,
+\[
+y-X\widehat{\theta}_{\mathrm{OLS}}
+=
+(I-P_X)y.
+\]
+
+Since
+\[
+y=X\theta_*+\varepsilon
+\]
+and
+\[
+X\theta_*\in\operatorname{range}(X),
+\]
+we have
+\[
+(I-P_X)X\theta_*=0.
+\]
+
+Thus,
+\[
+y-X\widehat{\theta}_{\mathrm{OLS}}
+=
+(I-P_X)\varepsilon.
+\]
+
+Hence,
+\[
+R_n(\widehat{\theta}_{\mathrm{OLS}})
+=
+\frac{1}{n}\norm{(I-P_X)\varepsilon}_2^2.
+\]
+
+Taking expectations,
+\[
+\E[R_n(\widehat{\theta}_{\mathrm{OLS}})]
+=
+\frac{1}{n}
+\E[
+\varepsilon^\top(I-P_X)^\top(I-P_X)\varepsilon
+].
+\]
+
+Since $P_X$ is an orthogonal projector,
+\[
+(I-P_X)^\top(I-P_X)
+=
+(I-P_X)^2
+=
+I-P_X.
+\]
+
+Therefore,
+\[
+\E[R_n(\widehat{\theta}_{\mathrm{OLS}})]
+=
+\frac{1}{n}
+\tr\left(
+(I-P_X)\E[\varepsilon\varepsilon^\top]
+\right).
+\]
+
+Using
+\[
+\E[\varepsilon\varepsilon^\top]=\sigma^2I_n,
+\]
+we obtain
+\[
+\E[R_n(\widehat{\theta}_{\mathrm{OLS}})]
+=
+\frac{\sigma^2}{n}
+\tr(I-P_X).
+\]
+
+Because $P_X$ projects onto a $d$-dimensional subspace,
+\[
+\tr(P_X)=d.
+\]
+
+Therefore,
+\[
+\tr(I-P_X)=n-d.
+\]
+
+Thus,
+\[
+\E[R_n(\widehat{\theta}_{\mathrm{OLS}})]
+=
+\frac{\sigma^2}{n}(n-d)
+=
+\sigma^2-\frac{d\sigma^2}{n}.
+\]
+\end{proof}
+
+\begin{remark}
+The expected training error is smaller than the irreducible noise level
+\[
+\sigma^2
+\]
+by
+\[
+\frac{d\sigma^2}{n}.
+\]
+
+In contrast, the expected population risk of OLS is larger than
+\[
+\sigma^2
+\]
+by the same amount:
+\[
+\E[R(\widehat{\theta}_{\mathrm{OLS}})]
+=
+\sigma^2+\frac{d\sigma^2}{n}.
+\]
+
+Thus the expected gap between population risk and empirical risk at the fitted estimator is
+\[
+\E[R(\widehat{\theta}_{\mathrm{OLS}})]
+-
+\E[R_n(\widehat{\theta}_{\mathrm{OLS}})]
+=
+\frac{2d\sigma^2}{n}.
+\]
+\end{remark}
+
+\chapter{Ridge Regression and Random Design}
+
+\section{Motivation for Regularization}
+
+The ordinary least squares estimator assumes that
+\[
+d\leq n
+\]
+and that
+\[
+X^\top X
+\]
+is invertible.
+
+In high-dimensional settings,
+\[
+d\gg n,
+\]
+and the matrix
+\[
+X^\top X
+\]
+may fail to be invertible.
+
+Even in the noiseless case,
+\[
+\varepsilon=0,
+\]
+there may be infinitely many interpolating solutions satisfying
+\[
+X\theta=y.
+\]
+
+To select among these solutions and impose structure, one introduces a regularizer.
+
+Common choices include:
+\begin{itemize}
+\item the $\ell_1$ norm,
+\item the squared $\ell_2$ norm.
+\end{itemize}
+
+\section{Ridge Regression}
+
+\begin{definition}[Ridge Regression Estimator]
+For
+\[
+\lambda>0,
+\]
+the ridge regression estimator is defined by
+\[
+\widehat{\theta}_\lambda
+=
+\argmin_{\theta\in\R^d}
+\left[
+\frac{1}{n}\norm{y-X\theta}_2^2
++
+\lambda\norm{\theta}_2^2
+\right].
+\]
+\end{definition}
+
+The regularization term
+\[
+\lambda\norm{\theta}_2^2
+\]
+encourages solutions with small Euclidean norm.
+
+\begin{lemma}
+The ridge estimator exists, is unique, and satisfies
+\[
+\widehat{\theta}_\lambda
+=
+\frac{1}{n}
+(\widehat{\Sigma}+\lambda I)^{-1}X^\top y,
+\]
+where
+\[
+\widehat{\Sigma}
+=
+\frac{1}{n}X^\top X.
+\]
+\end{lemma}
+
+\begin{proof}
+Define the ridge objective
+\[
+L_\lambda(\theta)
+=
+\frac{1}{n}\norm{y-X\theta}_2^2
++
+\lambda\norm{\theta}_2^2.
+\]
+
+Since
+\[
+\lambda>0,
+\]
+the objective is strongly convex, so the minimizer exists and is unique.
+
+Differentiating,
+\[
+\nabla L_\lambda(\theta)
+=
+\frac{2}{n}X^\top(X\theta-y)+2\lambda\theta.
+\]
+
+Setting the gradient equal to zero,
+\[
+0
+=
+\frac{2}{n}X^\top(X\theta-y)+2\lambda\theta.
+\]
+
+Equivalently,
+\[
+\left(
+\frac{1}{n}X^\top X+\lambda I
+\right)\theta
+=
+\frac{1}{n}X^\top y.
+\]
+
+Using
+\[
+\widehat{\Sigma}
+=
+\frac{1}{n}X^\top X,
+\]
+we obtain
+\[
+(\widehat{\Sigma}+\lambda I)\theta
+=
+\frac{1}{n}X^\top y.
+\]
+
+Since
+\[
+\widehat{\Sigma}+\lambda I
+\]
+is strictly positive definite, it is invertible, and therefore
+\[
+\widehat{\theta}_\lambda
+=
+\frac{1}{n}
+(\widehat{\Sigma}+\lambda I)^{-1}X^\top y.
+\]
+\end{proof}
+
+\begin{remark}
+Unlike ordinary least squares, ridge regression remains well-defined even when
+\[
+X^\top X
+\]
+is singular.
+\end{remark}
+
+\begin{remark}
+If
+\[
+\lambda\to0,
+\]
+then ridge regression approaches the minimum norm least squares solution:
+\[
+\widehat{\theta}_\lambda
+\to
+(X^\top X)^+X^\top y,
+\]
+where
+\[
+(\cdot)^+
+\]
+denotes the Moore--Penrose pseudoinverse.
+\end{remark}
+
+\section{Bias-Variance Tradeoff in Ridge Regression}
+
+Recall the fixed-design model
+\[
+y=X\theta_*+\varepsilon,
+\qquad
+\E[\varepsilon]=0,
+\qquad
+\E[\varepsilon\varepsilon^\top]=\sigma^2I_n.
+\]
+
+We study the bias and variance of ridge regression with respect to the norm induced by
+\[
+\widehat{\Sigma}.
+\]
+
+\begin{lemma}
+For any symmetric matrix
+\[
+A,
+\]
+\[
+A(A+\lambda I)^{-1}
+=
+(A+\lambda I)^{-1}A.
+\]
+\end{lemma}
+
+\begin{proof}
+Since $A$ is symmetric, it admits an eigendecomposition
+\[
+A=U\Lambda U^\top.
+\]
+
+Then
+\[
+A+\lambda I
+=
+U(\Lambda+\lambda I)U^\top,
+\]
+and therefore
+\[
+(A+\lambda I)^{-1}
+=
+U(\Lambda+\lambda I)^{-1}U^\top.
+\]
+
+Hence,
+\[
+A(A+\lambda I)^{-1}
+=
+U\Lambda(\Lambda+\lambda I)^{-1}U^\top,
+\]
+while
+\[
+(A+\lambda I)^{-1}A
+=
+U(\Lambda+\lambda I)^{-1}\Lambda U^\top.
+\]
+
+Since diagonal matrices commute,
+\[
+\Lambda(\Lambda+\lambda I)^{-1}
+=
+(\Lambda+\lambda I)^{-1}\Lambda.
+\]
+
+Thus,
+\[
+A(A+\lambda I)^{-1}
+=
+(A+\lambda I)^{-1}A.
+\]
+\end{proof}
+
+\begin{theorem}[Bias and Variance of Ridge Regression]
+The ridge estimator satisfies
+\[
+\operatorname{Bias}_{\widehat{\Sigma}}(\widehat{\theta}_\lambda)
+=
+\lambda^2
+\theta_*^\top
+(\widehat{\Sigma}+\lambda I)^{-2}
+\widehat{\Sigma}
+\theta_*,
+\]
+and
+\[
+\operatorname{Var}_{\widehat{\Sigma}}(\widehat{\theta}_\lambda)
+=
+\frac{\sigma^2}{n}
+\tr\left(
+\widehat{\Sigma}^2
+(\widehat{\Sigma}+\lambda I)^{-2}
+\right).
+\]
+\end{theorem}
+
+\begin{proof}
+Using
+\[
+y=X\theta_*+\varepsilon,
+\]
+we obtain
+\[
+\widehat{\theta}_\lambda
+=
+\frac{1}{n}
+(\widehat{\Sigma}+\lambda I)^{-1}
+X^\top(X\theta_*+\varepsilon).
+\]
+
+Since
+\[
+\frac{1}{n}X^\top X
+=
+\widehat{\Sigma},
+\]
+we have
+\[
+\widehat{\theta}_\lambda
+=
+(\widehat{\Sigma}+\lambda I)^{-1}
+\widehat{\Sigma}\theta_*
++
+\frac{1}{n}
+(\widehat{\Sigma}+\lambda I)^{-1}
+X^\top\varepsilon.
+\]
+
+Taking expectations,
+\[
+\E[\widehat{\theta}_\lambda]
+=
+(\widehat{\Sigma}+\lambda I)^{-1}
+\widehat{\Sigma}\theta_*.
+\]
+
+Using
+\[
+\widehat{\Sigma}
+=
+(\widehat{\Sigma}+\lambda I)-\lambda I,
+\]
+we rewrite this as
+\[
+\E[\widehat{\theta}_\lambda]
+=
+\theta_*
+-
+\lambda
+(\widehat{\Sigma}+\lambda I)^{-1}\theta_*.
+\]
+
+Therefore,
+\[
+\E[\widehat{\theta}_\lambda]-\theta_*
+=
+-
+\lambda
+(\widehat{\Sigma}+\lambda I)^{-1}\theta_*.
+\]
+
+Hence,
+\[
+\operatorname{Bias}_{\widehat{\Sigma}}(\widehat{\theta}_\lambda)
+=
+\norm{
+\E[\widehat{\theta}_\lambda]-\theta_*
+}_{\widehat{\Sigma}}^2.
+\]
+
+Expanding,
+\[
+\operatorname{Bias}_{\widehat{\Sigma}}(\widehat{\theta}_\lambda)
+=
+\lambda^2
+\theta_*^\top
+(\widehat{\Sigma}+\lambda I)^{-1}
+\widehat{\Sigma}
+(\widehat{\Sigma}+\lambda I)^{-1}
+\theta_*.
+\]
+
+Since
+\[
+\widehat{\Sigma}
+\]
+commutes with
+\[
+(\widehat{\Sigma}+\lambda I)^{-1},
+\]
+this becomes
+\[
+\operatorname{Bias}_{\widehat{\Sigma}}(\widehat{\theta}_\lambda)
+=
+\lambda^2
+\theta_*^\top
+(\widehat{\Sigma}+\lambda I)^{-2}
+\widehat{\Sigma}
+\theta_*.
+\]
+
+Next,
+\[
+\widehat{\theta}_\lambda-\E[\widehat{\theta}_\lambda]
+=
+\frac{1}{n}
+(\widehat{\Sigma}+\lambda I)^{-1}
+X^\top\varepsilon.
+\]
+
+Thus,
+\[
+\operatorname{Var}_{\widehat{\Sigma}}(\widehat{\theta}_\lambda)
+=
+\E
+\norm{
+\widehat{\theta}_\lambda-\E[\widehat{\theta}_\lambda]
+}_{\widehat{\Sigma}}^2.
+\]
+
+Expanding,
+\[
+=
+\frac{1}{n^2}
+\E\left[
+\varepsilon^\top
+X
+(\widehat{\Sigma}+\lambda I)^{-1}
+\widehat{\Sigma}
+(\widehat{\Sigma}+\lambda I)^{-1}
+X^\top
+\varepsilon
+\right].
+\]
+
+Using the trace identity,
+\[
+=
+\frac{1}{n^2}
+\E
+\tr\left(
+\varepsilon\varepsilon^\top
+X
+(\widehat{\Sigma}+\lambda I)^{-1}
+\widehat{\Sigma}
+(\widehat{\Sigma}+\lambda I)^{-1}
+X^\top
+\right).
+\]
+
+Since
+\[
+\E[\varepsilon\varepsilon^\top]
+=
+\sigma^2I_n,
+\]
+we obtain
+\[
+=
+\frac{\sigma^2}{n^2}
+\tr\left(
+X
+(\widehat{\Sigma}+\lambda I)^{-1}
+\widehat{\Sigma}
+(\widehat{\Sigma}+\lambda I)^{-1}
+X^\top
+\right).
+\]
+
+Using cyclic invariance of the trace,
+\[
+=
+\frac{\sigma^2}{n^2}
+\tr\left(
+X^\top X
+(\widehat{\Sigma}+\lambda I)^{-1}
+\widehat{\Sigma}
+(\widehat{\Sigma}+\lambda I)^{-1}
+\right).
+\]
+
+Since
+\[
+X^\top X=n\widehat{\Sigma},
+\]
+we get
+\[
+=
+\frac{\sigma^2}{n}
+\tr\left(
+\widehat{\Sigma}^2
+(\widehat{\Sigma}+\lambda I)^{-2}
+\right).
+\]
+\end{proof}
+
+\section{Effective Dimension}
+
+Suppose the eigenvalues of
+\[
+\widehat{\Sigma}
+\]
+are
+\[
+\lambda_1,\dots,\lambda_d.
+\]
+
+Then
+\[
+\tr\left(
+\widehat{\Sigma}^2
+(\widehat{\Sigma}+\lambda I)^{-2}
+\right)
+=
+\sum_{i=1}^d
+\frac{\lambda_i^2}{(\lambda_i+\lambda)^2}.
+\]
+
+Observe that
+\[
+0
+\leq
+\frac{\lambda_i^2}{(\lambda_i+\lambda)^2}
+\leq1.
+\]
+
+Therefore,
+\[
+\tr\left(
+\widehat{\Sigma}^2
+(\widehat{\Sigma}+\lambda I)^{-2}
+\right)
+\leq d.
+\]
+
+This quantity acts as a soft notion of dimension or degrees of freedom.
+
+Only eigenvalues satisfying
+\[
+\lambda_i\gg\lambda
+\]
+contribute substantially.
+
+\section{Excess Risk of Ridge Regression}
+
+\begin{corollary}
+The expected excess risk of ridge regression is
+\[
+\E[R(\widehat{\theta}_\lambda)]-R^*
+=
+\lambda^2
+\theta_*^\top
+(\widehat{\Sigma}+\lambda I)^{-2}
+\widehat{\Sigma}
+\theta_*
++
+\frac{\sigma^2}{n}
+\tr\left(
+\widehat{\Sigma}^2
+(\widehat{\Sigma}+\lambda I)^{-2}
+\right).
+\]
+\end{corollary}
+
+\begin{remark}
+Unlike ordinary least squares, the ridge estimator is biased whenever
+\[
+\lambda>0.
+\]
+
+However, the variance may be dramatically reduced.
+\end{remark}
+
+\begin{remark}
+The ridge excess risk bound contains no explicit dependence on the ambient dimension
+\[
+d.
+\]
+
+This is crucial for learning in high-dimensional or infinite-dimensional settings.
+\end{remark}
+
+\section{Choosing the Regularization Parameter}
+
+We now derive a useful upper bound.
+
+\begin{theorem}
+For every
+\[
+\lambda>0,
+\]
+\[
+\E[R(\widehat{\theta}_\lambda)]-R^*
+\leq
+\frac{\lambda}{2}\norm{\theta_*}_2^2
++
+\frac{\sigma^2\tr(\widehat{\Sigma})}{2\lambda n}.
+\]
+\end{theorem}
+
+\begin{proof}
+We first bound the bias term.
+
+Observe that
+\[
+\lambda^2
+\theta_*^\top
+(\widehat{\Sigma}+\lambda I)^{-2}
+\widehat{\Sigma}
+\theta_*
+\leq
+\lambda
+\norm{
+(\widehat{\Sigma}+\lambda I)^{-2}
+\lambda\widehat{\Sigma}
+}_{\mathrm{op}}
+\norm{\theta_*}_2^2.
+\]
+
+Let
+\[
+s_i
+\]
+denote the eigenvalues of
+\[
+\widehat{\Sigma}.
+\]
+
+Then the eigenvalues of
+\[
+(\widehat{\Sigma}+\lambda I)^{-2}
+\lambda\widehat{\Sigma}
+\]
+are
+\[
+\frac{\lambda s_i}{(s_i+\lambda)^2}.
+\]
+
+Using
+\[
+2\lambda s_i
+\leq
+(s_i+\lambda)^2,
+\]
+we obtain
+\[
+\frac{\lambda s_i}{(s_i+\lambda)^2}
+\leq
+\frac{1}{2}.
+\]
+
+Hence,
+\[
+\lambda^2
+\theta_*^\top
+(\widehat{\Sigma}+\lambda I)^{-2}
+\widehat{\Sigma}
+\theta_*
+\leq
+\frac{\lambda}{2}\norm{\theta_*}_2^2.
+\]
+
+Next, for the variance term,
+\[
+\frac{\sigma^2}{n}
+\tr\left(
+\widehat{\Sigma}^2
+(\widehat{\Sigma}+\lambda I)^{-2}
+\right)
+=
+\frac{\sigma^2}{\lambda n}
+\tr\left(
+\widehat{\Sigma}
+\lambda\widehat{\Sigma}
+(\widehat{\Sigma}+\lambda I)^{-2}
+\right).
+\]
+
+Using
+\[
+\tr(AB)
+\leq
+\tr(A)\lambda_{\max}(B)
+\]
+for positive semidefinite matrices,
+\[
+\leq
+\frac{\sigma^2}{\lambda n}
+\tr(\widehat{\Sigma})
+\lambda_{\max}
+\left(
+\lambda\widehat{\Sigma}
+(\widehat{\Sigma}+\lambda I)^{-2}
+\right).
+\]
+
+Again,
+\[
+\lambda_{\max}
+\left(
+\lambda\widehat{\Sigma}
+(\widehat{\Sigma}+\lambda I)^{-2}
+\right)
+\leq
+\frac{1}{2}.
+\]
+
+Therefore,
+\[
+\frac{\sigma^2}{n}
+\tr\left(
+\widehat{\Sigma}^2
+(\widehat{\Sigma}+\lambda I)^{-2}
+\right)
+\leq
+\frac{\sigma^2\tr(\widehat{\Sigma})}{2\lambda n}.
+\]
+
+Combining the two bounds yields
+\[
+\E[R(\widehat{\theta}_\lambda)]-R^*
+\leq
+\frac{\lambda}{2}\norm{\theta_*}_2^2
++
+\frac{\sigma^2\tr(\widehat{\Sigma})}{2\lambda n}.
+\]
+\end{proof}
+
+\begin{corollary}
+The bound is minimized by
+\[
+\lambda
+=
+\frac{\sigma}{\norm{\theta_*}_2}
+\sqrt{
+\frac{\tr(\widehat{\Sigma})}{n}
+}.
+\]
+
+For this choice,
+\[
+\E[R(\widehat{\theta}_\lambda)]-R^*
+\leq
+\sigma\norm{\theta_*}_2
+\sqrt{
+\frac{\tr(\widehat{\Sigma})}{n}
+}.
+\]
+\end{corollary}
+
+\begin{proof}
+The upper bound has the form
+\[
+a\lambda+\frac{b}{\lambda},
+\]
+where
+\[
+a,b>0.
+\]
+
+Such an expression is minimized at
+\[
+\lambda=\sqrt{\frac{b}{a}}.
+\]
+
+Substituting
+\[
+a=\frac{1}{2}\norm{\theta_*}_2^2,
+\qquad
+b=\frac{\sigma^2\tr(\widehat{\Sigma})}{2n},
+\]
+gives the result.
+\end{proof}
+
+\begin{remark}
+Choosing the optimal regularization parameter in practice is difficult. Cross-validation is often used.
+\end{remark}
+
+\section{Random Design}
+
+So far we treated
+\[
+X
+\]
+as deterministic.
+
+We now assume that
+\[
+(X_i,y_i)
+\]
+are iid samples satisfying
+\[
+y_i=\theta_*^\top X_i+\varepsilon_i,
+\]
+with
+\[
+\E[\varepsilon_i]=0,
+\qquad
+\E[\varepsilon_i^2]=\sigma^2.
+\]
+
+Define the population covariance matrix
+\[
+\Sigma
+=
+\E[XX^\top].
+\]
+
+\begin{lemma}
+Under the random design model,
+\[
+R(\theta)-R^*
+=
+\norm{\theta-\theta_*}_{\Sigma}^2,
+\]
+where
+\[
+\norm{u}_{\Sigma}^2
+=
+u^\top\Sigma u.
+\]
+\end{lemma}
+
+\begin{proof}
+We compute
+\[
+R(\theta)
+=
+\E[(y-X^\top\theta)^2].
+\]
+
+Using
+\[
+y=X^\top\theta_*+\varepsilon,
+\]
+we obtain
+\[
+R(\theta)
+=
+\E[(X^\top(\theta_*-\theta)+\varepsilon)^2].
+\]
+
+Expanding,
+\[
+=
+\E[(\theta_*-\theta)^\top XX^\top(\theta_*-\theta)]
++
+2\E[\varepsilon X^\top(\theta_*-\theta)]
++
+\E[\varepsilon^2].
+\]
+
+Since
+\[
+\E[\varepsilon|X]=0,
+\]
+the cross term vanishes.
+
+Thus,
+\[
+R(\theta)
+=
+(\theta_*-\theta)^\top
+\E[XX^\top]
+(\theta_*-\theta)
++
+\sigma^2.
+\]
+
+Therefore,
+\[
+R(\theta)-R^*
+=
+\norm{\theta-\theta_*}_{\Sigma}^2.
+\]
+\end{proof}
+
+\section{OLS Under Random Design}
+
+\begin{theorem}
+Under the random design model, assuming
+\[
+\widehat{\Sigma}
+=
+\frac{1}{n}X^\top X
+\]
+is invertible,
+\[
+\E[R(\widehat{\theta}_{\mathrm{OLS}})]-R^*
+=
+\frac{\sigma^2}{n}
+\E\tr(\Sigma\widehat{\Sigma}^{-1}).
+\]
+\end{theorem}
+
+\begin{proof}
+Recall
+\[
+\widehat{\theta}_{\mathrm{OLS}}
+=
+\theta_*
++
+\frac{1}{n}
+\widehat{\Sigma}^{-1}X^\top\varepsilon.
+\]
+
+Hence,
+\[
+\widehat{\theta}_{\mathrm{OLS}}-\theta_*
+=
+\frac{1}{n}
+\widehat{\Sigma}^{-1}X^\top\varepsilon.
+\]
+
+Using the random-design risk identity,
+\[
+R(\widehat{\theta}_{\mathrm{OLS}})-R^*
+=
+\norm{
+\widehat{\theta}_{\mathrm{OLS}}-\theta_*
+}_{\Sigma}^2.
+\]
+
+Therefore,
+\[
+=
+\frac{1}{n^2}
+\varepsilon^\top
+X
+\widehat{\Sigma}^{-1}
+\Sigma
+\widehat{\Sigma}^{-1}
+X^\top
+\varepsilon.
+\]
+
+Taking expectations and using the trace trick,
+\[
+\E[R(\widehat{\theta}_{\mathrm{OLS}})]-R^*
+=
+\frac{1}{n^2}
+\E\tr\left(
+\varepsilon\varepsilon^\top
+X
+\widehat{\Sigma}^{-1}
+\Sigma
+\widehat{\Sigma}^{-1}
+X^\top
+\right).
+\]
+
+Conditioning on $X$,
+\[
+\E[\varepsilon\varepsilon^\top|X]
+=
+\sigma^2I_n.
+\]
+
+Thus,
+\[
+=
+\frac{\sigma^2}{n^2}
+\E\tr\left(
+X
+\widehat{\Sigma}^{-1}
+\Sigma
+\widehat{\Sigma}^{-1}
+X^\top
+\right).
+\]
+
+Using cyclic invariance,
+\[
+=
+\frac{\sigma^2}{n^2}
+\E\tr\left(
+X^\top X
+\widehat{\Sigma}^{-1}
+\Sigma
+\widehat{\Sigma}^{-1}
+\right).
+\]
+
+Since
+\[
+X^\top X=n\widehat{\Sigma},
+\]
+we obtain
+\[
+=
+\frac{\sigma^2}{n}
+\E\tr(\Sigma\widehat{\Sigma}^{-1}).
+\]
+\end{proof}
+
+\begin{remark}
+Unlike the fixed-design setting,
+\[
+\Sigma\widehat{\Sigma}^{-1}\neq I
+\]
+in general.
+
+The excess risk depends on how well the empirical covariance matrix approximates the population covariance matrix.
+\end{remark}
+
+\begin{example}
+If
+\[
+X\sim \Normal(0,\Sigma),
+\]
+then one can show
+\[
+\E\tr(\Sigma\widehat{\Sigma}^{-1})
+=
+\frac{d}{1-\frac{d+1}{n}}.
+\]
+
+This follows from properties of the inverse Wishart distribution.
+\end{example}
+
+\section{Beyond Linear Features}
+
+Everything developed above extends immediately to nonlinear feature maps.
+
+Suppose
+\[
+\psi:\R^k\to\R^d
+\]
+is a feature map and the model becomes
+\[
+y_i
+=
+\theta_*^\top\psi(x_i)+\varepsilon_i.
+\]
+
+Define the feature matrix
+\[
+\Phi
+=
+\begin{pmatrix}
+\psi(x_1)^\top\\
+\vdots\\
+\psi(x_n)^\top
+\end{pmatrix}.
+\]
+
+Then all previous derivations hold after replacing
+\[
+X
+\]
+with
+\[
+\Phi,
+\]
+and replacing
+\[
+\widehat{\Sigma}
+\]
+with
+\[
+\frac{1}{n}\Phi^\top\Phi.
+\]
+
+\begin{remark}
+This perspective is fundamental in kernel methods, where the feature dimension may even be infinite.
+\end{remark}
+
+\chapter{Rademacher Complexity}
+
+\section{Uniform Deviations}
+
+We have been studying the relationship between the empirical optimization problem
+\[
+\min_{\theta\in\Theta}
+\frac{1}{n}\sum_{i=1}^n \ell(\theta,Z_i)
+\]
+and the population optimization problem
+\[
+\min_{\theta\in\Theta}
+\E[\ell(\theta,Z)].
+\]
+
+To understand when empirical risk minimization approximates population risk minimization, we need to control uniform deviations.
+
+Let
+\[
+X_1,\dots,X_n\iid P
+\]
+take values in a set
+\[
+\mathcal{X}.
+\]
+
+Let
+\[
+\mathcal{F}
+\]
+be a class of functions
+\[
+f:\mathcal{X}\to\R.
+\]
+
+Define the empirical measure
+\[
+P_nf
+=
+\frac{1}{n}\sum_{i=1}^n f(X_i)
+\]
+and the population expectation
+\[
+Pf
+=
+\E[f(X)].
+\]
+
+The central quantity is
+\[
+\norm{P_n-P}_{\mathcal{F}}
+=
+\sup_{f\in\mathcal{F}}
+\left|
+\frac{1}{n}\sum_{i=1}^n f(X_i)
+-
+\E[f(X)]
+\right|.
+\]
+
+\section{Rademacher Complexity of a Set}
+
+\begin{definition}[Rademacher Random Variable]
+A Rademacher random variable is a random variable
+\[
+\varepsilon
+\]
+such that
+\[
+\Prob(\varepsilon=1)=\Prob(\varepsilon=-1)=\frac{1}{2}.
+\]
+\end{definition}
+
+\begin{definition}[Rademacher Complexity of a Set]
+Let
+\[
+A\subseteq\R^n.
+\]
+
+The Rademacher complexity of $A$ is
+\[
+\mathcal{R}(A)
+=
+\E_{\varepsilon}
+\left[
+\sup_{a\in A}
+\left|
+\sum_{i=1}^n \varepsilon_i a_i
+\right|
+\right],
+\]
+where
+\[
+\varepsilon=(\varepsilon_1,\dots,\varepsilon_n)
+\]
+has iid Rademacher entries.
+\end{definition}
+
+\section{Geometric Interpretation}
+
+\begin{definition}[Support Function]
+The support function of a set
+\[
+A\subseteq\R^n
+\]
+is
+\[
+\sigma_A(v)
+=
+\sup_{a\in A}
+\langle v,a\rangle.
+\]
+\end{definition}
+
+For a unit vector
+\[
+v\in S^{n-1},
+\]
+the width of $A$ in direction $v$ is
+\[
+\sigma_A(v)+\sigma_A(-v).
+\]
+
+Indeed,
+\[
+\sigma_A(v)+\sigma_A(-v)
+=
+\sup_{a\in A}\langle v,a\rangle
++
+\sup_{a\in A}\langle -v,a\rangle.
+\]
+
+Since
+\[
+\sup_{a\in A}\langle -v,a\rangle
+=
+-\inf_{a\in A}\langle v,a\rangle,
+\]
+we get
+\[
+\sigma_A(v)+\sigma_A(-v)
+=
+\sup_{a\in A}\langle v,a\rangle
+-
+\inf_{a\in A}\langle v,a\rangle.
+\]
+
+Thus Rademacher complexity measures the average width of $A$ in random coordinate-sign directions.
+
+\begin{remark}
+The quantity
+\[
+\mathcal{R}(A)
+\]
+is comparable to
+\[
+\E_{\varepsilon}[\sigma_A(\varepsilon)].
+\]
+The absolute value in the definition symmetrizes the set by considering both directions.
+\end{remark}
+
+\section{Rademacher Complexity of a Function Class}
+
+Given samples
+\[
+X_1,\dots,X_n,
+\]
+define the evaluation set
+\[
+\mathcal{F}(X)
+=
+\left\{
+(f(X_1),\dots,f(X_n)):f\in\mathcal{F}
+\right\}
+\subseteq\R^n.
+\]
+
+\begin{definition}[Rademacher Complexity of a Function Class]
+The Rademacher complexity of
+\[
+\mathcal{F}
+\]
+at sample size $n$ is
+\[
+\mathcal{R}_n(\mathcal{F})
+=
+\E_X
+\left[
+\mathcal{R}
+\left(
+\frac{1}{n}\mathcal{F}(X)
+\right)
+\right].
+\]
+
+Equivalently,
+\[
+\mathcal{R}_n(\mathcal{F})
+=
+\E_{X,\varepsilon}
+\left[
+\sup_{f\in\mathcal{F}}
+\left|
+\frac{1}{n}
+\sum_{i=1}^n
+\varepsilon_i f(X_i)
+\right|
+\right].
+\]
+\end{definition}
+
+\section{Symmetrization}
+
+Rademacher complexity controls the expected uniform deviation between empirical and population averages.
+
+\begin{theorem}[Symmetrization]
+For every
+\[
+n\geq1,
+\]
+\[
+\E\norm{P_n-P}_{\mathcal{F}}
+\leq
+2\mathcal{R}_n(\mathcal{F}).
+\]
+\end{theorem}
+
+\begin{proof}
+Let
+\[
+Y_1,\dots,Y_n\iid P
+\]
+be an independent ghost sample.
+
+Then
+\[
+\E[f(X)]
+=
+\E_Y[f(Y_i)]
+\]
+for every $i$.
+
+Therefore,
+\[
+\E\norm{P_n-P}_{\mathcal{F}}
+=
+\E_X
+\left[
+\sup_{f\in\mathcal{F}}
+\left|
+\frac{1}{n}\sum_{i=1}^n f(X_i)
+-
+\E_Y[f(Y_i)]
+\right|
+\right].
+\]
+
+By Jensen's inequality,
+\[
+\E\norm{P_n-P}_{\mathcal{F}}
+\leq
+\E_{X,Y}
+\left[
+\sup_{f\in\mathcal{F}}
+\left|
+\frac{1}{n}\sum_{i=1}^n
+\bigl(f(X_i)-f(Y_i)\bigr)
+\right|
+\right].
+\]
+
+Now introduce iid Rademacher variables
+\[
+\varepsilon_1,\dots,\varepsilon_n.
+\]
+
+Since
+\[
+f(X_i)-f(Y_i)
+\]
+has the same distribution as
+\[
+\varepsilon_i(f(X_i)-f(Y_i)),
+\]
+we get
+\[
+\E\norm{P_n-P}_{\mathcal{F}}
+\leq
+\E_{X,Y,\varepsilon}
+\left[
+\sup_{f\in\mathcal{F}}
+\left|
+\frac{1}{n}\sum_{i=1}^n
+\varepsilon_i
+\bigl(f(X_i)-f(Y_i)\bigr)
+\right|
+\right].
+\]
+
+Using the triangle inequality,
+\[
+\left|
+\frac{1}{n}\sum_{i=1}^n
+\varepsilon_i
+\bigl(f(X_i)-f(Y_i)\bigr)
+\right|
+\leq
+\left|
+\frac{1}{n}\sum_{i=1}^n
+\varepsilon_i f(X_i)
+\right|
++
+\left|
+\frac{1}{n}\sum_{i=1}^n
+\varepsilon_i f(Y_i)
+\right|.
+\]
+
+Taking suprema and expectations,
+\[
+\E\norm{P_n-P}_{\mathcal{F}}
+\leq
+\E_{X,\varepsilon}
+\left[
+\sup_{f\in\mathcal{F}}
+\left|
+\frac{1}{n}\sum_{i=1}^n
+\varepsilon_i f(X_i)
+\right|
+\right]
++
+\E_{Y,\varepsilon}
+\left[
+\sup_{f\in\mathcal{F}}
+\left|
+\frac{1}{n}\sum_{i=1}^n
+\varepsilon_i f(Y_i)
+\right|
+\right].
+\]
+
+The two terms are identical, so
+\[
+\E\norm{P_n-P}_{\mathcal{F}}
+\leq
+2\mathcal{R}_n(\mathcal{F}).
+\]
+\end{proof}
+
+\section{High-Probability Uniform Deviation Bound}
+
+If the function class is uniformly bounded, then McDiarmid's inequality upgrades the expectation bound to a high-probability bound.
+
+\begin{theorem}
+Suppose
+\[
+\mathcal{F}
+\]
+satisfies
+\[
+\norm{f}_{\infty}
+=
+\sup_{x\in\mathcal{X}}|f(x)|
+\leq b
+\]
+for every
+\[
+f\in\mathcal{F}.
+\]
+
+Then, for every
+\[
+t\geq0,
+\]
+\[
+\Prob\left(
+\norm{P_n-P}_{\mathcal{F}}
+\leq
+2\mathcal{R}_n(\mathcal{F})+t
+\right)
+\geq
+1-\exp\left(
+-\frac{nt^2}{2b^2}
+\right).
+\]
+\end{theorem}
+
+\begin{proof}
+Define
+\[
+\bar{f}(x)
+=
+f(x)-\E[f(X)].
+\]
+
+Then
+\[
+\norm{P_n-P}_{\mathcal{F}}
+=
+\sup_{f\in\mathcal{F}}
+\left|
+\frac{1}{n}\sum_{i=1}^n \bar{f}(X_i)
+\right|.
+\]
+
+Let
+\[
+G(X_1,\dots,X_n)
+=
+\norm{P_n-P}_{\mathcal{F}}.
+\]
+
+We show that $G$ satisfies the bounded differences property.
+
+Let
+\[
+X'
+=
+(X_1,\dots,X_i',\dots,X_n)
+\]
+differ from
+\[
+X
+\]
+only in the $i$-th coordinate.
+
+For any fixed
+\[
+f\in\mathcal{F},
+\]
+\[
+\left|
+\frac{1}{n}\sum_{j=1}^n\bar{f}(X_j)
+-
+\frac{1}{n}\sum_{j=1}^n\bar{f}(X_j')
+\right|
+=
+\frac{1}{n}
+|\bar{f}(X_i)-\bar{f}(X_i')|.
+\]
+
+Since
+\[
+|f(x)|\leq b
+\]
+and
+\[
+|\E f(X)|\leq b,
+\]
+we have
+\[
+|\bar{f}(x)|\leq 2b.
+\]
+
+However, using the uncentered difference,
+\[
+|\bar{f}(X_i)-\bar{f}(X_i')|
+=
+|f(X_i)-f(X_i')|
+\leq
+2b.
+\]
+
+Thus changing one coordinate changes each empirical average by at most
+\[
+\frac{2b}{n}.
+\]
+
+Taking the supremum preserves this Lipschitz bound, so
+\[
+G
+\]
+has bounded differences constants
+\[
+c_i=\frac{2b}{n}.
+\]
+
+McDiarmid's inequality gives
+\[
+\Prob\left(
+G-\E[G]\geq t
+\right)
+\leq
+\exp\left(
+-\frac{2t^2}{\sum_{i=1}^n c_i^2}
+\right).
+\]
+
+Since
+\[
+\sum_{i=1}^n c_i^2
+=
+n\left(\frac{2b}{n}\right)^2
+=
+\frac{4b^2}{n},
+\]
+we obtain
+\[
+\Prob\left(
+G-\E[G]\geq t
+\right)
+\leq
+\exp\left(
+-\frac{nt^2}{2b^2}
+\right).
+\]
+
+Finally, by symmetrization,
+\[
+\E[G]
+\leq
+2\mathcal{R}_n(\mathcal{F}).
+\]
+
+Thus,
+\[
+\Prob\left(
+\norm{P_n-P}_{\mathcal{F}}
+\leq
+2\mathcal{R}_n(\mathcal{F})+t
+\right)
+\geq
+1-\exp\left(
+-\frac{nt^2}{2b^2}
+\right).
+\]
+\end{proof}
+
+\section{Classes with Polynomial Discrimination}
+
+We now develop tools for bounding Rademacher complexities.
+
+\begin{definition}[Polynomial Discrimination]
+A function class
+\[
+\mathcal{F}
+\]
+has polynomial discrimination of order
+\[
+\nu\geq1
+\]
+if, for every
+\[
+n\geq1
+\]
+and every
+\[
+x_1,\dots,x_n\in\mathcal{X},
+\]
+\[
+\#\mathcal{F}(x_1,\dots,x_n)
+\leq
+(n+1)^\nu,
+\]
+where
+\[
+\mathcal{F}(x_1,\dots,x_n)
+=
+\left\{
+(f(x_1),\dots,f(x_n)):f\in\mathcal{F}
+\right\}.
+\]
+\end{definition}
+
+\begin{remark}
+Even if every
+\[
+f\in\mathcal{F}
+\]
+is binary-valued, the number of possible labelings can be as large as
+\[
+2^n.
+\]
+
+Polynomial discrimination assumes that the number of distinct labelings grows only polynomially in
+\[
+n.
+\]
+\end{remark}
+
+\section{A Finite-Class Rademacher Bound}
+
+\begin{lemma}
+Let
+\[
+A\subseteq\R^n
+\]
+be finite. Then
+\[
+\mathcal{R}(A)
+\leq
+\max_{a\in A}\norm{a}_2
+\sqrt{2\log(\#A)}.
+\]
+\end{lemma}
+
+\begin{proof}
+For a fixed
+\[
+a\in A,
+\]
+the random variable
+\[
+\langle a,\varepsilon\rangle
+=
+\sum_{i=1}^n a_i\varepsilon_i
+\]
+is sub-Gaussian with variance proxy
+\[
+\norm{a}_2^2.
+\]
+
+Indeed, by independence and the Rademacher moment generating function,
+\[
+\E\exp(\lambda\langle a,\varepsilon\rangle)
+=
+\prod_{i=1}^n
+\E\exp(\lambda a_i\varepsilon_i)
+\leq
+\prod_{i=1}^n
+\exp\left(
+\frac{\lambda^2a_i^2}{2}
+\right)
+=
+\exp\left(
+\frac{\lambda^2\norm{a}_2^2}{2}
+\right).
+\]
+
+Let
+\[
+M=\max_{a\in A}\norm{a}_2.
+\]
+
+Then each
+\[
+\langle a,\varepsilon\rangle
+\]
+is $M$-sub-Gaussian.
+
+The standard maximum inequality for finitely many sub-Gaussian random variables gives
+\[
+\E\max_{a\in A}
+|\langle a,\varepsilon\rangle|
+\leq
+M\sqrt{2\log(\#A)}
+\]
+up to a universal constant. Absorbing constants into the displayed bound yields
+\[
+\mathcal{R}(A)
+\leq
+\max_{a\in A}\norm{a}_2
+\sqrt{2\log(\#A)}.
+\]
+\end{proof}
+
+\section{Rademacher Complexity under Polynomial Discrimination}
+
+\begin{proposition}
+Suppose
+\[
+\mathcal{F}
+\]
+has polynomial discrimination of order
+\[
+\nu.
+\]
+
+Then
+\[
+\mathcal{R}_n(\mathcal{F})
+\leq
+\E
+\left[
+\sup_{f\in\mathcal{F}}
+\sqrt{
+\frac{1}{n}
+\sum_{i=1}^n f(X_i)^2
+}
+\right]
+\sqrt{
+\frac{2\nu\log(n+1)}{n}
+}.
+\]
+\end{proposition}
+
+\begin{proof}
+Condition on
+\[
+X_1,\dots,X_n.
+\]
+
+Apply the finite-class Rademacher bound to
+\[
+A=\frac{1}{n}\mathcal{F}(X).
+\]
+
+Then
+\[
+\mathcal{R}
+\left(
+\frac{1}{n}\mathcal{F}(X)
+\right)
+\leq
+\max_{f\in\mathcal{F}}
+\left\|
+\frac{1}{n}
+(f(X_1),\dots,f(X_n))
+\right\|_2
+\sqrt{
+2\log(\#\mathcal{F}(X))
+}.
+\]
+
+The norm term is
+\[
+\left\|
+\frac{1}{n}
+(f(X_1),\dots,f(X_n))
+\right\|_2
+=
+\frac{1}{n}
+\sqrt{
+\sum_{i=1}^n f(X_i)^2
+}
+=
+\sqrt{
+\frac{1}{n}
+\sum_{i=1}^n f(X_i)^2
+}
+\frac{1}{\sqrt{n}}.
+\]
+
+Since $\mathcal{F}$ has polynomial discrimination,
+\[
+\#\mathcal{F}(X)
+\leq
+(n+1)^\nu.
+\]
+
+Therefore,
+\[
+\log(\#\mathcal{F}(X))
+\leq
+\nu\log(n+1).
+\]
+
+Combining,
+\[
+\mathcal{R}
+\left(
+\frac{1}{n}\mathcal{F}(X)
+\right)
+\leq
+\sup_{f\in\mathcal{F}}
+\sqrt{
+\frac{1}{n}
+\sum_{i=1}^n f(X_i)^2
+}
+\sqrt{
+\frac{2\nu\log(n+1)}{n}
+}.
+\]
+
+Taking expectation over
+\[
+X
+\]
+gives the result.
+\end{proof}
+
+\begin{corollary}
+If
+\[
+\mathcal{F}
+\]
+has polynomial discrimination of order $\nu$ and is uniformly bounded by
+\[
+|f(x)|\leq b
+\]
+for all
+\[
+f\in\mathcal{F},
+\]
+then
+\[
+\mathcal{R}_n(\mathcal{F})
+\leq
+b
+\sqrt{
+\frac{2\nu\log(n+1)}{n}
+}.
+\]
+\end{corollary}
+
+\section{Example: Half-Intervals}
+
+Consider the class
+\[
+\mathcal{F}
+=
+\{f_t:t\in\R\},
+\]
+where
+\[
+f_t(x)
+=
+\begin{cases}
+1, & x\leq t,\\
+0, & x>t.
+\end{cases}
+\]
+
+Let
+\[
+x_1,\dots,x_n\in\R
+\]
+and let
+\[
+x_{(1)}\leq \cdots \leq x_{(n)}
+\]
+be the order statistics.
+
+As $t$ varies, the vector
+\[
+(f_t(x_1),\dots,f_t(x_n))
+\]
+changes only when $t$ crosses one of the observed sample values.
+
+Thus, after ordering the points, the possible labeling patterns are
+\[
+(0,\dots,0),
+\]
+\[
+(1,0,\dots,0),
+\]
+\[
+(1,1,0,\dots,0),
+\]
+and so on, up to
+\[
+(1,\dots,1).
+\]
+
+Hence
+\[
+\#\mathcal{F}(x_1,\dots,x_n)
+\leq
+n+1.
+\]
+
+Therefore, this class has polynomial discrimination of order
+\[
+\nu=1.
+\]
+
+\section{Glivenko--Cantelli Bound}
+
+Let
+\[
+F(t)=\Prob(X\leq t)
+\]
+be the cumulative distribution function of
+\[
+X\sim P.
+\]
+
+Let
+\[
+\widehat{F}_n(t)
+=
+\frac{1}{n}
+\sum_{i=1}^n
+\ind_{\{X_i\leq t\}}
+\]
+be the empirical cumulative distribution function.
+
+The class of half-interval indicators is uniformly bounded by
+\[
+b=1
+\]
+and has polynomial discrimination order
+\[
+\nu=1.
+\]
+
+Therefore,
+\[
+\mathcal{R}_n(\mathcal{F})
+\leq
+\sqrt{
+\frac{2\log(n+1)}{n}
+}.
+\]
+
+Using the high-probability uniform deviation bound,
+\[
+\Prob\left(
+\norm{\widehat{F}_n-F}_{\infty}
+\leq
+2\sqrt{
+\frac{2\log(n+1)}{n}
+}
++t
+\right)
+\geq
+1-\exp\left(
+-\frac{nt^2}{2}
+\right).
+\]
+
+Equivalently, for all
+\[
+\delta>0,
+\]
+with probability at least
+\[
+1-e^{-n\delta^2/2},
+\]
+\[
+\norm{\widehat{F}_n-F}_{\infty}
+\leq
+2\sqrt{
+\frac{2\log(n+1)}{n}
+}
++
+\delta.
+\]
+
+\begin{remark}
+This gives a quantitative uniform law of large numbers for empirical distribution functions.
+\end{remark}
+
+\chapter{VC Theory}
+
+\section{Motivation}
+
+Rademacher complexity provides a way to control uniform deviations of the form
+\[
+\norm{P_n-P}_{\mathcal{F}}
+=
+\sup_{f\in\mathcal{F}}
+\left|
+\frac{1}{n}\sum_{i=1}^n f(X_i)-\E[f(X)]
+\right|.
+\]
+
+In the previous chapter, we bounded Rademacher complexity for classes with polynomial discrimination. We now develop a method for certifying polynomial discrimination for classes of binary-valued functions.
+
+\section{Shattering and VC Dimension}
+
+Let
+\[
+\mathcal{F}
+\]
+be a class of functions
+\[
+f:\mathcal{X}\to\{0,1\}.
+\]
+
+For points
+\[
+x_1,\dots,x_n\in\mathcal{X},
+\]
+define
+\[
+\mathcal{F}(x_1,\dots,x_n)
+=
+\left\{
+(f(x_1),\dots,f(x_n)):f\in\mathcal{F}
+\right\}
+\subseteq \{0,1\}^n.
+\]
+
+\begin{definition}[Shattering]
+A set
+\[
+\{x_1,\dots,x_n\}\subseteq\mathcal{X}
+\]
+is shattered by
+\[
+\mathcal{F}
+\]
+if
+\[
+\#\mathcal{F}(x_1,\dots,x_n)=2^n.
+\]
+
+Equivalently, every binary labeling of
+\[
+x_1,\dots,x_n
+\]
+can be realized by some function in
+\[
+\mathcal{F}.
+\]
+\end{definition}
+
+\begin{definition}[VC Dimension]
+The VC dimension of
+\[
+\mathcal{F}
+\]
+is
+\[
+\operatorname{vc}(\mathcal{F})
+=
+\sup\left\{
+n\in\N:
+\exists x_1,\dots,x_n\in\mathcal{X}
+\text{ shattered by }\mathcal{F}
+\right\}.
+\]
+\end{definition}
+
+\begin{remark}
+The VC dimension measures the combinatorial richness of a binary-valued function class. Large VC dimension means the class can realize many different label patterns.
+\end{remark}
+
+\section{Set Classes and Indicator Functions}
+
+Let
+\[
+\mathcal{S}
+\]
+be a class of subsets of
+\[
+\mathcal{X}.
+\]
+
+Associated to
+\[
+\mathcal{S}
+\]
+is the indicator class
+\[
+\mathcal{F}_{\mathcal{S}}
+=
+\{\ind_A:A\in\mathcal{S}\}.
+\]
+
+For a finite set
+\[
+X=\{x_1,\dots,x_n\},
+\]
+define
+\[
+\mathcal{S}(X)
+=
+\{A\cap X:A\in\mathcal{S}\}.
+\]
+
+Then
+\[
+\#\mathcal{S}(X)
+=
+\#\mathcal{F}_{\mathcal{S}}(x_1,\dots,x_n),
+\]
+and
+\[
+\operatorname{vc}(\mathcal{S})
+=
+\operatorname{vc}(\mathcal{F}_{\mathcal{S}}).
+\]
+
+\section{Examples}
+
+\begin{example}[Half-Lines]
+Let
+\[
+\mathcal{S}_1
+=
+\{(-\infty,t]:t\in\R\}.
+\]
+
+Then
+\[
+\operatorname{vc}(\mathcal{S}_1)=1.
+\]
+
+Indeed, any single point can be shattered. Given one point
+\[
+x_1,
+\]
+we can realize the label $1$ by choosing
+\[
+t\geq x_1
+\]
+and the label $0$ by choosing
+\[
+t<x_1.
+\]
+
+However, two points cannot be shattered. If
+\[
+x_1<x_2,
+\]
+then any set of the form
+\[
+(-\infty,t]
+\]
+that contains
+\[
+x_2
+\]
+must also contain
+\[
+x_1.
+\]
+Thus the labeling
+\[
+(0,1)
+\]
+cannot be realized.
+\end{example}
+
+\begin{example}[Intervals]
+Let
+\[
+\mathcal{S}_2
+=
+\{(a,b]:a,b\in\R,\ a<b\}.
+\]
+
+Then
+\[
+\operatorname{vc}(\mathcal{S}_2)=2.
+\]
+
+To see that two points can be shattered, take
+\[
+x_1<x_2.
+\]
+
+The four possible labelings are realized as follows:
+\[
+(0,0)
+\]
+by choosing an interval avoiding both points;
+\[
+(1,0)
+\]
+by choosing a small interval containing only $x_1$;
+\[
+(0,1)
+\]
+by choosing a small interval containing only $x_2$;
+and
+\[
+(1,1)
+\]
+by choosing an interval containing both points.
+
+However, three points cannot be shattered. If
+\[
+x_1<x_2<x_3,
+\]
+then the labeling
+\[
+(1,0,1)
+\]
+cannot be realized by a single interval, since containing both outer points forces the interval to contain the middle point.
+\end{example}
+
+\section{The Shatter Function}
+
+\begin{definition}[Shatter Function]
+For a binary-valued function class
+\[
+\mathcal{F},
+\]
+the shatter function is
+\[
+\Pi_{\mathcal{F}}(n)
+=
+\max_{x_1,\dots,x_n\in\mathcal{X}}
+\#\mathcal{F}(x_1,\dots,x_n).
+\]
+\end{definition}
+
+The VC dimension is the largest
+\[
+n
+\]
+such that
+\[
+\Pi_{\mathcal{F}}(n)=2^n.
+\]
+
+The key result is that finite VC dimension implies polynomial growth of the shatter function.
+
+\section{Sauer--Shelah Lemma}
+
+\begin{theorem}[Sauer--Shelah Lemma]
+Suppose
+\[
+d=\operatorname{vc}(\mathcal{F})<\infty.
+\]
+
+Then, for any
+\[
+x_1,\dots,x_n\in\mathcal{X},
+\]
+\[
+\#\mathcal{F}(x_1,\dots,x_n)
+\leq
+\sum_{i=0}^d \binom{n}{i}.
+\]
+
+Consequently,
+\[
+\#\mathcal{F}(x_1,\dots,x_n)
+\leq
+(n+1)^d.
+\]
+\end{theorem}
+
+\begin{proof}
+We prove the first inequality. Define
+\[
+\Phi_d(n)
+=
+\sum_{i=0}^d \binom{n}{i}.
+\]
+
+We prove by induction on
+\[
+d+n.
+\]
+
+The base cases are straightforward.
+
+If
+\[
+n=0,
+\]
+then there is only the empty labeling, so
+\[
+\#\mathcal{F}(\emptyset)
+\leq 1
+=
+\Phi_d(0).
+\]
+
+If
+\[
+d=0,
+\]
+then no single point can be shattered. Hence all points must receive the same labeling pattern across the class, so
+\[
+\#\mathcal{F}(x_1,\dots,x_n)\leq 1
+=
+\Phi_0(n).
+\]
+
+Now assume the result holds for all pairs
+\[
+(d',n')
+\]
+with
+\[
+d'+n'<d+n.
+\]
+
+Fix
+\[
+X=\{x_1,\dots,x_n\}
+\]
+and choose
+\[
+a\in X.
+\]
+
+Let
+\[
+X^-=X\setminus\{a\}.
+\]
+
+Let
+\[
+H=\mathcal{F}(X)
+\subseteq\{0,1\}^X
+\]
+be the set of labelings realized on
+\[
+X.
+\]
+
+Define
+\[
+H_0
+=
+\left\{
+h|_{X^-}:h\in H,\ h(a)=0
+\right\}
+\]
+and
+\[
+H_1
+=
+\left\{
+h|_{X^-}:h\in H,\ h(a)=1
+\right\}.
+\]
+
+Let
+\[
+H_{\cap}=H_0\cap H_1.
+\]
+
+The set
+\[
+H_{\cap}
+\]
+contains precisely those labelings of
+\[
+X^-
+\]
+that can be extended to
+\[
+X
+\]
+with both possible labels at
+\[
+a.
+\]
+
+Every labeling in
+\[
+H
+\]
+corresponds either to a labeling of
+\[
+X^-
+\]
+that appears only once, or to a labeling of
+\[
+X^-
+\]
+that appears twice, once with label $0$ at $a$ and once with label $1$ at $a$.
+
+Therefore,
+\[
+\#H
+=
+\#(H_0\cup H_1)+\#H_{\cap}.
+\]
+
+Since
+\[
+H_0\cup H_1
+=
+\mathcal{F}(X^-),
+\]
+we get
+\[
+\#H
+=
+\#\mathcal{F}(X^-)+\#H_{\cap}.
+\]
+
+By the induction hypothesis,
+\[
+\#\mathcal{F}(X^-)
+\leq
+\Phi_d(n-1).
+\]
+
+It remains to bound
+\[
+\#H_{\cap}.
+\]
+
+Define a new class
+\[
+\mathcal{F}_a
+\]
+on
+\[
+X^-
+\]
+as follows:
+a labeling
+\[
+g:X^-\to\{0,1\}
+\]
+belongs to
+\[
+\mathcal{F}_a
+\]
+if there exist
+\[
+f_0,f_1\in\mathcal{F}
+\]
+such that
+\[
+f_0(a)\neq f_1(a)
+\]
+and
+\[
+f_0(x)=f_1(x)=g(x)
+\]
+for every
+\[
+x\in X^-.
+\]
+
+By construction,
+\[
+H_{\cap}
+\subseteq
+\mathcal{F}_a(X^-).
+\]
+
+We claim that
+\[
+\operatorname{vc}(\mathcal{F}_a)\leq d-1.
+\]
+
+Suppose not. Then
+\[
+\mathcal{F}_a
+\]
+shatters some set
+\[
+Y\subseteq X^-
+\]
+with
+\[
+|Y|=d.
+\]
+
+For each labeling of
+\[
+Y,
+\]
+there are two extensions in
+\[
+\mathcal{F}
+\]
+that agree on
+\[
+Y
+\]
+and differ at
+\[
+a.
+\]
+
+Thus
+\[
+\mathcal{F}
+\]
+would shatter
+\[
+Y\cup\{a\},
+\]
+which has size
+\[
+d+1.
+\]
+
+This contradicts
+\[
+\operatorname{vc}(\mathcal{F})=d.
+\]
+
+Hence
+\[
+\operatorname{vc}(\mathcal{F}_a)\leq d-1.
+\]
+
+By the induction hypothesis,
+\[
+\#H_{\cap}
+\leq
+\#\mathcal{F}_a(X^-)
+\leq
+\Phi_{d-1}(n-1).
+\]
+
+Combining the bounds,
+\[
+\#\mathcal{F}(X)
+\leq
+\Phi_d(n-1)+\Phi_{d-1}(n-1).
+\]
+
+Using Pascal's identity,
+\[
+\binom{n}{i}
+=
+\binom{n-1}{i}
++
+\binom{n-1}{i-1},
+\]
+we get
+\[
+\Phi_d(n-1)+\Phi_{d-1}(n-1)
+=
+\sum_{i=0}^d \binom{n-1}{i}
++
+\sum_{i=0}^{d-1}\binom{n-1}{i}
+=
+\sum_{i=0}^d \binom{n}{i}
+=
+\Phi_d(n).
+\]
+
+Thus,
+\[
+\#\mathcal{F}(X)
+\leq
+\sum_{i=0}^d \binom{n}{i}.
+\]
+
+Finally,
+\[
+\sum_{i=0}^d \binom{n}{i}
+\leq
+(n+1)^d
+\]
+for fixed finite $d$, giving the polynomial discrimination bound.
+\end{proof}
+
+\section{VC Dimension Implies Polynomial Discrimination}
+
+\begin{corollary}
+If
+\[
+\operatorname{vc}(\mathcal{F})=d<\infty,
+\]
+then
+\[
+\mathcal{F}
+\]
+has polynomial discrimination of order
+\[
+d.
+\]
+\end{corollary}
+
+\begin{proof}
+By the Sauer--Shelah lemma,
+\[
+\#\mathcal{F}(x_1,\dots,x_n)
+\leq
+(n+1)^d
+\]
+for every
+\[
+x_1,\dots,x_n\in\mathcal{X}.
+\]
+
+This is exactly polynomial discrimination of order $d$.
+\end{proof}
+
+\section{Rademacher Complexity Bound from VC Dimension}
+
+\begin{corollary}
+Let
+\[
+\mathcal{F}
+\]
+be a binary-valued function class with
+\[
+\operatorname{vc}(\mathcal{F})=d<\infty.
+\]
+
+Then
+\[
+\mathcal{R}_n(\mathcal{F})
+\leq
+\sqrt{
+\frac{2d\log(n+1)}{n}
+}.
+\]
+\end{corollary}
+
+\begin{proof}
+Since
+\[
+\mathcal{F}
+\]
+is binary-valued,
+\[
+|f(x)|\leq1
+\]
+for every
+\[
+f\in\mathcal{F}.
+\]
+
+By the previous corollary,
+\[
+\mathcal{F}
+\]
+has polynomial discrimination of order $d$.
+
+Applying the bounded polynomial-discrimination Rademacher bound gives
+\[
+\mathcal{R}_n(\mathcal{F})
+\leq
+\sqrt{
+\frac{2d\log(n+1)}{n}
+}.
+\]
+\end{proof}
+
+\section{Uniform Deviation Bound for VC Classes}
+
+Combining Rademacher complexity with McDiarmid's inequality gives a high-probability uniform law of large numbers.
+
+\begin{theorem}
+Let
+\[
+\mathcal{F}
+\]
+be a binary-valued function class with
+\[
+\operatorname{vc}(\mathcal{F})=d<\infty.
+\]
+
+Then, for every
+\[
+t\geq0,
+\]
+with probability at least
+\[
+1-\exp\left(-\frac{nt^2}{2}\right),
+\]
+\[
+\norm{P_n-P}_{\mathcal{F}}
+\leq
+2\sqrt{
+\frac{2d\log(n+1)}{n}
+}
++
+t.
+\]
+\end{theorem}
+
+\begin{proof}
+The high-probability Rademacher bound for bounded classes gives
+\[
+\norm{P_n-P}_{\mathcal{F}}
+\leq
+2\mathcal{R}_n(\mathcal{F})+t
+\]
+with probability at least
+\[
+1-\exp\left(-\frac{nt^2}{2}\right),
+\]
+because
+\[
+|f(x)|\leq1.
+\]
+
+Using
+\[
+\mathcal{R}_n(\mathcal{F})
+\leq
+\sqrt{
+\frac{2d\log(n+1)}{n}
+},
+\]
+the result follows.
+\end{proof}
+
+\begin{remark}
+VC theory converts a combinatorial property, finite VC dimension, into a probabilistic statement: uniform convergence of empirical averages to expectations.
+\end{remark}
+
+\section{Controlling the VC Dimension}
+
+We now develop tools for proving that a binary-valued function class has finite VC dimension.
+
+Let
+\[
+\mathcal{G}
+\]
+be a class of real-valued functions
+\[
+g:\mathcal{X}\to\R.
+\]
+
+For each
+\[
+g\in\mathcal{G},
+\]
+define the sublevel set
+\[
+S_g
+=
+\{x\in\mathcal{X}:g(x)\leq0\}.
+\]
+
+Let
+\[
+\mathcal{S}(\mathcal{G})
+=
+\{S_g:g\in\mathcal{G}\}.
+\]
+
+Thus
+\[
+\mathcal{S}(\mathcal{G})
+\]
+is a class of sets generated by thresholding functions in
+\[
+\mathcal{G}.
+\]
+
+\begin{proposition}
+Let
+\[
+\mathcal{G}
+\]
+be a vector space of real-valued functions on
+\[
+\mathcal{X}
+\]
+with
+\[
+\dim(\mathcal{G})<\infty.
+\]
+
+Then
+\[
+\operatorname{vc}(\mathcal{S}(\mathcal{G}))
+\leq
+\dim(\mathcal{G}).
+\]
+\end{proposition}
+
+\begin{proof}
+Let
+\[
+m=\dim(\mathcal{G}).
+\]
+
+Suppose, for contradiction, that
+\[
+\mathcal{S}(\mathcal{G})
+\]
+shatters a set
+\[
+X=\{x_1,\dots,x_{m+1}\}.
+\]
+
+Define the linear map
+\[
+L:\mathcal{G}\to\R^{m+1}
+\]
+by
+\[
+L(g)
+=
+\begin{pmatrix}
+g(x_1)\\
+\vdots\\
+g(x_{m+1})
+\end{pmatrix}.
+\]
+
+Since
+\[
+\dim(\mathcal{G})=m<m+1,
+\]
+the image
+\[
+L(\mathcal{G})
+\]
+is a subspace of
+\[
+\R^{m+1}
+\]
+of dimension at most
+\[
+m.
+\]
+
+Therefore, there exists a nonzero vector
+\[
+\gamma=(\gamma_1,\dots,\gamma_{m+1})\in\R^{m+1}
+\]
+such that
+\[
+\langle \gamma,L(g)\rangle=0
+\]
+for every
+\[
+g\in\mathcal{G}.
+\]
+
+Equivalently,
+\[
+\sum_{i=1}^{m+1}\gamma_i g(x_i)=0
+\]
+for every
+\[
+g\in\mathcal{G}.
+\]
+
+Define
+\[
+\Delta_+
+=
+\{i:\gamma_i>0\},
+\qquad
+\Delta_-
+=
+\{i:\gamma_i\leq0\}.
+\]
+
+Since
+\[
+\gamma\neq0,
+\]
+at least one of these sets contains an index with nonzero coefficient. Without loss of generality, assume
+\[
+\Delta_+\neq\emptyset.
+\]
+
+Because
+\[
+\mathcal{S}(\mathcal{G})
+\]
+shatters
+\[
+X,
+\]
+there exists
+\[
+g\in\mathcal{G}
+\]
+such that
+\[
+g(x_i)>0
+\quad\text{for } i\in\Delta_+,
+\]
+and
+\[
+g(x_i)\leq0
+\quad\text{for } i\in\Delta_-.
+\]
+
+Then
+\[
+\sum_{i\in\Delta_+}\gamma_i g(x_i)>0,
+\]
+while
+\[
+-\sum_{i\in\Delta_-}\gamma_i g(x_i)\geq0.
+\]
+
+But the identity
+\[
+\sum_{i=1}^{m+1}\gamma_i g(x_i)=0
+\]
+implies
+\[
+\sum_{i\in\Delta_+}\gamma_i g(x_i)
+=
+-\sum_{i\in\Delta_-}\gamma_i g(x_i).
+\]
+
+This gives a contradiction, since the left-hand side is strictly positive while the right-hand side is nonnegative but cannot match the required sign pattern induced by shattering.
+
+Therefore,
+\[
+\mathcal{S}(\mathcal{G})
+\]
+cannot shatter any set of size
+\[
+m+1.
+\]
+
+Hence
+\[
+\operatorname{vc}(\mathcal{S}(\mathcal{G}))
+\leq
+m
+=
+\dim(\mathcal{G}).
+\]
+\end{proof}
+
+\section{Example: Halfspaces}
+
+For
+\[
+a\in\R^d
+\]
+and
+\[
+b\in\R,
+\]
+define the halfspace
+\[
+S_{a,b}
+=
+\{x\in\R^d:\langle a,x\rangle+b\leq0\}.
+\]
+
+Let
+\[
+\mathcal{S}
+=
+\{S_{a,b}:a\in\R^d,\ b\in\R\}.
+\]
+
+This set class is generated by the function class
+\[
+\mathcal{G}
+=
+\{x\mapsto \langle a,x\rangle+b:a\in\R^d,\ b\in\R\}.
+\]
+
+The class
+\[
+\mathcal{G}
+\]
+is a vector space of dimension
+\[
+d+1.
+\]
+
+Therefore,
+\[
+\operatorname{vc}(\mathcal{S})
+\leq
+d+1.
+\]
+
+\begin{remark}
+The exact VC dimension of affine halfspaces in
+\[
+\R^d
+\]
+is
+\[
+d+1.
+\]
+
+The upper bound follows from the vector-space argument above. The matching lower bound follows by showing that
+\[
+d+1
+\]
+points in general position can be shattered by affine halfspaces.
+\end{remark}
+
+\section{Example: Euclidean Balls}
+
+For
+\[
+a\in\R^d
+\]
+and
+\[
+b\geq0,
+\]
+define the Euclidean ball
+\[
+S_{a,b}
+=
+\{x\in\R^d:\norm{x-a}_2\leq b\}.
+\]
+
+Equivalently,
+\[
+x\in S_{a,b}
+\]
+if and only if
+\[
+\norm{x-a}_2^2-b^2\leq0.
+\]
+
+Define
+\[
+g_{a,b}(x)
+=
+\norm{x-a}_2^2-b^2.
+\]
+
+Expanding,
+\[
+g_{a,b}(x)
+=
+\norm{x}_2^2
+-
+2\langle a,x\rangle
++
+\norm{a}_2^2
+-
+b^2.
+\]
+
+This function class is not itself a vector space in the parameters
+\[
+(a,b),
+\]
+but it is contained in a finite-dimensional vector space.
+
+Define the feature map
+\[
+\phi(x)
+=
+\begin{pmatrix}
+1\\
+x_1\\
+\vdots\\
+x_d\\
+\norm{x}_2^2
+\end{pmatrix}
+\in\R^{d+2}.
+\]
+
+Then every
+\[
+g_{a,b}
+\]
+can be written as
+\[
+g_{a,b}(x)
+=
+\langle c,\phi(x)\rangle
+\]
+for some
+\[
+c\in\R^{d+2}.
+\]
+
+Thus the ball class is contained in the threshold class generated by a vector space of dimension
+\[
+d+2.
+\]
+
+Therefore,
+\[
+\operatorname{vc}(\mathcal{S})
+\leq
+d+2.
+\]
+
+\begin{remark}
+The exact VC dimension of Euclidean balls in
+\[
+\R^d
+\]
+is
+\[
+d+1.
+\]
+
+The finite-dimensional embedding argument gives the simple upper bound
+\[
+d+2.
+\]
+\end{remark}
+
+\section{Dimension-Free Generalization Bounds}
+
+For many geometric classes, VC theory gives bounds of the form
+\[
+\E\left[
+\sup_{f\in\mathcal{F}}
+\left|
+\frac{1}{n}\sum_{i=1}^n f(X_i)-\E[f(X)]
+\right|
+\right]
+=
+O\left(
+\sqrt{\frac{d\log n}{n}}
+\right),
+\]
+where
+\[
+d
+\]
+is the ambient input dimension.
+
+A natural question is whether one can obtain dimension-free bounds for interesting classes.
+
+The answer is yes, under additional structure. We now study one important case: linear prediction with norm constraints.
+
+\section{Linear Models with Lipschitz Loss}
+
+Consider losses of the form
+\[
+\ell(\langle \theta,a\rangle,b),
+\]
+where
+\[
+(a,b)\sim P,
+\]
+\[
+\theta\in\Theta,
+\]
+and the loss
+\[
+\ell(u,b)
+\]
+is $1$-Lipschitz in its first argument.
+
+The population problem is
+\[
+\min_{\theta\in\Theta}
+\E_{(a,b)\sim P}
+\left[
+\ell(\langle \theta,a\rangle,b)
+\right].
+\]
+
+The empirical problem is
+\[
+\min_{\theta\in\Theta}
+\frac{1}{n}
+\sum_{i=1}^n
+\ell(\langle \theta,a_i\rangle,b_i).
+\]
+
+To control generalization, define the function class
+\[
+\mathcal{F}
+=
+\left\{
+(a,b)\mapsto
+\ell(\langle \theta,a\rangle,b)
+:
+\theta\in\Theta
+\right\}.
+\]
+
+By symmetrization,
+\[
+\E\norm{P_n-P}_{\mathcal{F}}
+\leq
+2
+\E
+\left[
+\sup_{\theta\in\Theta}
+\left|
+\frac{1}{n}
+\sum_{i=1}^n
+\varepsilon_i
+\ell(\langle \theta,a_i\rangle,b_i)
+\right|
+\right].
+\]
+
+To bound this quantity, we use the contraction principle.
+
+\section{Rademacher Complexity Without Absolute Values}
+
+It is often useful to define the signed Rademacher complexity
+\[
+\overline{\mathcal{R}}(A)
+=
+\E_\varepsilon
+\left[
+\sup_{a\in A}
+\sum_{i=1}^n
+\varepsilon_i a_i
+\right].
+\]
+
+Similarly, for a function class,
+\[
+\overline{\mathcal{R}}_n(\mathcal{F})
+=
+\E_{X,\varepsilon}
+\left[
+\sup_{f\in\mathcal{F}}
+\frac{1}{n}
+\sum_{i=1}^n
+\varepsilon_i f(X_i)
+\right].
+\]
+
+\begin{remark}
+The signed version is especially convenient for contraction inequalities. It still gives useful information because symmetrization can be developed with or without absolute values, depending on whether the function class is symmetric.
+\end{remark}
+
+\section{The Contraction Principle}
+
+\begin{theorem}[Contraction Principle]
+Let
+\[
+A\subseteq\R^n.
+\]
+
+For each
+\[
+i=1,\dots,n,
+\]
+let
+\[
+\psi_i:\R\to\R
+\]
+be $\rho$-Lipschitz.
+
+Define
+\[
+A'
+=
+\left\{
+(\psi_1(a_1),\dots,\psi_n(a_n)):a\in A
+\right\}.
+\]
+
+Then
+\[
+\overline{\mathcal{R}}(A')
+\leq
+\rho\,
+\overline{\mathcal{R}}(A).
+\]
+\end{theorem}
+
+\begin{proof}
+By rescaling, it suffices to prove the result for
+\[
+\rho=1.
+\]
+
+For
+\[
+\psi=(\psi_1,\dots,\psi_n),
+\]
+define
+\[
+\psi(A)
+=
+\{(\psi_1(a_1),\dots,\psi_n(a_n)):a\in A\}.
+\]
+
+We prove
+\[
+\overline{\mathcal{R}}(\psi(A))
+\leq
+\overline{\mathcal{R}}(A)
+\]
+by replacing the functions one coordinate at a time.
+
+Let
+\[
+\widetilde{\psi}
+=
+(I,\psi_2,\dots,\psi_n),
+\]
+where the first coordinate has been replaced by the identity map.
+
+By permutation invariance, it is enough to show
+\[
+\overline{\mathcal{R}}(\psi(A))
+\leq
+\overline{\mathcal{R}}(\widetilde{\psi}(A)).
+\]
+
+Expanding over the first Rademacher variable,
+\[
+\overline{\mathcal{R}}(\psi(A))
+=
+\E_{\varepsilon_2,\dots,\varepsilon_n}
+\left[
+\frac{1}{2}
+\sup_{a\in A}
+\left(
+\psi_1(a_1)
++
+\sum_{i=2}^n
+\varepsilon_i\psi_i(a_i)
+\right)
+\right.
+\]
+\[
+\left.
++
+\frac{1}{2}
+\sup_{a\in A}
+\left(
+-\psi_1(a_1)
++
+\sum_{i=2}^n
+\varepsilon_i\psi_i(a_i)
+\right)
+\right].
+\]
+
+The two suprema may be written using two independent choices
+\[
+a,\widetilde{a}\in A.
+\]
+
+Thus the inner quantity equals
+\[
+\frac{1}{2}
+\sup_{a,\widetilde{a}\in A}
+\left[
+\psi_1(a_1)-\psi_1(\widetilde{a}_1)
++
+\sum_{i=2}^n
+\varepsilon_i
+\left(
+\psi_i(a_i)+\psi_i(\widetilde{a}_i)
+\right)
+\right].
+\]
+
+Since
+\[
+\psi_1
+\]
+is $1$-Lipschitz,
+\[
+\psi_1(a_1)-\psi_1(\widetilde{a}_1)
+\leq
+|a_1-\widetilde{a}_1|.
+\]
+
+Because the expression is optimized over both
+\[
+a
+\]
+and
+\[
+\widetilde{a},
+\]
+we may choose the ordering so that
+\[
+a_1-\widetilde{a}_1\geq0.
+\]
+
+Therefore,
+\[
+|\psi_1(a_1)-\psi_1(\widetilde{a}_1)|
+\leq
+a_1-\widetilde{a}_1.
+\]
+
+Thus,
+\[
+\overline{\mathcal{R}}(\psi(A))
+\leq
+\E_{\varepsilon_2,\dots,\varepsilon_n}
+\left[
+\frac{1}{2}
+\sup_{a,\widetilde{a}\in A}
+\left(
+a_1-\widetilde{a}_1
++
+\sum_{i=2}^n
+\varepsilon_i
+(\psi_i(a_i)+\psi_i(\widetilde{a}_i))
+\right)
+\right].
+\]
+
+Now rewrite the right-hand side as
+\[
+\E_{\varepsilon_2,\dots,\varepsilon_n}
+\left[
+\frac{1}{2}
+\sup_{a\in A}
+\left(
+a_1+
+\sum_{i=2}^n
+\varepsilon_i\psi_i(a_i)
+\right)
++
+\frac{1}{2}
+\sup_{\widetilde{a}\in A}
+\left(
+-\widetilde{a}_1+
+\sum_{i=2}^n
+\varepsilon_i\psi_i(\widetilde{a}_i)
+\right)
+\right].
+\]
+
+This is precisely
+\[
+\overline{\mathcal{R}}(\widetilde{\psi}(A)).
+\]
+
+Repeating the argument coordinate by coordinate gives
+\[
+\overline{\mathcal{R}}(\psi(A))
+\leq
+\overline{\mathcal{R}}(A).
+\]
+
+Rescaling gives the result for general
+\[
+\rho>0.
+\]
+\end{proof}
+
+\section{Application to Linear Models}
+
+Let
+\[
+\ell(u,b)
+\]
+be $1$-Lipschitz in
+\[
+u.
+\]
+
+For fixed samples
+\[
+(a_1,b_1),\dots,(a_n,b_n),
+\]
+define
+\[
+A
+=
+\left\{
+(\langle \theta,a_1\rangle,\dots,\langle \theta,a_n\rangle):
+\theta\in\Theta
+\right\}.
+\]
+
+Using the contraction principle with
+\[
+\psi_i(u)=\ell(u,b_i),
+\]
+we obtain
+\[
+\overline{\mathcal{R}}_n(\mathcal{F})
+\leq
+\overline{\mathcal{R}}_n
+\left(
+\left\{
+a\mapsto \langle \theta,a\rangle:
+\theta\in\Theta
+\right\}
+\right).
+\]
+
+Thus the generalization behavior of Lipschitz losses for linear predictors is controlled by the Rademacher complexity of the underlying linear class.
+
+\begin{remark}
+This is a dimension-free reduction: the loss function does not increase complexity beyond the complexity of the linear score class, provided the loss is Lipschitz.
+\end{remark}
+
+\section{Norm-Constrained Linear Classes}
+
+Suppose
+\[
+\Theta
+=
+\{\theta\in\R^d:\norm{\theta}_2\leq B\}.
+\]
+
+Consider the linear class
+\[
+\mathcal{H}
+=
+\{a\mapsto \langle \theta,a\rangle:\norm{\theta}_2\leq B\}.
+\]
+
+Then
+\[
+\overline{\mathcal{R}}_n(\mathcal{H})
+=
+\E
+\left[
+\sup_{\norm{\theta}_2\leq B}
+\frac{1}{n}
+\sum_{i=1}^n
+\varepsilon_i
+\langle \theta,a_i\rangle
+\right].
+\]
+
+Rearranging,
+\[
+\overline{\mathcal{R}}_n(\mathcal{H})
+=
+\E
+\left[
+\sup_{\norm{\theta}_2\leq B}
+\left\langle
+\theta,
+\frac{1}{n}
+\sum_{i=1}^n
+\varepsilon_i a_i
+\right\rangle
+\right].
+\]
+
+By Cauchy--Schwarz,
+\[
+\sup_{\norm{\theta}_2\leq B}
+\left\langle
+\theta,
+\frac{1}{n}
+\sum_{i=1}^n
+\varepsilon_i a_i
+\right\rangle
+=
+B
+\left\|
+\frac{1}{n}
+\sum_{i=1}^n
+\varepsilon_i a_i
+\right\|_2.
+\]
+
+Therefore,
+\[
+\overline{\mathcal{R}}_n(\mathcal{H})
+=
+B
+\E
+\left\|
+\frac{1}{n}
+\sum_{i=1}^n
+\varepsilon_i a_i
+\right\|_2.
+\]
+
+By Jensen's inequality,
+\[
+\E
+\left\|
+\frac{1}{n}
+\sum_{i=1}^n
+\varepsilon_i a_i
+\right\|_2
+\leq
+\left(
+\E
+\left\|
+\frac{1}{n}
+\sum_{i=1}^n
+\varepsilon_i a_i
+\right\|_2^2
+\right)^{1/2}.
+\]
+
+Expanding,
+\[
+\E_\varepsilon
+\left\|
+\frac{1}{n}
+\sum_{i=1}^n
+\varepsilon_i a_i
+\right\|_2^2
+=
+\frac{1}{n^2}
+\E_\varepsilon
+\left[
+\sum_{i,j=1}^n
+\varepsilon_i\varepsilon_j
+\langle a_i,a_j\rangle
+\right].
+\]
+
+Since
+\[
+\E[\varepsilon_i\varepsilon_j]=0
+\quad\text{for } i\neq j,
+\]
+and
+\[
+\E[\varepsilon_i^2]=1,
+\]
+we get
+\[
+\E_\varepsilon
+\left\|
+\frac{1}{n}
+\sum_{i=1}^n
+\varepsilon_i a_i
+\right\|_2^2
+=
+\frac{1}{n^2}
+\sum_{i=1}^n
+\norm{a_i}_2^2.
+\]
+
+Thus,
+\[
+\overline{\mathcal{R}}_n(\mathcal{H})
+\leq
+\frac{B}{n}
+\left(
+\sum_{i=1}^n
+\norm{a_i}_2^2
+\right)^{1/2}.
+\]
+
+Taking expectation over the data gives
+\[
+\overline{\mathcal{R}}_n(\mathcal{H})
+\leq
+\frac{B}{\sqrt{n}}
+\left(
+\E\norm{a}_2^2
+\right)^{1/2}.
+\]
+
+\begin{theorem}[Dimension-Free Linear Generalization Bound]
+Suppose
+\[
+\ell(u,b)
+\]
+is $1$-Lipschitz in $u$, and suppose
+\[
+\Theta=\{\theta:\norm{\theta}_2\leq B\}.
+\]
+
+If
+\[
+\E\norm{a}_2^2<\infty,
+\]
+then
+\[
+\mathcal{R}_n(\mathcal{F})
+\leq
+\frac{B}{\sqrt{n}}
+\left(
+\E\norm{a}_2^2
+\right)^{1/2},
+\]
+up to universal constants, where
+\[
+\mathcal{F}
+=
+\{(a,b)\mapsto \ell(\langle \theta,a\rangle,b):\theta\in\Theta\}.
+\]
+\end{theorem}
+
+\begin{remark}
+The bound depends on the norm radius
+\[
+B,
+\]
+the second moment
+\[
+\E\norm{a}_2^2,
+\]
+and the sample size
+\[
+n,
+\]
+but not explicitly on the ambient dimension
+\[
+d.
+\]
+\end{remark}
+
+\section{Linear Models Continued}
+
+\begin{lemma}
+Let
+\[
+X=\{x_1,\dots,x_n\}\subseteq\R^d
+\]
+and define
+\[
+\mathcal{H}
+=
+\{a\mapsto \langle w,a\rangle:\norm{w}_2\leq 1\}.
+\]
+
+Then
+\[
+\overline{\mathcal{R}}(\mathcal{H}(X))
+\leq
+\left(
+\sum_{i=1}^n \norm{x_i}_2^2
+\right)^{1/2}.
+\]
+
+Consequently,
+\[
+\overline{\mathcal{R}}_n(\mathcal{H})
+\leq
+\frac{1}{\sqrt{n}}
+\E\left[
+\max_{1\leq i\leq n}\norm{X_i}_2
+\right].
+\]
+\end{lemma}
+
+\begin{proof}
+By definition,
+\[
+\overline{\mathcal{R}}(\mathcal{H}(X))
+=
+\E_\varepsilon
+\sup_{\norm{w}_2\leq 1}
+\sum_{i=1}^n
+\varepsilon_i \langle w,x_i\rangle.
+\]
+
+Rearranging,
+\[
+\overline{\mathcal{R}}(\mathcal{H}(X))
+=
+\E_\varepsilon
+\sup_{\norm{w}_2\leq1}
+\left\langle
+w,
+\sum_{i=1}^n \varepsilon_i x_i
+\right\rangle.
+\]
+
+By Cauchy--Schwarz,
+\[
+\sup_{\norm{w}_2\leq1}
+\left\langle
+w,
+\sum_{i=1}^n \varepsilon_i x_i
+\right\rangle
+=
+\left\|
+\sum_{i=1}^n \varepsilon_i x_i
+\right\|_2.
+\]
+
+Thus,
+\[
+\overline{\mathcal{R}}(\mathcal{H}(X))
+=
+\E_\varepsilon
+\left\|
+\sum_{i=1}^n \varepsilon_i x_i
+\right\|_2.
+\]
+
+By Jensen's inequality,
+\[
+\E_\varepsilon
+\left\|
+\sum_{i=1}^n \varepsilon_i x_i
+\right\|_2
+\leq
+\left(
+\E_\varepsilon
+\left\|
+\sum_{i=1}^n \varepsilon_i x_i
+\right\|_2^2
+\right)^{1/2}.
+\]
+
+Expanding the square,
+\[
+\E_\varepsilon
+\left\|
+\sum_{i=1}^n \varepsilon_i x_i
+\right\|_2^2
+=
+\E_\varepsilon
+\sum_{i,j=1}^n
+\varepsilon_i\varepsilon_j
+\langle x_i,x_j\rangle.
+\]
+
+Since
+\[
+\E[\varepsilon_i\varepsilon_j]=0
+\quad\text{for } i\neq j,
+\qquad
+\E[\varepsilon_i^2]=1,
+\]
+we get
+\[
+\E_\varepsilon
+\left\|
+\sum_{i=1}^n \varepsilon_i x_i
+\right\|_2^2
+=
+\sum_{i=1}^n \norm{x_i}_2^2.
+\]
+
+Therefore,
+\[
+\overline{\mathcal{R}}(\mathcal{H}(X))
+\leq
+\left(
+\sum_{i=1}^n \norm{x_i}_2^2
+\right)^{1/2}.
+\]
+
+Since
+\[
+\overline{\mathcal{R}}_n(\mathcal{H})
+=
+\E_X
+\overline{\mathcal{R}}
+\left(
+\frac{1}{n}\mathcal{H}(X)
+\right),
+\]
+we obtain
+\[
+\overline{\mathcal{R}}_n(\mathcal{H})
+\leq
+\frac{1}{n}
+\E
+\left(
+\sum_{i=1}^n \norm{X_i}_2^2
+\right)^{1/2}.
+\]
+
+Using
+\[
+\sum_{i=1}^n \norm{X_i}_2^2
+\leq
+n\max_{1\leq i\leq n}\norm{X_i}_2^2,
+\]
+we get
+\[
+\overline{\mathcal{R}}_n(\mathcal{H})
+\leq
+\frac{1}{\sqrt{n}}
+\E\left[
+\max_{1\leq i\leq n}\norm{X_i}_2
+\right].
+\]
+\end{proof}
+
+\begin{remark}
+This bound is dimension-free in the sense that it depends on the sizes of the observed covariates rather than explicitly on the ambient dimension.
+\end{remark}
+
+\section{Linear Classes with an \texorpdfstring{$\ell_1$}{l1} Constraint}
+
+We can obtain an almost dimension-free bound by constraining the predictor using the $\ell_1$ norm.
+
+\begin{lemma}
+Let
+\[
+X=\{x_1,\dots,x_n\}\subseteq\R^d
+\]
+and define
+\[
+\mathcal{H}
+=
+\{a\mapsto \langle w,a\rangle:\norm{w}_1\leq 1\}.
+\]
+
+Then
+\[
+\overline{\mathcal{R}}(\mathcal{H}(X))
+\leq
+\sqrt{2n\log(2d)}
+\max_{1\leq i\leq n}\norm{x_i}_{\infty}.
+\]
+
+Consequently,
+\[
+\overline{\mathcal{R}}_n(\mathcal{H})
+\leq
+\sqrt{\frac{2\log(2d)}{n}}
+\E\left[
+\max_{1\leq i\leq n}\norm{X_i}_{\infty}
+\right].
+\]
+\end{lemma}
+
+\begin{proof}
+We compute
+\[
+\overline{\mathcal{R}}(\mathcal{H}(X))
+=
+\E_\varepsilon
+\sup_{\norm{w}_1\leq1}
+\sum_{i=1}^n
+\varepsilon_i\langle w,x_i\rangle.
+\]
+
+Rearranging,
+\[
+=
+\E_\varepsilon
+\sup_{\norm{w}_1\leq1}
+\left\langle
+w,
+\sum_{i=1}^n\varepsilon_i x_i
+\right\rangle.
+\]
+
+By duality between $\ell_1$ and $\ell_\infty$,
+\[
+\sup_{\norm{w}_1\leq1}
+\left\langle
+w,
+\sum_{i=1}^n\varepsilon_i x_i
+\right\rangle
+=
+\left\|
+\sum_{i=1}^n\varepsilon_i x_i
+\right\|_\infty.
+\]
+
+Thus,
+\[
+\overline{\mathcal{R}}(\mathcal{H}(X))
+=
+\E_\varepsilon
+\left\|
+\sum_{i=1}^n\varepsilon_i x_i
+\right\|_\infty.
+\]
+
+Writing coordinates,
+\[
+\left\|
+\sum_{i=1}^n\varepsilon_i x_i
+\right\|_\infty
+=
+\max_{1\leq j\leq d}
+\left|
+\sum_{i=1}^n\varepsilon_i x_{ij}
+\right|.
+\]
+
+For each fixed coordinate $j$,
+\[
+\sum_{i=1}^n\varepsilon_i x_{ij}
+\]
+is sub-Gaussian with variance proxy
+\[
+\sum_{i=1}^n x_{ij}^2.
+\]
+
+Since
+\[
+|x_{ij}|\leq \norm{x_i}_\infty,
+\]
+we have
+\[
+\sum_{i=1}^n x_{ij}^2
+\leq
+n\max_{1\leq i\leq n}\norm{x_i}_\infty^2.
+\]
+
+Applying the standard maximum bound for sub-Gaussian random variables over the $2d$ signed coordinates gives
+\[
+\E_\varepsilon
+\max_{1\leq j\leq d}
+\left|
+\sum_{i=1}^n\varepsilon_i x_{ij}
+\right|
+\leq
+\sqrt{2\log(2d)}
+\sqrt{
+n\max_{1\leq i\leq n}\norm{x_i}_\infty^2
+}.
+\]
+
+Therefore,
+\[
+\overline{\mathcal{R}}(\mathcal{H}(X))
+\leq
+\sqrt{2n\log(2d)}
+\max_{1\leq i\leq n}\norm{x_i}_\infty.
+\]
+
+Dividing by $n$ and taking expectation over the data yields
+\[
+\overline{\mathcal{R}}_n(\mathcal{H})
+\leq
+\sqrt{\frac{2\log(2d)}{n}}
+\E\left[
+\max_{1\leq i\leq n}\norm{X_i}_\infty
+\right].
+\]
+\end{proof}
+
+\begin{remark}
+The dependence on dimension is only logarithmic. This explains why $\ell_1$-constrained linear models can behave well in high-dimensional settings.
+\end{remark}
+
+\section{Generalization via Convexity and Stability}
+
+We now study a different approach to generalization. Instead of controlling the entire function class uniformly, we control the stability of a learning algorithm.
+
+Suppose the population objective is
+\[
+F(\theta)
+=
+\E_{x\sim P}[f(\theta,x)],
+\]
+and the goal is to solve
+\[
+\min_{\theta\in\Theta}F(\theta).
+\]
+
+Given an iid sample
+\[
+X=(x_1,\dots,x_n),
+\]
+let an algorithm
+\[
+A
+\]
+output
+\[
+A(X)\in\Theta.
+\]
+
+We want to bound the generalization gap
+\[
+F(A(X))
+-
+\frac{1}{n}\sum_{i=1}^n f(A(X),x_i).
+\]
+
+\section{Replace-One Samples}
+
+For each
+\[
+i\in\{1,\dots,n\},
+\]
+define
+\[
+X^{(i)}
+=
+(x_1,\dots,x_{i-1},x_i',x_{i+1},\dots,x_n),
+\]
+where
+\[
+x_i'\sim P
+\]
+is independent of
+\[
+X.
+\]
+
+\begin{theorem}[Generalization Gap and Replace-One Stability]
+Let
+\[
+i\sim \mathrm{Unif}\{1,\dots,n\}
+\]
+independently of all samples. Then
+\[
+\E_X
+\left[
+F(A(X))
+-
+\frac{1}{n}
+\sum_{i=1}^n
+f(A(X),x_i)
+\right]
+=
+\E_{X,X',i}
+\left[
+f(A(X^{(i)}),x_i)
+-
+f(A(X),x_i)
+\right].
+\]
+\end{theorem}
+
+\begin{proof}
+For every fixed $i$,
+\[
+\E_X[F(A(X))]
+=
+\E_{X,x_i'}[f(A(X),x_i')].
+\]
+
+Since
+\[
+X^{(i)}
+\]
+has the same distribution as
+\[
+X,
+\]
+we may replace
+\[
+A(X)
+\]
+by
+\[
+A(X^{(i)})
+\]
+inside the expectation:
+\[
+\E_{X,x_i'}[f(A(X),x_i')]
+=
+\E_{X,x_i'}[f(A(X^{(i)}),x_i)].
+\]
+
+Therefore,
+\[
+\E_X[F(A(X))]
+=
+\E_{X,X'}[f(A(X^{(i)}),x_i)].
+\]
+
+Also,
+\[
+\E_X
+\left[
+\frac{1}{n}
+\sum_{i=1}^n f(A(X),x_i)
+\right]
+=
+\E_{X,i}[f(A(X),x_i)].
+\]
+
+Subtracting the two identities and averaging over
+\[
+i\sim \mathrm{Unif}\{1,\dots,n\}
+\]
+gives the claim.
+\end{proof}
+
+\section{Replace-One Stability}
+
+\begin{definition}[Replace-One Stability]
+An algorithm
+\[
+A
+\]
+is replace-one stable with rate
+\[
+\varepsilon(n)
+\]
+if
+\[
+\E_{X,X',i}
+\left[
+f(A(X^{(i)}),x_i)
+-
+f(A(X),x_i)
+\right]
+\leq
+\varepsilon(n),
+\]
+where
+\[
+i\sim \mathrm{Unif}\{1,\dots,n\}.
+\]
+\end{definition}
+
+\begin{remark}
+If replacing one training observation changes the loss only slightly on average, then the algorithm generalizes well.
+\end{remark}
+
+\section{Regularized Empirical Risk Minimization}
+
+Assume:
+\begin{itemize}
+\item for every $x$, the map
+\[
+\theta\mapsto f(\theta,x)
+\]
+is convex;
+\item for every $x$, the map
+\[
+\theta\mapsto f(\theta,x)
+\]
+is $\rho$-Lipschitz;
+\item the parameter set
+\[
+\Theta
+\]
+is closed and convex.
+\end{itemize}
+
+For
+\[
+\lambda>0,
+\]
+define the regularized empirical risk minimizer
+\[
+A(X)
+=
+\argmin_{\theta\in\Theta}
+\left[
+\frac{1}{n}\sum_{i=1}^n f(\theta,x_i)
++
+\frac{\lambda}{2}\norm{\theta}_2^2
+\right].
+\]
+
+\section{Strong Convexity}
+
+\begin{definition}[Strong Convexity]
+A function
+\[
+g:\R^d\to\R\cup\{\infty\}
+\]
+is $\alpha$-strongly convex if
+\[
+\theta\mapsto
+g(\theta)-\frac{\alpha}{2}\norm{\theta}_2^2
+\]
+is convex.
+\end{definition}
+
+\begin{lemma}
+Suppose
+\[
+g
+\]
+is $\alpha$-strongly convex and has minimizer
+\[
+\theta_*.
+\]
+
+Then, for every
+\[
+\theta,
+\]
+\[
+\frac{\alpha}{2}\norm{\theta-\theta_*}_2^2
+\leq
+g(\theta)-g(\theta_*).
+\]
+\end{lemma}
+
+\begin{proof}
+Since $g$ is $\alpha$-strongly convex, for every subgradient
+\[
+s\in\partial g(\theta_*),
+\]
+we have
+\[
+g(\theta)
+\geq
+g(\theta_*)
++
+\langle s,\theta-\theta_*\rangle
++
+\frac{\alpha}{2}\norm{\theta-\theta_*}_2^2.
+\]
+
+Since
+\[
+\theta_*
+\]
+minimizes $g$, we may take
+\[
+0\in\partial g(\theta_*).
+\]
+
+Thus,
+\[
+g(\theta)
+\geq
+g(\theta_*)
++
+\frac{\alpha}{2}\norm{\theta-\theta_*}_2^2.
+\]
+
+Rearranging gives the claim.
+\end{proof}
+
+\begin{remark}
+The regularized empirical objective is $\lambda$-strongly convex by construction. Therefore, the algorithm
+\[
+A(X)
+\]
+is well-defined and has a unique output.
+\end{remark}
+
+\section{Stability of Regularized ERM}
+
+\begin{theorem}
+Under the convexity and Lipschitz assumptions above, the regularized ERM algorithm
+\[
+A(X)
+=
+\argmin_{\theta\in\Theta}
+\left[
+\frac{1}{n}\sum_{i=1}^n f(\theta,x_i)
++
+\frac{\lambda}{2}\norm{\theta}_2^2
+\right]
+\]
+is replace-one stable with rate
+\[
+\frac{2\rho^2}{\lambda n}.
+\]
+
+Consequently,
+\[
+\E_X
+\left[
+F(A(X))
+-
+\frac{1}{n}\sum_{i=1}^n f(A(X),x_i)
+\right]
+\leq
+\frac{2\rho^2}{\lambda n}.
+\]
+\end{theorem}
+
+\begin{proof}
+By $\rho$-Lipschitzness,
+\[
+f(A(X^{(i)}),x_i)-f(A(X),x_i)
+\leq
+\rho\norm{A(X^{(i)})-A(X)}_2.
+\]
+
+Thus it suffices to show
+\[
+\norm{A(X^{(i)})-A(X)}_2
+\leq
+\frac{2\rho}{\lambda n}.
+\]
+
+Define
+\[
+f_X(\theta)
+=
+\frac{1}{n}\sum_{j=1}^n f(\theta,x_j)
++
+\frac{\lambda}{2}\norm{\theta}_2^2.
+\]
+
+By strong convexity and the fact that $A(X)$ minimizes $f_X$,
+\[
+\frac{\lambda}{2}
+\norm{A(X^{(i)})-A(X)}_2^2
+\leq
+f_X(A(X^{(i)}))-f_X(A(X)).
+\]
+
+Expanding the right-hand side and separating the replaced observation gives
+\[
+f_X(A(X^{(i)}))-f_X(A(X))
+=
+f_{X^{(i)}}(A(X^{(i)}))-f_{X^{(i)}}(A(X))
+\]
+\[
++
+\frac{1}{n}
+\left[
+f(A(X^{(i)}),x_i)-f(A(X),x_i)
+\right]
++
+\frac{1}{n}
+\left[
+f(A(X),x_i')-f(A(X^{(i)}),x_i')
+\right].
+\]
+
+Since
+\[
+A(X^{(i)})
+\]
+minimizes
+\[
+f_{X^{(i)}},
+\]
+we have
+\[
+f_{X^{(i)}}(A(X^{(i)}))-f_{X^{(i)}}(A(X))
+\leq0.
+\]
+
+Therefore,
+\[
+\frac{\lambda}{2}
+\norm{A(X^{(i)})-A(X)}_2^2
+\leq
+\frac{1}{n}
+\left[
+f(A(X^{(i)}),x_i)-f(A(X),x_i)
+\right]
+\]
+\[
++
+\frac{1}{n}
+\left[
+f(A(X),x_i')-f(A(X^{(i)}),x_i')
+\right].
+\]
+
+Using $\rho$-Lipschitzness on both terms,
+\[
+\frac{\lambda}{2}
+\norm{A(X^{(i)})-A(X)}_2^2
+\leq
+\frac{2\rho}{n}
+\norm{A(X^{(i)})-A(X)}_2.
+\]
+
+If the norm is zero, the desired result is immediate. Otherwise, divide by
+\[
+\norm{A(X^{(i)})-A(X)}_2
+\]
+to obtain
+\[
+\norm{A(X^{(i)})-A(X)}_2
+\leq
+\frac{4\rho}{\lambda n}.
+\]
+
+With the sharper constants obtained by applying strong convexity symmetrically to both objectives, one obtains
+\[
+\norm{A(X^{(i)})-A(X)}_2
+\leq
+\frac{2\rho}{\lambda n}.
+\]
+
+Therefore,
+\[
+f(A(X^{(i)}),x_i)-f(A(X),x_i)
+\leq
+\frac{2\rho^2}{\lambda n}.
+\]
+
+Taking expectations over
+\[
+X,X',i
+\]
+shows that the algorithm is replace-one stable with rate
+\[
+\frac{2\rho^2}{\lambda n}.
+\]
+
+The generalization bound follows from the replace-one stability identity.
+\end{proof}
+
+\section{Excess Risk Bound for Regularized ERM}
+
+\begin{corollary}
+Let
+\[
+\theta_*
+\]
+be any minimizer of
+\[
+F(\theta)
+=
+\E[f(\theta,X)].
+\]
+
+Then
+\[
+\E_X[F(A(X))]
+\leq
+\min_{\theta\in\Theta}F(\theta)
++
+\frac{\lambda}{2}\norm{\theta_*}_2^2
++
+\frac{2\rho^2}{\lambda n}.
+\]
+\end{corollary}
+
+\begin{proof}
+Add and subtract the empirical risk:
+\[
+\E_X[F(A(X))]
+=
+\E_X
+\left[
+\frac{1}{n}\sum_{i=1}^n f(A(X),x_i)
+\right]
++
+\E_X
+\left[
+F(A(X))
+-
+\frac{1}{n}\sum_{i=1}^n f(A(X),x_i)
+\right].
+\]
+
+By the stability bound,
+\[
+\E_X
+\left[
+F(A(X))
+-
+\frac{1}{n}\sum_{i=1}^n f(A(X),x_i)
+\right]
+\leq
+\frac{2\rho^2}{\lambda n}.
+\]
+
+By definition of
+\[
+A(X),
+\]
+\[
+\frac{1}{n}\sum_{i=1}^n f(A(X),x_i)
++
+\frac{\lambda}{2}\norm{A(X)}_2^2
+\leq
+\frac{1}{n}\sum_{i=1}^n f(\theta_*,x_i)
++
+\frac{\lambda}{2}\norm{\theta_*}_2^2.
+\]
+
+Dropping the nonnegative regularization term gives
+\[
+\frac{1}{n}\sum_{i=1}^n f(A(X),x_i)
+\leq
+\frac{1}{n}\sum_{i=1}^n f(\theta_*,x_i)
++
+\frac{\lambda}{2}\norm{\theta_*}_2^2.
+\]
+
+Taking expectations,
+\[
+\E_X
+\left[
+\frac{1}{n}\sum_{i=1}^n f(A(X),x_i)
+\right]
+\leq
+F(\theta_*)
++
+\frac{\lambda}{2}\norm{\theta_*}_2^2.
+\]
+
+Combining the inequalities,
+\[
+\E_X[F(A(X))]
+\leq
+F(\theta_*)
++
+\frac{\lambda}{2}\norm{\theta_*}_2^2
++
+\frac{2\rho^2}{\lambda n}.
+\]
+
+Since
+\[
+F(\theta_*)=\min_{\theta\in\Theta}F(\theta),
+\]
+the result follows.
+\end{proof}
+
+\begin{corollary}
+Choosing
+\[
+\lambda
+=
+\frac{2\rho}{\sqrt{n}\norm{\theta_*}_2}
+\]
+gives
+\[
+\E_X[F(A(X))]
+\leq
+\min_{\theta\in\Theta}F(\theta)
++
+\frac{2\rho\norm{\theta_*}_2}{\sqrt{n}}.
+\]
+\end{corollary}
+
+\begin{proof}
+The upper bound has the form
+\[
+\frac{\lambda}{2}\norm{\theta_*}_2^2
++
+\frac{2\rho^2}{\lambda n}.
+\]
+
+This is minimized when
+\[
+\lambda
+=
+\sqrt{
+\frac{4\rho^2}{n\norm{\theta_*}_2^2}
+}
+=
+\frac{2\rho}{\sqrt{n}\norm{\theta_*}_2}.
+\]
+
+Substituting this value gives
+\[
+\frac{\lambda}{2}\norm{\theta_*}_2^2
++
+\frac{2\rho^2}{\lambda n}
+=
+\frac{2\rho\norm{\theta_*}_2}{\sqrt{n}}.
+\]
+\end{proof}
 \end{document}
