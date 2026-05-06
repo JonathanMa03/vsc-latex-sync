@@ -1,6 +1,8 @@
 # JM's Applied Mathematics and Statistics Notes
 
-The complete collection of all my notes taken during my study at JHU WSE's Applied Math and Statistics.
+This repository is a consolidated collection of my personal notes compiled during my graduate studies in the Department of Applied Mathematics and Statistics at [Johns Hopkins University](https://engineering.jhu.edu/ams/).
+
+The material were created as a personal "To-Go" reference covering topics in statistics, learning, and optimization
 
 Courses Taken:
 - EN.553.632 Bayesian Statistics, FA25
@@ -17,7 +19,34 @@ Courses Taken:
 - EN.553.762 Nonlinear Optimization 2, SP26
 - EN.553.796 Random Matrix Theory in Data Science and Statistics, FA26
 
-My thanks to all the wonderful faculty in the AMS department.
+Special thanks to the faculty of the [AMS Department](https://engineering.jhu.edu/ams/faculty/) for their excellent instruction and mentorship, along with their course materials.
+
+---
+
+## Disclaimer
+
+These notes are a mash-up from me based on:
+- lectures
+- supplemental readings
+- textbooks
+- personal notes
+- in-class QnA.
+
+They are **not official course materials** and may contain errors, omissions, or personal interpretations of concepts. I am a practitioner and not a theorist, so some material (proofs especially) may be omitted.
+
+All copyrights for referenced textbooks, lecture content, figures, and external materials remain with their respective authors and publishers. This repository is intended strictly for educational and reference purposes.
+
+This repository does **not** contain:
+- past assignments, exams, and solutioms
+- graded assignments and projects (you can browse my GitHub for projects)
+
+### AI Disclosure
+
+Some formatting assistance, editing, restructuring, and explanatory expansion were performed with the assistance of AI tools, including Underleaf AI, ChatGPT, and Notion. Final organization and compilation are entirely performed by yours truly.
+
+---
+
+# Compile Instructions
 
 ## Simple Compile
 - cd into project folder after cd ..
