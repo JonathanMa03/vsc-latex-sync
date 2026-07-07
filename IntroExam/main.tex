@@ -1,0 +1,443 @@
+\documentclass[11pt]{article}
+
+% -------------------------------------------------
+% Page Layout
+% -------------------------------------------------
+\usepackage[margin=1in]{geometry}
+
+% -------------------------------------------------
+% Fonts & Encoding
+% -------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+
+% -------------------------------------------------
+% Mathematics
+% -------------------------------------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{mathrsfs}
+
+% -------------------------------------------------
+% Figures & Tables
+% -------------------------------------------------
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{tabularx}
+
+% -------------------------------------------------
+% Lists
+% -------------------------------------------------
+\usepackage{enumitem}
+
+% -------------------------------------------------
+% Colors & Hyperlinks
+% -------------------------------------------------
+\usepackage{xcolor}
+\usepackage[
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+]{hyperref}
+
+% -------------------------------------------------
+% Page Style
+% -------------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% -------------------------------------------------
+% Spacing
+% -------------------------------------------------
+\usepackage{setspace}
+\onehalfspacing
+
+% -------------------------------------------------
+% Useful Commands
+% -------------------------------------------------
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\spanof}{span}
+\DeclareMathOperator{\nullity}{null}
+\DeclareMathOperator{\trace}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\E}{\mathbb{E}}
+\DeclareMathOperator{\Prob}{\mathbb{P}}
+
+% -------------------------------------------------
+% Theorem Environments
+% -------------------------------------------------
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}[definition]{Example}
+\newtheorem{exercise}[definition]{Exercise}
+
+\theoremstyle{plain}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{corollary}[definition]{Corollary}
+
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+% -------------------------------------------------
+% Title Information
+% -------------------------------------------------
+\title{\textbf{Intro Exam Notes}}
+\author{Jonathan Ma}
+\date{\today}
+
+% =================================================
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+%================================================
+\part{Linear Algebra}
+
+\section{Vectors \& Analytic Geometry of Space}
+
+\subsection{Coordinate Systems in $n$-space}
+
+\subsection{$n$-Vectors}
+
+\subsection{Linear Dependence of $n$-vectors}
+
+\subsection{Length \& Inner Product of $n$-vectors}
+
+\subsection{Outer/Cross Product of 3-vectors}
+
+\section{Finite-Dimensional Vector Spaces}
+
+\subsection{$n$-dimensional Vector Spaces Over $\R$ and $\C$}
+
+\subsection{Linear Dependence \& Generators}
+
+\subsection{Simultaneous Linear Equation, Gaussian elimination}
+
+\subsection{Bases \& Dimensions}
+
+\subsection{Subspaces}
+
+\subsection{Inner Products; Schwarz Inequality}
+
+\subsection{Orthogonal Bases; Orthogonal Complements; Projections}
+
+\subsection{Dual Spaces}
+
+\subsection{Lines, Hyperplanes, Coordinate systems}
+
+\subsection{Distance; Polarization Identity}
+
+\section{Linear Transformations and Matrices}
+
+\subsection{Linear Transformations; Elementary Properties (Image/Nullspace)}
+
+\subsection{Addition, Composition, Scalar Multiplication}
+
+\subsection{Matrices \& Linear Transformations}
+
+\subsection{Nonsingular Linear Transformations; Inverses}
+
+\subsection{Changes of Bases in Vector Spaces}
+
+\subsection{Similarity of Matrices}
+
+\subsection{Special Types of Square Matrices (Symmetric, Orthogonal, Triangular etc.)}
+
+\subsection{Elementary Matrices}
+
+\subsection{Rank of a Matrix}
+
+\section{Determinants}
+
+\subsection{Definition \& Elementary Properties}
+
+\subsection{Permutations \& Uniqueness}
+
+\subsection{Minors; Cofactors; Evaluation of Determinants}
+
+\subsection{Applications (Dependence of Vectors; Volume of a Parallelopiped; Linear Equations)}
+
+\subsection{Determinants of Products \& Inverses}
+
+\subsection{Determinants of Special Types of Matrices}
+
+\section{Bilinear and Quadratic Forms}
+
+\subsection{Bilinear Mappings \& Forms}
+
+\subsection{Quadratic Forms; Polarization}
+
+\subsection{Equivalence of Quadratic Forms; Congruence of Matrices}
+
+\subsection{Geometric Applications}
+
+\section{Eigenvalues and Eigenvectors}
+
+\subsection{Definitions}
+
+\subsection{Similarity \& Diagonal Matrices}
+
+\subsection{Orthogonal Reduction of Symmetric Matrices}
+
+\subsection{Eigenvalues of Special Types of Matrices (Unitary, Hermitian, etc.)}
+
+\subsection{Normal Matrices \& Spectral Theorem}
+
+\subsection{Singular Values}
+
+%================================================
+\part{Probability}
+
+\section{Combinatorial Analysis}
+
+\subsection{Inclusion-Exclusion Principle}
+
+\subsection{Permutations}
+
+\subsection{Combinations}
+
+\subsection{Multinomial Coefficients}
+
+\section{Axioms of Probability}
+
+\subsection{Sample spaces and events}
+
+\subsection{Axioms of Probability}
+
+\subsection{The uniform model}
+
+\subsection{Probability as a continuous set function}
+
+\section{Conditional probability and independence}
+
+\subsection{Conditional probabilities}
+
+\subsection{Bayes’ theorem}
+
+\subsection{Independent events}
+
+\section{Random variables and their distributions}
+
+\subsection{Random variables}
+
+\subsection{Discrete random variables, Indicator functions}
+
+\subsection{Expected value}
+
+\subsection{Expectation of a function of a random variable}
+
+\subsection{Variance}
+
+\subsection{Distribution function}
+
+\subsection{Probability mass function}
+
+\subsection{Probability density function}
+
+\section{Discrete univariate distributions}
+
+\subsection{Bernoulli and binomial distributions}
+
+\subsection{Geometric and negative binomial distributions}
+
+\subsection{Poisson distributions}
+
+\subsection{Hypergeometric distributions}
+
+\section{Continuous univariate distributions}
+
+\subsection{Uniform distributions}
+
+\subsection{Normal distributions}
+
+\subsection{Exponential distributions}
+
+\subsection{Gamma distributions}
+
+\subsection{Cauchy distributions}
+
+\subsection{Change of variables}
+
+\section{Multivariate distributions}
+
+\subsection{Independent random variables}
+
+\subsection{Convolution and sums of independent random variables}
+
+\subsection{Conditional distributions}
+
+\subsection{Change of variables}
+
+\subsection{Multivariate normal distributions}
+
+\section{Properties of expectation and related matters}
+
+\subsection{Linearity of expectation}
+
+\subsection{Covariance}
+
+\subsection{Variance of a sum}
+
+\subsection{Correlation}
+
+\subsection{Conditional expectation and the law of total expectation}
+
+\subsection{Conditional variance and the law of total variance}
+
+\subsection{Conditional covariance and the law of total covariance}
+
+\subsection{Conditional expectation and prediction}
+
+\subsection{Moment generating functions}
+
+\section{Inequalities and limit theorems}
+
+\subsection{Chebychev’s and Markov’s inequalities}
+
+\subsection{Cauchy-Schwarz inequality}
+
+\subsection{Jensen’s inequality}
+
+\subsection{Weak and strong laws of large numbers}
+
+\subsection{Central limit theorem}
+
+%================================================
+\part{Real Analysis}
+
+\section{Basic set theory}
+
+\subsection{Finiteness, countability, and uncountability}
+
+\subsection{Ordered fields}
+
+\subsection{Cauchy sequences}
+
+\subsection{Construction of the real numbers}
+
+\subsection{Completeness of the real numbers}
+
+\subsection{Infimum and supremum}
+
+\subsection{Liminf and limsup of sequences}
+
+\subsection{Limit points of sets, and sequences}
+
+\subsection{Norms, inner products, and metrics}
+
+\subsection{Open sets and closed sets}
+
+\subsection{Closure and boundary of a set}
+
+\subsection{Compact sets}
+
+\subsection{Bolzano–Weierstrass theorem}
+
+\subsection{Heine–Borel theorem in Euclidean space}
+
+\subsection{Intersection of nested compact sets}
+
+\section{Continuous mappings}
+
+\subsection{Sums, products, compositions of continuous mappings}
+
+\subsection{Path-connected and connected sets}
+
+\subsection{Images of compact and connected sets}
+
+\subsection{Extreme value theorem}
+
+\subsection{Intermediate value theorem}
+
+\subsection{Uniform continuity}
+
+\section{Differentiability}
+
+\subsection{Chain rule}
+
+\subsection{Product rule}
+
+\subsection{Mean value theorem}
+
+\subsection{Taylor’s theorem}
+
+\subsection{Derivative matrix}
+
+\subsection{Continuity of differentiable mappings}
+
+\subsection{Differentiable paths}
+
+\subsection{Directional derivatives}
+
+\subsection{Inverse function theorem}
+
+\subsection{Implicit function theorem}
+
+\subsection{Maxima and minima}
+
+\subsection{Constrained extrema and Lagrange multipliers}
+
+\section{Integration}
+
+\subsection{Existence and elementary properties of the Riemann integral}
+
+\subsection{Fundamental theorems of calculus}
+
+\subsection{Differentiation of limits of integration}
+
+\subsection{Interchange of order of integration (Fubini’s theorem)}
+
+\subsection{Differentiation of integrals with respect to a parameter in the integrand}
+
+\subsection{Change of variables theorem}
+
+\subsection{Polar, spherical, and cylindrical coordinates}
+
+\subsection{Improper integrals}
+
+\section{Sequences and series}
+
+\subsection{Numerical sequence and series}
+
+\subsection{Pointwise and uniform convergence of sequence of functions}
+
+\subsection{The Weierstrass $M$-test}
+
+\subsection{Differentiation and integration of series}
+
+\subsection{Elementary functions (exponential, trigonometric, hyperbolic)}
+
+\subsection{Contraction mapping theorem}
+
+\subsection{The Stone-Weierstrass theorem}
+
+\subsection{Dirichlet and Abel tests}
+
+\subsection{Power series and Cesàro and Abel summability}
+
+\end{document}
