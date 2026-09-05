@@ -177,4 +177,2725 @@
 
 \tableofcontents
 
+\part{Data Reduction}
+
+\section{Introduction}
+
+Statistical theory begins with an experiment whose outcome is random but whose
+distribution is only partially known.  Let
+\((\mathcal X,\mathcal A)\) be the sample space and let
+\[
+    \mathcal P=\{P_\theta:\theta\in\Theta\}
+\]
+be a family of probability measures on it.  The pair
+\((\mathcal X,\mathcal P)\), with the underlying $\sigma$-field understood, is
+called a \emph{statistical experiment}.  We observe $X\sim P_\theta$ and wish
+to learn something about the unknown parameter $\theta$.
+
+The raw observation often contains more detail than is relevant to this goal.
+A \emph{statistic} is a measurable map
+\[
+    T:\mathcal X\longrightarrow\mathcal T.
+\]
+Replacing $X$ by $T(X)$ is a data reduction.  Such a reduction is attractive
+when $T$ is simpler than $X$, but simplicity alone is not enough: we would
+like to discard no information about $\theta$.
+
+\begin{example}[Repeated coin flips]
+Let $X_1,\ldots,X_n\iid\Bern(p)$, where $p\in[0,1]$.  The full data are the
+binary string $X=(X_1,\ldots,X_n)\in\{0,1\}^n$.  If the order of the flips is
+irrelevant, a natural reduction is
+\[
+    S=\sum_{i=1}^n X_i,
+\]
+the total number of heads.  The sample space has been reduced from $2^n$
+possible strings to $n+1$ possible counts.  We will see that this reduction
+loses no information about $p$.
+\end{example}
+
+There are two complementary ways to make ``no loss of information'' precise.
+The decision-theoretic formulation asks whether every procedure based on $X$
+can be reproduced, with the same performance, using only $T(X)$.  The
+probabilistic formulation asks whether, after $T(X)$ is known, the remaining
+randomness in $X$ has a distribution that is independent of $\theta$.  The
+notion of sufficiency connects these two points of view.
+
+\section{The Decision-Theoretic Framework}
+
+A statistical problem requires more than a model.  Let $\mathcal D$ be an
+action space, and let
+\[
+    L:\Theta\times\mathcal D\longrightarrow[0,\infty]
+\]
+be a loss function.  The value $L(\theta,a)$ is the cost of taking action $a$
+when the true parameter is $\theta$.  A nonrandomized \emph{decision rule} is
+a measurable function $\delta:\mathcal X\to\mathcal D$.  Its frequentist risk
+is
+\begin{equation}
+    R(\theta,\delta)
+    =\E_\theta\!\left[L\bigl(\theta,\delta(X)\bigr)\right].
+    \label{eq:risk-definition}
+\end{equation}
+Thus a rule is evaluated not by a single number, but by the function
+$\theta\mapsto R(\theta,\delta)$.
+
+Common examples include the following.
+\begin{itemize}
+    \item For point estimation of $g(\theta)\in\R$, squared-error loss is
+    $L(\theta,a)=(a-g(\theta))^2$.
+    \item Absolute-error loss is $L(\theta,a)=\abs{a-g(\theta)}$.
+    \item For testing $H_0:\theta\in\Theta_0$ against
+    $H_1:\theta\in\Theta_1$, the action space is $\{0,1\}$, where action $1$
+    means rejection.  Zero-one loss assigns a cost to an incorrect decision;
+    asymmetric loss may assign different costs to the two kinds of error.
+\end{itemize}
+
+Randomization is occasionally useful.  Formally, a randomized rule is a
+Markov kernel $Q(\dd a\mid x)$ from $\mathcal X$ to $\mathcal D$: after
+observing $x$, the action is drawn from $Q(\cdot\mid x)$.  A deterministic
+rule is the special case $Q(\dd a\mid x)=\delta_{\delta(x)}(\dd a)$.
+
+Suppose only $T=T(X)$ is retained.  Then a rule based on the reduced data has
+the form $d(T)$, or more generally is a kernel from $\mathcal T$ to
+$\mathcal D$.  The central question is whether this restriction makes any
+decision problem harder.  If the conditional distribution of $X$ given $T$
+does not depend on $\theta$, a rule based on $X$ can be simulated from $T$:
+given $T=t$, generate $X^*$ from that conditional distribution and apply the
+original rule to $X^*$.  Under every $P_\theta$, $X^*$ has the same marginal
+law as $X$, so the simulated rule has exactly the same risk function.
+
+This observation motivates sufficiency.  It also makes clear why randomized
+rules are natural in the most general decision-theoretic statement: the
+reconstruction of $X$ from $T$ may itself require randomization.  For convex
+losses and point estimation, conditional expectation will often remove that
+randomization and improve risk; this is the content of the Rao--Blackwell
+theorem.
+
+\begin{example}[Estimating a coin bias]
+For $X_1,\ldots,X_n\iid\Bern(p)$ and squared-error loss, consider the rule
+$\delta(X)=X_1$.  Conditional on $S=\sum_iX_i=s$, symmetry gives
+\[
+    \Prob_p(X_1=1\mid S=s)=\frac{s}{n},
+\]
+which does not depend on $p$.  Hence $X_1$ can be simulated from $S$ by a
+$\Bern(s/n)$ draw.  More importantly, replacing $X_1$ by its conditional mean
+$S/n$ reduces squared-error risk.  The reduction $S$ therefore supports a
+strictly better nonrandomized estimator than the original rule.
+\end{example}
+
+\section{Sufficiency}
+
+\begin{definition}[Sufficient statistic]
+A statistic $T=T(X)$ is \emph{sufficient} for $\theta$ (or for the family
+$\mathcal P$) if there is a version of the conditional distribution of $X$
+given $T$ that is the same for every $\theta\in\Theta$.  Equivalently, there
+is a Markov kernel $K(\dd x\mid t)$, not depending on $\theta$, such that
+$K(\cdot\mid T)$ is a version of $P_\theta(X\in\cdot\mid T)$ for every
+$\theta$.
+\end{definition}
+
+For a discrete model this says that, whenever $P_\theta(T=t)>0$,
+\begin{equation}
+    P_\theta(X=x\mid T=t)
+    \label{eq:conditional-sufficiency}
+\end{equation}
+does not depend on $\theta$.  The general definition is phrased in terms of
+conditional distributions because conditioning on $T=t$ may mean
+conditioning on an event of probability zero.
+
+\begin{example}[The number of heads is sufficient]
+For $X_1,\ldots,X_n\iid\Bern(p)$ and $S=\sum_iX_i$, every binary string $x$
+with $s$ heads has probability $p^s(1-p)^{n-s}$.  Consequently,
+\[
+    P_p(X=x\mid S=s)
+    =\frac{p^s(1-p)^{n-s}}{\binom ns p^s(1-p)^{n-s}}
+    =\binom ns^{-1}
+\]
+for $\sum_i x_i=s$ (with the boundary cases interpreted on their supports).
+Conditional on $S=s$, the locations of the heads are uniform over the
+$\binom ns$ possibilities and contain no further information about $p$.
+\end{example}
+
+The conditional definition is intuitive, but direct calculation of a
+conditional law can be cumbersome.  In dominated models the following
+criterion is usually easier.
+
+\begin{theorem}[Fisher--Neyman factorization theorem]
+Suppose $\{P_\theta:\theta\in\Theta\}$ is dominated by a $\sigma$-finite
+measure $\mu$, and write $f_\theta=\dd P_\theta/\dd\mu$.  Under the usual
+regularity conditions on the sample spaces, $T$ is sufficient if and only if
+there are nonnegative measurable functions $g_\theta$ and $h$ such that
+\begin{equation}
+    f_\theta(x)=g_\theta(T(x))h(x)
+    \quad\text{for $\mu$-almost every }x,
+    \label{eq:factorization-theorem}
+\end{equation}
+where $h$ does not depend on $\theta$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+If \eqref{eq:factorization-theorem} holds, then within a fiber
+$\{x:T(x)=t\}$ the relative weights of possible observations are determined
+by $h(x)$, independently of $\theta$.  Normalizing these weights gives a
+parameter-free conditional law of $X$ given $T=t$.  Conversely, if this
+conditional law is parameter-free, disintegrate $P_\theta$ into the marginal
+law of $T$ and the common conditional law of $X$ given $T$; their densities
+provide $g_\theta$ and $h$.  A fully general proof uses regular conditional
+probabilities and the Radon--Nikodym theorem.
+\end{proof}
+
+\begin{example}[Bernoulli sample]
+For $x\in\{0,1\}^n$,
+\[
+    f_p(x)=\prod_{i=1}^n p^{x_i}(1-p)^{1-x_i}
+           =p^{\sum_i x_i}(1-p)^{n-\sum_i x_i}.
+\]
+This factors through $S=\sum_iX_i$, with $h(x)=1$, so $S$ is sufficient for
+$p$.  Any one-to-one transformation of $S$ is also sufficient; for example,
+the sample mean $\bar X=S/n$ is sufficient.
+\end{example}
+
+\begin{example}[Normal location and scale]
+If $X_1,\ldots,X_n\iid\Normal(\mu,\sigma^2)$ with both parameters unknown,
+then
+\[
+ f_{\mu,\sigma^2}(x)
+ =(2\pi\sigma^2)^{-n/2}
+ \exp\left\{-\frac{1}{2\sigma^2}
+ \left(\sum_{i=1}^n x_i^2-2\mu\sum_{i=1}^n x_i+n\mu^2\right)\right\}.
+\]
+The factorization theorem shows that
+$T(X)=(\sum_iX_i,\sum_iX_i^2)$ is sufficient for $(\mu,\sigma^2)$.  When
+$n\geq2$, this is equivalent to retaining $(\bar X,\sum_i(X_i-\bar X)^2)$.
+\end{example}
+
+Sufficiency concerns the family of distributions, not the way in which the
+parameter is named.  If $T$ is sufficient for $\theta$, then it is sufficient
+for any function $g(\theta)$.  The converse need not hold if the model is
+changed so that only $g(\theta)$ is regarded as unknown.
+
+\subsection{Exponential Families}
+
+A dominated family is a $k$-parameter \emph{exponential family} if its density
+can be written
+\begin{equation}
+    f_\eta(x)
+    =h(x)\exp\!\left\{\eta^\mathsf{T}T(x)-A(\eta)\right\},
+    \qquad \eta\in H\subseteq\R^k.
+    \label{eq:exponential-family}
+\end{equation}
+Here $\eta$ is the natural parameter, $T(x)\in\R^k$ is the natural statistic,
+and
+\[
+    A(\eta)=\log\int h(x)e^{\eta^\mathsf{T}T(x)}\,\mu(\dd x)
+\]
+is the log-partition function.  The natural parameter space is
+\[
+    H_0=\left\{\eta\in\R^k:
+    \int h(x)e^{\eta^\mathsf{T}T(x)}\,\mu(\dd x)<\infty\right\}.
+\]
+A family is called \emph{full} when its parameter space is $H_0$, and
+\emph{regular} when $H$ is open.  Some authors use slightly different
+terminology, so these conditions should always be stated explicitly.
+
+For an iid sample with one-observation density
+\[
+    f_\eta(x)=h(x)\exp\{\eta^\mathsf{T}t(x)-A(\eta)\},
+\]
+the joint density is
+\[
+    \left\{\prod_{i=1}^nh(x_i)\right\}
+    \exp\left\{\eta^\mathsf{T}\sum_{i=1}^nt(x_i)-nA(\eta)\right\}.
+\]
+Thus $\sum_i t(X_i)$ is sufficient, and its dimension does not grow with the
+sample size.
+
+\begin{example}[Bernoulli family in natural form]
+For $0<p<1$, set $\eta=\log\{p/(1-p)\}$.  Then
+\[
+    p^x(1-p)^{1-x}
+    =\exp\{x\eta-\log(1+e^\eta)\},\qquad x\in\{0,1\}.
+\]
+Hence $A(\eta)=\log(1+e^\eta)$ and the natural statistic for an iid sample is
+$S=\sum_iX_i$.  The parameter space is all of $\R$, so this is a full,
+regular, one-parameter exponential family.
+\end{example}
+
+\begin{example}[A curved exponential family]
+Let $X_1,\ldots,X_n\iid\Normal(\mu,\mu^2)$ with $\mu>0$.  The joint density
+factors through $(\sum_iX_i,\sum_iX_i^2)$, but its two natural parameters are
+constrained by a one-dimensional relation.  It is therefore a curved
+subfamily of a two-parameter exponential family.  Curved families need not
+inherit all completeness properties of the containing full family.
+\end{example}
+
+The log-partition function encodes moments of the natural statistic.  If
+differentiation under the integral is justified and $\eta$ is in the interior
+of the natural parameter space, then
+\begin{equation}
+    \grad A(\eta)=\E_\eta[T(X)],
+    \qquad
+    \Hess A(\eta)=\Cov_\eta(T(X)).
+    \label{eq:log-partition-moments}
+\end{equation}
+In particular $A$ is convex.  Strict convexity corresponds, after removing
+redundant components, to a nondegenerate natural statistic.
+
+
+\subsection{Minimal Sufficiency}
+
+Sufficient statistics are not unique: if $T$ is sufficient, then
+$(T,U)$ is sufficient for any statistic $U$.  We therefore seek the coarsest
+sufficient reduction.
+
+\begin{definition}[Minimal sufficient statistic]
+A sufficient statistic $T$ is \emph{minimal sufficient} if, for every
+sufficient statistic $S$, there exists a measurable function $q$ such that
+\[
+    T=q(S)\qquad P_\theta\text{-almost surely for every }\theta.
+\]
+Equivalently, the $\sigma$-field generated by $T$ is contained, up to common
+null sets, in that generated by every other sufficient statistic.
+\end{definition}
+
+Minimality does not mean that $T$ has the smallest Euclidean dimension.  A
+one-to-one encoding can map a vector into a scalar without changing its
+information.  The relevant object is the partition of the sample space into
+level sets of $T$, or equivalently the $\sigma$-field $\sigma(T)$.
+
+\begin{theorem}[Likelihood-ratio criterion]
+Suppose the model is dominated and its densities have common support
+$\mathcal X_0$.  If a statistic $T$ satisfies
+\begin{equation}
+    T(x)=T(y)
+    \quad\Longleftrightarrow\quad
+    \frac{f_\theta(x)}{f_\theta(y)}
+    \text{ is constant as a function of $\theta$},
+    \label{eq:minimal-ratio-criterion}
+\end{equation}
+for $x,y\in\mathcal X_0$, then $T$ is minimal sufficient.  With suitable
+measure-theoretic qualifications, the criterion remains valid beyond the
+strict common-support setting.
+\end{theorem}
+
+\begin{proof}[Idea of proof]
+The forward implication in \eqref{eq:minimal-ratio-criterion} yields a
+factorization and hence sufficiency.  If $S$ is any sufficient statistic,
+then $S(x)=S(y)$ forces the likelihood ratio $f_\theta(x)/f_\theta(y)$ to be
+free of $\theta$.  The reverse implication in
+\eqref{eq:minimal-ratio-criterion} then forces $T(x)=T(y)$.  Thus every level
+set of $S$ lies inside a level set of $T$, so $T$ is a function of $S$.
+\end{proof}
+
+\begin{example}[Minimal sufficiency for coin flips]
+For two strings $x,y\in\{0,1\}^n$ and $0<p<1$,
+\[
+    \frac{f_p(x)}{f_p(y)}
+    =\left(\frac{p}{1-p}\right)^{\sum_i x_i-\sum_i y_i}.
+\]
+This ratio is constant in $p$ if and only if
+$\sum_i x_i=\sum_i y_i$.  Therefore the number of heads is minimal
+sufficient for $p$.
+\end{example}
+
+Parameter-dependent support requires care but often makes the criterion
+especially informative.
+
+\begin{example}[Uniform endpoint]
+Let $X_1,\ldots,X_n\iid\mathrm{Uniform}(0,\theta)$, $\theta>0$.  The joint
+density is
+\[
+    f_\theta(x)=\theta^{-n}
+    \ind\{0\leq x_{(1)},\ x_{(n)}\leq\theta\}.
+\]
+Because the lower endpoint is known to be zero, this factors through the
+sample maximum $X_{(n)}$.  For samples $x,y$ in the nonnegative orthant, the
+likelihood ratio is independent of $\theta$ exactly when
+$x_{(n)}=y_{(n)}$; if the maxima differ, there are values of $\theta$ for
+which one likelihood is zero and the other is not.  Hence $X_{(n)}$ is
+minimal sufficient.
+\end{example}
+
+\subsection{Complete Sufficiency}
+
+Sufficiency says that a statistic retains all information in the sample.
+Completeness says that its distribution contains enough variation across
+$\theta$ to distinguish integrable functions of that statistic.
+
+\begin{definition}[Completeness]
+A statistic $T$ is \emph{complete} for $\mathcal P$ if, for every measurable
+function $a$ for which $\E_\theta\abs{a(T)}<\infty$ for all $\theta$,
+\[
+    \E_\theta[a(T)]=0\quad\text{for every }\theta\in\Theta
+    \qquad\Longrightarrow\qquad
+    a(T)=0\quad P_\theta\text{-almost surely for every }\theta.
+\]
+It is \emph{boundedly complete} if the implication is required only for
+bounded $a$.
+\end{definition}
+
+Completeness is a property of a family of distributions of $T$, not of a
+single distribution.  It will later guarantee uniqueness of unbiased
+estimators that are functions of a sufficient statistic.
+
+\begin{theorem}[Completeness of full exponential families]
+Consider the exponential family \eqref{eq:exponential-family}.  If its natural
+parameter space contains a nonempty open subset of $\R^k$, then the natural
+statistic $T$ is complete, subject to the stated integrability condition.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Suppose $\E_\eta[a(T)]=0$ throughout an open set.  After multiplying by
+$e^{A(\eta)}$, this identity says that the Laplace transform of a signed
+measure induced by $a(T)h(X)\mu(\dd x)$ vanishes on an open set.  Uniqueness
+of Laplace transforms implies that this signed measure is zero, and therefore
+$a(T)=0$ almost surely throughout the family.
+\end{proof}
+
+The openness condition matters.  If a $k$-dimensional exponential family is
+restricted to a lower-dimensional curve, a nonzero function may have mean
+zero at every parameter value in the restricted family.
+
+\begin{example}[Completeness of the binomial count]
+Let $S\sim\Bin(n,p)$, $0<p<1$, and suppose $\E_p[a(S)]=0$ for every $p$.
+Then
+\[
+    0=\sum_{s=0}^n a(s)\binom ns p^s(1-p)^{n-s}.
+\]
+Dividing by $(1-p)^n$ and putting $z=p/(1-p)>0$ gives
+\[
+    \sum_{s=0}^n a(s)\binom ns z^s=0
+    \qquad\text{for every }z>0.
+\]
+A polynomial that vanishes on an interval has every coefficient equal to
+zero, so $a(s)=0$ for $s=0,\ldots,n$.  Thus $S$ is complete.  Together with
+the preceding results, $S$ is complete and sufficient for $p$.
+\end{example}
+
+\begin{example}[Sufficient but not complete]
+Let $X_1,\ldots,X_n\iid\mathrm{Uniform}(\theta-1,\theta+1)$.  The pair
+$T=(X_{(1)},X_{(n)})$ is sufficient for $\theta$.  The range
+$R=X_{(n)}-X_{(1)}$ is a nonconstant function of $T$, but its distribution
+does not depend on $\theta$.  Hence
+\[
+    a(T)=R-\E_\theta[R]
+\]
+has expectation zero for every $\theta$ without being almost surely zero.
+Therefore $T$ is not complete.
+\end{example}
+
+\begin{proposition}
+If $T$ is complete and sufficient, then $T$ is minimal sufficient (up to
+common null sets).
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Let $S$ be any sufficient statistic and let $B\in\sigma(T)$.  By sufficiency
+of $S$, a version of $q(S)=\E_\theta[\ind_B\mid S]$ can be chosen independent
+of $\theta$.  By sufficiency of $T$ and iterated conditioning,
+$\E_\theta[q(S)\mid T]$ is also parameter-free.  Its difference from
+$\ind_B$ has mean zero for every $\theta$; completeness forces that
+difference to vanish.  This ultimately shows that $B$ is measurable with
+respect to $S$ modulo common null sets.  Hence $\sigma(T)\subseteq\sigma(S)$.
+\end{proof}
+
+\subsection{Rao-Blackwell Theorem}
+
+Sufficiency is not only a statement about compression; it gives a systematic
+way to improve statistical procedures.  Given an estimator $U=U(X)$ and a
+sufficient statistic $T$, define its Rao--Blackwellization by
+\[
+    U^*(T)=\E_\theta[U\mid T].
+\]
+Because $T$ is sufficient, the conditional distribution of $X$ given $T$ is
+parameter-free.  Consequently the right-hand side can be chosen as a single
+function of $T$ that does not involve the unknown $\theta$.
+
+\begin{theorem}[Rao--Blackwell]
+Let $T$ be sufficient for $\theta$, let $U$ be an estimator of $g(\theta)$,
+and suppose the relevant expectations exist.  If
+$a\mapsto L(\theta,a)$ is convex for every $\theta$, then
+\begin{equation}
+    R(\theta,U^*)\leq R(\theta,U)
+    \qquad\text{for every }\theta.
+    \label{eq:rao-blackwell-risk}
+\end{equation}
+If the loss is strictly convex, equality at a given $\theta$ can hold only
+when $U=U^*$ almost surely under $P_\theta$ (apart from degeneracies in the
+loss).
+\end{theorem}
+
+\begin{proof}
+Conditional Jensen's inequality gives
+\[
+ L\!\left(\theta,\E_\theta[U\mid T]\right)
+ \leq \E_\theta[L(\theta,U)\mid T].
+\]
+Taking $P_\theta$-expectations proves \eqref{eq:rao-blackwell-risk}.
+Sufficiency ensures that $U^*$ is a statistic rather than a rule involving
+the unknown parameter.  The equality statement follows from the equality
+condition in strict Jensen's inequality.
+\end{proof}
+
+Under squared-error loss, the result has an exact variance decomposition.  If
+$U$ has finite second moment, then
+\begin{equation}
+    \Var_\theta(U)
+    =\Var_\theta\!\left(\E_\theta[U\mid T]\right)
+     +\E_\theta\!\left[\Var_\theta(U\mid T)\right].
+    \label{eq:total-variance-rb}
+\end{equation}
+Moreover $\E_\theta[U^*]=\E_\theta[U]$, so Rao--Blackwellization preserves
+bias.  Its mean squared error can only decrease, and the reduction equals
+$\E_\theta[\Var_\theta(U\mid T)]$.
+
+\begin{example}[One flip versus all flips]
+Let $X_1,\ldots,X_n\iid\Bern(p)$.  The estimator $U=X_1$ is unbiased for $p$,
+and $S=\sum_iX_i$ is sufficient.  Given $S=s$, each of the $n$ positions is
+equally likely to contain any one of the $s$ heads, so
+\[
+    U^*=\E_p[X_1\mid S]=\frac{S}{n}=\bar X.
+\]
+The variances are
+\[
+    \Var_p(X_1)=p(1-p),
+    \qquad
+    \Var_p(\bar X)=\frac{p(1-p)}{n}.
+\]
+Thus using the sufficient statistic reduces variance by a factor of $n$.
+\end{example}
+
+\begin{example}[Estimating the probability of all heads]
+In the same model, $U=\prod_{i=1}^nX_i$ is unbiased for $p^n$.  Since $U=1$
+exactly when $S=n$, it is already a function of the sufficient statistic and
+Rao--Blackwellization makes no change.  By contrast, for $m\leq n$,
+$U_m=\prod_{i=1}^mX_i$ is unbiased for $p^m$ and
+\[
+    \E_p[U_m\mid S=s]
+    =\frac{\binom{s}{m}}{\binom{n}{m}},
+\]
+where the ratio is defined as zero for $s<m$.  This is the conditional
+probability that a fixed set of $m$ positions is contained among the $s$
+heads, and it has no dependence on $p$.
+\end{example}
+
+Rao--Blackwellization need not produce a unique or globally optimal estimator
+by itself.  Completeness supplies the missing uniqueness.
+
+\begin{theorem}[Lehmann--Scheff\'e]
+If $T$ is complete and sufficient and $U$ is any unbiased estimator of
+$g(\theta)$ with finite variance, then
+\[
+    \delta(T)=\E_\theta[U\mid T]
+\]
+is the unique unbiased estimator of $g(\theta)$ that is a function of $T$,
+and it has variance no larger than that of any unbiased estimator.  Thus it is
+the uniformly minimum variance unbiased estimator of $g(\theta)$.
+\end{theorem}
+
+\begin{proof}
+Rao--Blackwellization shows that $\delta(T)$ is unbiased and has no larger
+variance than $U$.  If $\delta_1(T)$ and $\delta_2(T)$ are two unbiased
+functions of $T$, then their difference has expectation zero for all
+$\theta$.  Completeness implies $\delta_1(T)=\delta_2(T)$ almost surely.
+Applying Rao--Blackwellization to any competing unbiased estimator proves the
+minimum-variance claim.
+\end{proof}
+
+For the coin model, the binomial count $S$ is complete and sufficient.
+Consequently $S/n$ is the unique uniformly minimum variance unbiased
+estimator of $p$, and
+$\binom{S}{m}/\binom{n}{m}$ is the corresponding estimator of $p^m$.  These
+examples summarize the main data-reduction pipeline:
+\[
+    \text{raw sample}
+    \longrightarrow \text{sufficient statistic}
+    \longrightarrow \text{Rao--Blackwellized rule},
+\]
+with completeness converting the improved rule into a uniqueness and
+optimality statement.
+
+\part{Optimal Estimation, Exact}
+
+\section{Uniformly Minimum Variance Unbiased Estimators}
+
+Let $g:\Theta\to\R$ be the estimand.  An estimator $\delta(X)$ is
+\emph{unbiased} for $g(\theta)$ if
+\[
+    \E_\theta[\delta(X)]=g(\theta)
+    \qquad\text{for every }\theta\in\Theta.
+\]
+Under squared-error loss, its risk decomposes as
+\begin{equation}
+    R(\theta,\delta)
+    =\E_\theta[(\delta-g(\theta))^2]
+    =\Var_\theta(\delta)
+      +\{\E_\theta[\delta]-g(\theta)\}^2.
+    \label{eq:bias-variance-decomposition}
+\end{equation}
+Thus risk equals variance within the class of unbiased estimators.
+
+\begin{definition}[UMVU estimator]
+An unbiased estimator $\delta_0$ of $g(\theta)$ is a \emph{uniformly minimum
+variance unbiased} (UMVU) estimator if
+\[
+    \Var_\theta(\delta_0)
+    \leq \Var_\theta(\delta)
+\]
+for every $\theta$ and every unbiased estimator $\delta$ of $g(\theta)$.
+The word ``uniformly'' means that the same estimator minimizes variance at
+every parameter value.
+\end{definition}
+
+Pointwise minimization is not automatic: an estimator that has smaller
+variance near one parameter value may have larger variance elsewhere.  A
+useful characterization turns the minimization problem into an orthogonality
+condition.
+
+\begin{theorem}[Orthogonality characterization]
+Suppose $\delta_0$ is unbiased for $g(\theta)$ and has finite second moment.
+Then $\delta_0$ is UMVU if and only if
+\begin{equation}
+    \Cov_\theta(\delta_0,U)=0
+    \label{eq:umvu-orthogonality}
+\end{equation}
+for every finite-variance estimator $U$ satisfying
+$\E_\theta[U]=0$ for all $\theta$.
+\end{theorem}
+
+\begin{proof}
+For every real $a$, $\delta_0+aU$ is unbiased and
+\[
+ \Var_\theta(\delta_0+aU)
+ =\Var_\theta(\delta_0)+2a\Cov_\theta(\delta_0,U)
+  +a^2\Var_\theta(U).
+\]
+If $\delta_0$ is UMVU, this quadratic is minimized at $a=0$, forcing the
+covariance to vanish.  Conversely, the difference $U=\delta-\delta_0$ between
+any two unbiased estimators has mean zero.  Orthogonality then gives
+$\Var_\theta(\delta)=\Var_\theta(\delta_0)+\Var_\theta(U)$.
+\end{proof}
+
+The main construction is the Lehmann--Scheff\'e theorem from the preceding
+part: find a complete sufficient statistic $T$, begin with any unbiased
+estimator, and condition on $T$.
+
+\begin{example}[Powers of a coin bias]
+Let $S\sim\Bin(n,p)$.  Since $S$ is complete and sufficient, the UMVU
+estimator of $p$ is $S/n$.  More generally, for $1\leq m\leq n$,
+\[
+    \widehat{p^m}=\frac{(S)_m}{(n)_m}
+    =\frac{\binom Sm}{\binom nm},
+\]
+where $(a)_m=a(a-1)\cdots(a-m+1)$.  Indeed,
+$\E_p[(S)_m]=(n)_mp^m$.  No unbiased estimator of $p^m$ exists when $m>n$:
+the expectation of any function of $S$ is a polynomial in $p$ of degree at
+most $n$.
+\end{example}
+
+\begin{example}[Normal mean and variance]
+If $X_1,\ldots,X_n\iid\Normal(\mu,\sigma^2)$ with both parameters unknown,
+then $(\sum_iX_i,\sum_iX_i^2)$ is complete and sufficient because the normal
+family is a full-rank exponential family with an open natural parameter
+space.  Therefore $\bar X$ is UMVU for $\mu$, and
+\[
+    S_X^2=\frac{1}{n-1}\sum_{i=1}^n(X_i-\bar X)^2
+\]
+is UMVU for $\sigma^2$.
+\end{example}
+
+\section{Uniformly Minimum Risk Unbiased Estimators}
+
+Variance is tied specifically to scalar estimation under squared-error loss.
+For a general loss, an analogous restricted optimum is useful.
+
+\begin{definition}[UMRU estimator]
+Within a specified class $\mathcal U$ of unbiased decision rules, a rule
+$\delta_0$ is \emph{uniformly minimum risk unbiased} (UMRU) if
+\[
+    R(\theta,\delta_0)\leq R(\theta,\delta)
+    \qquad\text{for every }\theta\in\Theta,
+    \quad \delta\in\mathcal U.
+\]
+For scalar estimation, $\mathcal U$ usually consists of rules satisfying
+$\E_\theta[\delta]=g(\theta)$.
+\end{definition}
+
+Under squared-error loss, UMRU and UMVU are the same notion by
+\eqref{eq:bias-variance-decomposition}.  Under another loss they can differ.
+For example, unbiasedness constrains a mean, whereas absolute-error risk is
+governed by the entire distribution and is naturally minimized by medians.
+
+There is also an intrinsic definition of unbiasedness for a decision problem
+that does not require a vector-valued action to have a mean.
+
+\begin{definition}[Loss unbiasedness]
+A decision rule $\delta$ is \emph{risk unbiased}, or \emph{unbiased in loss},
+if
+\begin{equation}
+    \E_\theta[L(\theta,\delta(X))]
+    \leq \E_\theta[L(\theta',\delta(X))]
+    \quad\text{for all }\theta,\theta'\in\Theta.
+    \label{eq:risk-unbiasedness}
+\end{equation}
+Thus, when the data come from $P_\theta$, the rule is on average at least as
+close to the true target $\theta$ as to any false target $\theta'$.
+\end{definition}
+
+For $L(\theta,a)=(a-\theta)^2$ and finite second moments, subtracting the two
+sides of \eqref{eq:risk-unbiasedness} shows that it holds for every
+$\theta'$ if and only if $\E_\theta[\delta]=\theta$.  Hence ordinary and risk
+unbiasedness agree in this important case.
+
+If $T$ is sufficient and the loss is convex in the action, conditioning a
+rule on $T$ preserves ordinary unbiasedness and reduces risk by conditional
+Jensen.  Consequently the search for a UMRU rule may be restricted to
+functions of $T$.  Completeness then provides uniqueness when the relevant
+unbiasedness equations reduce to expectations of functions of $T$.
+
+\section{Information Inequality}
+
+The information inequality supplies a lower bound on the variance of any
+unbiased estimator without explicitly comparing it with all competitors.
+Assume first that $\theta$ is scalar and that $P_\theta$ has density
+$f_\theta$ with respect to a fixed measure.  The \emph{score} and Fisher
+information are
+\[
+    \ell'_\theta(X)=\frac{\partial}{\partial\theta}
+        \log f_\theta(X),
+    \qquad
+    I_X(\theta)=\E_\theta[(\ell'_\theta(X))^2].
+\]
+Under regularity conditions allowing differentiation under the integral and
+requiring parameter-independent support,
+\[
+    \E_\theta[\ell'_\theta(X)]=0,
+    \qquad
+    I_X(\theta)=-\E_\theta[\ell''_\theta(X)].
+\]
+
+\begin{theorem}[Cram\'er--Rao information inequality]
+Suppose $\delta$ has finite variance,
+$\E_\theta[\delta]=g(\theta)$, and the usual differentiation and support
+conditions hold.  If $0<I_X(\theta)<\infty$, then
+\begin{equation}
+    \Var_\theta(\delta)
+    \geq \frac{\{g'(\theta)\}^2}{I_X(\theta)}.
+    \label{eq:cramer-rao-scalar}
+\end{equation}
+Equality holds at $\theta$ precisely when
+$\delta-g(\theta)$ is almost surely proportional to the score.
+\end{theorem}
+
+\begin{proof}
+Differentiating $\E_\theta[\delta]=g(\theta)$ gives
+\[
+ g'(\theta)=\E_\theta[\delta\ell'_\theta]
+ =\Cov_\theta(\delta,\ell'_\theta).
+\]
+Cauchy--Schwarz implies
+$\{g'(\theta)\}^2\leq\Var_\theta(\delta)I_X(\theta)$.  Its equality condition
+gives the final assertion.
+\end{proof}
+
+For iid observations, scores add and have mean zero, so information adds:
+$I_{X_1,\ldots,X_n}(\theta)=nI_{X_1}(\theta)$.
+
+\begin{example}[Weighted coin]
+For one $\Bern(p)$ observation,
+\[
+    \ell'_p(X)=\frac{X-p}{p(1-p)},
+    \qquad I_X(p)=\frac{1}{p(1-p)}.
+\]
+For $n$ flips, every unbiased estimator of $p$ has variance at least
+$p(1-p)/n$.  The sample proportion $S/n$ attains the bound because
+\[
+    \frac Sn-p=\frac{p(1-p)}{n}\ell'_p(X_1,\ldots,X_n).
+\]
+It is therefore efficient and UMVU.
+\end{example}
+
+If $\theta\in\R^k$, define the score vector and information matrix by
+\[
+    s_\theta(X)=\grad_\theta\log f_\theta(X),
+    \qquad I_X(\theta)=\E_\theta[s_\theta s_\theta^\mathsf T].
+\]
+For an unbiased estimator of a scalar $g(\theta)$, the matrix form is
+\begin{equation}
+    \Var_\theta(\delta)
+    \geq \grad g(\theta)^\mathsf T I_X(\theta)^{-1}
+       \grad g(\theta).
+    \label{eq:cramer-rao-matrix}
+\end{equation}
+For a vector estimator $D$ with mean $g(\theta)$, the corresponding covariance
+matrix inequality is
+\[
+ \Cov_\theta(D)\succeq
+ \mathrm Dg(\theta)I_X(\theta)^{-1}\mathrm Dg(\theta)^\mathsf T,
+\]
+where $A\succeq B$ means that $A-B$ is positive semidefinite.
+
+The regularity assumptions cannot be ignored.  For
+$X_1,\ldots,X_n\iid\mathrm{Uniform}(0,\theta)$, the support depends on
+$\theta$, and differentiating the integral as above misses a boundary term.
+Indeed, a rescaled sample maximum is unbiased and can have variance smaller
+than a naive application of the regular Cram\'er--Rao formula would permit.
+
+\section{Minimum Risk Equivariant Estimators}
+
+Many models possess symmetries.  Let a group $G$ act on the sample space,
+parameter space, and action space.  A problem is \emph{invariant} if
+transforming both the data and parameter leaves the model and loss unchanged:
+\[
+    X\sim P_\theta \Longrightarrow gX\sim P_{g\theta},
+    \qquad L(g\theta,ga)=L(\theta,a).
+\]
+A rule $\delta$ is \emph{equivariant} if
+\[
+    \delta(gx)=g\delta(x).
+\]
+For an equivariant rule, risk is constant along group orbits:
+$R(g\theta,\delta)=R(\theta,\delta)$.  When the group acts transitively on
+$\Theta$, its risk is constant over the whole parameter space.  A
+\emph{minimum risk equivariant} (MRE) rule minimizes this constant among all
+equivariant rules.
+
+\subsection{Location and Scale Families}
+
+In a location family, $X_i=\mu+Z_i$ for a known distribution of the errors.
+The translation group sends $x$ to $x+c\bm 1$ and $\mu$ to $\mu+c$.  Under
+loss $L(\mu,a)=\rho(a-\mu)$, an equivariant estimator satisfies
+\[
+    \delta(x+c\bm 1)=\delta(x)+c.
+\]
+Its error distribution does not depend on $\mu$, and hence its risk is
+constant.
+
+Under squared-error loss, the MRE location estimator is the generalized Bayes
+rule under the translation-invariant prior $\pi(\mu)\propto1$:
+\begin{equation}
+    \delta_{\mathrm{MRE}}(x)
+    =\frac{\int_{-\infty}^{\infty}\mu f(x-\mu\bm 1)\dd\mu}
+           {\int_{-\infty}^{\infty}f(x-\mu\bm 1)\dd\mu},
+    \label{eq:pitman-estimator}
+\end{equation}
+provided these integrals exist.  This is often called the Pitman estimator.
+For normal errors with known variance it reduces to $\bar X$.
+
+In a positive scale family, $X_i=\sigma Z_i$, $\sigma>0$.  The scale group
+sends $x$ to $cx$, $\sigma$ to $c\sigma$, and an equivariant estimator of
+$\sigma$ obeys $\delta(cx)=c\delta(x)$.  A scale-invariant loss, such as
+\[
+    L(\sigma,a)=\left(\frac a\sigma-1\right)^2,
+\]
+makes the risk of every scale-equivariant rule constant.  The invariant
+measure on the scale group leads to the improper prior
+$\pi(\sigma)\propto1/\sigma$; the resulting generalized Bayes rule is a
+candidate MRE estimator.
+
+Improper priors do not define probability distributions, so generalized
+Bayes calculations require separate justification.  The posterior integrals
+must be finite, and optimality among equivariant rules does not by itself
+imply optimality among all rules.
+
+\subsection{Risk Unbiasedness}
+
+Equivariance and unbiasedness impose different restrictions.  Equivariance
+requires a rule to respect the geometry of the problem; risk unbiasedness
+requires the true parameter to minimize expected loss as in
+\eqref{eq:risk-unbiasedness}.  Neither condition generally implies the other.
+
+For a location problem under squared-error loss, every equivariant rule can
+be written schematically as
+\[
+    \delta(X)=X_1+h(X_2-X_1,\ldots,X_n-X_1).
+\]
+Its bias is constant in $\mu$.  It is risk unbiased exactly when that constant
+is zero.  Thus risk unbiasedness may select a proper subset of the equivariant
+class, while MRE optimality selects the rule with smallest constant risk in
+the larger class.
+
+The distinction matters in constrained parameter spaces.  If a parameter is
+known to lie in an interval, an estimator can often be improved under squared
+error by projecting it onto that interval.  Projection generally introduces
+bias but decreases loss pointwise.  Hence restricting attention to unbiased
+rules can exclude sensible procedures.
+
+\section{Average Risk Optimality}
+
+A risk function gives one value for every $\theta$, and two risk functions may
+cross.  One way to obtain a scalar criterion is to average risk with respect
+to a probability distribution $\pi$ on $\Theta$.  The \emph{Bayes risk} is
+\begin{equation}
+    r(\pi,\delta)=\int_\Theta R(\theta,\delta)\,\pi(\dd\theta).
+    \label{eq:bayes-risk}
+\end{equation}
+This does not require a subjective interpretation: $\pi$ can also be viewed
+as a device for weighting regions of the parameter space.
+
+\subsection{Bayes Estimators}
+
+By Tonelli's theorem, the Bayes risk can be written using the posterior:
+\[
+ r(\pi,\delta)
+ =\int_{\mathcal X}
+   \left\{\int_\Theta L(\theta,\delta(x))\pi(\dd\theta\mid x)\right\}
+   m_\pi(\dd x),
+\]
+where $m_\pi$ is the prior predictive distribution.  Therefore a Bayes rule
+may be found by minimizing posterior expected loss separately for each $x$.
+
+\begin{proposition}[Bayes actions]
+For a scalar target $g(\theta)$, a Bayes estimator is
+\begin{itemize}
+    \item the posterior mean under squared-error loss;
+    \item any posterior median under absolute-error loss;
+    \item a posterior mode under zero-one loss in a discrete action space.
+\end{itemize}
+\end{proposition}
+
+\begin{example}[Beta--binomial estimation]
+Let $S\mid p\sim\Bin(n,p)$ and $p\sim\BetaDist(\alpha,\beta)$, where
+$\alpha,\beta>0$.  Conjugacy gives
+\[
+    p\mid S=s\sim\BetaDist(\alpha+s,\beta+n-s).
+\]
+Under squared-error loss the Bayes estimator is
+\begin{equation}
+    \delta_\pi(s)=\E[p\mid S=s]
+    =\frac{\alpha+s}{\alpha+\beta+n}
+    =w\frac{s}{n}+(1-w)\frac{\alpha}{\alpha+\beta},
+    \label{eq:beta-binomial-bayes}
+\end{equation}
+where $w=n/(n+\alpha+\beta)$.  It shrinks the observed proportion toward the
+prior mean.  Its posterior squared-error loss is minimized uniquely, and its
+Bayes risk equals the expected posterior variance.
+\end{example}
+
+\begin{theorem}[Admissibility of a unique Bayes rule]
+If a Bayes rule $\delta_\pi$ has finite Bayes risk, is unique up to prior
+predictive null sets, and every nonempty set on which a competing rule could
+strictly improve has positive prior mass, then $\delta_\pi$ is admissible.
+For example, the last condition follows when $\pi$ has full support and the
+risk difference is continuous in $\theta$.
+\end{theorem}
+
+\begin{proof}
+If a rule dominated $\delta_\pi$, integrating the risk inequality against
+$\pi$ would give no larger Bayes risk.  Strict improvement on a set of
+positive prior mass would give strictly smaller Bayes risk, contradicting
+Bayes optimality.  Uniqueness rules out domination that differs only on sets
+invisible to the prior predictive distribution.
+\end{proof}
+
+\section{Worst Case Optimality}
+
+When no averaging distribution is accepted, a conservative criterion is the
+maximum risk
+\[
+    \overline R(\delta)=\sup_{\theta\in\Theta}R(\theta,\delta).
+\]
+This treats nature as selecting the least favorable parameter after the rule
+has been chosen.
+
+\subsection{Minimax Estimators}
+
+\begin{definition}[Minimax rule]
+A rule $\delta^*$ is minimax if
+\[
+    \sup_\theta R(\theta,\delta^*)
+    =\inf_\delta\sup_\theta R(\theta,\delta).
+\]
+The common value is the minimax value of the decision problem.
+\end{definition}
+
+For every prior $\pi$ and rule $\delta$,
+\begin{equation}
+    \inf_{\widetilde\delta}\sup_\theta R(\theta,\widetilde\delta)
+    \geq \inf_{\widetilde\delta}r(\pi,\widetilde\delta)
+    =r(\pi,\delta_\pi).
+    \label{eq:bayes-lower-minimax}
+\end{equation}
+Thus every Bayes risk is a lower bound on the minimax value.
+
+\begin{theorem}[Constant-risk Bayes criterion]
+If a Bayes rule $\delta_\pi$ has constant risk $R(\theta,\delta_\pi)=c$ for
+all $\theta$ in the parameter space, then it is minimax and its Bayes risk is
+$c$.
+\end{theorem}
+
+\begin{proof}
+The maximum risk of $\delta_\pi$ is $c$.  On the other hand,
+\eqref{eq:bayes-lower-minimax} says that the minimax value is at least its
+Bayes risk, also $c$.
+\end{proof}
+
+The theorem explains why invariant rules with constant risk are natural
+minimax candidates.  A generalized Bayes rule from an improper invariant
+prior cannot be inserted directly into the proof, but it is often obtained as
+a limit of proper Bayes rules whose Bayes risks approach its constant risk.
+
+\subsection{Least Favorable Priors}
+
+\begin{definition}[Least favorable prior]
+A prior $\pi^*$ is \emph{least favorable} if it maximizes the optimal Bayes
+risk:
+\[
+    r(\pi^*,\delta_{\pi^*})
+    =\sup_\pi\inf_\delta r(\pi,\delta).
+\]
+It concentrates weight where the estimation problem is hardest.
+\end{definition}
+
+If a prior $\pi^*$ and its Bayes rule satisfy
+\[
+    \sup_\theta R(\theta,\delta_{\pi^*})
+    =r(\pi^*,\delta_{\pi^*}),
+\]
+then the lower and upper bounds meet: $\delta_{\pi^*}$ is minimax and
+$\pi^*$ is least favorable.  In finite games this is the familiar saddle
+point condition.
+
+Often no proper least favorable prior exists.  It is enough to find priors
+$\pi_m$ whose Bayes risks converge to the maximum risk of a candidate rule:
+if
+\[
+    r(\pi_m,\delta_{\pi_m})\longrightarrow c
+    \quad\text{and}\quad
+    \sup_\theta R(\theta,\delta^*)=c,
+\]
+then \eqref{eq:bayes-lower-minimax} proves that $\delta^*$ is minimax.  Such a
+sequence is called a least favorable sequence.
+
+\begin{example}[Normal location]
+If $X\sim\Normal(\theta,\sigma^2)$ and loss is squared error, the estimator
+$\delta(X)=X$ has constant risk $\sigma^2$.  Take proper priors
+$\theta\sim\Normal(0,\tau^2)$.  The Bayes rule is
+\[
+    \delta_\tau(X)=\frac{\tau^2}{\tau^2+\sigma^2}X,
+\]
+and its Bayes risk is
+$\sigma^2\tau^2/(\sigma^2+\tau^2)\uparrow\sigma^2$ as $\tau^2\to\infty$.
+Hence these priors form a least favorable sequence and $X$ is minimax.
+\end{example}
+
+\section{Simultaneous Estimation}
+
+Suppose $X=(X_1,\ldots,X_d)^\mathsf T\sim\Normal_d(\theta,I_d)$ and the goal is
+to estimate the entire mean vector under total squared-error loss
+\[
+    L(\theta,a)=\norm{a-\theta}^2.
+\]
+The coordinatewise estimator $\delta_0(X)=X$ is unbiased, equivariant, and
+has constant risk
+\[
+    R(\theta,\delta_0)=\E_\theta\norm{X-\theta}^2=d.
+\]
+It is minimax, since it is the limiting Bayes rule under increasingly diffuse
+normal priors.  Surprisingly, minimaxity does not imply admissibility.
+
+\subsection{James-Stein Estimator}
+
+For $d\geq3$, define
+\begin{equation}
+    \delta_{\mathrm{JS}}(X)
+    =\left(1-\frac{d-2}{\norm X^2}\right)X.
+    \label{eq:james-stein}
+\end{equation}
+This estimator shrinks $X$ toward the origin.  Although every coordinate of
+$X$ is individually the usual estimator of its mean, estimating the
+coordinates jointly permits an improvement in total risk.
+
+\begin{lemma}[Stein's identity]
+If $X\sim\Normal_d(\theta,I_d)$ and $g:\R^d\to\R^d$ is sufficiently regular
+and integrable, then
+\[
+    \E_\theta[(X-\theta)^\mathsf Tg(X)]
+    =\E_\theta[\operatorname{div}g(X)].
+\]
+\end{lemma}
+
+\begin{proof}
+Apply one-dimensional integration by parts to each coordinate and sum.  The
+normal density satisfies
+$\partial f_\theta(x)/\partial x_i=-(x_i-\theta_i)f_\theta(x)$, and the
+boundary terms vanish under the integrability assumptions.
+\end{proof}
+
+For an estimator $X+g(X)$, Stein's identity gives the unbiased risk formula
+\begin{equation}
+ R(\theta,X+g)-d
+ =\E_\theta\left[\norm{g(X)}^2+2\operatorname{div}g(X)\right].
+ \label{eq:stein-risk-identity}
+\end{equation}
+Set $g(x)=-ax/\norm x^2$.  Away from the origin,
+\[
+    \norm{g(x)}^2=\frac{a^2}{\norm x^2},
+    \qquad
+    \operatorname{div}g(x)=-\frac{a(d-2)}{\norm x^2}.
+\]
+Therefore
+\[
+ R(\theta,\delta_a)-d
+ =\{a^2-2a(d-2)\}
+   \E_\theta\left[\frac{1}{\norm X^2}\right].
+\]
+For $d\geq3$ this expectation is finite, and every
+$0<a<2(d-2)$ strictly improves on $X$ for all $\theta$.  The choice $a=d-2$
+gives \eqref{eq:james-stein} and maximizes the displayed risk reduction.
+
+The positive-part version
+\[
+    \delta_{\mathrm{JS}}^+(X)
+    =\left(1-\frac{d-2}{\norm X^2}\right)_+X
+\]
+dominates the ordinary James--Stein rule.  Shrinkage toward another fixed
+point $m$ follows by replacing $X$ with $X-m$ and adding $m$ back.  The choice
+of center expresses structural information and can have a substantial effect
+on realized error, even though the dominance theorem holds for every fixed
+center.
+
+This phenomenon does not contradict the scalar Cram\'er--Rao bound: the
+James--Stein estimator is biased, and performance is measured by the sum of
+squared errors across coordinates.  It also shows why admissibility, UMVU
+optimality, and minimaxity are distinct concepts.
+
+\section{Empirical Bayes Estimators}
+
+Hierarchical models provide a principled source of shrinkage.  Suppose
+$\theta_1,\ldots,\theta_m$ are drawn from a distribution $G_\lambda$ with
+unknown hyperparameter $\lambda$, and conditionally independent observations
+satisfy $X_i\mid\theta_i\sim P_{\theta_i}$.  If $\lambda$ were known, the Bayes
+rule would be
+\[
+    \delta_\lambda(x_i)=\E_\lambda[\theta_i\mid X_i=x_i]
+\]
+under squared-error loss.  An \emph{empirical Bayes} rule estimates
+$\lambda$ from the ensemble $X_1,\ldots,X_m$ and plugs the estimate into the
+Bayes rule.
+
+\begin{example}[Many weighted coins]
+For coin $i$, observe $S_i\mid p_i\sim\Bin(n_i,p_i)$ and assume
+$p_i\iid\BetaDist(\alpha,\beta)$.  If $\alpha$ and $\beta$ were known, then
+\[
+    \E[p_i\mid S_i]
+    =\frac{\alpha+S_i}{\alpha+\beta+n_i}.
+\]
+Estimate $(\alpha,\beta)$ from the marginal beta-binomial likelihood of all
+counts, or by matching the across-coin mean and variance.  The empirical
+Bayes estimator is
+\[
+    \widehat p_i^{\mathrm{EB}}
+    =\frac{\widehat\alpha+S_i}
+           {\widehat\alpha+\widehat\beta+n_i}.
+\]
+Coins with few flips are shrunk strongly toward the estimated population mean
+$\widehat\alpha/(\widehat\alpha+\widehat\beta)$; coins with many flips are
+driven mainly by their own sample proportions.
+\end{example}
+
+\begin{example}[Normal means]
+Suppose $X_i\mid\theta_i\sim\Normal(\theta_i,\sigma^2)$ and
+$\theta_i\iid\Normal(\mu,\tau^2)$, with $\sigma^2$ known.  The oracle Bayes
+estimator is
+\[
+ \E[\theta_i\mid X_i]
+ =\mu+B(X_i-\mu),
+ \qquad B=\frac{\tau^2}{\tau^2+\sigma^2}.
+\]
+Replacing $\mu$ and $\tau^2$ by estimates from the marginal model
+$X_i\sim\Normal(\mu,\tau^2+\sigma^2)$ yields an empirical Bayes shrinkage
+rule.  A simple moment estimate is
+\[
+    \widehat\mu=\bar X,
+    \qquad
+    \widehat\tau^2=\max\left\{0,
+       \frac{1}{m-1}\sum_{i=1}^m(X_i-\bar X)^2-\sigma^2\right\}.
+\]
+\end{example}
+
+Empirical Bayes procedures borrow strength across related problems, but their
+analysis must account for estimation of the prior.  Plug-in posterior
+variances generally understate uncertainty because they treat
+$\widehat\lambda$ as fixed.  Parametric bootstrap, asymptotic corrections, or
+a fully Bayesian hyperprior can propagate this additional uncertainty.
+Moreover, shrinkage is only as appropriate as the exchangeability assumption:
+if the units come from substantially different populations, pooling can
+introduce systematic bias.  These considerations separate the construction
+of an empirical Bayes point estimator from the calibration of its uncertainty
+statements.
+
+\part{Optimal Hypothesis Testing, Exact}
+
+\section{Introduction to Hypothesis Testing}
+
+A hypothesis divides the parameter space into a null set $\Theta_0$ and an
+alternative set $\Theta_1$.  We write
+\[
+    H_0:\theta\in\Theta_0
+    \qquad\text{versus}\qquad
+    H_1:\theta\in\Theta_1.
+\]
+A nonrandomized test is a measurable map $\phi:\mathcal X\to\{0,1\}$, where
+$\phi(X)=1$ means that $H_0$ is rejected.  It is convenient to allow
+randomized tests $\phi:\mathcal X\to[0,1]$, interpreted as the conditional
+probability of rejection after observing $X=x$.
+
+The \emph{power function} of a test is
+\begin{equation}
+    \beta_\phi(\theta)=\E_\theta[\phi(X)].
+    \label{eq:power-function}
+\end{equation}
+For $\theta\in\Theta_0$, this is the probability of a type I error; for
+$\theta\in\Theta_1$, $1-\beta_\phi(\theta)$ is the probability of a type II
+error.  The \emph{size} is
+\[
+    \sup_{\theta\in\Theta_0}\beta_\phi(\theta),
+\]
+and a test has \emph{level $\alpha$} if its size is at most $\alpha$.  Size
+equals level only when the supremum is attained at $\alpha$.
+
+Testing is a decision problem with actions $0$ and $1$.  If false rejection
+has loss $c_0$ and false acceptance has loss $c_1$, then
+\[
+ R(\theta,\phi)=
+ \begin{cases}
+   c_0\beta_\phi(\theta),&\theta\in\Theta_0,\\
+   c_1\{1-\beta_\phi(\theta)\},&\theta\in\Theta_1.
+ \end{cases}
+\]
+The frequentist level-$\alpha$ formulation fixes an upper bound on the first
+kind of risk and then seeks large power on the alternative.
+
+\begin{example}[Testing whether a coin is fair]
+For $X_1,\ldots,X_n\iid\Bern(p)$, consider
+$H_0:p=1/2$ against $H_1:p>1/2$.  Large values of
+$S=\sum_iX_i$ constitute evidence against $H_0$.  A test of the form
+\[
+    \phi(s)=\ind\{s>c\}+\gamma\ind\{s=c\}
+\]
+can attain any desired level $\alpha$: choose $c$ so that
+$P_{1/2}(S>c)\leq\alpha\leq P_{1/2}(S\geq c)$ and set
+\[
+    \gamma=\frac{\alpha-P_{1/2}(S>c)}{P_{1/2}(S=c)}.
+\]
+Randomization is needed only because the binomial distribution is discrete.
+In practice, one often uses the conservative nonrandomized test with
+$\gamma=0$.
+\end{example}
+
+A $p$-value is a statistic measuring how extreme the observation is relative
+to a null distribution.  For a test statistic $T$ where large values are
+evidence against $H_0$, a valid $p$-value $P(X)$ satisfies
+\[
+    \sup_{\theta\in\Theta_0}P_\theta\{P(X)\leq u\}\leq u,
+    \qquad 0\leq u\leq1.
+\]
+Rejecting when $P(X)\leq\alpha$ therefore gives a level-$\alpha$ test.  A
+$p$-value is not the posterior probability that the null is true.
+
+\section{Simple Hypotheses}
+
+Both hypotheses are \emph{simple} when they specify individual distributions:
+\[
+    H_0:\theta=\theta_0
+    \qquad\text{versus}\qquad
+    H_1:\theta=\theta_1.
+\]
+This case is completely solved by ordering observations according to their
+likelihood ratio.
+
+\subsection{Most Powerful (MP) Tests}
+
+\begin{definition}[Most powerful test]
+A level-$\alpha$ test $\phi^*$ is \emph{most powerful} for testing
+$P_{\theta_0}$ against $P_{\theta_1}$ if
+\[
+    \E_{\theta_1}[\phi^*]
+    \geq \E_{\theta_1}[\phi]
+\]
+for every other level-$\alpha$ test $\phi$.
+\end{definition}
+
+The level constraint is essential.  Without it, the rule that always rejects
+has power one but provides no control of false rejection.  Randomization also
+makes the feasible class convex and permits exact size in discrete models.
+
+\begin{example}[One weighted-coin flip]
+Test $H_0:p=p_0$ against $H_1:p=p_1$, where $p_1>p_0$, based on a single
+flip.  Heads has likelihood ratio $p_1/p_0$, whereas tails has ratio
+$(1-p_1)/(1-p_0)$; the former is larger.  For $\alpha\leq p_0$, the MP test
+rejects with probability $\alpha/p_0$ after heads and never after tails.  For
+$\alpha>p_0$, it always rejects after heads and rejects after tails with
+probability $(\alpha-p_0)/(1-p_0)$.
+\end{example}
+
+\subsection{Neyman-Pearson Lemma}
+
+\begin{theorem}[Neyman--Pearson lemma]
+Suppose $P_0$ and $P_1$ have densities $f_0$ and $f_1$ with respect to a
+common dominating measure.  Choose $k\geq0$ and $\gamma\in[0,1]$ so that
+\begin{equation}
+ \phi^*(x)=
+ \begin{cases}
+  1,&f_1(x)>kf_0(x),\\
+  \gamma,&f_1(x)=kf_0(x),\\
+  0,&f_1(x)<kf_0(x)
+ \end{cases}
+ \quad\text{satisfies}\quad \E_0[\phi^*]=\alpha.
+ \label{eq:np-test}
+\end{equation}
+Then $\phi^*$ is most powerful among all tests of level $\alpha$.  Conversely,
+every MP test of size $\alpha$ has this form, apart from null sets and possible
+freedom on the boundary, provided the two densities are handled on their
+zero sets in the usual way.
+\end{theorem}
+
+\begin{proof}
+For any level-$\alpha$ test $\phi$,
+\[
+ \int(\phi^*-\phi)(f_1-kf_0)\dd\mu\geq0,
+\]
+because both factors have the same sign pointwise.  Hence
+\[
+ \E_1[\phi^*]-\E_1[\phi]
+ \geq k\{\E_0[\phi^*]-\E_0[\phi]\}\geq0.
+\]
+This proves sufficiency.  The equality conditions in these inequalities yield
+the converse characterization.
+\end{proof}
+
+\begin{example}[Several coin flips]
+For $S\sim\Bin(n,p)$ and $p_1>p_0$,
+\[
+ \frac{f_{p_1}(s)}{f_{p_0}(s)}
+ =\left(\frac{1-p_1}{1-p_0}\right)^n
+  \left\{\frac{p_1(1-p_0)}{p_0(1-p_1)}\right\}^{s},
+\]
+which is strictly increasing in $s$.  Therefore an MP test rejects for large
+numbers of heads, with possible randomization at one boundary count.
+\end{example}
+
+\subsection{Likelihood Ratio Tests}
+
+For a general null and alternative, define the generalized likelihood ratio
+statistic
+\begin{equation}
+    \Lambda(x)=
+    \frac{\sup_{\theta\in\Theta_0}f_\theta(x)}
+         {\sup_{\theta\in\Theta}f_\theta(x)},
+    \qquad 0\leq\Lambda(x)\leq1.
+    \label{eq:generalized-lr}
+\end{equation}
+The \emph{likelihood ratio test} (LRT) rejects for small $\Lambda$.  For two
+simple hypotheses this is equivalent to the Neyman--Pearson likelihood-ratio
+ordering.  For composite hypotheses, however, the Neyman--Pearson lemma does
+not automatically make the LRT optimal.
+
+\begin{example}[Two-sided normal mean]
+If $X_1,\ldots,X_n\iid\Normal(\mu,\sigma^2)$ with $\sigma^2$ known, consider
+$H_0:\mu=\mu_0$ against $H_1:\mu\neq\mu_0$.  The unrestricted MLE is
+$\widehat\mu=\bar X$, and direct calculation gives
+\[
+    -2\log\Lambda
+    =\frac{n(\bar X-\mu_0)^2}{\sigma^2}.
+\]
+Thus the level-$\alpha$ LRT rejects when
+$\sqrt n\abs{\bar X-\mu_0}/\sigma>z_{1-\alpha/2}$.  Its finite-sample null
+distribution is exactly standard normal after taking the signed square root;
+no asymptotic approximation is needed.
+\end{example}
+
+\begin{example}[Two-sided coin test]
+For $S\sim\Bin(n,p)$ and $H_0:p=p_0$ against $p\neq p_0$, the unrestricted
+MLE is $\widehat p=S/n$.  The LRT statistic is
+\[
+ \Lambda(s)=
+ \frac{p_0^s(1-p_0)^{n-s}}
+      {(s/n)^s(1-s/n)^{n-s}},
+\]
+with $0^0=1$.  Rejection occurs in both tails, but discreteness means the two
+tail probabilities generally cannot be balanced exactly without
+randomization.
+\end{example}
+
+\section{One-Sided Hypotheses}
+
+Now consider an ordered scalar parameter and hypotheses such as
+\[
+    H_0:\theta\leq\theta_0
+    \qquad\text{versus}\qquad
+    H_1:\theta>\theta_0.
+\]
+For many families, larger values of a statistic $T$ systematically favor
+larger values of $\theta$.  This ordering can turn the collection of
+simple-alternative Neyman--Pearson tests into a single optimal test.
+
+\subsection{Uniformly Most Powerful (UMP) Tests}
+
+\begin{definition}[UMP test]
+A level-$\alpha$ test $\phi^*$ is \emph{uniformly most powerful} for
+$H_0:\theta\in\Theta_0$ against $H_1:\theta\in\Theta_1$ if
+\[
+    \beta_{\phi^*}(\theta)\geq\beta_\phi(\theta)
+    \quad\text{for every }\theta\in\Theta_1
+\]
+and every other level-$\alpha$ test $\phi$.
+\end{definition}
+
+The same test must be MP against every point in the alternative.  Such a test
+often exists for one-sided problems because the likelihood-ratio ordering is
+the same for all alternatives on one side.  It rarely exists for genuinely
+two-sided problems: an MP test against a smaller parameter rejects in the
+lower tail, while one against a larger parameter rejects in the upper tail.
+
+For a boundary-null problem, the size is often attained at the boundary
+$\theta_0$.  This must be proved, usually by showing that the rejection
+probability is monotone in $\theta$.
+
+\subsection{Monotone Likelihood Ratio (MLR)}
+
+\begin{definition}[Monotone likelihood ratio]
+A family $\{f_\theta:\theta\in\Theta\subseteq\R\}$ has a \emph{monotone
+likelihood ratio} (MLR) in $T(X)$ if, whenever $\theta_1>\theta_0$, the ratio
+$f_{\theta_1}(x)/f_{\theta_0}(x)$ is a nondecreasing function of $T(x)$ on the
+common support.
+\end{definition}
+
+\begin{theorem}[Karlin--Rubin]
+Suppose the family has MLR in $T$.  Choose $c$ and $\gamma$ so that
+\[
+    \phi^*(x)=\ind\{T(x)>c\}+\gamma\ind\{T(x)=c\}
+\]
+has rejection probability $\alpha$ at $\theta_0$.  Then $\phi^*$ is UMP
+level $\alpha$ for
+$H_0:\theta\leq\theta_0$ against $H_1:\theta>\theta_0$, provided its
+rejection probability is nondecreasing in $\theta$.  Reversing the tails
+gives the analogous result for a lower-sided alternative.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+For every fixed $\theta_1>\theta_0$, the Neyman--Pearson lemma and MLR imply
+that the same upper-tail test is MP for $\theta_0$ versus $\theta_1$.
+Monotonicity of its power ensures level $\alpha$ throughout the composite
+null.  Since it is MP at every point in the alternative, it is UMP.
+\end{proof}
+
+\begin{example}[One-sided weighted-coin test]
+The binomial family has MLR in $S$ because the likelihood ratio displayed
+above is increasing in $s$ whenever $p_1>p_0$.  Consequently, the test that
+rejects for large $S$ is UMP level $\alpha$ for
+$H_0:p\leq p_0$ against $H_1:p>p_0$.  Its exact power function is
+\[
+    \beta(p)=P_p(S>c)+\gamma P_p(S=c),
+\]
+which is nondecreasing in $p$ by stochastic ordering of binomial variables.
+\end{example}
+
+A regular one-parameter exponential family
+\[
+ f_\eta(x)=h(x)\exp\{\eta T(x)-A(\eta)\}
+\]
+has MLR in $T$, since for $\eta_1>\eta_0$ the likelihood ratio is a positive
+constant times $e^{(\eta_1-\eta_0)T(x)}$.  Thus the theorem covers many
+classical one-sided tests at once.
+
+\section{Composite Hypotheses}
+
+When both $\Theta_0$ and $\Theta_1$ contain multiple distributions, no single
+ordering of the sample points need be optimal.  Useful approaches include
+finding a UMP test when special structure permits it, restricting the class
+of tests (for example to unbiased or invariant tests), using a likelihood
+ratio test, or optimizing average or worst-case power.
+
+The role of sufficiency persists.  If $T$ is sufficient and $\phi(X)$ is any
+test, then
+\[
+    \phi^*(T)=\E_\theta[\phi(X)\mid T]
+\]
+is a well-defined, parameter-free randomized test with exactly the same power
+function as $\phi$.  Thus attention may be restricted to tests based on a
+sufficient statistic without loss.
+
+\subsection{Uniformly Most Powerful (UMP) Tests}
+
+UMP tests for composite alternatives exist only when the MP rejection regions
+can be made compatible across all alternative points.  The one-sided MLR
+setting is the principal example.  Two-sided alternatives usually require a
+weaker optimality criterion.
+
+\begin{proposition}[Nonexistence in a two-sided normal problem]
+Let $X\sim\Normal(\mu,1)$ and test $H_0:\mu=0$ against $H_1:\mu\neq0$ at a
+nontrivial level $\alpha$.  No UMP test exists.
+\end{proposition}
+
+\begin{proof}
+By the Neyman--Pearson lemma, an MP test against any fixed $\mu_1>0$ rejects
+for large $X$, whereas an MP test against any fixed $\mu_1<0$ rejects for
+small $X$.  Apart from trivial levels, no test can have both forms.
+\end{proof}
+
+One response is to impose invariance under $x\mapsto-x$, leading to a
+two-tailed test based on $\abs X$.  Another is to seek a UMP unbiased test.
+Both restrictions rule out tests that spend nearly all type I error in one
+tail.
+
+\subsection{Least Favorable Priors}
+
+A test can be derived as a Bayes rule by placing priors $\pi_0$ and $\pi_1$ on
+the null and alternative.  The resulting mixture densities are
+\[
+    m_j(x)=\int_{\Theta_j}f_\theta(x)\pi_j(\dd\theta),
+    \qquad j=0,1.
+\]
+For fixed prior odds and error costs, the Bayes test compares
+$m_1(x)/m_0(x)$ with a constant.  Thus the Neyman--Pearson lemma applies to
+the two mixture distributions even though the original hypotheses are
+composite.
+
+A least favorable prior places mass on parameter values for which control of
+error or attainment of power is hardest.  If a Bayes test against the induced
+mixtures has its null rejection probability bounded by $\alpha$ everywhere
+and its worst alternative power equal to its average power under $\pi_1$,
+then it attains a testing saddle point.  The Bayes lower bound and the
+worst-case upper bound coincide, proving maximin optimality.
+
+For a one-sided MLR problem, the point mass at the boundary $\theta_0$ is
+often least favorable for size because the rejection probability is largest
+there over the null.  With nuisance parameters or separated composite
+hypotheses, least favorable priors can be nondegenerate mixtures and may only
+exist as limiting sequences.
+
+\section{Unbiased Tests}
+
+The power of a level-$\alpha$ test can fall below $\alpha$ at some alternative
+values.  Such a test rejects less often under those alternatives than under
+the null boundary, an undesirable behavior that motivates a restriction.
+
+\begin{definition}[Unbiased test]
+A level-$\alpha$ test $\phi$ for $H_0:\theta\in\Theta_0$ against
+$H_1:\theta\in\Theta_1$ is \emph{unbiased} if
+\[
+ \beta_\phi(\theta_1)\geq\beta_\phi(\theta_0)
+ \quad\text{for every }\theta_1\in\Theta_1,
+ \ \theta_0\in\Theta_0.
+\]
+In the common exact-size formulation this becomes
+$\beta_\phi(\theta)\leq\alpha$ on $\Theta_0$ and
+$\beta_\phi(\theta)\geq\alpha$ on $\Theta_1$.
+\end{definition}
+
+A test is \emph{uniformly most powerful unbiased} (UMPU) if it maximizes
+power at every alternative point among all level-$\alpha$ unbiased tests.
+
+Consider a regular one-parameter exponential family and the two-sided problem
+$H_0:\eta=\eta_0$ against $H_1:\eta\neq\eta_0$.  If the power function is
+differentiable, unbiasedness makes $\eta_0$ a local minimum, so
+\begin{equation}
+    \beta_\phi(\eta_0)=\alpha,
+    \qquad \beta_\phi'(\eta_0)=0.
+    \label{eq:unbiased-similarity-constraints}
+\end{equation}
+Differentiating under the integral and using the exponential-family score
+gives
+\[
+ \beta_\phi'(\eta_0)
+ =\E_{\eta_0}[\phi(X)\{T-\E_{\eta_0}T\}].
+\]
+Thus the constraints in \eqref{eq:unbiased-similarity-constraints} are
+equivalent to
+\[
+    \E_{\eta_0}[\phi]=\alpha,
+    \qquad
+    \E_{\eta_0}[T\phi]=\alpha\E_{\eta_0}[T].
+\]
+The UMPU test rejects for $T<c_1$ or $T>c_2$, with possible boundary
+randomization, where the two constants are chosen to satisfy these size and
+moment constraints.  This allocates rejection probability between both tails
+in the manner required by unbiasedness.
+
+\begin{example}[Two-sided normal mean]
+For $X_1,\ldots,X_n\iid\Normal(\mu,\sigma^2)$ with known $\sigma$, the UMPU
+level-$\alpha$ test of $H_0:\mu=\mu_0$ against $\mu\neq\mu_0$ rejects when
+\[
+    \frac{\sqrt n\abs{\bar X-\mu_0}}{\sigma}>z_{1-\alpha/2}.
+\]
+Symmetry supplies the moment constraint, and the power is at least $\alpha$
+for every $\mu\neq\mu_0$.
+\end{example}
+
+\subsection{Unbiased Tests with Nuisance Parameters}
+
+Suppose the parameter is $(\psi,\lambda)$, where $\psi$ is of interest and
+$\lambda$ is a nuisance parameter.  A level-$\alpha$ test must control
+\[
+    \sup_{\lambda}\E_{\psi_0,\lambda}[\phi(X)],
+\]
+which can be difficult if the null distribution depends on $\lambda$.
+
+A test is \emph{similar} if
+\begin{equation}
+    \E_{\psi_0,\lambda}[\phi(X)]=\alpha
+    \qquad\text{for every }\lambda.
+    \label{eq:similar-test}
+\end{equation}
+Similarity is stronger than level control and is closely connected to
+unbiasedness for two-sided problems.  Conditioning often removes the nuisance
+parameter exactly.
+
+Suppose that under $H_0$ a statistic $U$ is sufficient and complete for
+$\lambda$.  If $\phi$ is similar, then
+\[
+ \E_{\psi_0,\lambda}
+ \left[\E_{\psi_0,\lambda}(\phi\mid U)-\alpha\right]=0
+ \quad\text{for every }\lambda.
+\]
+Completeness implies
+\begin{equation}
+    \E_{\psi_0,\lambda}[\phi(X)\mid U]=\alpha
+    \quad\text{almost surely}.
+    \label{eq:conditional-similarity}
+\end{equation}
+The conditional distribution used to construct the test is free of
+$\lambda$, converting the problem into conditional simple-null tests.
+
+\begin{example}[Normal mean with unknown variance]
+Let $X_1,\ldots,X_n\iid\Normal(\mu,\sigma^2)$ and test
+$H_0:\mu=\mu_0$ against $H_1:\mu\neq\mu_0$, with $\sigma^2$ unknown.  The
+statistic
+\[
+    T=\frac{\sqrt n(\bar X-\mu_0)}{S_X}
+\]
+has a $t_{n-1}$ distribution under $H_0$, independent of $\sigma^2$.
+Therefore
+\[
+    \phi(X)=\ind\{\abs T>t_{n-1,1-\alpha/2}\}
+\]
+is similar of level $\alpha$.  In the normal exponential family it is also
+the UMP unbiased test for the two-sided mean problem.
+\end{example}
+
+\begin{example}[Conditional test for two binomial samples]
+Let $S_j\sim\Bin(n_j,p_j)$ independently and test
+$H_0:p_1=p_2=p$ against unequal success probabilities.  Under $H_0$, the
+total $S_1+S_2$ is sufficient for the nuisance parameter $p$, and
+\[
+ P(S_1=s_1\mid S_1+S_2=s)
+ =\frac{\binom{n_1}{s_1}\binom{n_2}{s-s_1}}
+        {\binom{n_1+n_2}{s}},
+\]
+a hypergeometric probability independent of $p$.  Tail probabilities from
+this conditional distribution yield Fisher's exact test.  Boundary
+randomization can make it exactly similar; without randomization it is
+typically conservative.
+\end{example}
+
+Conditioning is powerful but changes the criterion: optimality is established
+within the similar or unbiased class, not necessarily among all level tests.
+This qualification is important whenever a procedure is described as
+``optimal'' in the presence of nuisance parameters.
+
+\part{Optimal Estimation, Asymptotic}
+
+\section{Introduction to Asymptotic Estimation}
+
+Exact optimality compares estimators at a fixed sample size.  Such comparisons
+can be difficult or overly restrictive: an unbiased estimator may not exist,
+the finite-sample distribution may be intractable, and several procedures may
+differ only by terms that vanish as the sample grows.  Asymptotic theory
+studies a sequence of experiments and estimators
+\[
+    \delta_n=\delta_n(X_1,\ldots,X_n)
+\]
+as $n\to\infty$.
+
+Three questions organize the theory:
+\begin{enumerate}
+    \item Does $\delta_n$ approach the target?  This is consistency.
+    \item At what rate does its error vanish, and what is the limiting
+    distribution of the rescaled error?
+    \item Can another regular estimator have a smaller limiting risk or
+    covariance?
+\end{enumerate}
+
+For regular finite-dimensional iid models, the canonical rate is
+$n^{-1/2}$ and the canonical limit is Gaussian.  Neither conclusion is
+automatic.  Boundary parameters, nonidentification, parameter-dependent
+support, heavy tails, and nonsmooth criteria may produce different rates or
+non-Gaussian limits.
+
+\begin{example}[Weighted coin]
+Let $X_1,\ldots,X_n\iid\Bern(p)$ and $\widehat p_n=\bar X_n$.  The law of
+large numbers gives $\widehat p_n\convp p$, while the central limit theorem
+gives, for $0<p<1$,
+\[
+    \sqrt n(\widehat p_n-p)
+    \convd\Normal(0,p(1-p)).
+\]
+Consistency describes the eventual location of the estimator; asymptotic
+normality describes the local shape and scale of its errors.
+\end{example}
+
+\section{Review}
+
+All limits below are taken under $P_\theta$ unless another distribution is
+specified.  Since the probability measure changes with $\theta$, asymptotic
+claims should state whether they hold pointwise for each fixed $\theta$ or
+uniformly over a subset of the parameter space.
+
+\subsection{Convergence}
+
+\begin{definition}[Modes of stochastic convergence]
+For random variables $Y_n$ and $Y$:
+\begin{itemize}
+    \item $Y_n\as Y$ if $P(\lim_nY_n=Y)=1$;
+    \item $Y_n\convp Y$ if, for every $\varepsilon>0$,
+    $P(\abs{Y_n-Y}>\varepsilon)\to0$;
+    \item $Y_n\convd Y$ if
+    $\E[f(Y_n)]\to\E[f(Y)]$ for every bounded continuous $f$;
+    \item $Y_n\to Y$ in $L^r$ if
+    $\E\abs{Y_n-Y}^r\to0$.
+\end{itemize}
+The definitions extend to random vectors by replacing absolute value with a
+norm.
+\end{definition}
+
+The usual implications are
+\[
+    L^r\Longrightarrow\text{probability}\Longrightarrow\text{distribution},
+    \qquad
+    \text{almost surely}\Longrightarrow\text{probability}.
+\]
+Convergence in distribution to a constant implies convergence in probability
+to that constant.  In general, convergence in distribution does not imply
+convergence of moments; uniform integrability is needed to control tails.
+
+\begin{theorem}[Continuous mapping and Slutsky]
+If $Y_n\convd Y$ and $g$ is continuous at $Y$ almost surely, then
+$g(Y_n)\convd g(Y)$.  If additionally $Z_n\convp c$, then
+\[
+    Y_n+Z_n\convd Y+c,
+    \qquad Y_nZ_n\convd cY,
+\]
+and $Y_n/Z_n\convd Y/c$ when $c\neq0$.
+\end{theorem}
+
+Stochastic order notation summarizes rates.  We write $Y_n=O_p(a_n)$ if
+$Y_n/a_n$ is bounded in probability, and $Y_n=o_p(a_n)$ if
+$Y_n/a_n\convp0$.  Thus
+\[
+    \sqrt n(\delta_n-\theta)=O_p(1)
+    \quad\Longleftrightarrow\quad
+    \delta_n-\theta=O_p(n^{-1/2}).
+\]
+
+\begin{theorem}[Weak law and central limit theorem]
+If $X_1,X_2,\ldots$ are iid with mean $\mu$ and finite variance
+$\sigma^2$, then
+\[
+    \bar X_n\convp\mu,
+    \qquad
+    \sqrt n(\bar X_n-\mu)\convd\Normal(0,\sigma^2).
+\]
+If only $\E\abs X_1<\infty$, the first conclusion still holds.
+\end{theorem}
+
+\subsection{Consistency}
+
+\begin{definition}[Consistency]
+An estimator $\delta_n$ of $g(\theta)$ is \emph{weakly consistent} at
+$\theta$ if $\delta_n\convp g(\theta)$ under $P_\theta$.  It is strongly
+consistent if $\delta_n\as g(\theta)$.  It is uniformly consistent on
+$K\subseteq\Theta$ if, for every $\varepsilon>0$,
+\[
+    \sup_{\theta\in K}
+    P_\theta\{\norm{\delta_n-g(\theta)}>\varepsilon\}\longrightarrow0.
+\]
+\end{definition}
+
+Consistency alone gives neither a useful uncertainty scale nor good
+finite-sample performance.  If $\delta_n$ is consistent, so is
+$\delta_n+n^{-1/4}Z$ for many bounded random perturbations, even though the
+perturbed estimator converges much more slowly than a root-$n$ estimator.
+
+Two common proof strategies are direct moment bounds and optimization of a
+sample criterion.  If $\E_\theta\delta_n\to g(\theta)$ and
+$\Var_\theta(\delta_n)\to0$, Chebyshev's inequality proves consistency.  For
+an $M$-estimator
+\[
+    \widehat\theta_n\in\argmax_{\vartheta\in\Theta}M_n(\vartheta),
+\]
+one instead shows that $M_n$ converges uniformly to a deterministic function
+$M$ uniquely maximized at $\theta$.
+
+\begin{theorem}[Argmax consistency]
+Suppose $\Theta$ is compact,
+\[
+    \sup_{\vartheta\in\Theta}
+    \abs{M_n(\vartheta)-M(\vartheta)}\convp0,
+\]
+and $M$ is uniquely and well-separatedly maximized at $\theta_0$: for every
+neighborhood $U$ of $\theta_0$,
+\[
+    M(\theta_0)>\sup_{\vartheta\notin U}M(\vartheta).
+\]
+If $M_n(\widehat\theta_n)\geq\sup_\vartheta M_n(\vartheta)-o_p(1)$, then
+$\widehat\theta_n\convp\theta_0$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Outside any neighborhood $U$, the population criterion has a fixed gap below
+its maximum.  Uniform convergence makes the sample criterion preserve this
+gap with probability approaching one.  An approximate maximizer therefore
+cannot lie outside $U$ with nonvanishing probability.
+\end{proof}
+
+\subsection{Asymptotic Normality}
+
+\begin{definition}[Asymptotic normality]
+An estimator is asymptotically normal with rate $r_n\to\infty$, asymptotic
+bias $b(\theta)$, and asymptotic covariance $V(\theta)$ if
+\[
+    r_n\{\delta_n-g(\theta)\}
+    \convd\Normal\{b(\theta),V(\theta)\}.
+\]
+In regular parametric models, $r_n=\sqrt n$.
+\end{definition}
+
+The most useful derivations start from an asymptotically linear expansion
+\begin{equation}
+    \delta_n-g(\theta)
+    =\frac1n\sum_{i=1}^n\psi_\theta(X_i)+o_p(n^{-1/2}),
+    \label{eq:asymptotic-linear-estimator}
+\end{equation}
+where $\E_\theta[\psi_\theta(X)]=0$ and
+$\E_\theta\norm{\psi_\theta(X)}^2<\infty$.  The function $\psi_\theta$ is
+the influence function.  The central limit theorem and Slutsky's theorem give
+\[
+    \sqrt n\{\delta_n-g(\theta)\}
+    \convd\Normal\left(0,
+       \E_\theta[\psi_\theta\psi_\theta^\mathsf T]\right).
+\]
+
+An estimated standard error $\widehat V_n^{1/2}/\sqrt n$ is useful only if
+$\widehat V_n\convp V(\theta)$.  Studentization then gives
+\[
+    \frac{\sqrt n\{\delta_n-g(\theta)\}}{\sqrt{\widehat V_n}}
+    \convd\Normal(0,1)
+\]
+in the scalar case, producing asymptotic confidence intervals.
+
+\subsection{Delta Method}
+
+\begin{theorem}[Delta method]
+If
+\[
+    r_n(T_n-\theta)\convd Z
+\]
+and $g:\R^k\to\R^m$ is differentiable at $\theta$, then
+\begin{equation}
+    r_n\{g(T_n)-g(\theta)\}
+    \convd \mathrm Dg(\theta)Z.
+    \label{eq:delta-method}
+\end{equation}
+In particular, if $Z\sim\Normal_k(0,V)$, the limiting covariance is
+$\mathrm Dg(\theta)V\mathrm Dg(\theta)^\mathsf T$.
+\end{theorem}
+
+\begin{proof}
+Differentiability gives
+\[
+ g(T_n)-g(\theta)
+ =\mathrm Dg(\theta)(T_n-\theta)+o(\norm{T_n-\theta}).
+\]
+Consistency and $r_n(T_n-\theta)=O_p(1)$ make the rescaled remainder $o_p(1)$.
+Slutsky's theorem proves the result.
+\end{proof}
+
+\begin{example}[Log odds of a coin]
+For $0<p<1$, let $g(p)=\log\{p/(1-p)\}$.  Since
+$g'(p)=1/\{p(1-p)\}$ and
+$\sqrt n(\widehat p-p)\convd\Normal(0,p(1-p))$,
+\[
+ \sqrt n\left[
+ \log\frac{\widehat p}{1-\widehat p}
+ -\log\frac p{1-p}\right]
+ \convd\Normal\left(0,\frac1{p(1-p)}\right).
+\]
+This approximation is an interior result; the log odds is undefined when the
+sample contains all heads or all tails and becomes unstable near $p=0$ or
+$p=1$.
+\end{example}
+
+If the first derivative vanishes, the first-order delta method is degenerate.
+If $g'(\theta)=0$ but $g''(\theta)\neq0$ and
+$\sqrt n(T_n-\theta)\convd Z$, a second-order expansion yields
+\[
+    n\{g(T_n)-g(\theta)\}
+    \convd\frac12g''(\theta)Z^2.
+\]
+
+\section{Asymptotic Unbiasedness}
+
+There are several inequivalent definitions of asymptotic unbiasedness.  A
+basic one requires
+\begin{equation}
+    \E_\theta[\delta_n]-g(\theta)\longrightarrow0.
+    \label{eq:asymptotic-unbiasedness}
+\end{equation}
+Consistency does not by itself imply \eqref{eq:asymptotic-unbiasedness},
+because rare but very large errors may prevent convergence of expectations.
+Consistency plus uniform integrability of $\{\delta_n\}$ does imply it.
+
+At the root-$n$ scale, one may instead require
+\[
+    \sqrt n\{\E_\theta[\delta_n]-g(\theta)\}\longrightarrow0.
+\]
+This stronger condition rules out first-order asymptotic bias.  If
+\[
+    \sqrt n\{\delta_n-g(\theta)\}
+    \convd\Normal\{b(\theta),V(\theta)\}
+\]
+and the rescaled sequence is uniformly integrable, then its limiting scaled
+bias is $b(\theta)$.
+
+The distinction matters for mean squared error.  If moment convergence is
+valid, then
+\begin{equation}
+ n\E_\theta[(\delta_n-g(\theta))^2]
+ \longrightarrow V(\theta)+b(\theta)^2.
+ \label{eq:asymptotic-mse}
+\end{equation}
+A small bias can reduce variance enough to improve total risk, just as in
+finite-sample shrinkage.  Asymptotic unbiasedness is therefore a restriction,
+not a universal requirement of good estimation.
+
+\begin{example}[Smoothed coin estimator]
+For constants $a,b>0$, the beta-prior posterior mean is
+\[
+    \widetilde p_n=\frac{S+a}{n+a+b}.
+\]
+Its bias is
+\[
+    \E_p[\widetilde p_n]-p
+    =\frac{a-(a+b)p}{n+a+b}=O(n^{-1}),
+\]
+so it is unbiased to first order on the root-$n$ scale and has the same
+asymptotic distribution as $S/n$.  Nevertheless, its finite-sample risk and
+boundary behavior differ from those of the sample proportion.
+\end{example}
+
+\section{Asymptotic Efficiency}
+
+If two consistent estimators have root-$n$ limits
+\[
+ \sqrt n(\delta_{j,n}-g(\theta))
+ \convd\Normal(0,V_j(\theta)),\qquad j=1,2,
+\]
+then estimator $1$ is asymptotically at least as efficient as estimator $2$
+when $V_2(\theta)-V_1(\theta)$ is positive semidefinite.  In the scalar case,
+the asymptotic relative efficiency is often written
+\[
+    \operatorname{ARE}(1,2)=\frac{V_2(\theta)}{V_1(\theta)}.
+\]
+It approximates the factor by which estimator $2$ needs a larger sample to
+match estimator $1$'s variance.
+
+Pointwise asymptotic variance alone is too weak for a general optimality
+theory.  An estimator can be modified at a single parameter value to converge
+faster there while behaving normally elsewhere.
+
+\begin{example}[Hodges' estimator]
+Let $\bar X_n\sim\Normal(\theta,1/n)$ and define
+\[
+ \delta_n=
+ \begin{cases}
+  0,&\abs{\bar X_n}\leq n^{-1/4},\\
+  \bar X_n,&\abs{\bar X_n}>n^{-1/4}.
+ \end{cases}
+\]
+At $\theta=0$, $\sqrt n\delta_n\convp0$, apparently improving on the usual
+$\Normal(0,1)$ limit.  At every fixed $\theta\neq0$, it has the same
+asymptotic distribution as $\bar X_n$.  But along parameters approaching zero
+near the threshold, its risk is poor.  This \emph{superefficiency} shows why
+efficiency bounds require regularity under local alternatives, not merely a
+pointwise limit at each fixed parameter.
+\end{example}
+
+\begin{definition}[Regular estimator]
+In a locally asymptotically normal model, an estimator $\delta_n$ of a scalar
+or vector parameter is regular at $\theta$ if, for every fixed local direction
+$h$, the distribution of
+\[
+    \sqrt n\{\delta_n-(\theta+h/\sqrt n)\}
+\]
+under $P_{\theta+h/\sqrt n}$ converges to a limit that does not depend on $h$.
+\end{definition}
+
+Regularity excludes the unstable local behavior of Hodges' estimator and is
+the appropriate class for asymptotic information bounds.
+
+\section{Asymptotic Information Inequality}
+
+Let $s_\theta(X)=\grad_\theta\log f_\theta(X)$ and let
+$I(\theta)=\E_\theta[s_\theta s_\theta^\mathsf T]$.  For a regular estimator
+of $g(\theta)\in\R^m$, the asymptotic analogue of the Cram\'er--Rao bound is
+\begin{equation}
+    V(\theta)\succeq
+    \mathrm Dg(\theta)I(\theta)^{-1}
+    \mathrm Dg(\theta)^\mathsf T.
+    \label{eq:asymptotic-information-bound}
+\end{equation}
+Unlike the finite-sample bound, this result allows small finite-sample bias;
+regularity supplies the local stability that replaces exact unbiasedness.
+
+\begin{theorem}[Hájek--Le Cam convolution theorem]
+In a regular LAN model, the limiting distribution of a regular estimator of
+$\theta$ has the representation
+\[
+    Z=Z_0+W,
+    \qquad
+    Z_0\sim\Normal_k(0,I(\theta)^{-1}),
+\]
+where $Z_0$ and $W$ are independent.  Consequently
+$\Cov(Z)\succeq I(\theta)^{-1}$ whenever the covariance exists.
+\end{theorem}
+
+The Gaussian component $Z_0$ is unavoidable sampling noise; $W$ is additional
+noise contributed by an inefficient procedure.  An estimator is
+\emph{asymptotically efficient} if $W=0$, so that
+\[
+    \sqrt n(\delta_n-\theta)
+    \convd\Normal_k(0,I(\theta)^{-1}).
+\]
+
+The corresponding local asymptotic minimax theorem provides a risk statement
+that is robust to moving parameters.  For suitable bowl-shaped loss $L$ and
+every fixed radius $c$,
+\[
+ \liminf_{n\to\infty}
+ \sup_{\norm h\leq c}
+ \E_{\theta+h/\sqrt n}
+ L\!\left(\sqrt n\{\delta_n-(\theta+h/\sqrt n)\}\right)
+\]
+is bounded below, as $c\to\infty$, by the risk of
+$Z_0\sim\Normal_k(0,I(\theta)^{-1})$.  This formulation rules out gains at a
+single point purchased by poor behavior in a shrinking neighborhood.
+
+\begin{example}[Efficiency for the coin bias]
+One Bernoulli observation has information $I(p)=1/\{p(1-p)\}$.  Hence the
+asymptotic variance lower bound for regular estimators of $p$ is
+$I(p)^{-1}=p(1-p)$.  Since
+\[
+    \sqrt n(\widehat p-p)\convd\Normal(0,p(1-p)),
+\]
+the sample proportion is asymptotically efficient at every interior
+$p\in(0,1)$.  The regular theory does not apply at $p=0$ or $p=1$.
+\end{example}
+
+\section{Maximum Likelihood Estimators}
+
+For a dominated model, an MLE is any measurable maximizer
+\[
+    \widehat\theta_n\in\argmax_{\theta\in\Theta}
+       \ell_n(\theta),
+    \qquad
+    \ell_n(\theta)=\sum_{i=1}^n\log f_\theta(X_i).
+\]
+The MLE is invariant under one-to-one reparameterization: if
+$\widehat\theta_n$ maximizes the likelihood and $g$ is one-to-one, then
+$g(\widehat\theta_n)$ is the MLE of $g(\theta)$.  For non-one-to-one $g$, the
+same conclusion holds when the likelihood for $g(\theta)$ is defined by
+profiling over its fibers.
+
+\subsection{Consistency and Inconsistency}
+
+If the data come from $P_{\theta_0}$, the normalized log-likelihood tends
+pointwise to
+\[
+    M(\theta)=\E_{\theta_0}[\log f_\theta(X)].
+\]
+The difference from its value at the truth is
+\begin{equation}
+    M(\theta)-M(\theta_0)
+    =-\operatorname{KL}(P_{\theta_0}\Vert P_\theta)\leq0.
+    \label{eq:mle-kl-identity}
+\end{equation}
+Thus identifiability makes $\theta_0$ the unique population maximizer.  To
+transfer this fact to the sample maximizer, pointwise laws of large numbers
+are generally insufficient; one needs uniform control and must prevent the
+MLE from escaping to the boundary or infinity.
+
+\begin{theorem}[A consistency theorem for MLEs]
+Suppose $\Theta$ is compact, the model is identifiable, the map
+$\theta\mapsto\log f_\theta(x)$ is suitably continuous, and a uniform law of
+large numbers holds:
+\[
+ \sup_{\theta\in\Theta}
+ \abs{n^{-1}\ell_n(\theta)-M(\theta)}\convp0.
+\]
+If $M$ is well-separatedly maximized at $\theta_0$, then every approximate MLE
+is consistent for $\theta_0$.
+\end{theorem}
+
+\begin{example}[Coin MLE]
+For $S\sim\Bin(n,p)$, the log-likelihood is
+\[
+    \ell_n(p)=S\log p+(n-S)\log(1-p),
+\]
+and the MLE is $\widehat p=S/n$, including the boundary values when all flips
+agree.  The law of large numbers immediately proves consistency.
+\end{example}
+
+MLEs may be inconsistent when the model is misspecified, the parameter is not
+identified, the dimension grows too quickly, or maximization exploits an
+unbounded likelihood.
+
+\begin{example}[Misspecification]
+If the true distribution is $P_0$ but the fitted family
+$\{P_\theta\}$ does not contain it, the MLE generally converges to the
+pseudo-true parameter
+\[
+    \theta^*=\argmin_\theta
+       \operatorname{KL}(P_0\Vert P_\theta),
+\]
+not to a literal data-generating parameter.  Inference then uses a sandwich
+covariance rather than the inverse Fisher information unless the model is
+correctly specified.
+\end{example}
+
+\begin{example}[An unbounded likelihood]
+In a normal mixture with an unknown component variance, a component mean can
+be placed on one observation while its variance tends to zero.  The
+likelihood then diverges, so an unconstrained global MLE does not exist.
+Large sample size does not repair a nonexistent maximizer; constraints or
+penalization are required.
+\end{example}
+
+\subsection{Asymptotic Normality and Efficiency}
+
+The score equation is $\grad\ell_n(\widehat\theta_n)=0$.  For a scalar
+interior parameter, Taylor expansion around the truth gives
+\[
+ 0=\ell_n'(\theta_0)
+   +\ell_n''(\widetilde\theta_n)(\widehat\theta_n-\theta_0),
+\]
+where $\widetilde\theta_n$ lies between $\widehat\theta_n$ and $\theta_0$.
+Therefore
+\begin{equation}
+ \sqrt n(\widehat\theta_n-\theta_0)
+ =\left\{-\frac1n\ell_n''(\widetilde\theta_n)\right\}^{-1}
+   \frac{\ell_n'(\theta_0)}{\sqrt n}.
+ \label{eq:mle-score-expansion}
+\end{equation}
+Under regularity and consistency, the first factor converges to
+$I(\theta_0)^{-1}$ and the second converges to
+$\Normal(0,I(\theta_0))$.  Hence
+\begin{equation}
+    \sqrt n(\widehat\theta_n-\theta_0)
+    \convd\Normal(0,I(\theta_0)^{-1}).
+    \label{eq:mle-asymptotic-normality}
+\end{equation}
+The MLE attains the asymptotic information bound and is efficient.
+
+Equation \eqref{eq:mle-score-expansion} also gives the asymptotically linear
+representation
+\[
+ \widehat\theta_n-\theta_0
+ =\frac1n\sum_{i=1}^n
+ I(\theta_0)^{-1}s_{\theta_0}(X_i)+o_p(n^{-1/2}).
+\]
+Thus the efficient influence function is
+$I(\theta_0)^{-1}s_{\theta_0}(X)$.
+
+Common variance estimators are the inverse expected information, inverse
+observed information, and the outer product of scores.  Under correct
+specification they are asymptotically equivalent.  Under misspecification,
+if
+\[
+ A=-\E_0[\Hess_\theta\log f_{\theta^*}(X)],
+ \qquad
+ B=\E_0[s_{\theta^*}(X)s_{\theta^*}(X)^\mathsf T],
+\]
+then the limiting covariance is the sandwich matrix
+\begin{equation}
+    A^{-1}BA^{-1},
+    \label{eq:sandwich-covariance}
+\end{equation}
+which reduces to $I(\theta_0)^{-1}$ when the information identity $A=B$
+holds.
+
+\subsection{MLE for Multi-parameter Families}
+
+Let $\theta\in\R^k$.  Under the multivariate analogues of consistency,
+interiority, differentiability, nonsingular information, and uniform control
+of the Hessian,
+\begin{equation}
+ \sqrt n(\widehat\theta_n-\theta_0)
+ =I(\theta_0)^{-1}
+   \frac1{\sqrt n}\sum_{i=1}^n s_{\theta_0}(X_i)+o_p(1)
+ \convd\Normal_k(0,I(\theta_0)^{-1}).
+ \label{eq:multivariate-mle-limit}
+\end{equation}
+For a differentiable target $g:\R^k\to\R^m$, the delta method gives
+\[
+ \sqrt n\{g(\widehat\theta_n)-g(\theta_0)\}
+ \convd\Normal_m\left(0,
+ \mathrm Dg(\theta_0)I(\theta_0)^{-1}
+ \mathrm Dg(\theta_0)^\mathsf T\right).
+\]
+
+\begin{example}[Mean and variance of a normal distribution]
+If $X_i\iid\Normal(\mu,\sigma^2)$, parameterize by
+$\theta=(\mu,\sigma^2)$.  The MLEs are
+\[
+    \widehat\mu=\bar X,
+    \qquad
+    \widehat\sigma^2=\frac1n\sum_{i=1}^n(X_i-\bar X)^2.
+\]
+The per-observation information matrix is diagonal:
+\[
+ I(\mu,\sigma^2)=
+ \begin{pmatrix}
+  1/\sigma^2&0\\
+  0&1/(2\sigma^4)
+ \end{pmatrix}.
+\]
+Consequently,
+\[
+ \sqrt n
+ \begin{pmatrix}
+  \widehat\mu-\mu\\
+  \widehat\sigma^2-\sigma^2
+ \end{pmatrix}
+ \convd\Normal_2\left(
+ \begin{pmatrix}0\\0\end{pmatrix},
+ \begin{pmatrix}
+  \sigma^2&0\\
+  0&2\sigma^4
+ \end{pmatrix}\right).
+\]
+Although $\widehat\sigma^2$ is biased at finite $n$, its bias is $O(n^{-1})$
+and disappears on the root-$n$ scale.
+\end{example}
+
+If $\theta=(\psi,\lambda)$ contains a nuisance parameter, the asymptotic
+covariance for estimating $\psi$ is the corresponding block of
+$I(\theta)^{-1}$, equivalently the inverse Schur complement
+\[
+ \left(I_{\psi\psi}
+ -I_{\psi\lambda}I_{\lambda\lambda}^{-1}
+  I_{\lambda\psi}\right)^{-1}.
+\]
+This is the same efficient information that governs local asymptotic testing.
+Estimation and testing are therefore two views of the same local Gaussian
+geometry.
+
+Finally, \eqref{eq:multivariate-mle-limit} is an interior regular-model
+result.  At boundaries, under singular information, or when the number of
+parameters grows with $n$, the MLE may have a different rate and limit.
+Those cases require a fresh expansion rather than mechanical use of inverse
+Fisher information.
+
+\part{Optimal Hypothesis Testing, Asymptotic}
+
+Exact finite-sample optimality is available only in specially structured
+models.  In regular problems, asymptotic theory replaces the experiment based
+on $n$ observations by a limiting Gaussian experiment.  This approximation
+does more than provide critical values: it identifies the scale of
+statistically distinguishable alternatives and yields upper bounds on local
+power.
+
+\section{Asymptotic Testing Framework}
+
+Let $X^{(n)}$ denote the data in the $n$th experiment, with distribution
+$P_{n,\theta}$, and let $\phi_n(X^{(n)})\in[0,1]$ be a sequence of tests.  The
+models need not literally be iid, although that is the principal example.
+
+\begin{definition}[Asymptotic level]
+The sequence $\{\phi_n\}$ has \emph{pointwise asymptotic level $\alpha$} if
+\[
+    \limsup_{n\to\infty}\E_{n,\theta}[\phi_n]\leq\alpha
+    \qquad\text{for every }\theta\in\Theta_0.
+\]
+It has \emph{uniform asymptotic level $\alpha$} if
+\begin{equation}
+    \limsup_{n\to\infty}
+    \sup_{\theta\in\Theta_0}\E_{n,\theta}[\phi_n]
+    \leq\alpha.
+    \label{eq:uniform-asymptotic-level}
+\end{equation}
+\end{definition}
+
+Uniform validity is stronger: the parameter value producing the largest
+rejection probability may vary with $n$.  Pointwise convergence alone does
+not exclude severe size distortion along such a sequence.
+
+\begin{definition}[Consistency of a test]
+A sequence of tests is \emph{consistent} against a fixed
+$\theta\in\Theta_1$ if
+\[
+    \E_{n,\theta}[\phi_n]\longrightarrow1.
+\]
+It is uniformly consistent over a set $A\subseteq\Theta_1$ if the infimum of
+its power over $A$ converges to one.
+\end{definition}
+
+Consistency against fixed alternatives is often easy and does not distinguish
+good tests from mediocre ones.  More informative comparisons use local
+alternatives that approach the null as the sample grows.
+
+\subsection{Fixed and Local Alternatives}
+
+In a regular iid model, estimators fluctuate on the $n^{-1/2}$ scale.  Thus
+the canonical local alternatives to a point null $\theta_0$ are
+\begin{equation}
+    \theta_n=\theta_0+\frac{h}{\sqrt n},
+    \qquad h\in\R^k\text{ fixed}.
+    \label{eq:local-alternatives}
+\end{equation}
+Alternatives separated from $\theta_0$ by much more than $n^{-1/2}$ are
+typically detected with probability tending to one.  Those separated by much
+less are typically indistinguishable from the null.  At the $n^{-1/2}$ scale,
+power has a nondegenerate limit strictly between size and one.
+
+\begin{example}[Local alternatives for a weighted coin]
+Let $X_1,\ldots,X_n\iid\Bern(p)$ and test $H_0:p=p_0$, where
+$0<p_0<1$.  Define
+\[
+    Z_n=\frac{S-np_0}{\sqrt{np_0(1-p_0)}}.
+\]
+Under $p=p_0$, the central limit theorem gives $Z_n\convd\Normal(0,1)$.
+Under $p_n=p_0+h/\sqrt n$,
+\[
+ Z_n
+ =\frac{S-np_n}{\sqrt{np_n(1-p_n)}}
+   \sqrt{\frac{p_n(1-p_n)}{p_0(1-p_0)}}
+   +\frac{h}{\sqrt{p_0(1-p_0)}},
+\]
+so
+\begin{equation}
+    Z_n\convd
+    \Normal\left(\frac{h}{\sqrt{p_0(1-p_0)}},1\right).
+    \label{eq:coin-local-normal}
+\end{equation}
+The upper-tailed test $\ind\{Z_n>z_{1-\alpha}\}$ therefore has limiting
+local power
+\[
+    1-\Phi\left(z_{1-\alpha}
+       -\frac{h}{\sqrt{p_0(1-p_0)}}\right).
+\]
+\end{example}
+
+\subsection{Asymptotic Critical Values and p-Values}
+
+Suppose a statistic $T_n$ has continuous limiting distribution $F_0$ under
+the null.  If large values are evidence against $H_0$, then
+\[
+    \phi_n=\ind\{T_n>F_0^{-1}(1-\alpha)\}
+\]
+has asymptotic rejection probability $\alpha$ at parameter values for which
+$T_n\convd F_0$.  The corresponding asymptotic $p$-value is
+$1-F_0(T_n)$.
+
+This argument proves pointwise validity only.  Uniform validity requires a
+uniform distributional approximation over the composite null.  It can fail
+near boundaries, where information degenerates, or when nuisance parameters
+are weakly identified.  When a finite-sample null distribution is available,
+there is no reason to replace it with an asymptotic one.
+
+\section{Local Asymptotic Normality}
+
+Let $X_1,\ldots,X_n\iid P_\theta$ with log-likelihood
+$\ell_n(\theta)=\sum_{i=1}^n\log f_\theta(X_i)$.  Write
+\[
+    s_\theta(X)=\grad_\theta\log f_\theta(X),
+    \qquad
+    I(\theta)=\E_\theta[s_\theta(X)s_\theta(X)^\mathsf T].
+\]
+The normalized score at $\theta_0$ is
+\[
+    \Delta_n=\frac{1}{\sqrt n}\sum_{i=1}^n s_{\theta_0}(X_i).
+\]
+Under regularity conditions, the multivariate central limit theorem gives
+$\Delta_n\convd\Normal_k(0,I(\theta_0))$ under $P_{\theta_0}$.
+
+\begin{definition}[Local asymptotic normality]
+The sequence of experiments is \emph{locally asymptotically normal} (LAN) at
+$\theta_0$ if, for every fixed $h\in\R^k$,
+\begin{equation}
+ \log\frac{\dd P_{n,\theta_0+h/\sqrt n}}
+              {\dd P_{n,\theta_0}}
+ =h^\mathsf T\Delta_n
+  -\frac12h^\mathsf TI(\theta_0)h+o_{P_{\theta_0}}(1),
+ \label{eq:lan-expansion}
+\end{equation}
+with $\Delta_n\convd\Normal_k(0,I(\theta_0))$ under the null.
+\end{definition}
+
+A second-order Taylor expansion of the log-likelihood suggests
+\eqref{eq:lan-expansion}; the LAN statement additionally controls the
+remainder under local perturbations.  The limiting log-likelihood ratio is
+exactly that of observing
+\[
+    Y\sim\Normal_k(I(\theta_0)h,I(\theta_0))
+\]
+with $h=0$ under the null.  Hence regular local testing problems inherit the
+geometry of a Gaussian shift experiment.
+
+\subsection{Contiguity}
+
+\begin{definition}[Contiguity]
+A sequence $Q_n$ is \emph{contiguous} with respect to $P_n$, written
+$Q_n\triangleleft P_n$, if $P_n(A_n)\to0$ implies $Q_n(A_n)\to0$ for every
+sequence of events $A_n$.  If contiguity holds in both directions, the
+sequences are mutually contiguous.
+\end{definition}
+
+In a regular LAN model, $P_{n,\theta_0+h/\sqrt n}$ and
+$P_{n,\theta_0}$ are mutually contiguous.  Thus an event that is asymptotically
+negligible under the null remains negligible under local alternatives.  This
+is what allows stochastic expansions proved under the null to remain useful
+for local-power calculations.
+
+\begin{theorem}[Le Cam's third lemma, Gaussian form]
+Suppose under $P_n$,
+\[
+ \left(T_n,\log\frac{\dd Q_n}{\dd P_n}\right)
+ \convd \Normal\left(
+ \begin{pmatrix}\mu\\-\sigma^2/2\end{pmatrix},
+ \begin{pmatrix}V&c\\c^\mathsf T&\sigma^2\end{pmatrix}
+ \right).
+\]
+Then under $Q_n$, $T_n\convd\Normal(\mu+c,V)$, with the evident vector
+interpretation.
+\end{theorem}
+
+The lemma says that exponential tilting by the local likelihood ratio shifts
+the limiting mean by the covariance with that likelihood ratio.  Applied to
+LAN, it yields
+\begin{equation}
+    \Delta_n\convd
+    \Normal_k(I(\theta_0)h,I(\theta_0))
+    \quad\text{under }\theta_0+h/\sqrt n.
+    \label{eq:score-under-local}
+\end{equation}
+
+\subsection{Asymptotic Power Envelope}
+
+For a scalar parameter, standardize the central sequence as
+$Z_n=I(\theta_0)^{-1/2}\Delta_n$.  Under the null it converges to
+$\Normal(0,1)$; under $\theta_0+h/\sqrt n$ it converges to
+$\Normal(h\sqrt{I(\theta_0)},1)$.  The Neyman--Pearson lemma in the limiting
+Gaussian experiment gives the one-sided power envelope
+\begin{equation}
+    \pi^*(h)=1-\Phi\{z_{1-\alpha}-h\sqrt{I(\theta_0)}\},
+    \qquad h>0.
+    \label{eq:local-power-envelope}
+\end{equation}
+A test whose limiting local power equals this expression is locally
+asymptotically most powerful in the specified direction.
+
+For two-sided testing, no UMP test exists even in the limiting Gaussian
+experiment.  Restricting to asymptotically unbiased or symmetric tests gives
+the rejection rule $\abs{Z_n}>z_{1-\alpha/2}$ and local power
+\[
+ P\left(\abs{Z+h\sqrt{I(\theta_0)}}>z_{1-\alpha/2}\right),
+ \qquad Z\sim\Normal(0,1).
+\]
+
+\section{Likelihood-Based Tests}
+
+Let $\widehat\theta$ be the unrestricted maximum likelihood estimator and
+$\widetilde\theta$ the MLE under $H_0$.  Three classical tests measure the
+same local departure from the null in different ways:
+\begin{itemize}
+    \item the likelihood-ratio test compares maximized likelihoods;
+    \item the Wald test measures the distance from $\widehat\theta$ to the
+    null using estimated standard errors;
+    \item the score test measures the slope of the likelihood at the
+    constrained estimate $\widetilde\theta$.
+\end{itemize}
+
+\subsection{Likelihood-Ratio Tests and Wilks' Theorem}
+
+Define
+\begin{equation}
+    W_n=2\{\ell_n(\widehat\theta)-\ell_n(\widetilde\theta)\}
+       =-2\log\Lambda_n.
+    \label{eq:asymptotic-lr-statistic}
+\end{equation}
+
+\begin{theorem}[Wilks]
+Suppose the model is regular, the true parameter is an interior point of
+$\Theta_0$, and $\Theta_0$ is a smooth submanifold of codimension $r$.  Under
+$H_0$,
+\[
+    W_n\convd\chi_r^2.
+\]
+Thus the asymptotic level-$\alpha$ LRT rejects when
+$W_n>\chi^2_{r,1-\alpha}$.
+\end{theorem}
+
+The degrees of freedom equal the number of independent restrictions imposed
+by the null.  A quadratic expansion of $\ell_n$ shows that $W_n$ is
+asymptotically the squared length of the normalized score component
+orthogonal to the null tangent space.
+
+Under local alternatives, the limit is noncentral chi-squared:
+\begin{equation}
+    W_n\convd\chi_r^2(\lambda),
+    \label{eq:noncentral-wilks}
+\end{equation}
+where $\lambda$ is the squared information distance from the local direction
+$h$ to the tangent space of the null.  This limit determines local power.
+
+\subsection{Wald Tests}
+
+For a scalar restriction $H_0:g(\theta)=0$, the Wald statistic is
+\begin{equation}
+    W_n^{\mathrm{Wald}}
+    =\frac{g(\widehat\theta)^2}
+    {\grad g(\widehat\theta)^\mathsf T
+     \{nI(\widehat\theta)\}^{-1}\grad g(\widehat\theta)}.
+    \label{eq:wald-statistic}
+\end{equation}
+Under regularity and the null, it converges to $\chi_1^2$.  For $r$ smooth
+restrictions, replace the denominator by the corresponding covariance matrix
+and obtain a $\chi_r^2$ limit.
+
+Wald tests are easy to construct from an estimator and its standard error,
+but their finite-sample behavior is not invariant to nonlinear
+reparameterization of the restriction.  They can also behave poorly when the
+MLE is near a boundary or its estimated variance is unstable.
+
+\subsection{Score Tests}
+
+The score, or Lagrange multiplier, test needs only the null fit.  For a scalar
+parameter and a simple null, its statistic is
+\begin{equation}
+    W_n^{\mathrm{score}}
+    =\frac{\{\ell_n'(\theta_0)\}^2}{nI(\theta_0)},
+    \label{eq:score-test-statistic}
+\end{equation}
+which converges to $\chi_1^2$ under $H_0$.  A signed one-sided version uses
+$\ell_n'(\theta_0)/\sqrt{nI(\theta_0)}$ directly.
+
+\begin{example}[Three asymptotic coin tests]
+For $S\sim\Bin(n,p)$ and $H_0:p=p_0$, the signed score statistic is
+\[
+    Z_{\mathrm{score}}
+    =\frac{S-np_0}{\sqrt{np_0(1-p_0)}}.
+\]
+The Wald statistic instead standardizes $\widehat p-p_0$ using
+$\widehat p(1-\widehat p)/n$, where $\widehat p=S/n$.  The likelihood-ratio
+statistic is
+\[
+ 2\left[S\log\frac{\widehat p}{p_0}
+ +(n-S)\log\frac{1-\widehat p}{1-p_0}\right].
+\]
+For fixed interior $p_0$, all three have the same first-order null limit and
+the same local asymptotic power.  They can differ noticeably for small $n$ or
+when $p_0$ is close to zero or one.
+\end{example}
+
+\subsection{First-Order Equivalence}
+
+In a regular model with a scalar parameter,
+\[
+ 2\{\ell_n(\widehat\theta)-\ell_n(\theta_0)\}
+ =nI(\theta_0)(\widehat\theta-\theta_0)^2+o_p(1)
+ =\frac{\ell_n'(\theta_0)^2}{nI(\theta_0)}+o_p(1).
+\]
+Consequently the likelihood-ratio, Wald, and score tests are first-order
+equivalent under the null and contiguous alternatives.  This equivalence does
+not imply equal finite-sample performance or equal higher-order accuracy.
+
+\section{Nuisance Parameters and Efficient Scores}
+
+Partition the parameter as $\theta=(\psi,\lambda)$, where
+$\psi\in\R^r$ is the parameter of interest and $\lambda$ is nuisance.  Write
+the score and information in blocks:
+\[
+ s_\theta=
+ \begin{pmatrix}s_\psi\\s_\lambda\end{pmatrix},
+ \qquad
+ I(\theta)=
+ \begin{pmatrix}
+ I_{\psi\psi}&I_{\psi\lambda}\\
+ I_{\lambda\psi}&I_{\lambda\lambda}
+ \end{pmatrix}.
+\]
+
+\subsection{Efficient Score and Information}
+
+The component of $s_\psi$ linearly predictable from the nuisance score does
+not provide information that distinguishes a change in $\psi$ from a change
+in $\lambda$.  Removing it gives the efficient score
+\begin{equation}
+    s_{\psi\cdot\lambda}
+    =s_\psi-I_{\psi\lambda}I_{\lambda\lambda}^{-1}s_\lambda.
+    \label{eq:efficient-score}
+\end{equation}
+Its covariance is the efficient information
+\begin{equation}
+    I_{\psi\cdot\lambda}
+    =I_{\psi\psi}
+     -I_{\psi\lambda}I_{\lambda\lambda}^{-1}I_{\lambda\psi},
+    \label{eq:efficient-information}
+\end{equation}
+the Schur complement of $I_{\lambda\lambda}$.  Score tests with nuisance
+parameters use the efficient score evaluated at the restricted estimator.
+
+Geometrically, nuisance scores span a tangent space in $L^2(P_\theta)$.
+Equation \eqref{eq:efficient-score} projects the score for the parameter of
+interest onto the orthogonal complement of that space.  Local power bounds
+are obtained by replacing ordinary information with efficient information.
+
+\subsection{Plug-In and Profile Likelihood}
+
+The profile log-likelihood is
+\[
+    \ell_n^p(\psi)=\sup_\lambda\ell_n(\psi,\lambda).
+\]
+Comparing its constrained and unconstrained maxima yields the usual
+likelihood-ratio statistic.  Under regularity, estimating the nuisance
+parameter changes the first-order variance precisely through
+$I_{\psi\cdot\lambda}$, and Wilks' theorem still gives degrees of freedom equal
+to the dimension of the restriction on $\psi$.
+
+Plug-in critical values are valid when the estimated nuisance parameter is
+consistent and the null approximation is sufficiently uniform.  Exact
+pivots, such as the Student $t$ statistic, are preferable when available.
+Otherwise one may use a parametric bootstrap, but its validity is itself an
+asymptotic theorem and can fail in nonregular problems.
+
+\section{Asymptotic Optimality}
+
+An asymptotically valid test is not automatically optimal.  In LAN models,
+optimality is defined by comparison with the Gaussian limit experiment.
+
+\subsection{Locally Asymptotically Most Powerful Tests}
+
+For testing a scalar $H_0:\theta=\theta_0$ against local upper alternatives,
+the normalized score test
+\[
+    \phi_n=\ind\left\{
+      I(\theta_0)^{-1/2}\Delta_n>z_{1-\alpha}
+    \right\}
+\]
+attains the envelope \eqref{eq:local-power-envelope}.  No asymptotic
+level-$\alpha$ test satisfying the regularity conditions can have larger
+limiting power at the same local direction $h>0$.  Likelihood-ratio and Wald
+tests have the same first-order local power when their rejection regions are
+oriented in the same one-sided direction.
+
+With a vector parameter, no test is most powerful in every direction.  For a
+specified direction $h$, the optimal statistic is proportional to
+$h^\mathsf T\Delta_n$.  For an unspecified departure from a smooth null,
+the likelihood-ratio statistic uses the squared norm of the efficient score
+in the normal space to the null.  This yields rotationally invariant, rather
+than directionwise, optimality in the limiting Gaussian experiment.
+
+\subsection{Pitman Efficiency}
+
+Suppose two asymptotic level-$\alpha$ tests have limiting local powers of the
+form
+\[
+    1-\Phi(z_{1-\alpha}-c_jh),\qquad j=1,2.
+\]
+Their Pitman asymptotic relative efficiency is
+\[
+    \operatorname{ARE}(1,2)=\frac{c_1^2}{c_2^2}.
+\]
+It is interpreted as the limiting ratio of sample sizes required for equal
+power against nearby alternatives.  ARE compares first-order local behavior;
+it does not determine performance against fixed alternatives or in small
+samples.
+
+\subsection{Testing and Confidence Sets}
+
+A family of level-$\alpha$ tests can be inverted to form a confidence set:
+\[
+    C_n(X)=\{\theta_0:\text{the test of }H_0:\theta=\theta_0
+                   \text{ does not reject}\}.
+\]
+If the tests have uniform asymptotic level $\alpha$, then
+\[
+    \liminf_{n\to\infty}\inf_{\theta\in\Theta}
+    P_\theta\{\theta\in C_n(X)\}\geq1-\alpha.
+\]
+Pointwise level yields only pointwise coverage.  Wald, score, and
+likelihood-ratio confidence regions arise by inverting their corresponding
+tests; despite first-order equivalence, their finite-sample shapes can be
+quite different.
+
+\section{Nonregular Problems}
+
+The standard theory relies on an interior true parameter, differentiability,
+nonsingular information, identifiable parameters, and a stable support.
+When these conditions fail, the $n^{-1/2}$ rate, LAN expansion, or chi-squared
+calibration may be wrong.
+
+\subsection{Parameters on the Boundary}
+
+Suppose a scalar parameter is constrained to $\theta\geq0$ and the null is
+$H_0:\theta=0$.  The null lies on the boundary, so the unrestricted local
+Gaussian approximation must itself be projected onto a half-line.  In a
+standard one-dimensional case,
+\[
+    -2\log\Lambda_n
+    \convd \tfrac12\chi_0^2+\tfrac12\chi_1^2,
+\]
+where $\chi_0^2$ is a point mass at zero.  Using an ordinary $\chi_1^2$
+critical value is then conservative.  More complicated inequality
+constraints lead to chi-bar-squared mixtures whose weights depend on the
+local geometry.
+
+The coin model illustrates another boundary failure.  At $p_0=0$, every
+observation is zero under the null and the Fisher information formula
+$1/\{p_0(1-p_0)\}$ is not meaningful.  Alternatives on the scale $1/n$, not
+$1/\sqrt n$, can be detectable because
+\[
+ P_{p_n}(S=0)=(1-p_n)^n\longrightarrow e^{-c}
+ \quad\text{when }p_n=c/n.
+\]
+The limiting experiment is Poisson rather than Gaussian.
+
+\subsection{Nonidentification and Singular Information}
+
+If a nuisance parameter is present only under the alternative, it cannot be
+consistently estimated under the null.  Mixture-component tests and tests for
+an unknown change point are common examples.  The likelihood-ratio statistic
+may converge to the supremum of a stochastic process rather than a
+chi-squared variable.
+
+Similarly, singular Fisher information signals that the quadratic
+log-likelihood approximation is inadequate.  Higher-order terms may determine
+the rate and limiting distribution.  These cases require problem-specific
+analysis; reporting a standard Wald or Wilks $p$-value is not justified merely
+because the sample size is large.
+
+\subsection{Resampling Calibration}
+
+A parametric bootstrap fits the null model, simulates data from the fitted
+null, and recomputes the statistic to approximate its null distribution.  A
+permutation test instead exploits exchangeability under the null and may be
+finite-sample exact.  The distinction is important:
+\begin{itemize}
+    \item permutation validity follows from a group symmetry and can be exact;
+    \item bootstrap validity follows from consistency of an estimated
+    distribution and is generally asymptotic;
+    \item neither method automatically repairs nonidentification or a
+    discontinuous statistic.
+\end{itemize}
+
+The practical asymptotic workflow is therefore: identify the null geometry,
+derive the statistic's limit under the null and contiguous alternatives,
+verify whether convergence is uniform over nuisance parameters, and only then
+choose analytical or resampling critical values.  Local power can be compared
+with the LAN Gaussian envelope when regularity holds; when it does not, the
+appropriate non-Gaussian limiting experiment determines what optimality can
+mean.
+
 \end{document}

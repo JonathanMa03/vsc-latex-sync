@@ -165,7 +165,7 @@
 \newcommand{\InvGam}{\mathrm{Inv\text{-}Gamma}}
 
 % Title block
-\title{EN.553.734 AI \& Statistical Methods for Clinical Data Science}
+\title{EN.553.734 Generative AI \& Statistical Methods for Clinical Data Science}
 \author{Jonathan Y. Ma}
 \date{June 2026}
 
@@ -176,5 +176,45 @@
 \noindent \emph{This course was taught by Dr. Yanxun Xu in the Fall 2026 Semester. The notes are transcribed by Jonathan Ma and may contain errors and omitted content, so any issues are to be directed towards me.}
 
 \tableofcontents
+
+\section{What is Clinical Data Science?}
+Clinical Data Science is a field that combines data science techniques with clinical knowledge to analyze and interpret healthcare data. It involves the application of statistical methods, machine learning algorithms, and computational tools to extract meaningful insights from clinical datasets, which can include electronic health records (EHRs), medical imaging, genomic data, and more.
+
+\subsection{What do we want to answer?}
+\begin{itemize}
+    \item Does a Treatment work? (Causal Inference)
+    \item Is a treatment safe? (Safety Analysis)
+\end{itemize}
+ We can use various data sources like clinical studies, protocols, and existing scientific knowledge, including websites like ClinicalTrials.gov. We want to combine statistics and AI to build reliable evidence. 
+
+ Biopharmaceutical statistics involve a combination of cinical trial design and statistical analysis. Drug design also goes through a process:
+ $$
+Discovery \rightarrow Preclinical \rightarrow Clinical (Phase I, II, III) \rightarrow Regulatory \rightarrow Post-Market
+ $$
+
+\subsection{Clinical Protocols}
+Clinical protocols are usually written by clinicians, and statisticians need to understand the clinical context to design and analyze trials effectively. The protocol includes the study design, objectives, endpoints, statistical analysis plan, and other relevant information. \emph{The most important part is being able to communicate results to the marketing team, clinicians, managers.}
+It has all the science, operations, and motivation behind and including the statistical analysis plan. The protocol is a living document that can be updated as the study progresses.
+
+This is usually defined before any human subject is considered, usually its 300 pages, regulatory approved, and everything must follow it
+
+\subsection{An Example Clinical Protocol}
+
+The example is protocol MK-3475-006, a multicenter, randomized, controlled, open-label, three-arm Phase III trial in advanced melanoma. It compares twodosing schedules of MK-3475 (pembrolizumab) with ipilimumab. Approximately 645 patients are randomized in a $1{:}1{:}1$ ratio, with stratification by line of therapy, PD-L1 expression, and ECOG performance status. The co-primary endpoints are progression-free survival (PFS) and overall survival (OS); the principal secondary efficacy endpoint is overall response rate (ORR).
+
+\subparagraph{How to read a protocol.}
+A protocol should be read as a chain from the clinical question to the final statistical claim, not simply from the first page to the last:
+\begin{enumerate}
+    \item \textbf{Check identity and history.} Record the protocol number, amendment number and date, and distinguish the original protocol from the final version. Read the summary of changes first. In this example, an amendment changed the primary ORR population to intention-to-treat (ITT) following FDA feedback. Such a change can alter the interpretation of the results and must not be silently mixed with an earlier analysis plan.
+    \item \textbf{Translate the clinical question into estimands.} Identify the population, treatments, endpoints, time origin, intercurrent events, and treatment contrast. Here, PFS is time from randomization to centrally assessed progression or death, while OS is time from randomization to death from any cause. Similar endpoint names do not guarantee identical definitions across studies.
+    \item \textbf{Connect objectives, hypotheses, and endpoints.} Separate primary, secondary, and exploratory objectives. The trial succeeds if at least one MK-3475 arm is superior to ipilimumab for PFS at an interim analysis or for OS at an interim or final analysis. This logical rule is more precise than the informal statement that the treatment "works."
+    \item \textbf{Understand who enters the trial and how treatment is assigned.} Review inclusion and exclusion criteria, recruitment setting, randomization ratio, stratification factors, masking, treatment duration, crossover or subsequent therapy, and discontinuation rules. These details determine the target population, internal validity, generalizability, and possible sources of bias. The open-label design makes the blinded independent central review of PFS and ORR especially important.
+    \item \textbf{Follow the schedule of assessments.} The flow chart determines when scans, laboratory measurements, adverse-event assessments, and follow-up occur. Visit windows and missed assessments affect the observed event time, missingness, and censoring; they are therefore part of the statistical design rather than merely operational details.
+    \item \textbf{Audit the statistical analysis plan (SAP).} Match each endpoint to its analysis population, statistical method, missing-data rule, and sensitivity analyses. In this trial, efficacy uses ITT; safety uses the all-patients-as-treated population. PFS and OS use stratified log-rank tests and stratified Cox models, while ORR uses the stratified Miettinen--Nurminen method. Patients with missing ORR are treated as nonresponders.
+    \item \textbf{Inspect censoring, multiplicity, and interim monitoring.} For primary PFS analysis, a patient without progression or death is censored at the last disease assessment. Alternative rules address missed scans, new anticancer therapy, and investigator assessment. The overall one-sided Type I error is controlled at $2.5\%$ across two experimental arms, PFS and OS, and repeated looks using alpha allocation, Bonferroni adjustment, sequential testing, and a Hochberg procedure. Looking only at nominal $p$-values would ignore this testing structure.
+    \item \textbf{Reconstruct the sample-size argument.} The study is event-driven, with about 435 deaths planned for the final OS analysis. Check the assumed control survival, clinically meaningful hazard ratio, accrual, follow-up, dropout, power, and early-stopping rules. These assumptions should later be compared with the realized trial data.
+    \item \textbf{Read safety as carefully as efficacy.} Confirm adverse-event definitions, severity grading, reporting windows, exposure adjustment, and prespecified events of special interest. The protocol uses a tiered safety analysis; not every confidence interval or nominal $p$-value is a formal multiplicity-controlled hypothesis test.
+\end{enumerate}
+A useful practical check is to build a traceability table with one row per objective or endpoint and columns for the endpoint definition, analysis population, treatment contrast, observation window, intercurrent-event and missing-data handling, statistical method, multiplicity allocation, sensitivity analyses, and protocol/SAP citation. Any blank or contradictory cell becomes a question for the statistician and clinician rather than an invitation for the model to guess.
 
 \end{document}

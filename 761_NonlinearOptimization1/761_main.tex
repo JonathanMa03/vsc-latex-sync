@@ -165,7 +165,7 @@
 \newcommand{\InvGam}{\mathrm{Inv\text{-}Gamma}}
 
 % Title block
-\title{EN.553.762 Nonlinear Optimization 1}
+\title{EN.553.761 Unconstrained Nonlinear Optimization}
 \author{Jonathan Y. Ma}
 \date{June 2026}
 
@@ -173,8 +173,737 @@
 
 \maketitle
 
-\noindent \emph{This course was taught by Dr. Mateo Diaz in the Fall 2025 Semester. The notes are transcribed by Jonathan Ma and may contain errors and omitted content, so any issues are to be directed towards me.}
+\noindent \emph{This course was taught by Dr. Shiqian Ma in the Fall 2026 Semester. The notes are transcribed by Jonathan Ma and may contain errors and omitted content, so any issues are to be directed towards me.}
 
 \tableofcontents
+
+\section{Gradient Method}
+
+Consider
+\[
+    \min_{x\in\R^d} f(x),
+\]
+where $f$ is differentiable. A point $x^*$ is a global minimizer if
+$f(x^*)\leq f(x)$ for every $x$, a local minimizer if this holds in a
+neighborhood, and a stationary point if $\grad f(x^*)=0$.
+
+\begin{definition}[Smoothness and strong convexity]
+The function $f$ is $L$-smooth if
+\[
+    \norm{\grad f(x)-\grad f(y)}\leq L\norm{x-y}.
+\]
+It is $\mu$-strongly convex if
+\[
+ f(y)\geq f(x)+\inner{\grad f(x)}{y-x}
+       +\frac{\mu}{2}\norm{y-x}^2.
+\]
+\end{definition}
+
+For twice differentiable $f$, the sufficient Hessian conditions are
+$\Hess f(x)\preceq LI$ for smoothness and
+$\Hess f(x)\succeq\mu I$ for strong convexity. Convexity makes every local
+minimum global; strong convexity makes the minimizer unique.
+
+\begin{lemma}[Descent lemma]
+If $f$ is $L$-smooth, then
+\[
+ f(y)\leq f(x)+\inner{\grad f(x)}{y-x}
+            +\frac L2\norm{y-x}^2.
+\]
+\end{lemma}
+
+\begin{proof}
+Apply the fundamental theorem of calculus to
+$f(x+t(y-x))$ and bound the change in the gradient using Lipschitz
+continuity.
+\end{proof}
+
+Gradient descent uses
+\begin{equation}
+    x_{k+1}=x_k-\alpha_k\grad f(x_k).
+    \label{eq:gradient-descent}
+\end{equation}
+With $\alpha=1/L$, the descent lemma gives
+\[
+    f(x_{k+1})\leq f(x_k)-\frac1{2L}\norm{\grad f(x_k)}^2.
+\]
+
+\begin{theorem}[Basic gradient-descent rates]
+Let $f$ be convex and $L$-smooth, and let $x^*$ be a minimizer. Gradient
+descent with $\alpha=1/L$ satisfies
+\[
+ f(x_k)-f(x^*)\leq\frac{L\norm{x_0-x^*}^2}{2k}.
+\]
+If $f$ is also $\mu$-strongly convex, then
+\[
+ f(x_k)-f(x^*)\leq
+ \left(1-\frac{\mu}{L}\right)^k\{f(x_0)-f(x^*)\}.
+\]
+\end{theorem}
+
+The condition number $\kappa=L/\mu$ controls the linear rate. Poor feature
+scaling produces elongated level sets and slow zig-zagging. Stop using a
+combination of gradient norm, relative objective change, step norm, and an
+iteration budget; objective change alone can be misleading on flat regions.
+
+\section{Quasi-Newton Method}
+
+Newton's method locally approximates
+\[
+ f(x+p)\approx f(x)+g^\mathsf Tp+\tfrac12p^\mathsf THp
+\]
+and solves $Hp=-g$, where $g=\grad f(x)$ and $H=\Hess f(x)$. Near a
+nondegenerate minimizer, full Newton steps converge quadratically under
+standard Lipschitz-Hessian assumptions. Far from a minimizer, $H$ can be
+indefinite and the Newton direction need not descend.
+
+Quasi-Newton methods replace the Hessian or inverse Hessian with an estimate.
+Set $s_k=x_{k+1}-x_k$ and $y_k=\grad f(x_{k+1})-\grad f(x_k)$. The secant
+condition is
+\[
+    B_{k+1}s_k=y_k.
+\]
+The BFGS update is
+\[
+ B_{k+1}=B_k-\frac{B_ks_ks_k^\mathsf TB_k}{s_k^\mathsf TB_ks_k}
+              +\frac{y_ky_k^\mathsf T}{y_k^\mathsf Ts_k}.
+\]
+If $B_k\succ0$ and $y_k^\mathsf Ts_k>0$, then $B_{k+1}\succ0$. Wolfe line
+search guarantees this curvature condition for a descent direction.
+
+In inverse form, with $\rho_k=(y_k^\mathsf Ts_k)^{-1}$,
+\[
+ H_{k+1}=(I-\rho_ks_ky_k^\mathsf T)H_k
+         (I-\rho_ky_ks_k^\mathsf T)+\rho_ks_ks_k^\mathsf T,
+\]
+and the direction is $p_k=-H_kg_k$. L-BFGS stores only the last few
+$(s_k,y_k)$ pairs and applies the inverse implicitly, making memory
+$O(md)$ instead of $O(d^2)$.
+
+\begin{theorem}[Local BFGS behavior]
+For a twice continuously differentiable, strongly convex objective with
+Lipschitz Hessian near $x^*$, BFGS with a suitable Wolfe line search converges
+superlinearly under the standard Dennis--Moré conditions.
+\end{theorem}
+
+In computation, solve Newton systems rather than invert Hessians. Regularize
+an indefinite Hessian using $H+\lambda I$, use a trust region, or switch to a
+descent direction.
+
+\section{Line Search}
+
+Given a descent direction $p_k$ with $g_k^\mathsf Tp_k<0$, line search chooses
+$\alpha_k>0$ and sets $x_{k+1}=x_k+\alpha_kp_k$. Exact line search minimizes
+$\phi(\alpha)=f(x_k+\alpha p_k)$ but is usually unnecessary.
+
+\begin{definition}[Armijo and Wolfe conditions]
+The Armijo sufficient-decrease condition is
+\[
+ f(x_k+\alpha p_k)
+ \leq f(x_k)+c_1\alpha g_k^\mathsf Tp_k,
+ \qquad 0<c_1<1.
+\]
+The curvature condition is
+\[
+ \grad f(x_k+\alpha p_k)^\mathsf Tp_k
+ \geq c_2g_k^\mathsf Tp_k,\qquad c_1<c_2<1.
+\]
+The strong Wolfe condition replaces the latter with an absolute-value bound.
+\end{definition}
+
+Backtracking starts from an initial step, often one, and repeatedly multiplies
+it by $\rho\in(0,1)$ until Armijo holds.
+
+\begin{algorithm}[H]
+\caption{Backtracking line search}
+\begin{algorithmic}[1]
+\State Choose $\alpha\gets\alpha_0$, $\rho\in(0,1)$, $c_1\in(0,1)$.
+\While{$f(x+\alpha p)>f(x)+c_1\alpha\grad f(x)^\mathsf Tp$}
+  \State $\alpha\gets\rho\alpha$.
+\EndWhile
+\State Return $\alpha$.
+\end{algorithmic}
+\end{algorithm}
+
+\begin{proposition}
+If $\grad f$ is $L$-Lipschitz and $p$ is a descent direction, backtracking
+terminates after finitely many reductions.
+\end{proposition}
+
+The Wolfe conditions prevent steps that are too short and support global
+convergence theory for nonlinear conjugate-gradient and quasi-Newton methods.
+
+\section{Subgradient Method}
+
+For a convex, possibly nondifferentiable function $f$, a vector $g$ is a
+subgradient at $x$ if
+\[
+    f(y)\geq f(x)+g^\mathsf T(y-x)\quad\text{for all }y.
+\]
+The set $\partial f(x)$ of all subgradients is the subdifferential.
+For $f(x)=\abs x$, $\partial f(0)=[-1,1]$. A point minimizes a proper convex
+function exactly when $0\in\partial f(x)$.
+
+The subgradient iteration is
+\[
+    x_{k+1}=x_k-\alpha_kg_k,\qquad g_k\in\partial f(x_k).
+\]
+Unlike a gradient, $-g_k$ need not be a descent direction, so objective values
+may oscillate.
+
+\begin{theorem}[Subgradient bound]
+Suppose $\norm{g_k}\leq G$ and $\norm{x_0-x^*}\leq R$. Then
+\[
+ \min_{0\leq j<k}\{f(x_j)-f(x^*)\}
+ \leq\frac{R^2+G^2\sum_{j=0}^{k-1}\alpha_j^2}
+           {2\sum_{j=0}^{k-1}\alpha_j}.
+\]
+Thus steps satisfying $\sum_k\alpha_k=\infty$ and
+$\sum_k\alpha_k^2<\infty$ give convergence of the best objective value.
+\end{theorem}
+
+With a horizon known in advance, constant steps of order $1/\sqrt{k}$ give
+the characteristic $O(k^{-1/2})$ rate. Proximal methods are usually much
+faster when the nonsmooth term has a tractable proximal map.
+
+\section{Proximal Gradient Method}
+
+Consider the composite convex problem
+\[
+    \min_x F(x)=f(x)+g(x),
+\]
+where $f$ is differentiable and $L$-smooth while $g$ is convex and may be
+nonsmooth.
+
+\begin{definition}[Proximal operator]
+For $\alpha>0$,
+\[
+ \operatorname{prox}_{\alpha g}(v)
+ =\argmin_x\left\{g(x)+\frac1{2\alpha}\norm{x-v}^2\right\}.
+\]
+\end{definition}
+
+The proximal-gradient step is
+\begin{equation}
+ x_{k+1}=\operatorname{prox}_{\alpha g}
+             \{x_k-\alpha\grad f(x_k)\}.
+ \label{eq:proximal-gradient}
+\end{equation}
+It minimizes a quadratic upper model of $f$ plus the exact $g$. Examples are
+\[
+ \operatorname{prox}_{\alpha\lambda\norm{\cdot}_1}(v)
+ =\operatorname{sign}(v)(\abs v-\alpha\lambda)_+,
+\qquad
+ \operatorname{prox}_{\ind_C}(v)=\Pi_C(v).
+\]
+
+\begin{theorem}[Proximal-gradient rate]
+If $F$ is convex, $f$ is $L$-smooth, and a minimizer exists, then with
+$\alpha=1/L$,
+\[
+    F(x_k)-F(x^*)\leq\frac{L\norm{x_0-x^*}^2}{2k}.
+\]
+\end{theorem}
+
+The gradient mapping
+$G_\alpha(x)=\alpha^{-1}[x-\operatorname{prox}_{\alpha g}
+(x-\alpha\grad f(x))]$ generalizes the gradient: $G_\alpha(x)=0$ exactly at
+a first-order solution.
+
+\section{Nesterov’s Accelerated Gradient Method}
+
+Acceleration combines a gradient step with momentum. For convex $L$-smooth
+$f$, one common form is
+\[
+ x_{k+1}=y_k-\frac1L\grad f(y_k),\qquad
+ y_{k+1}=x_{k+1}+\frac{k}{k+3}(x_{k+1}-x_k).
+\]
+
+\begin{theorem}[Accelerated rate]
+Nesterov's method can be chosen so that
+\[
+    f(x_k)-f(x^*)\leq\frac{2L\norm{x_0-x^*}^2}{(k+1)^2}.
+\]
+For $\mu$-strongly convex $f$, accelerated methods achieve a linear factor of
+order $1-1/\sqrt{\kappa}$ rather than $1-1/\kappa$.
+\end{theorem}
+
+FISTA applies the same idea to proximal gradient and achieves $O(k^{-2})$ for
+composite convex objectives. Momentum can cause nonmonotone objectives and
+oscillation. Adaptive restart resets momentum when the objective or gradient
+geometry indicates overshooting.
+
+\section{Frank-Wolfe Method}
+
+Frank--Wolfe solves $\min_{x\in C}f(x)$ for a compact convex set $C$ using a
+linear minimization oracle rather than projection:
+\[
+ s_k\in\argmin_{s\in C}\grad f(x_k)^\mathsf Ts,\qquad
+ x_{k+1}=(1-\gamma_k)x_k+\gamma_ks_k.
+\]
+It is useful when linear optimization over $C$ is cheap but Euclidean
+projection is expensive, as for nuclear-norm balls.
+
+The Frank--Wolfe gap
+\[
+    g_{\mathrm{FW}}(x)=
+    \max_{s\in C}\grad f(x)^\mathsf T(x-s)
+\]
+is computable and satisfies $f(x)-f(x^*)\leq g_{\mathrm{FW}}(x)$ for convex
+$f$. It is both a stopping criterion and a certificate.
+
+\begin{theorem}[Frank--Wolfe rate]
+If $f$ is convex and $L$-smooth on compact $C$ with diameter $D$, then with
+$\gamma_k=2/(k+2)$,
+\[
+    f(x_k)-f(x^*)\leq\frac{2LD^2}{k+2}.
+\]
+\end{theorem}
+
+Iterates are convex combinations of oracle outputs, often giving sparse or
+low-rank solutions early. Standard Frank--Wolfe can zig-zag near a boundary;
+away-step variants achieve faster rates under additional geometry.
+
+\section{Proximal Point Algorithm}
+
+The proximal point algorithm for a proper closed convex $f$ is
+\begin{equation}
+    x_{k+1}=\operatorname{prox}_{\lambda_k f}(x_k)
+    =\argmin_x\left\{f(x)+\frac1{2\lambda_k}\norm{x-x_k}^2\right\}.
+    \label{eq:ppa}
+\end{equation}
+Its optimality condition is
+$0\in\partial f(x_{k+1})+\lambda_k^{-1}(x_{k+1}-x_k)$, or
+$x_k-x_{k+1}\in\lambda_k\partial f(x_{k+1})$.
+
+\begin{theorem}[Fejér monotonicity]
+If $x^*$ minimizes $f$, then every exact proximal point step satisfies
+\[
+ \norm{x_{k+1}-x^*}^2
+ \leq\norm{x_k-x^*}^2-\norm{x_{k+1}-x_k}^2.
+\]
+If $\inf_k\lambda_k>0$ and a minimizer exists, the iterates converge to a
+minimizer in finite dimensions.
+\end{theorem}
+
+PPA is robust but each step may be as difficult as the original problem. Its
+importance is conceptual: proximal gradient, augmented Lagrangian, and ADMM
+can be interpreted as tractable approximations or operator-splitting forms of
+proximal point iterations.
+
+\section{Augmented Lagrangian Method}
+
+For equality constraints
+\[
+    \min_x f(x)\quad\text{subject to}\quad Ax=b,
+\]
+the augmented Lagrangian is
+\begin{equation}
+ \mathcal L_\rho(x,y)
+ =f(x)+y^\mathsf T(Ax-b)+\frac\rho2\norm{Ax-b}^2.
+ \label{eq:augmented-lagrangian}
+\end{equation}
+The method of multipliers alternates
+\[
+ x_{k+1}\in\argmin_x\mathcal L_\rho(x,y_k),\qquad
+ y_{k+1}=y_k+\rho(Ax_{k+1}-b).
+\]
+The quadratic penalty improves feasibility without requiring
+$\rho\to\infty$, while the dual variable accumulates constraint violations.
+
+Under convexity and standard constraint qualifications, a pair $(x^*,y^*)$
+is optimal when
+\[
+    0\in\partial f(x^*)+A^\mathsf Ty^*,\qquad Ax^*=b.
+\]
+These KKT residuals should be monitored. Inner minimization need not be exact,
+but its tolerances must become sufficiently accurate for convergence theory.
+
+\section{Alternating Direction Method of Multipliers}
+
+ADMM addresses
+\[
+    \min_{x,z}f(x)+g(z)\quad\text{subject to}\quad Ax+Bz=c.
+\]
+Using the scaled dual variable $u=y/\rho$, the iterations are
+\begin{align*}
+ x_{k+1}&=\argmin_x\left\{
+ f(x)+\frac\rho2\norm{Ax+Bz_k-c+u_k}^2\right\},\\
+ z_{k+1}&=\argmin_z\left\{
+ g(z)+\frac\rho2\norm{Ax_{k+1}+Bz-c+u_k}^2\right\},\\
+ u_{k+1}&=u_k+Ax_{k+1}+Bz_{k+1}-c.
+\end{align*}
+Separating $x$ and $z$ can turn a difficult joint problem into two simple
+subproblems.
+
+\begin{definition}[ADMM residuals]
+The primal residual is
+$r_{k+1}=Ax_{k+1}+Bz_{k+1}-c$. In the common constraint $x=z$, the dual
+residual is $s_{k+1}=\rho(z_{k+1}-z_k)$, up to the appropriate matrix factor
+in the general form.
+\end{definition}
+
+Stop only when both residuals are small relative to absolute and relative
+tolerances. A large $\rho$ emphasizes feasibility but can slow dual progress;
+a small $\rho$ does the reverse. Residual balancing adapts $\rho$ while
+rescaling $u$ consistently.
+
+\begin{theorem}[Convex ADMM convergence]
+If $f$ and $g$ are proper, closed, convex, a saddle point exists, and the
+subproblems are solved exactly, then the primal residual converges to zero,
+objective values converge to the optimum, and dual variables converge under
+standard rank conditions.
+\end{theorem}
+
+\section{Coordinate Descent Method}
+
+Coordinate descent updates one block at a time:
+\[
+ x_j^{k+1}\in\argmin_t
+ f(x_1^{k+1},\ldots,x_{j-1}^{k+1},t,x_{j+1}^k,\ldots,x_d^k).
+\]
+Updates may be cyclic, randomized, greedy, or performed in blocks. For a
+smooth objective with coordinate Lipschitz constant $L_j$, a coordinate
+gradient step is
+$x_j\leftarrow x_j-L_j^{-1}\partial_jf(x)$.
+
+\begin{theorem}[Randomized coordinate rate]
+For convex smooth $f$ with coordinate-wise Lipschitz gradients, randomized
+coordinate descent has an expected $O(1/k)$ objective gap. Under strong
+convexity it converges linearly in expectation, with a rate controlled by the
+coordinate smoothness constants.
+\end{theorem}
+
+Coordinate methods are effective when updates are closed form and data are
+sparse. For lasso, each update is soft thresholding. Cache residuals rather
+than recomputing $X\beta$ after each coordinate. Pure coordinate minimization
+can fail for coupled nonsmooth nonconvex objectives, so assumptions matter.
+
+\section{Stochastic Gradient Descent}
+
+For finite-sum or expectation objectives,
+\[
+ f(x)=\frac1n\sum_{i=1}^nf_i(x)
+ \quad\text{or}\quad
+ f(x)=\E_\xi[F(x;\xi)],
+\]
+stochastic gradient descent (SGD) uses
+\begin{equation}
+    x_{k+1}=x_k-\alpha_kg_k,\qquad
+    \E[g_k\mid x_k]=\grad f(x_k).
+    \label{eq:sgd}
+\end{equation}
+A minibatch average lowers gradient variance roughly inversely with batch
+size until correlations and hardware effects dominate.
+
+\begin{theorem}[Strongly convex SGD rate]
+Suppose $f$ is $\mu$-strongly convex, stochastic gradients are unbiased with
+bounded second moment, and $\alpha_k$ is of order $1/k$. Then
+\[
+    \E[f(\bar x_k)-f(x^*)]=O(k^{-1})
+\]
+for a suitable averaged iterate. For convex but not strongly convex objectives,
+the standard rate is $O(k^{-1/2})$.
+\end{theorem}
+
+A constant learning rate reaches a noise neighborhood rather than converging
+exactly, but is useful for rapid initial progress. Decay reduces the
+steady-state variance. Momentum updates
+\[
+    v_{k+1}=\beta v_k+g_k,\qquad x_{k+1}=x_k-\alpha v_{k+1}
+\]
+smooth noisy directions and accelerate persistent ones.
+
+Shuffle finite datasets between epochs. Report gradient evaluations or data
+passes, not iterations alone, when comparing batch sizes. For nonconvex
+smooth objectives, a common result controls the average squared gradient norm,
+so convergence means approaching stationarity rather than a global minimum.
+
+\section{Adaptive Methods}
+
+Adaptive methods rescale coordinates using past gradients:
+\[
+    x_{k+1}=x_k-\alpha D_k^{-1}m_k.
+\]
+They are helpful for sparse gradients and poorly scaled coordinates.
+However, their implicit geometry, memory cost, and generalization can differ
+from SGD. The stabilizer $\varepsilon$ is part of the algorithm, not merely a
+guard against division by zero.
+
+\subsection{ADAM}
+
+Adam maintains exponential first and second moments:
+\begin{align*}
+ m_k&=\beta_1m_{k-1}+(1-\beta_1)g_k,\\
+ v_k&=\beta_2v_{k-1}+(1-\beta_2)g_k^{\odot2},\\
+ \widehat m_k&=m_k/(1-\beta_1^k),\qquad
+ \widehat v_k=v_k/(1-\beta_2^k),\\
+ x_{k+1}&=x_k-\alpha\frac{\widehat m_k}
+                    {\sqrt{\widehat v_k}+\varepsilon}.
+\end{align*}
+Bias correction matters early because moments start at zero.
+
+Vanilla Adam does not converge for every convex online problem; AMSGrad
+repairs a problematic decrease in the effective second-moment accumulator by
+using a coordinatewise running maximum. In deep learning, AdamW decouples
+weight decay from the adaptive gradient update. Adding $\lambda x$ to the
+gradient is not equivalent to multiplicative weight decay under a
+coordinate-dependent preconditioner.
+
+\subsection{AdaGrad}
+
+Diagonal AdaGrad uses
+\[
+    v_k=v_{k-1}+g_k^{\odot2},\qquad
+    x_{k+1}=x_k-\alpha\frac{g_k}{\sqrt{v_k}+\varepsilon}.
+\]
+Coordinates with frequent large gradients receive smaller future steps.
+
+\begin{theorem}[AdaGrad regret, informal]
+For convex online losses and a bounded domain, diagonal AdaGrad has regret
+controlled by
+\[
+    \sum_{j=1}^d
+    \sqrt{\sum_{k=1}^Tg_{k,j}^2},
+\]
+up to a factor depending on the domain diameter. This can be much smaller
+than a bound based on the worst gradient when gradients are sparse.
+\end{theorem}
+
+Because $v_k$ only increases, learning rates may decay too aggressively in a
+long nonstationary run. RMSProp and Adam use exponential rather than cumulative
+second moments.
+
+\section{Shampoo and Muon}
+
+Diagonal adaptive methods ignore correlation between parameter coordinates.
+Full-matrix AdaGrad captures it but requires prohibitive storage and matrix
+roots. Shampoo exploits tensor structure. For a matrix gradient
+$G_k\in\R^{m\times n}$, a basic form accumulates
+\[
+    L_k=\varepsilon I_m+\sum_{t\leq k}G_tG_t^\mathsf T,\qquad
+    R_k=\varepsilon I_n+\sum_{t\leq k}G_t^\mathsf TG_t
+\]
+and preconditions by
+\begin{equation}
+    \widetilde G_k=L_k^{-1/4}G_kR_k^{-1/4}.
+    \label{eq:shampoo}
+\end{equation}
+Higher-order tensors receive one preconditioner per mode. Matrix roots are
+expensive, so practical implementations update them intermittently, use
+blocking, and combine them with grafting or momentum. Damping controls nearly
+singular eigendirections.
+
+Muon is designed primarily for matrix-valued hidden-layer weights. It forms a
+momentum matrix $M_k$ and approximately replaces its singular values by one,
+\[
+    M_k=U\Sigma V^\mathsf T
+    \quad\longmapsto\quad
+    \operatorname{polar}(M_k)=UV^\mathsf T,
+\]
+usually through a small number of Newton--Schulz matrix iterations rather than
+an SVD. The resulting direction is then scaled and used for the parameter
+update. Vector parameters and some embedding or output parameters are commonly
+handled by another optimizer.
+
+Shampoo uses accumulated second-moment geometry; Muon orthogonalizes a current
+momentum direction. They are therefore not interchangeable despite both using
+matrix operations. Exact scaling conventions vary by implementation, so a
+reproducible description must specify normalization, Newton--Schulz polynomial,
+iteration count, momentum, weight decay, and parameter groups.
+
+\section{Automatic Differentiation}
+
+Automatic differentiation (AD) applies the chain rule to a computational
+graph. It is neither symbolic differentiation nor finite differences.
+For $f:\R^n\to\R^m$ with Jacobian $J_f(x)$:
+\begin{itemize}
+ \item forward mode computes a Jacobian--vector product $J_f(x)v$;
+ \item reverse mode computes a vector--Jacobian product
+ $u^\mathsf TJ_f(x)$.
+\end{itemize}
+Forward mode is attractive when inputs are few; reverse mode is attractive
+for a scalar loss with many parameters, because one reverse sweep obtains the
+full gradient.
+
+\begin{example}[Reverse-mode chain rule]
+If $z=Wx$, $a=\tanh z$, and $\ell=\tfrac12\norm{a-y}^2$, reverse mode computes
+\[
+ \bar a=a-y,\qquad
+ \bar z=\bar a\odot(1-\tanh^2z),\qquad
+ \grad_W\ell=\bar z x^\mathsf T.
+\]
+The barred variables are adjoints: derivatives of the final loss with respect
+to intermediate values.
+\end{example}
+
+Reverse mode stores intermediate activations, trading memory for computation.
+Checkpointing recomputes selected activations during the backward pass.
+Higher-order derivatives are obtained by composing modes; Hessian--vector
+products can be computed without forming the Hessian.
+
+Common bugs arise from in-place mutation, unintended detachment of the graph,
+nondifferentiable control flow, and unstable primitives. Gradient checking
+with centered finite differences is useful on small problems, but step sizes
+that are too small suffer cancellation and those too large suffer truncation
+error.
+
+\section{Applications}
+
+Optimization algorithms should be chosen from problem structure: smoothness,
+convexity, separability, sparsity, constraint geometry, and data-access cost.
+The following examples connect the general methods to recurring machine
+learning and inverse-problem formulations.
+
+\subsection{Matrix Factorization}
+
+Given a partially observed matrix $M$, low-rank factorization solves
+\begin{equation}
+ \min_{U\in\R^{m\times r},\,V\in\R^{n\times r}}
+ \frac12\sum_{(i,j)\in\Omega}
+ (M_{ij}-u_i^\mathsf Tv_j)^2
+ +\frac\lambda2(\norm U_F^2+\norm V_F^2).
+ \label{eq:matrix-factorization}
+\end{equation}
+The problem is nonconvex jointly but convex in either factor with the other
+fixed. Alternating least squares exploits this biconvex structure. SGD samples
+an observed entry and updates only $u_i$ and $v_j$:
+\[
+ e_{ij}=M_{ij}-u_i^\mathsf Tv_j,\quad
+ u_i\leftarrow u_i+\alpha(e_{ij}v_j-\lambda u_i),\quad
+ v_j\leftarrow v_j+\alpha(e_{ij}u_i-\lambda v_j),
+\]
+where the second update should use either the old $u_i$ or a documented
+sequential convention.
+
+The factors are nonidentifiable: $UV^\mathsf T=(UA)(VA^{-\mathsf T})^\mathsf T$
+for invertible $A$. Prediction of the product may be well defined even when
+individual factors are not. Random initialization, regularization, and
+validation of rank $r$ are essential.
+
+The convex alternative minimizes a data-fit term plus nuclear norm
+$\norm X_*=\sum_j\sigma_j(X)$. Its proximal operator performs singular-value
+soft thresholding, while Frank--Wolfe on a nuclear-norm ball adds rank-one
+directions using leading singular vectors.
+
+\subsection{Support Vector Machines}
+
+The linear soft-margin SVM has a smooth quadratic regularizer and nonsmooth
+hinge losses:
+\[
+ \min_{\beta_0,\beta}
+ \frac\lambda2\norm\beta^2+
+ \frac1n\sum_{i=1}^n[1-y_i(\beta_0+x_i^\mathsf T\beta)]_+.
+\]
+Subgradient methods are simple but slow. Coordinate descent is effective in
+the dual; stochastic subgradient descent scales to large sparse primal
+problems. For one observation, a subgradient with respect to $\beta$ is
+\[
+ \lambda\beta-
+ y_ix_i\ind\{y_i(\beta_0+x_i^\mathsf T\beta)<1\},
+\]
+with a set-valued choice exactly at margin one.
+
+Squared hinge loss is differentiable once but changes the robustness and dual.
+Kernel methods favor dual solvers, while high-dimensional sparse linear SVMs
+usually favor primal methods. Optimization tolerance should be judged relative
+to statistical error: solving the training objective far beyond the precision
+supported by the data wastes computation.
+
+\subsection{Compressed Sensing}
+
+Compressed sensing recovers a sparse vector $x_0\in\R^d$ from
+$b=Ax_0+\varepsilon$ with fewer measurements than ambient coordinates.
+The ideal problem
+\[
+    \min_x\norm{x}_0\quad\text{subject to}\quad Ax=b
+\]
+is combinatorial. Basis pursuit replaces cardinality by the convex $\ell_1$
+norm:
+\begin{equation}
+    \min_x\norm x_1\quad\text{subject to}\quad Ax=b.
+    \label{eq:basis-pursuit}
+\end{equation}
+With noise, common forms are
+\[
+ \min_x\frac12\norm{Ax-b}^2+\lambda\norm x_1
+ \quad\text{or}\quad
+ \min_x\norm x_1\ \text{subject to }\norm{Ax-b}\leq\delta.
+\]
+ISTA, FISTA, ADMM, and coordinate descent apply directly.
+
+\begin{definition}[Restricted isometry property]
+A matrix $A$ has restricted isometry constant $\delta_s$ if $\delta_s$ is the
+smallest number such that
+\[
+ (1-\delta_s)\norm x^2\leq\norm{Ax}^2
+ \leq(1+\delta_s)\norm x^2
+\]
+for every $s$-sparse $x$.
+\end{definition}
+
+\begin{theorem}[Sparse recovery, representative form]
+If $A$ satisfies a sufficiently strong restricted isometry condition, such as
+$\delta_{2s}<\sqrt2-1$, then basis pursuit exactly recovers every $s$-sparse
+vector from noiseless measurements. With noise and approximate sparsity, the
+reconstruction error is bounded by a noise term plus the best $s$-term
+approximation error.
+\end{theorem}
+
+Random sub-Gaussian measurement matrices satisfy suitable RIP conditions with
+roughly $s\log(d/s)$ measurements. Feature standardization and the choice of
+$\lambda$ remain important in practical statistical problems.
+
+\subsection{Deep Learning}
+
+A neural network is a composition
+\[
+ h_0=x,\qquad
+ z_\ell=W_\ell h_{\ell-1}+b_\ell,\qquad
+ h_\ell=\sigma_\ell(z_\ell),
+\]
+trained by minimizing an empirical loss, usually with regularization. Reverse-
+mode AD is backpropagation applied to this graph.
+
+The objective is nonconvex and has symmetries: hidden units may be permuted,
+and homogeneous networks allow compensating rescalings across layers.
+Consequently parameter identifiability and Hessian positive definiteness are
+not expected. Practical optimization seeks a useful low-loss stationary
+region, not a certified global minimum.
+
+Initialization controls signal and gradient propagation. Xavier scaling is
+suited to approximately symmetric activations; He scaling is suited to ReLU-
+like activations. Normalization, residual connections, and careful parameter
+scaling improve conditioning. Gradient clipping controls rare large updates
+but changes the optimization direction.
+
+Minibatch SGD and Adam-type methods dominate because full gradients are
+expensive. A typical training loop separates:
+\begin{enumerate}
+ \item forward evaluation and loss computation;
+ \item reverse-mode gradient computation;
+ \item optional clipping or gradient accumulation;
+ \item optimizer and learning-rate-schedule updates;
+ \item validation under evaluation-mode behavior.
+\end{enumerate}
+
+Weight decay, data augmentation, dropout, and early stopping are
+regularization choices as well as optimization choices. Training loss alone
+cannot choose them. Reproducible computation records random seeds, data order,
+precision, optimizer conventions, schedules, and checkpoint selection.
+
+Mixed-precision training increases throughput but can underflow small
+gradients; loss scaling and higher-precision accumulators address this.
+Distributed data-parallel training averages gradients across workers. Very
+large batches reduce gradient noise but often require learning-rate and
+warmup adjustments.
+
+\begin{remark}
+For both classical and deep models, optimization error, estimation error, and
+approximation error are distinct. A lower training objective does not imply a
+lower population risk, and an optimizer comparison is meaningful only when
+data processing, model, tuning budget, and stopping rules are controlled.
+\end{remark}
+
 
 \end{document}
