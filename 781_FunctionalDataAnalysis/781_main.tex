@@ -176,4 +176,619 @@
 
 \tableofcontents
 
+\section{Functional and Shape Data}
+
+\begin{definition}[Functional datum]
+A functional datum is an observation whose basic statistical unit is a
+function
+\[
+    f:D\longrightarrow\R^q,
+\]
+rather than a finite list of unrelated measurements. The domain $D$ is often
+an interval of time, but may also be a spatial region or a manifold.
+\end{definition}
+
+A sample in functional data analysis (FDA) is therefore
+$f_1,\ldots,f_n$, where each $f_i$ is viewed as one observation. In practice
+we observe noisy, discrete samples
+\[
+    Y_{ij}=f_i(t_{ij})+\varepsilon_{ij},
+\]
+possibly at subject-specific times $t_{ij}$. Smoothing and registration turn
+these measurements into objects on a common functional domain.
+
+FDA supports familiar statistical tasks:
+\begin{itemize}
+    \item means, medians, covariance, and principal modes of variation;
+    \item signal estimation from noisy measurements;
+    \item testing, classification, clustering, and ANOVA;
+    \item regression with functional predictors, responses, or both.
+\end{itemize}
+The distinction from multivariate statistics is not merely that the vectors
+are long. Functions live in infinite-dimensional spaces and carry geometric
+structure such as smoothness, derivatives, and time transformations.
+
+\subsection{FDA Versus Multivariate and Time-Series Analysis}
+
+If every curve is observed on the same reliable grid
+$t_1,\ldots,t_m$, it can be stored as
+\[
+    (f_i(t_1),\ldots,f_i(t_m))^\mathsf T\in\R^m.
+\]
+This representation permits ordinary multivariate tools, but its results may
+depend on grid density and ignore smoothness. A functional representation
+allows interpolation, differentiation, integration, irregular sampling, and
+comparison across grids.
+
+Time-series models typically emphasize sequential dynamics, for example
+$X_{j+1}=h(X_j)+\varepsilon_j$, with ordered and often equally spaced times.
+FDA typically treats an entire trajectory as one observation and models
+cross-sectional variation among trajectories. The two perspectives overlap,
+but answer different questions.
+
+\begin{example}[Growth curves]
+For child $i$, height measurements $Y_{ij}$ are taken at ages $t_{ij}$. The
+scientific objects may be the smooth growth curve $f_i(t)$, its velocity
+$f_i'(t)$, and population variation in the timing of growth spurts. Treating
+the measurements as an unordered vector loses this derivative and timing
+structure.
+\end{example}
+
+\subsection{Shape Data and Invariance}
+
+Shape analysis is closely related to FDA because curves and surfaces are
+represented by functions. Following Kendall's principle, shape is what
+remains after removing transformations that should not change the object,
+commonly translation, rotation, and scale.
+
+\begin{definition}[Group invariance]
+Let a group $G$ act on a representation space $\mathcal F$. A quantity
+$S:\mathcal F\to\mathcal S$ is invariant to $G$ if
+\[
+    S(g\cdot f)=S(f)\qquad\text{for every }g\in G.
+\]
+Two objects represent the same shape when they lie in the same orbit
+$[f]=\{g\cdot f:g\in G\}$.
+\end{definition}
+
+A shape distance should be defined on equivalence classes, not arbitrary
+representatives. This motivates quotient spaces later in the course. Typical
+shape tasks include distances, optimal deformations or geodesics, means,
+principal modes, and population comparisons.
+
+\section{Metric and Vector Spaces}
+
+\begin{definition}[Metric space]
+A metric on a set $\mathcal X$ is a function
+$d:\mathcal X\times\mathcal X\to[0,\infty)$ such that for all $x,y,z$:
+\begin{enumerate}
+    \item $d(x,y)=0$ if and only if $x=y$;
+    \item $d(x,y)=d(y,x)$;
+    \item $d(x,z)\leq d(x,y)+d(y,z)$.
+\end{enumerate}
+The pair $(\mathcal X,d)$ is a metric space.
+\end{definition}
+
+Examples include Euclidean distance on $\R^p$ and the uniform distance
+\[
+    d_\infty(f,g)=\sup_{t\in[0,1]}\abs{f(t)-g(t)}
+\]
+on $C([0,1])$. A metric determines convergence, continuity, neighborhoods,
+and consequently what it means for two functional observations to be close.
+
+\begin{definition}[Vector space]
+A real vector space $V$ is a set closed under addition and scalar
+multiplication satisfying associativity, commutativity of addition,
+distributivity, a zero element, and additive inverses.
+\end{definition}
+
+Both $\R^p$ and $C([0,1])$ are vector spaces under pointwise operations. If
+$f,g\in C([0,1])$, then
+$(af+bg)(t)=af(t)+bg(t)$ is again continuous.
+
+\begin{definition}[Linear independence and basis]
+Vectors $v_1,\ldots,v_m$ are linearly independent if
+\[
+    \sum_{j=1}^ma_jv_j=0\quad\Longrightarrow\quad a_1=\cdots=a_m=0.
+\]
+A basis is a linearly independent spanning set.
+\end{definition}
+
+Finite-dimensional spaces have finite bases. Function spaces generally
+require infinite systems, and convergence of an infinite expansion must be
+specified using a norm.
+
+\begin{definition}[Linear transformation]
+For vector spaces $V,W$, a map $T:V\to W$ is linear when
+\[
+    T(au+bv)=aT(u)+bT(v)
+\]
+for every $u,v\in V$ and scalars $a,b$.
+\end{definition}
+
+Differentiation, integration, and multiplication by a fixed matrix are linear.
+The map $f\mapsto f^2$ is not.
+
+\section{Normed and Banach Spaces}
+
+\begin{definition}[Norm]
+A norm on $V$ is a map $\norm{\cdot}:V\to[0,\infty)$ satisfying
+\[
+ \norm v=0\Longleftrightarrow v=0,\qquad
+ \norm{av}=\abs a\norm v,\qquad
+ \norm{u+v}\leq\norm u+\norm v.
+\]
+It induces the metric $d(u,v)=\norm{u-v}$.
+\end{definition}
+
+Important functional norms on $[0,1]$ are
+\[
+ \norm f_\infty=\sup_t\abs{f(t)},\qquad
+ \norm f_p=\left(\int_0^1\abs{f(t)}^p\dd t\right)^{1/p}.
+\]
+The $L^2$ norm measures integrated squared size, while the sup norm controls
+the worst pointwise deviation. Convergence in one need not imply convergence
+in the other.
+
+\begin{definition}[Cauchy sequence and completeness]
+A sequence $\{x_n\}$ is Cauchy if for every $\varepsilon>0$ there is $N$ such
+that $d(x_m,x_n)<\varepsilon$ whenever $m,n\geq N$. A complete metric space
+contains the limit of every Cauchy sequence. A complete normed vector space is
+called a Banach space.
+\end{definition}
+
+The space $C([0,1])$ with $\norm{\cdot}_\infty$ is Banach. The space
+$L^p([0,1])$, formed by identifying functions equal almost everywhere, is
+Banach for $1\leq p\leq\infty$.
+
+\begin{remark}
+The set of continuous functions equipped with the $L^2$ norm is not complete:
+an $L^2$-Cauchy sequence of continuous functions may converge to a
+discontinuous equivalence class. Its completion is $L^2([0,1])$.
+\end{remark}
+
+\section{Inner-Product and Hilbert Spaces}
+
+\begin{definition}[Inner product]
+An inner product on a real vector space $V$ is a map
+$\inner{\cdot}{\cdot}:V\times V\to\R$ that is linear in its first argument,
+symmetric, and positive definite:
+\[
+    \inner v v\geq0,\qquad \inner v v=0\Longleftrightarrow v=0.
+\]
+It induces $\norm v=\sqrt{\inner v v}$.
+\end{definition}
+
+On $\R^p$, $\inner x y=x^\mathsf Ty$. On $L^2([0,1])$,
+\begin{equation}
+    \inner f g_{L^2}=\int_0^1f(t)g(t)\dd t.
+    \label{eq:l2-inner-product}
+\end{equation}
+
+\begin{theorem}[Cauchy--Schwarz]
+For every inner-product space,
+\[
+    \abs{\inner u v}\leq\norm u\norm v.
+\]
+\end{theorem}
+
+\begin{corollary}[Triangle inequality]
+The norm induced by an inner product satisfies
+$\norm{u+v}\leq\norm u+\norm v$.
+\end{corollary}
+
+\begin{definition}[Hilbert space]
+A Hilbert space is a complete inner-product space.
+\end{definition}
+
+The space $L^2([0,1])$ is the canonical Hilbert space for elementary FDA. Its
+geometry supports angles, orthogonality, projections, and least squares just
+as Euclidean space does.
+
+\subsection{Orthogonality and Projection}
+
+Elements $u,v$ are orthogonal, written $u\perp v$, if $\inner u v=0$. An
+orthonormal set $\{e_j\}$ satisfies
+$\inner{e_j}{e_k}=\ind\{j=k\}$.
+
+\begin{theorem}[Projection theorem]
+Let $M$ be a closed linear subspace of a Hilbert space $H$. For every $f\in H$
+there is a unique $m^*\in M$ minimizing $\norm{f-m}$. It is characterized by
+\[
+    f-m^*\perp M.
+\]
+\end{theorem}
+
+For $M=\operatorname{span}(e_1,\ldots,e_J)$ with an orthonormal basis,
+\[
+    P_Mf=\sum_{j=1}^J\inner f{e_j}e_j.
+\]
+This is the infinite-dimensional origin of the normal equations in least
+squares.
+
+\subsection{Orthonormal Bases and Fourier Expansion}
+
+\begin{definition}[Complete orthonormal system]
+An orthonormal sequence $\{e_j\}_{j\geq1}$ is complete if the only element
+orthogonal to every $e_j$ is zero. Equivalently, its linear span is dense in
+the Hilbert space.
+\end{definition}
+
+\begin{theorem}[Hilbert-space expansion]
+For a complete orthonormal system and $f\in H$,
+\[
+ f=\sum_{j=1}^\infty\inner f{e_j}e_j
+ \quad\text{in }H,\qquad
+ \norm f^2=\sum_{j=1}^\infty\abs{\inner f{e_j}}^2.
+\]
+\end{theorem}
+
+The second identity is Parseval's identity. On $L^2([0,1])$, a real Fourier
+system consists of the constant function and appropriately normalized
+$\sin(2\pi kt)$ and $\cos(2\pi kt)$. Fourier bases are natural for periodic
+functions; splines are usually more local and flexible near boundaries.
+
+\begin{example}[Truncation]
+The approximation
+\[
+    f_J(t)=\sum_{j=1}^Jc_je_j(t),\qquad c_j=\inner f{e_j},
+\]
+is the best $J$-term approximation within
+$\operatorname{span}(e_1,\ldots,e_J)$ under $L^2$ loss. Smooth functions
+typically have rapidly decaying coefficients in a compatible basis.
+\end{example}
+
+\section{From Discrete Measurements to Smooth Functions}
+
+For one subject, suppose $(t_i,y_i)$ satisfy
+$y_i=f(t_i)+\varepsilon_i$. Choose basis functions
+$b_1,\ldots,b_J$ and approximate
+\[
+    f(t)=\sum_{j=1}^Jc_jb_j(t).
+\]
+Let $B_{ij}=b_j(t_i)$, $c=(c_1,\ldots,c_J)^\mathsf T$, and
+$y=(y_1,\ldots,y_m)^\mathsf T$. Least-squares fitting becomes
+\begin{equation}
+    \widehat c=\argmin_c\norm{y-Bc}^2.
+    \label{eq:fda-basis-ls}
+\end{equation}
+If $B$ has full column rank,
+$\widehat c=(B^\mathsf TB)^{-1}B^\mathsf Ty$. In computation one should use a
+QR or SVD solve rather than explicitly form the inverse.
+
+The number and type of basis functions control the bias--variance tradeoff.
+Too few cannot represent the signal; too many follow measurement noise. A
+common coefficient vector has meaning only when all curves use the same basis
+and domain.
+
+\subsection{Roughness-Penalized Estimation}
+
+Instead of choosing a very small basis, one may directly penalize roughness:
+\begin{equation}
+ \widehat f=\argmin_f
+ \left\{\sum_{i=1}^m\{y_i-f(t_i)\}^2
+ +\lambda\int_0^1\{f^{(r)}(t)\}^2\dd t\right\}.
+ \label{eq:fda-roughness}
+\end{equation}
+Usually $r=2$, so curvature is penalized. The tuning parameter $\lambda$
+controls the tradeoff:
+\[
+ \lambda\downarrow0:\text{ flexible fit},\qquad
+ \lambda\uparrow\infty:\text{ approach the null space of }D^r.
+\]
+For $r=2$, the null space consists of linear functions.
+
+With $f(t)=b(t)^\mathsf Tc$, define
+\[
+    R_{jk}=\int_0^1b_j^{(r)}(t)b_k^{(r)}(t)\dd t.
+\]
+Then
+\begin{equation}
+    \widehat c_\lambda
+    =(B^\mathsf TB+\lambda R)^{-1}B^\mathsf Ty.
+    \label{eq:penalized-basis-solution}
+\end{equation}
+This resembles ridge regression, but $R$ penalizes rough directions rather
+than all coefficient directions equally.
+
+\begin{proposition}[Linear-smoother form]
+At the observation times, the penalized fitted values are
+\[
+    \widehat y=S_\lambda y,\qquad
+    S_\lambda=B(B^\mathsf TB+\lambda R)^{-1}B^\mathsf T.
+\]
+Their effective degrees of freedom are
+$\operatorname{df}(\lambda)=\tr(S_\lambda)$.
+\end{proposition}
+
+Cross-validation or generalized cross-validation can select $\lambda$. With
+irregular or sparse subject-specific sampling, smoothing choices can strongly
+affect later covariance estimates and should be propagated or at least
+reported.
+
+\begin{theorem}[Smoothing-spline representation]
+For squared error with the integrated squared second-derivative penalty, the
+minimizer over the appropriate Sobolev space is a natural cubic spline with
+knots at the distinct observation times.
+\end{theorem}
+
+Thus an infinite-dimensional optimization reduces to a finite-dimensional
+one without first imposing an arbitrary dense knot grid.
+
+\section{Statistical Summaries of Functional Data}
+
+Let $F$ be a random element of $L^2([0,1])$ with
+$\E\norm F^2<\infty$. The population mean function is
+\[
+    \mu(t)=\E[F(t)],
+\]
+where the pointwise expression is interpreted when evaluation is meaningful.
+As an element of $L^2$, the sample mean is
+\[
+    \widehat\mu(t)=\frac1n\sum_{i=1}^nf_i(t).
+\]
+
+\begin{proposition}[Mean as a Fréchet mean]
+The mean $\mu=\E F$ uniquely minimizes
+\[
+    g\longmapsto\E\norm{F-g}_{L^2}^2.
+\]
+Similarly, $\widehat\mu$ minimizes
+$n^{-1}\sum_i\norm{f_i-g}_{L^2}^2$.
+\end{proposition}
+
+\begin{proof}
+The Hilbert-space identity
+\[
+ \E\norm{F-g}^2
+ =\E\norm{F-\mu}^2+\norm{\mu-g}^2
+\]
+follows because $\E(F-\mu)=0$ makes the cross term vanish.
+\end{proof}
+
+This variational definition generalizes to nonlinear spaces: replace the
+Hilbert norm by an appropriate metric and minimize the sum of squared
+distances. Uniqueness is no longer automatic.
+
+\subsection{Covariance Function}
+
+\begin{definition}[Covariance function]
+For a square-integrable process $F$,
+\[
+    K(s,t)=\Cov\{F(s),F(t)\}
+    =\E[(F(s)-\mu(s))(F(t)-\mu(t))].
+\]
+\end{definition}
+
+The covariance is symmetric and nonnegative definite:
+\[
+ K(s,t)=K(t,s),\qquad
+ \sum_{i,j=1}^ma_ia_jK(t_i,t_j)\geq0.
+\]
+Its empirical estimate from densely observed curves is
+\[
+    \widehat K(s,t)=\frac1{n-1}\sum_{i=1}^n
+    \{f_i(s)-\widehat\mu(s)\}\{f_i(t)-\widehat\mu(t)\}.
+\]
+
+The diagonal $K(t,t)$ is pointwise variance, while off-diagonal values
+describe association across locations. Unlike a finite covariance matrix,
+$K$ is a function on a two-dimensional domain.
+
+\section{Linear Operators on Function Spaces}
+
+\begin{definition}[Bounded linear operator]
+For normed spaces $V,W$, a linear map $T:V\to W$ is bounded if there is
+$C<\infty$ such that
+\[
+    \norm{Tf}_W\leq C\norm f_V\qquad\text{for every }f\in V.
+\]
+Its operator norm is
+$\norm T_{\mathrm{op}}=\sup_{\norm f\leq1}\norm{Tf}$.
+\end{definition}
+
+For linear maps between normed spaces, boundedness is equivalent to
+continuity. In finite dimensions every linear map is bounded; this is false
+in infinite dimensions. For example, differentiation is not bounded from
+$C^1([0,1])$ equipped only with the sup norm into $C([0,1])$.
+
+\subsection{Integral Operators}
+
+Given a kernel $k:[0,1]^2\to\R$, define
+\begin{equation}
+    (Tf)(t)=\int_0^1k(s,t)f(s)\dd s.
+    \label{eq:integral-operator}
+\end{equation}
+This map is linear. If $k\in L^2([0,1]^2)$, then $T$ is a bounded
+Hilbert--Schmidt operator on $L^2$ and
+\[
+    \norm T_{\mathrm{op}}\leq
+    \left\{\int_0^1\int_0^1k(s,t)^2\dd s\dd t\right\}^{1/2}.
+\]
+
+\begin{definition}[Adjoint]
+For Hilbert spaces $H_1,H_2$ and bounded $T:H_1\to H_2$, the adjoint
+$T^*:H_2\to H_1$ is the unique operator satisfying
+\[
+    \inner{Tf}{g}_{H_2}=\inner f{T^*g}_{H_1}
+\]
+for all $f,g$.
+\end{definition}
+
+For matrices, the adjoint is the transpose. For the integral operator
+\eqref{eq:integral-operator},
+\[
+    (T^*g)(s)=\int_0^1k(s,t)g(t)\dd t.
+\]
+Thus $T$ is self-adjoint when $k(s,t)=k(t,s)$ almost everywhere.
+
+\begin{definition}[Positive operator]
+A self-adjoint operator $T$ is positive semidefinite if
+$\inner{Tf}{f}\geq0$ for every $f$.
+\end{definition}
+
+\subsection{Covariance Operator}
+
+The covariance function induces
+\begin{equation}
+    (\mathcal Kf)(t)=\int_0^1K(s,t)f(s)\dd s.
+    \label{eq:covariance-operator}
+\end{equation}
+Equivalently, in Hilbert notation,
+\[
+    \mathcal Kf
+    =\E[\inner{F-\mu}{f}(F-\mu)].
+\]
+
+\begin{proposition}
+The covariance operator is self-adjoint and positive semidefinite. If
+$\E\norm{F-\mu}^2<\infty$, it is trace class and
+\[
+    \tr(\mathcal K)=\E\norm{F-\mu}^2
+                  =\int_0^1K(t,t)\dd t.
+\]
+\end{proposition}
+
+For any $f$,
+\[
+ \inner{\mathcal Kf}{f}
+ =\E[\inner{F-\mu}{f}^2]\geq0.
+\]
+This is the functional analogue of $a^\mathsf T\Sigma a\geq0$.
+
+\section{Principal Component Analysis}
+
+For centered vectors $X\in\R^p$ with covariance $\Sigma$, the first principal
+direction solves
+\[
+    v_1=\argmax_{\norm v=1}\Var(v^\mathsf TX)
+       =\argmax_{\norm v=1}v^\mathsf T\Sigma v.
+\]
+
+\begin{theorem}[Rayleigh quotient]
+For symmetric $\Sigma$, the maximum of
+$v^\mathsf T\Sigma v$ over $\norm v=1$ is the largest eigenvalue
+$\lambda_1$, attained by a corresponding eigenvector. Subsequent principal
+directions are eigenvectors obtained under orthogonality constraints.
+\end{theorem}
+
+For observations $x_1,\ldots,x_n$, the rank-$q$ PCA subspace also minimizes
+reconstruction error:
+\[
+ \min_{U^\mathsf TU=I_q}\sum_{i=1}^n
+ \norm{x_i-UU^\mathsf Tx_i}^2.
+\]
+If the centered data matrix has SVD $X=UDV^\mathsf T$, loadings are columns of
+$V$, scores are columns of $UD$, and explained variances are proportional to
+$d_j^2$.
+
+\section{Functional Principal Component Analysis}
+
+Functional PCA (FPCA) replaces the covariance matrix by the covariance
+operator. A principal direction $\phi$ is a unit-norm function maximizing
+\[
+    \Var\{\inner{F-\mu}{\phi}\}
+    =\inner{\mathcal K\phi}{\phi}.
+\]
+The solution satisfies the eigenequation
+\begin{equation}
+    \mathcal K\phi_j=\lambda_j\phi_j,
+    \qquad
+    \int_0^1K(s,t)\phi_j(s)\dd s
+    =\lambda_j\phi_j(t).
+    \label{eq:fpca-eigenproblem}
+\end{equation}
+
+\begin{theorem}[Spectral decomposition of covariance]
+Let $\mathcal K$ be a compact, self-adjoint, positive covariance operator.
+Then it has orthonormal eigenfunctions $\{\phi_j\}$ with nonnegative
+eigenvalues $\lambda_1\geq\lambda_2\geq\cdots\to0$, and
+\[
+    K(s,t)=\sum_{j=1}^\infty\lambda_j\phi_j(s)\phi_j(t)
+\]
+in the appropriate $L^2$ sense.
+\end{theorem}
+
+\subsection{Karhunen--Loève Expansion}
+
+Define the principal component scores
+\[
+    \xi_{ij}=\inner{f_i-\mu}{\phi_j}
+    =\int_0^1\{f_i(t)-\mu(t)\}\phi_j(t)\dd t.
+\]
+
+\begin{theorem}[Karhunen--Loève]
+Under the preceding second-moment assumptions,
+\[
+    F(t)=\mu(t)+\sum_{j=1}^\infty\xi_j\phi_j(t)
+\]
+in mean square, where
+\[
+    \E\xi_j=0,\qquad
+    \Cov(\xi_j,\xi_k)=\lambda_j\ind\{j=k\}.
+\]
+\end{theorem}
+
+Truncation gives the model
+\begin{equation}
+    f_i(t)\approx\mu(t)+\sum_{j=1}^q\xi_{ij}\phi_j(t).
+    \label{eq:truncated-fpca}
+\end{equation}
+The fraction of integrated variance explained by the first $q$ components is
+\[
+    \frac{\sum_{j=1}^q\lambda_j}
+         {\sum_{j=1}^\infty\lambda_j}.
+\]
+
+\begin{proposition}[Optimal reconstruction]
+Among all $q$-dimensional linear subspaces of $L^2$, the span of
+$\phi_1,\ldots,\phi_q$ minimizes expected squared reconstruction error, which
+equals $\sum_{j>q}\lambda_j$.
+\end{proposition}
+
+\subsection{Computation from a Common Grid}
+
+Suppose every centered curve is sampled on a common grid
+$t_1,\ldots,t_m$. Stack curve vectors as rows of
+$X_c\in\R^{n\times m}$. Ordinary PCA of $X_c$ approximates FPCA only after
+accounting for numerical integration. With quadrature weights
+$W=\diag(w_1,\ldots,w_m)$, the discrete inner product is
+\[
+    \inner f g\approx f^\mathsf TWg.
+\]
+An SVD of $X_cW^{1/2}$ gives eigenfunctions normalized in the weighted inner
+product. Ignoring unequal grid spacing changes the geometry.
+
+Alternatively, if $f_i(t)=b(t)^\mathsf Tc_i$ and
+$G=\int b(t)b(t)^\mathsf T\dd t$, then functional orthonormality is measured
+by $G$, not the Euclidean coefficient norm. FPCA becomes a generalized
+eigenproblem or an ordinary eigenproblem after whitening by $G^{1/2}$.
+
+\begin{example}[Interpreting a mode]
+Plot
+\[
+    \widehat\mu(t)\pm c\sqrt{\widehat\lambda_j}\,
+    \widehat\phi_j(t)
+\]
+for a small constant $c$, often one or two. These curves visualize the
+functional change associated with positive and negative scores. The sign of
+an eigenfunction is arbitrary, so interpretation must be invariant to a
+simultaneous sign change of $\phi_j$ and its scores.
+\end{example}
+
+\subsection{Practical Qualifications}
+
+\begin{itemize}
+    \item Measurement error inflates the empirical covariance diagonal.
+    Smooth the covariance surface or use a model that separates signal and
+    noise rather than treating the diagonal spike as functional variation.
+    \item Dense common grids permit direct covariance estimation. Sparse,
+    irregular designs require pooled smoothing and conditional score
+    estimation.
+    \item Eigenfunctions with nearly tied eigenvalues are individually
+    unstable; their joint eigenspace can still be stable.
+    \item Standard FPCA measures amplitude variation under $L^2$. Timing
+    variation can dominate the components unless curves are registered.
+\end{itemize}
+
 \end{document}

@@ -244,6 +244,29 @@ The first term reflects finite data; the second reflects the restricted model
 class. Interpolation of training data alone gives no guarantee of
 generalization.
 
+Write $\widehat f_{\mathcal D}$ when emphasizing dependence on the training
+sample. Population risk $R(g)$ evaluates a fixed rule $g$, whereas
+$R(\widehat f_{\mathcal D})$ is random before $\mathcal D$ is drawn.
+
+\begin{example}[The optimal constant rule]
+Without predictors and under squared loss,
+\[
+ R(a)=\E[(Y-a)^2]=\Var(Y)+\{\E(Y)-a\}^2,
+ \qquad
+ \widehat R_{\mathcal D}(a)=\frac1n\sum_{i=1}^n(Y_i-a)^2.
+\]
+The Bayes rule is $a^*=\mu=\E Y$, the ERM is
+$\widehat a_{\mathcal D}=\bar Y$, and the minimum population risk is
+$\Var(Y)$. For $\widehat\mu_\alpha=\alpha\bar Y$,
+\[
+ \operatorname{MSE}(\widehat\mu_\alpha)
+ =\frac{\alpha^2\sigma^2}{n}+(\alpha-1)^2\mu^2.
+\]
+Differentiation gives the oracle shrinkage
+$\alpha^*=\mu^2/(\mu^2+\sigma^2/n)$. Although unavailable without knowing
+$\mu$ and $\sigma^2$, it demonstrates how bias can reduce MSE.
+\end{example}
+
 \subsection{Optimal Prediction}
 
 Conditioning on $X=x$ reduces prediction to a pointwise decision:
@@ -276,6 +299,36 @@ $\sigma^2(x)=\Var(Y\mid X=x)$ may depend on $x$. For Bernoulli $Y$,
 $m(x)=P(Y=1\mid X=x)$ is both the regression function and the class
 probability.
 
+For any rule $g$, squared-loss risk decomposes as
+\begin{equation}
+ R(g)=\E[\Var(Y\mid X)]
+     +\E[\{m(X)-g(X)\}^2].
+ \label{eq:bayes-risk-decomposition}
+\end{equation}
+The first term is irreducible Bayes error; the second is reducible error.
+
+\subsection{Nearest-Neighbor Regression and the Curse of Dimensionality}
+
+For continuous $X$, exact replicates at $X=x$ are unlikely. The
+$k$-nearest-neighbor estimator averages locally:
+\[
+ \widehat f_{k,\mathcal D}(x)
+ =\frac1k\sum_{i:X_i\in N_k(x)}Y_i.
+\]
+Small $k$ tends toward low smoothing bias and high variance; large $k$ lowers
+variance at the price of bias. Scaling determines the meaning of distance.
+
+To capture fraction $r$ of a uniform distribution in the unit $p$-cube, a
+smaller cube needs side length
+\begin{equation}
+    \ell=r^{1/p}.
+    \label{eq:curse-dimensionality}
+\end{equation}
+For $r=0.1$, $\ell$ is approximately $0.32$ in dimension two, $0.63$ in
+dimension five, and $0.79$ in dimension ten. A neighborhood containing enough
+observations is no longer local. Structured model classes overcome this curse
+by sharing information across feature space, but introduce approximation bias.
+
 \subsection{Generalization Error}
 
 Conditional on the training data, test error is
@@ -292,6 +345,17 @@ the same distribution. Covariate shift changes $P_X$ but not $P_{Y\mid X}$;
 concept drift changes the conditional law. Random cross-validation on
 historical data does not diagnose either automatically.
 
+For an independent test pair $(X_0,Y_0)$, the precise target is
+\begin{equation}
+ R(\widehat f_{\mathcal D})
+ =\E[(Y_0-\widehat f_{\mathcal D}(X_0))^2\mid\mathcal D].
+ \label{eq:fitted-generalization-risk}
+\end{equation}
+Training MSE reuses the observations that selected the rule and is typically
+optimistic. For nested classes, increasing flexibility cannot increase
+training error, but test error can increase through greater sampling
+variability.
+
 \subsection{The Bias-Variance Tradeoff}
 
 For squared-error prediction at fixed $x$, averaging over training sets gives
@@ -307,6 +371,23 @@ tend toward higher bias and lower variance; flexible models tend toward lower
 approximation bias and higher sampling variance. This exact additive
 decomposition is specific to squared loss.
 
+With training-set randomness shown explicitly,
+\[
+ \operatorname{Bias}_{\mathcal D}\{\widehat f_{\mathcal D}(x)\}
+ =\E_{\mathcal D}[\widehat f_{\mathcal D}(x)]-m(x).
+\]
+Averaging over a new predictor gives
+\begin{align*}
+ \E_{\mathcal D}R(\widehat f_{\mathcal D})
+ &=\E_X[\Var(Y\mid X)]
+ +\E_X[\operatorname{Bias}_{\mathcal D}
+       \{\widehat f_{\mathcal D}(X)\}^2]\\
+ &\quad+\E_X[\Var_{\mathcal D}
+       \{\widehat f_{\mathcal D}(X)\}].
+\end{align*}
+Training error is not a term in this decomposition and can fall below Bayes
+error, which bounds new-observation risk rather than error on reused data.
+
 \section{Least Squares}
 
 Given $X\in\R^{n\times p}$ and $y\in\R^n$, ordinary least squares solves
@@ -321,6 +402,33 @@ $X^\mathsf TX\widehat\beta=X^\mathsf Ty$. If $X$ has full column rank,
 \]
 Computationally, solve the system using QR or SVD rather than explicitly
 forming the inverse; forming the Gram matrix squares the condition number.
+
+The derivation follows by expanding
+\[
+ \operatorname{RSS}(\beta)
+ =y^\mathsf Ty-2\beta^\mathsf TX^\mathsf Ty
+  +\beta^\mathsf TX^\mathsf TX\beta.
+\]
+Therefore
+\[
+ \grad_\beta\operatorname{RSS}(\beta)
+ =-2X^\mathsf Ty+2X^\mathsf TX\beta,
+ \qquad
+ \Hess_\beta\operatorname{RSS}=2X^\mathsf TX\succeq0.
+\]
+Setting the gradient to zero gives the normal equations, and positive
+semidefiniteness shows that every solution is a global minimizer.
+
+The best population linear predictor and its ERM estimate are distinct:
+\[
+ \beta^*=\argmin_\beta\E[(Y-X^\mathsf T\beta)^2],
+ \qquad
+ \widehat\beta_{\mathcal D}
+ =\argmin_\beta\frac1n\sum_{i=1}^n
+ (Y_i-X_i^\mathsf T\beta)^2.
+\]
+Even when $m(x)$ is nonlinear, $x^\mathsf T\beta^*$ is the best linear
+approximation under the population distribution.
 
 \subsection{Estimation and Geometry}
 
@@ -342,6 +450,11 @@ residual satisfies
 \end{equation}
 so OLS leave-one-out error can be computed without $n$ refits.
 
+The normal equations are equivalently $X^\mathsf Te=0$, so
+$e\perp\operatorname{Col}(X)$ and $y=\widehat y+e$ is an orthogonal
+decomposition. Adding a column to $X$ enlarges the projection space;
+therefore RSS and training error cannot increase.
+
 \subsection{Sampling Properties of Least Squares}
 
 Under the fixed-design model
@@ -354,6 +467,26 @@ OLS is conditionally unbiased and
 \[
     \Cov(\widehat\beta\mid X)=\sigma^2(X^\mathsf TX)^{-1}.
 \]
+The derivation is
+\begin{align*}
+ \widehat\beta
+ &=(X^\mathsf TX)^{-1}X^\mathsf T(X\beta+\varepsilon)\\
+ &=\beta+(X^\mathsf TX)^{-1}X^\mathsf T\varepsilon,
+\end{align*}
+so conditional expectation gives unbiasedness and
+\begin{align*}
+ \Cov(\widehat\beta\mid X)
+ &=(X^\mathsf TX)^{-1}X^\mathsf T(\sigma^2I)
+   X(X^\mathsf TX)^{-1}\\
+ &=\sigma^2(X^\mathsf TX)^{-1}.
+\end{align*}
+For simple regression with an intercept,
+\[
+ \Var(\widehat\beta_1\mid X)
+ =\frac{\sigma^2}{\sum_i(X_i-\bar X)^2}.
+\]
+The slope is estimated more precisely with lower noise, more observations, or
+greater predictor spread.
 Gauss--Markov says OLS has smallest covariance among linear unbiased
 estimators; it does not require Gaussian errors. Normality gives exact $t$ and
 $F$ inference. An unbiased error-variance estimator is
@@ -373,6 +506,66 @@ slope from regressing $Y$ on $X$ is
 Bias requires both a nonzero effect of $Z$ and association between $X$ and
 $Z$.
 \end{example}
+
+\subsection{Confidence and Prediction Intervals}
+
+Let $d$ be the number of fitted columns of $X$. Under conditionally Gaussian
+errors,
+\[
+ \frac{\widehat\beta_j-\beta_j}
+ {\widehat\sigma\sqrt{[(X^\mathsf TX)^{-1}]_{jj}}}
+ \sim t_{n-d}.
+\]
+Thus a $(1-\alpha)$ confidence interval for $\beta_j$ is
+\[
+ \widehat\beta_j\pm t_{n-d,1-\alpha/2}
+ \widehat\sigma\sqrt{[(X^\mathsf TX)^{-1}]_{jj}}.
+\]
+Across repetitions of the sampling procedure, the stated fraction of such
+intervals cover the fixed coefficient.
+
+At a new feature vector $x_0$,
+\[
+ \Var\{x_0^\mathsf T\widehat\beta\mid X\}
+ =\sigma^2x_0^\mathsf T(X^\mathsf TX)^{-1}x_0.
+\]
+A confidence interval for the mean response $x_0^\mathsf T\beta$ uses this
+variance. A prediction interval for
+$Y_0=x_0^\mathsf T\beta+\varepsilon_0$ uses
+\begin{equation}
+ \widehat\sigma
+ \sqrt{1+x_0^\mathsf T(X^\mathsf TX)^{-1}x_0}.
+ \label{eq:linear-prediction-se}
+\end{equation}
+It is wider because it includes irreducible noise in the new response.
+
+\subsection{Generalization Error and the Cost of Dimension}
+
+At fixed $x_0$, unbiasedness gives
+\[
+ \E_{\mathcal D,Y_0}
+ [(Y_0-x_0^\mathsf T\widehat\beta)^2\mid X]
+ =\sigma^2+\sigma^2x_0^\mathsf T
+   (X^\mathsf TX)^{-1}x_0.
+\]
+Let $\Sigma_X=\E[X_0X_0^\mathsf T]$ and suppose
+$n^{-1}X^\mathsf TX\approx\Sigma_X$. Averaging over $X_0$ gives
+\[
+ \E_{X_0}[X_0^\mathsf T(X^\mathsf TX)^{-1}X_0]
+ \approx\frac1n\tr(\Sigma_X^{-1}\Sigma_X)=\frac dn.
+\]
+Consequently,
+\begin{equation}
+ \E[\text{generalization error}]
+ \approx\sigma^2\left(1+\frac dn\right),
+ \qquad
+ \E[\text{training error}]
+ =\sigma^2\left(1-\frac dn\right).
+ \label{eq:linear-optimism}
+\end{equation}
+The expected optimism is approximately $2\sigma^2d/n$. Under correct linear
+specification, added dimensions cost estimation variance; under
+misspecification, they may also reduce approximation bias.
 
 \section{Multiple Regression}
 
