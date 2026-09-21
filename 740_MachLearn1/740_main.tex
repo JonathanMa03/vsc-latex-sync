@@ -1,0 +1,241 @@
+\documentclass[12pt,oneside]{book}
+
+%============================================================
+% PACKAGES
+%============================================================
+
+%--------------------
+% Page + font
+%--------------------
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{parskip}
+
+
+%--------------------
+% Math
+%--------------------
+\usepackage{amsmath, amssymb, amsfonts, amsthm, mathtools}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage{mathrsfs}
+\usepackage{dsfont}
+
+%--------------------
+% Tables + figures
+%--------------------
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xltabular}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{subcaption}
+
+%--------------------
+% Lists
+%--------------------
+\usepackage{enumitem}
+\setlist[itemize]{topsep=2pt,itemsep=2pt}
+\setlist[enumerate]{topsep=2pt,itemsep=2pt}
+
+%--------------------
+% Colors + hyperlinks
+%--------------------
+\usepackage[dvipsnames]{xcolor}
+\usepackage[
+    colorlinks=true,
+    linkcolor=MidnightBlue,
+    citecolor=MidnightBlue,
+    urlcolor=MidnightBlue
+]{hyperref}
+\usepackage[nameinlink,capitalise]{cleveref}
+
+%--------------------
+% Algorithms
+%--------------------
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+%--------------------
+% Code blocks
+%--------------------
+\usepackage{listings}
+
+\lstdefinestyle{codestyle}{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    keywordstyle=\color{MidnightBlue},
+    commentstyle=\color{ForestGreen},
+    stringstyle=\color{BrickRed},
+    showstringspaces=false,
+    tabsize=4
+}
+
+\lstset{style=codestyle}
+
+%--------------------
+% Section styling
+%--------------------
+\usepackage{titlesec}
+\usepackage{tocloft}
+
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{3}
+
+%============================================================
+% THEOREMS
+%============================================================
+
+\numberwithin{equation}{section}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{exercise}{Exercise}[section]
+\newtheorem{remark}{Remark}[section]
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{corollary}{Corollary}[section]
+
+\theoremstyle{remark}
+\newtheorem*{note}{Note}
+
+%============================================================
+% CUSTOM COMMANDS
+%============================================================
+
+% Sets
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\powerset}{\mathcal{P}}
+
+
+% Probability
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Corr}{\mathrm{Corr}}
+\newcommand{\Prob}{\mathbb{Pr}}
+
+\newcommand{\ind}{\mathbbm{1}}
+\newcommand{\iid}{\overset{\text{iid}}{\sim}}
+\newcommand{\convd}{\overset{d}{\to}}
+\newcommand{\convp}{\overset{p}{\to}}
+\newcommand{\as}{\overset{a.s.}{\to}}
+
+% Operators
+\newcommand{\given}{\,\middle|\,}
+\newcommand{\argmin}{\operatorname*{arg\,min}}
+\newcommand{\argmax}{\operatorname*{arg\,max}}
+
+% Linear algebra / analysis
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\inner}[2]{\left\langle #1, #2 \right\rangle}
+
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\grad}{\nabla}
+\newcommand{\Hess}{\nabla^2}
+
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\diag}{\operatorname{diag}}
+
+% Distributions
+\newcommand{\Normal}{\mathcal{N}}
+\newcommand{\Bern}{\mathrm{Bernoulli}}
+\newcommand{\Bin}{\mathrm{Binomial}}
+\newcommand{\Pois}{\mathrm{Poisson}}
+\newcommand{\Gam}{\mathrm{Gamma}}
+\newcommand{\BetaDist}{\mathrm{Beta}}
+\newcommand{\Exp}{\mathrm{Exponential}}
+\newcommand{\Dir}{\mathrm{Dirichlet}}
+\newcommand{\InvGam}{\mathrm{Inv\text{-}Gamma}}
+
+%============================================================
+% TITLE INFO
+%============================================================
+
+\title{EN.553.740 Machine Learning 1}
+\author{Jonathan Ma}
+\date{\today}
+
+%============================================================
+% DOCUMENT
+%============================================================
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+A good way to think of machine learning is instead of a computer taking data and a program to produce output, it takes data and output and attempts to produce a program, ie "learn" a function.
+
+We use it for tasks that are too complex to program, like driving or large scale data analysis. A bit of history of "learning":
+\begin{itemize}
+    \item 1959: Arthur Samuel (IBM) created a program to play checkers, introducing rule-based learning.
+    \item 1960: Frank Rosenblatt introduced a linear classifier based on brain neurons, called a Perceptron.
+    \item 1969: Marvin Minsky showed limitations of the perceptron, halting development for 20 years
+    \item 1980: First workshop in machine learning
+    \item 1986: Multilayer networks and backpropagation introduced
+    \item 1990: Vapnik and Chervonenkis introduce kernels and SVM, and termed "Statistical Learning"
+    \item 2002: Rise of graphical models
+    \item 2010: Deep learning takes over
+    \item 2016: ML hits record size with NIPS and ICML doubling in size
+\end{itemize}
+
+Machine learning has been used for a variety of tasks, like stock market prediction, decoding thoughts from brain scans, and self-driving cars.
+
+\subsection{Learning Problems}
+Statistical Learning falls under five rough fields:
+\begin{itemize}
+    \item Classification (Assign a category)
+    \item Regression (predict a real value)
+    \item Ranking (order items)
+    \item Clustering (item partitioning, like image segmentation)
+    \item Dimensionality Reduction/Manifold Learning (Computer vision)
+\end{itemize}
+In a broader sense, there is supervised learning (Classification/regression) and unsupervised learning (Clustering, dimensionality reduction, density estimation) and things like semi-supervised learning, active learning, reinforcement learning, etc.
+
+\paragraph{Supervised Learning}
+For a given problem, we learn a function $f: X \rightarrow Y$ such that $x \in \mathcal{X}, \quad y \in \mathcal{Y}$. Classification deals with discrete labels while regression deals with continuous functions.
+
+\paragraph{Unsupervised Learning}
+For a given problem, we learn a function $f: X \rightarrow Y$ such that $x \in \mathcal{X}, \quad f(x) \in \R$. Usually embedding (for text), clustering, or density estimation.
+
+\section{Mathematical Review}
+Algorithms are built from sets, functions, vectors, matrices, norms, and derivatives, so we introduce common notation here. Consider a student success dataset with the target being quiz score, and features as study time and prior score.
+
+\subsection{Sets and Power Sets}
+Let $A = \{1,2,3,4,5\}$ be the set of students in the toy dataset. The \emph{power set} is $\powerset(A)=\{B: B \subseteq A\}$. If $|A|<\infty$, then $|\powerset(A)|=2^{|A|}$. A subset $B \subseteq A$ may represent a mini-batch, validation set, or a selected group of samples.
+
+\subsection{Functions}
+For sets $A,B$, write $B^A=\{f: A\rightarrow B\}$. if $B=\R$, then $\R^A$ is the set of real-valued functions on $A$. If $|A| < \infty$, then $\R^A \simeq \R^{|A|}$ as vector spaces. For our toy example: \[x_1: A \rightarrow \R \qquad x_2: A \rightarrow \R \qquad y: A \rightarrow \R\]
+For a subset $C \subseteq A$, define an \emph{indicator function}:
+\[
+\mathbbm{1}_C: A \rightarrow \{0,1\}, \quad \mathbbm{1}_C(i)=
+\begin{cases}
+    1, i \in C, \\
+    0, i \notin C
+\end{cases}
+\]
+Indicators are used to encode events, groups, labels, masks, etc.
+
+\subsection{Vectors}
+
+\end{document}
