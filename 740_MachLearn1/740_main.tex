@@ -35,6 +35,7 @@
 \usepackage{multirow}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{tikz}
 
 %--------------------
 % Lists
@@ -221,10 +222,12 @@ For a given problem, we learn a function $f: X \rightarrow Y$ such that $x \in \
 \section{Mathematical Review}
 Algorithms are built from sets, functions, vectors, matrices, norms, and derivatives, so we introduce common notation here. Consider a student success dataset with the target being quiz score, and features as study time and prior score.
 
-\subsection{Sets and Power Sets}
+\subsection{Linear Algebra}
+
+\subsubsection{Sets and Power Sets}
 Let $A = \{1,2,3,4,5\}$ be the set of students in the toy dataset. The \emph{power set} is $\powerset(A)=\{B: B \subseteq A\}$. If $|A|<\infty$, then $|\powerset(A)|=2^{|A|}$. A subset $B \subseteq A$ may represent a mini-batch, validation set, or a selected group of samples.
 
-\subsection{Functions}
+\subsubsection{Functions}
 For sets $A,B$, write $B^A=\{f: A\rightarrow B\}$. if $B=\R$, then $\R^A$ is the set of real-valued functions on $A$. If $|A| < \infty$, then $\R^A \simeq \R^{|A|}$ as vector spaces. For our toy example: \[x_1: A \rightarrow \R \qquad x_2: A \rightarrow \R \qquad y: A \rightarrow \R\]
 For a subset $C \subseteq A$, define an \emph{indicator function}:
 \[
@@ -236,6 +239,626 @@ For a subset $C \subseteq A$, define an \emph{indicator function}:
 \]
 Indicators are used to encode events, groups, labels, masks, etc.
 
-\subsection{Vectors}
+\subsubsection{Vectors}
+We use a column convention for vectors. For each student $i$, write the feature vector as:
+\[
+x_i = 
+\begin{bmatrix}
+    x_i^{(1)} \\
+    x_i^{(2)} 
+\end{bmatrix}
+\in \R^2
+\]
+Standard vectors that are useful include the zero vector ($0_d$), unit vector ($\mathbbm{1}_d$), and identity matrix ($I_{\R^d}$):
+\[
+0_d=
+\begin{bmatrix}
+    0 \\
+    \vdots \\
+    0
+\end{bmatrix}
+\quad
+\mathbbm{1}_d=
+\begin{bmatrix}
+    1 \\
+    \vdots \\
+    1
+\end{bmatrix}
+\quad
+I_{\R^d}=
+\begin{bmatrix}
+    1 \cdots 0 \\
+    \quad \ddots \quad \\
+    0 \cdots 1
+\end{bmatrix}
+\]
+\subsubsection{$\ell^p$ norms}
+For $p \ge 1$ and $x \in \R^d$, a $p$-norm is defined as \[\norm{x}_p = (|x^{(1)}|^p + \cdots + |x^{(d)}|^p)^{\frac{1}{p}}\]. Special cases include:
+\[\ell_1 = \sum_j |x^{(j)}| \quad \ell_2 = \sqrt{\sum_j (x^{(j)})^2} \quad \ell_\infty = \max_j |x^{(j)}|\]
+$\ell^2$ is called the euclidean norm. We require $p\ge 1$ because the triangle inequality holding is essential for a norm, and only holds for $p\ge 1$:
+\[
+\norm{x+y}_p \le \norm{x}_p + \norm{y}_p 
+\]
+\[
+\text{ when } p=1; |x| + |y| \le 1 
+\]
+\[
+\text{ when } p=\infty; \max \{|x|,|y|\} \le 1 \iff |x| \le 1, 
+\]
+A good visualization of norms is shown below:
+% TODO: add a tikz diagram comparing L1, L2, and L infinity norms
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.25]
+        \tikzset{
+            axes/.style={->,thin,gray},
+            ball/.style={draw=MidnightBlue,very thick,fill=MidnightBlue!12}
+        }
+
+        % l_1 unit ball
+        \begin{scope}[xshift=0cm]
+            \draw[axes] (-1.35,0) -- (1.45,0) node[right] {$x_1$};
+            \draw[axes] (0,-1.35) -- (0,1.45) node[above] {$x_2$};
+            \draw[ball] (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+            \foreach \x in {-1,1} {
+                \draw (\x,0.06) -- (\x,-0.06);
+                \draw (0.06,\x) -- (-0.06,\x);
+            }
+            \node[below=8pt] at (0,-1.35)
+                {$\norm{x}_1\leq 1$};
+        \end{scope}
+
+        % l_2 unit ball
+        \begin{scope}[xshift=4cm]
+            \draw[axes] (-1.35,0) -- (1.45,0) node[right] {$x_1$};
+            \draw[axes] (0,-1.35) -- (0,1.45) node[above] {$x_2$};
+            \draw[ball] (0,0) circle (1);
+            \foreach \x in {-1,1} {
+                \draw (\x,0.06) -- (\x,-0.06);
+                \draw (0.06,\x) -- (-0.06,\x);
+            }
+            \node[below=8pt] at (0,-1.35)
+                {$\norm{x}_2\leq 1$};
+        \end{scope}
+
+        % l_infinity unit ball
+        \begin{scope}[xshift=8cm]
+            \draw[axes] (-1.35,0) -- (1.45,0) node[right] {$x_1$};
+            \draw[axes] (0,-1.35) -- (0,1.45) node[above] {$x_2$};
+            \draw[ball] (-1,-1) rectangle (1,1);
+            \foreach \x in {-1,1} {
+                \draw (\x,0.06) -- (\x,-0.06);
+                \draw (0.06,\x) -- (-0.06,\x);
+            }
+            \node[below=8pt] at (0,-1.35)
+                {$\norm{x}_\infty\leq 1$};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{Unit balls in $\R^2$. Their boundaries consist of vectors with
+    norm equal to one.}
+    \label{fig:lp-unit-balls}
+\end{figure}
+
+\paragraph{Operator Norms}
+For $A \in \mathcal{M}_{m,d}$, $\norm{A}_{op} := \max \{\norm{Ax}_2 : x \in \R^d, \norm{x}_2 = 1\}$. $\norm{A}_{op}$ is the largest stretching factor of the linear map $x \mapsto Ax$. Alternatively, we can derive a similar definition:
+\[\norm{Ax}_2^2 = \inner{Ax}{Ax}\]
+\[\inner{Ax}{Ax} = (Ax)^TAx = x^TA^TAx\]
+\[\norm{Ax}_{op}^2 = \max_{\norm{x}_2 = 1} x^TA^TAx\]
+Operator norms quantify how much perurbations can be amplified. 
+
+\subsubsection{Cauchy-Schwarz Inequality}
+For $x,y \in \R^d$, $|\inner{x}{y}| \le \norm{x}_p\norm{y}_q$ with equality iff $x = \alpha y$ for some scalar $\alpha$ and $\frac{1}{p}+\frac{1}{q}=1$.
+
+\paragraph{Proof sketch:} For any $\alpha \in \R$, 
+\[
+0 \le \norm{x - \alpha y}_2^2 = \norm{x}_2^2 - 2\alpha \inner{x}{y} + \alpha^2 \norm{y}_2^2
+\]
+Choosing the best $\alpha$ gives the inequality:
+\[\forall \alpha \in \R, \quad \norm{x - \alpha y}_2^2 \ge 0\]
+\[\iff \inner{x-\alpha y}{x- \alpha y} \ge 0\]
+\[\iff \inner{x}{x} - 2\alpha \inner{x}{y} + \alpha^2 \inner{y}{y} \ge 0\]
+\[\iff \norm{x}_2^2 - 2\alpha \inner{x}{y} + \alpha^2 \norm{y}_2^2 \ge 0\]
+Without loss of generality, assume $\norm{y}_2 \ge 0$ and take $\alpha = \frac{\norm{x}_2}{\norm{y}_2}$:
+\[\implies \norm{x}_2^2 - \frac{2 \inner{x}{y}\norm{x}_2}{\norm{y}_2} + \norm{x}_2 \ge 0\]
+\[\norm{x}_2 \norm{y}_2 \ge \inner{x}{y}\]
+Equality means $x - \alpha^* y = 0$ so $x = \alpha^* y$.
+
+Cauchy-Schwarz is used in ML to control linear scores, since most models are about estimating weights. A linear model estimates $f_w(x) = \inner{w}{x}$. Cauchy-Schwarz gives 
+\[|f_w(x)|=|\inner{w}{x}| \le \norm{w}_2 \norm{x}_2\]
+This is saying if features have a bounded norm, and weights have a bounded norm, scores cannot explode. This is why norm constraints and regularization appear throughout learning problems. 
+\begin{quote}
+    The inner product cannot be larger than length times length
+\end{quote}
+We now look at a particle sensor example. Suppose independent sensors $X_1, X_2, \cdots , X_n$ estimate the same mean $\mu$:
+\[\E (X_i) = \mu \qquad \Var (X_i) = \sigma_i^2 \]
+Among weighted averages \[\hat{\mu}=\sum_{i=1}^n w_i X_i\] which weights should we use, keeping $\hat{\mu}$ unbiased? Compute:
+\[\E (\hat{\mu})=\E [\sum_i w_i X_i] = \sum_i w_i \E X_i = \sum_i w_i \mu = \mu\]
+Thus
+\[\E (\hat{\mu}) = \mu \iff \sum_i w_i = 1\]
+Because $X_i$ are independent,
+\[\Var(\hat{\mu})=\Var(\sum_i w_iX_i)=\sum_i w_i^2 \Var(X_i)=\sum_i w_i^2\sigma_i^2\]
+The optimization problem we obtain is therefor minimize $\Var(\hat{\mu}) \text{ s.t. } \sum_i w_i = 1$
+since the sum of weights is one, \[1 = (\sum_i w_i)^2 = (\sum_i (w_i \sigma_i)\frac{1}{\sigma_i})^2\]
+Now by Cauchy-Schwarz, \[1 = (\sum_i w_i)^2 \le (\sum_i w_i^2 \sigma_i^2) (\sum_i \frac{1}{\sigma_i^2})\]
+Recall $|\inner{x}{y}| \le \norm{x}_2 \norm{y}_2$. Therefore \[\Var(\hat{\mu})=\sum_i w_i^2 \sigma_i^2 \ge (\sum_i \sigma_i^{-2})^{-1}\]
+This makes it so the elements of $X$ and $y$ are $w_i \sigma_i$ and $1/\sigma_i$ respectively. 
+
+Equality in Cauchy-Schwarz holds when \[w_i \sigma_i \propto \sigma_i^{-1} \implies w_i \propto \frac{1}{\sigma_i^2}\] so we should normalize weights so they sum to one: \[\frac{\frac{1}{\sigma_i^2}}{\sum_{j=1}^n \frac{1}{\sigma_i^2}}\] meaning lower variance sensor implies larger weight. 
+
+\subsubsection{Sparsity and Lasso}
+Sparsity is roughly defined as what happens when $p \rightarrow 0$. For a nonzero scalar $a$: 
+\[\lim_{p \rightarrow 0} \sum_j \abs{x^{(j)}}^p = \sum_j \lim_{p \rightarrow 0}  \abs{x^{(j)}}^p \therefore \lim_{p\rightarrow 0} \abs{a}^p=1 (\text{ imagine } 
+\begin{cases}
+    0, x^{(j)}=0 \\
+    1, x^{(j)}\ne 0
+\end{cases}
+)\]
+For $a=0, \abs{0}^p=0$. Therefore informally, \[\lim_{p\rightarrow 0} \sum_j \abs{x^{(j)}}^p=\{j : x^{(j)} \ne 0\}=\norm{x}_0\]
+The quantity $\norm{x}_0$ counts the number of nonzero entries, but it is not a norm and optimization with it is often difficult. Common times in ML, we replace $\norm{x}_0$ with $\norm{x}_1$ to encourage sparsity while keeping convexity
+
+\subsubsection{Matrices}
+In ML, rows often represent samples and columns represent features. we say $\mathcal{M}_{m,d}=\mathcal{M}_{m,d}(\R)=\{m \times d \text{ real matrices }\}$. Additionally $\mathcal{M}_d=\mathcal{M}_{d,d}$. Notation may differ, so remember its always (across, down) ie (i,j)/(r,c)/(m,d)
+
+By this definition, a linear prediction vector is $X_w = [\inner{x_1}{w}, \inner{x_2}{w}, \cdots, \inner{x_i}{w}]^T$.
+
+\paragraph{Symmetric and Positive Semidefinite Matrices}
+A symmetric matrix is defined as \[S_d=\{A \in \mathcal{M}_d : A = A^T\}\]
+A positive semidefinite matrix (PSD) is defined as \[S_d^+ =\{A \in S_d : x^TAx \ge 0 \quad \forall \quad x \in \R^d\}\] These usually appear as covariance and correlation matrices, and Hessians of convex quadratic objective functions.
+A positive definite matrix is defined as \[S_d^{++} =\{A \in S_d : x^TAx > 0 \quad \forall \quad x \ne 0\}\] This usually comes up when doing ridge regressions and finding hessians with a parameter greater than 0. 
+
+\paragraph{Bilinear Forms} A bilinear form is a map $a: \R^d \times \R^d \rightarrow \R$ that is linear in each variable. If $a$ is symmetric (ie $a(x,y)=a(y,x)$) then $a(x,y)=x^TAy$ for some symmetric matrix $A \in S_d$.
+
+Inner products are PSD:
+\[a(x,y)=\inner{x}{y}=x^Ty\]
+\[a(x,y)=\inner{x}{y}=x^TI_dy\]
+\[a(x,x)=x^Tx=\norm{x}_2^2 \ge 0\]
+
+\paragraph{Orthogonal Matrices}
+An Orthogonal transformation matrix $O$ is defined as \[O_{m,d}=\{A \in \mathcal{M}_{m,d} : AA^T = I_m\}\] and for $Q \in O_d, Q^TQ=QQ^T=I_d$. The key idea is orthogonal transformations rpeserve euclidean geometry:
+\[\norm{Qx}_2^2 = (Qx)^T(Qx)=x^TQ^TQx=x^Tx=\norm{x}_2^2\]
+Similarly \[\inner{Qx}{Qy}=x^TQ^TQy=
+inner{x}{y}\] Rotations preserve distances and dot products, which matter for PCA, kernels, and preprocessing
+
+\subsubsection{Open and Closed Balls}
+We introduce some basic topology. For $x \in \R^d, r > 0$:
+A ball is open if \[B(x,r)=\{y \in \R^d: \norm{y-x}_2 < r\}\]
+A ball includes the boundary if \[\bar{B}(x,r)=\{y \in \R^d: \norm{y-x}_2 \le r\}\]
+
+A set $U \subset \R^d$ is open if \[\forall x \in U, \qquad \exists r > 0, \qquad B(x,r) \subset U\] A set is closed if its complement is open. The intuition is that inside an open set, every point has a small safety ball around it.
+
+For $A \subset \R^d$, the interior ($\int(A)$) is the largest open set containing $A$, and the closure $cl(a)$ is the smallest closed set containing $A$. We can also think of this as the closure iincluding the boundary whereas the interior doesn't.
+
+\paragraph{Compactness}: A set $K \subset \R^d$ is compact if every sequence of points in $K$ contains a subsequence that converges to a point in $K$. Take for instance (0,1) vs [0,1]:
+The requence $x_n = n^{-1}$ lies in (0,1) and converges to 0, but $0 \notin (0,1)$, so (0,1) is not compact. For [0,1], limits of convergent subsequences stay inside the set.
+
+\paragraph{Heine-Borel Theorem} A finite-dimensional Euclidean space: \[K \subset \R^d \text{ compact } \iff K \text{ is closed and bounded.}\] Bounded means $ \exists R > 0 \text{ s.t. } K \subset B(0,R)$. This is special to finite dimensional euclidean spaces, not other spaces.
+
+\paragraph{Weierstrass Extreme Value Theorem} If $K \subset \R^d$ is compact and $f:K \rightarrow \R$ is continuous, then $f$ attains its minimum and maximum on K. Put otherways, \[\exists x_{min}, x_{max} \in K \text{ s.t. } f(x_{min})=\min_{x \in K} f(x), \qquad f(x_{max})=\max_{x \in K} f(x)\] In optimization, we often write $\inf_{w \in K} \ell (w)$. Weierstrass tells us when this minimum is actually achieved. Basically saying that on compact parameter sets, continuous objectives have optimizers. We look at an example:
+
+Look at constrained regression. Consider minimizing least squares over a compact ball \[K_R = \{w \in \R^d : \norm{w}_2 \le R\}\]
+The objective is \[\ell (w)=\frac{1}{2n} \norm{Xw-y}_2^2\]
+We can prove this by showing $\ell (w)$ is continuous in $w$. Then show that $K_R$ is closed and bounded in $\R^d$. By Heine-Borel, $K_R$ is compact, so by Weierstrass, $\exists \hat{w} \in K_R \text{ s.t. } \ell (\hat{w}) = \min_{w \in K_R} \ell (w)$.
+
+\subsubsection{Metric Spaces} A metric space is a set $\mathcal{B}$ equipped with a distance $ \rho: \mathcal{B} \times \mathcal{B} \rightarrow [0.\infty)$ satisfying $\forall x,y,z \in \mathcal{B}$: 
+\[\rho(x,y) \iff x=y\]
+\[\rho(x,y) =\rho(y,x)\]
+\[\rho(x,z) \le \rho(x,y) + \rho(y,z)\]
+
+For $\mathcal{B} \in \R$ and $\rho: \R \times \R$: $\rho(x,y)=\abs{x-y}$.
+
+For $\mathcal{B} \in \R^d$ and $\rho: \R^d \times \R^d$: $\rho(x,y)=\norm{x-y}_2$.
+
+Metrics formalize dissimilarity between data points. This could be distances between two feature vectors, probability distributions, or functions/signals. Open, Closed, and compactness still make sense in metric spaces, but Heine-Borel may fail. In $\R$, closed and bounded iff compact, but in a general metric space, it does not imply compactness
+
+\subsection{Calculus}
+
+\paragraph{Calculus Notation Map}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}>{$}l<{$} p{0.67\textwidth}@{}}
+\toprule
+\multicolumn{1}{@{}l}{\textbf{Notation}} & \textbf{Meaning in these notes} \\
+\midrule
+x,y \in \R & one-dimensional points, often with $x<y$ \\
+x \in \R^d & deterministic vector or input point \\
+e_1,\ldots,e_d & canonical basis of $\R^d$: $e_1=(1,0,...), e_2=(0,1,...)$\\
+\partial f & derivative in one dimension \\
+\partial_j f & partial derivative along $e_j$ \\
+df(x) & differential or Jacobian matrix at $x$ \\
+\nabla \mathbin{\cdot} f & divergence, when $f\colon\R^d\to\R^d$ \\
+\nabla^2 f & Hessian, for scalar-valued $f$ \\
+\Delta f & Laplacian, $\tr(\nabla^2 f)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Probability Notation Map}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}>{$}l<{$} p{0.67\textwidth}@{}}
+\toprule
+\multicolumn{1}{@{}l}{\textbf{Notation}} & \textbf{Meaning in these notes} \\
+\midrule
+\Omega & sample space \\
+A \subseteq \Omega & event \\
+\mathbb{P} & probability function or probability measure \\
+(\Omega,\mathbb{P}) & probability space \\
+X,Y & random variables (capital letters) \\
+x,y & realizations or values of random variables \\
+R_X,R_Y & possible values of $X$ and $Y$ \\
+{[X=x]} & event $\{\omega\in\Omega:X(\omega)=x\}$ \\
+\E[X] & expectation of $X$ \\
+\E[Y\mid X=x] & conditional expectation of $Y$ given $X=x$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+A model is often a function $f(x)$ and a loss is often a function $\ell (w)$ of parameters $w$. Optimization therefore asks how does $\ell (w)$ change after $w$ is perturbed, or, if we move from $w$ to $w+h$, can we predict whether loss goes down?
+
+\paragraph{Intervals} Assume $x,y \in \R; x > y$. The line segment from $x$ to $y$ is written by $(1-t)x + ty$. Define the intervals as follows:
+\[[x,y] := \{(1-t)x+ty: 0 \le t \le 1\}\]
+\[[x,y) := \{(1-t)x+ty: 0 \le t < 1\}\]
+\[(x,y] := \{(1-t)x+ty: 0 < t \le 1\}\]
+\[(x,y) := \{(1-t)x+ty: 0 < t < 1\}\]
+The same line segment formula will appear in convexity, Jensen's Inequality, and taylor expansion along a direction.
+
+\subsubsection{1D Derivatives}
+Let $f: I \subset \R \rightarrow \R, \quad t \mapsto f(t) \in \R$. The derivative of $f$ at $t_0 \in I$ is \[\partial f (t_0) = \partial f |_{t=t_0} := \lim_{h \rightarrow 0} \frac{f(t_0+h)-f(t_0)}{h} \] when this limit exists. For higher-order derivatives: \[\partial^kf := \partial(\cdots \partial(\partial f)), \quad k\ge 0, \quad k \in \Z^+\] with the convention $\partial^0f := f$. The derivative is the local slope of the function at $t_0$. 
+
+\subsubsection{Higher-Dimensional Derivatives}
+Now move to $d > 1$, and let $f: U \subset \R^d \rightarrow \R^m$ and $U$ is \emph{open} (meaning we can move a little around $x$ without immediately leaving the domain).
+
+\subsubsection{Partial Derivates}
+Let $e_{1,...,}e_d$ be the canonical basis of $\R^d$. For $1 \le j \le d$: \[\partial_jf(x) := \partial_t(f(x+te_j))|_{t=0}=\lim_{t\rightarrow 0}\frac{f(x+te_j)-f(x)}{t}\]
+
+This means that $e_j$ changes only coordinate $j$ and $x+te_j$ means move from $x$ only along coordinate $j$. The partial derivative measures local change in that coordinate direction. 
+
+For example, let $f(\theta)=f(x,y)=x^2+3xy$. Then $\partial_x f(\theta)=2x+3y$ and $\partial_y f(x)=3y$, and at $\theta = (1,2)^T$, $\partial_x f(\theta)=8$ and $\partial_y f(x)=3$
+
+\subsubsection{Directional Derivatives}
+Partial derivatives measure change along the coordinate directions. More generally, for a direction $h\in\R^d$, the \emph{directional derivative} of $f$ at $x$ in the direction $h$ is
+\[
+\left.\partial_t f(x+th)\right|_{t=0}.
+\]
+A partial derivative is the special case $h=e_j$, whereas a directional derivative allows any $h\in\R^d$.
+
+In machine learning, if $x$ is an input image or feature vector and $h$ is a small perturbation, the directional derivative describes how the model output changes under that perturbation.
+
+\subsubsection{The Differential}
+Let $f\colon U\subset\R^d\to\R^m$, with component functions $f^{(1)},\ldots,f^{(m)}$. The \emph{differential} of $f$ at $x$ is
+\[
+df(x):=\left(\partial_j f^{(i)}(x)\right)_{
+1\leq i\leq m,\,1\leq j\leq d}.
+\]
+Equivalently,
+\[
+df(x)=
+\begin{pmatrix}
+\partial_1 f^{(1)}(x) & \cdots & \partial_d f^{(1)}(x) \\
+\vdots & \ddots & \vdots \\
+\partial_1 f^{(m)}(x) & \cdots & \partial_d f^{(m)}(x)
+\end{pmatrix}
+\in\R^{m\times d}.
+\]
+Thus, row $i$ contains the partial derivatives of the output component $f^{(i)}$, while column $j$ contains the partial derivatives with respect to the input coordinate $x_j$.
+
+\begin{example}[Computing $df(x)h$]
+Consider the scalar-valued function
+\[
+f\bigl(x^{(1)},x^{(2)}\bigr)
+=\bigl(x^{(1)}\bigr)^2+3x^{(1)}x^{(2)}.
+\]
+Its differential is the row vector
+\[
+df(x)
+=\begin{pmatrix}\partial_1 f(x)&\partial_2 f(x)\end{pmatrix}
+=\begin{pmatrix}2x^{(1)}+3x^{(2)}&3x^{(1)}\end{pmatrix}.
+\]
+At $x=(1,2)^T$,
+\[
+df(x)=\begin{pmatrix}8&3\end{pmatrix}.
+\]
+Therefore, if $h=(1,-1)^T$, then
+\[
+df(x)h
+=\begin{pmatrix}8&3\end{pmatrix}
+\begin{pmatrix}1\\-1\end{pmatrix}
+=5.
+\]
+\end{example}
+
+\subsubsection{Product Rule}
+Let $f,g\colon U\to\R$. Then
+\[
+d(fg)(x)=f(x)\,dg(x)+g(x)\,df(x).
+\]
+The product rule says that the first-order change of a product has two contributions: one from changing $f$ and one from changing $g$.
+
+\subsubsection{Chain Rule}
+Let
+\[
+f\colon U\subset\R^d\to\R^m,
+\qquad
+g\colon V\subset\R^b\to U.
+\]
+The condition $g(V)\subseteq U$ ensures that $f(g(x))$ is defined for every $x\in V$. The composition satisfies $f\circ g\colon V\to\R^m$, and the chain rule is
+\[
+d(f\circ g)(x)=df\bigl(g(x)\bigr)\,dg(x).
+\]
+The dimensions are compatible because
+\[
+\underbrace{df\bigl(g(x)\bigr)}_{m\times d}
+\underbrace{dg(x)}_{d\times b}
+=
+\underbrace{d(f\circ g)(x)}_{m\times b}.
+\]
+
+Modern machine-learning models are compositions of functions:
+\[
+x\longmapsto h_1(x)
+\longmapsto h_2\bigl(h_1(x)\bigr)
+\longmapsto\cdots\longmapsto f(x).
+\]
+The chain rule explains how derivatives propagate through such a composition. In particular, backpropagation in a neural network is repeated application of the chain rule.
+
+\subsubsection{Divergence}
+When $d=m$, a function $f\colon U\subset\R^d\to\R^d$ is a vector field. Its \emph{divergence} is
+\[
+\nabla\mathbin{\cdot}f(x):=\tr\bigl(df(x)\bigr).
+\]
+Writing
+\[
+f(x)=
+\begin{pmatrix}
+f^{(1)}(x)\\
+\vdots\\
+f^{(d)}(x)
+\end{pmatrix},
+\]
+the divergence is the sum of the diagonal entries of the $d\times d$ differential:
+\[
+\nabla\mathbin{\cdot}f(x)
+=\partial_1f^{(1)}(x)+\cdots+\partial_df^{(d)}(x).
+\]
+
+\begin{example}[Computing divergence]
+Let $f\colon\R^2\to\R^2$ be
+\[
+f(x)=
+\begin{pmatrix}
+\bigl(x^{(1)}\bigr)^2\\
+x^{(1)}x^{(2)}
+\end{pmatrix}.
+\]
+Then
+\[
+df(x)=
+\begin{pmatrix}
+2x^{(1)}&0\\
+x^{(2)}&x^{(1)}
+\end{pmatrix}.
+\]
+Therefore,
+\[
+\nabla\mathbin{\cdot}f(x)
+=\tr\bigl(df(x)\bigr)
+=2x^{(1)}+x^{(1)}
+=3x^{(1)}.
+\]
+\end{example}
+
+Divergence appears in continuous normalizing flows, probability flows, and differential equations for densities.
+
+\subsubsection{Determinant and Its Derivatives}
+Let
+\[
+A=\begin{bmatrix}a_1&\cdots&a_d\end{bmatrix}\in\mathcal{M}_d,
+\]
+where $a_i$ is the $i$th column of $A$. The determinant
+\[
+\det\colon\mathcal{M}_d\to\R
+\]
+can be viewed as a $d$-linear form in the columns:
+\[
+\delta(a_1,\ldots,a_d)=\det(A).
+\]
+It is characterized by the following properties:
+\begin{itemize}
+    \item If $a_i=a_j$ for $i\neq j$, then $\delta(a_1,\ldots,a_d)=0$.
+    \item Swapping two columns multiplies $\delta$ by $-1$.
+    \item $\delta(e_1,\ldots,e_d)=1$.
+\end{itemize}
+
+Let $a_{ij}$ denote the entry in row $i$ and column $j$ of $A$, and let $A^{(i,j)}$ be the matrix obtained by deleting row $i$ and column $j$. The entrywise derivative of the determinant is
+\[
+\partial_{a_{ij}}\det(A)
+=(-1)^{i+j}\det\bigl(A^{(i,j)}\bigr).
+\]
+The quantity $(-1)^{i+j}\det\bigl(A^{(i,j)}\bigr)$ is the \emph{cofactor} corresponding to the entry $a_{ij}$.
+
+\begin{proof}
+Expand the determinant along column $j$:
+\[
+\det(A)=\sum_{r=1}^d(-1)^{r+j}a_{rj}
+\det\bigl(A^{(r,j)}\bigr).
+\]
+Differentiating with respect to $a_{ij}$ gives
+\begin{align*}
+\partial_{a_{ij}}\det(A)
+&=\partial_{a_{ij}}
+\left[
+\sum_{r=1}^d(-1)^{r+j}a_{rj}
+\det\bigl(A^{(r,j)}\bigr)
+\right]\\
+&=(-1)^{i+j}\det\bigl(A^{(i,j)}\bigr).
+\end{align*}
+Only the term with $r=i$ contains $a_{ij}$ directly.
+\end{proof}
+
+\subsubsection{Higher-Order Derivatives}
+Higher-order derivatives are defined iteratively from first-order derivatives. For $f\colon U\to\R^m$,
+\[
+\partial_{i_k}\cdots\partial_{i_1}f\colon U\to\R^m,
+\]
+where
+\[
+x\longmapsto
+\partial_{i_k}\bigl(\partial_{i_{k-1}}\cdots
+\partial_{i_1}f\bigr)(x).
+\]
+The order of the indices records the order in which the derivatives are taken. Under suitable smoothness conditions, mixed partial derivatives commute.
+
+\subsubsection{Hessian}
+For a scalar-valued function $f\colon U\to\R$, the \emph{Hessian} is
+\[
+\nabla^2f(x):=
+\begin{pmatrix}
+\partial_1\partial_1f(x)&\cdots&\partial_1\partial_df(x)\\
+\vdots&\ddots&\vdots\\
+\partial_d\partial_1f(x)&\cdots&\partial_d\partial_df(x)
+\end{pmatrix}.
+\]
+The Hessian records the second-order curvature of a scalar-valued function.
+
+\begin{example}[Computing a Hessian]
+Let
+\[
+f\bigl(x^{(1)},x^{(2)}\bigr)
+=\bigl(x^{(1)}\bigr)^2
++3x^{(1)}x^{(2)}
++2\bigl(x^{(2)}\bigr)^2.
+\]
+The first derivatives are
+\[
+\partial_1f=2x^{(1)}+3x^{(2)},
+\qquad
+\partial_2f=3x^{(1)}+4x^{(2)}.
+\]
+Therefore, the Hessian is
+\[
+\nabla^2f(x)=
+\begin{pmatrix}
+2&3\\
+3&4
+\end{pmatrix}.
+\]
+\end{example}
+
+\subsubsection{Laplacian}
+For a scalar-valued function $f$, the \emph{Laplacian} is
+\[
+\Delta f:=\tr\bigl(\nabla^2f\bigr).
+\]
+Equivalently,
+\[
+\Delta f
+=\partial_1^2f+\partial_2^2f+\cdots+\partial_d^2f,
+\]
+where $\partial_j^2f:=\partial_j\partial_jf$.
+
+The Laplacian appears in diffusion, score models, graph Laplacians, manifold learning, and regularization.
+
+\subsubsection{Taylor's Theorem}
+\subsubsection{One-Dimensional Case}
+Let $f\colon I\subset\R\to\R$ and suppose $x+h\in I$. The order-$k$ Taylor expansion used in these notes is
+\[
+f(x+h)
+=f(x)+\partial f(x)h
++\frac{1}{2}\partial^2f(x)h^2
++\cdots
++\frac{1}{k!}\partial^kf(x)h^k
++o(h^k),
+\]
+where
+\[
+\lim_{h\to0}\frac{o(h^k)}{\lvert h\rvert^k}=0.
+\]
+Thus, $o(h^k)$ denotes an error term that is negligible compared with $\lvert h\rvert^k$ as $h\to0$.
+
+An alternative version gives an explicit remainder. There exists a point $\xi\in[x,x+h]$ such that
+\[
+f(x+h)
+=f(x)+\partial f(x)h+\cdots
++\frac{1}{(k-1)!}\partial^{k-1}f(x)h^{k-1}
++\frac{1}{k!}\partial^kf(\xi)h^k.
+\]
+The derivatives through order $k-1$ are evaluated at $x$, while the final remainder uses $\partial^kf(\xi)$ for some $\xi$ between $x$ and $x+h$.
+
+\subsubsection{Second-Order Approximation}
+Taking $k=2$ in the one-dimensional remainder formula gives
+\[
+f(x+h)=f(x)+\partial f(x)h
++\frac{1}{2}\partial^2f(\xi)h^2,
+\qquad \xi\in[x,x+h].
+\]
+For a high-dimensional loss, the analogous approximation is
+\[
+L(w+h)\approx L(w)+dL(w)h
++\frac{1}{2}h^T\nabla^2L(w)h.
+\]
+The first-order term suggests a descent direction, while the second-order term controls the error and step size.
+
+\subsubsection{Gradient Descent from Taylor's Theorem}
+Take $h=-\eta\nabla L(w)$. Substitution into the second-order approximation gives
+\begin{align*}
+L(w+h)
+&\approx L(w)+dL(w)h
++\frac{1}{2}h^T\nabla^2L(w)h\\
+&=L(w)-\eta\norm{\nabla L(w)}_2^2
++\frac{\eta^2}{2}
+\nabla L(w)^T\nabla^2L(w)\nabla L(w).
+\end{align*}
+The term $-\eta\norm{\nabla L(w)}_2^2$ decreases the loss, while the order-$\eta^2$ term is the curvature penalty. Choosing $\eta$ too large can therefore destroy descent.
+
+\subsection{Probability}
+\subsubsection{Sample Spaces and Events}
+The \emph{sample space} $\Omega$ is the set of all possible outcomes, and an \emph{event} is a subset $A\subseteq\Omega$. A probability is a function assigning values to events,
+\[
+\mathbb{P}\colon\powerset(\Omega)\to[0,1],
+\]
+such that
+\begin{enumerate}
+    \item $\mathbb{P}(\Omega)=1$;
+    \item $0\leq\mathbb{P}(A)\leq1$ for every $A\subseteq\Omega$;
+    \item if $A_1,A_2,\ldots\subseteq\Omega$ are pairwise disjoint, then
+    \[
+    \mathbb{P}\left(\bigcup_i A_i\right)
+    =\sum_i\mathbb{P}(A_i).
+    \]
+\end{enumerate}
+The pair $(\Omega,\mathbb{P})$ is a \emph{probability space}. Intuitively, the sample space lists all possible outcomes, while an event collects some of those outcomes.
+
+\begin{example}[One die roll]
+For one roll of a fair die,
+\[
+\Omega=\{1,2,3,4,5,6\}.
+\]
+The event that the outcome is even is
+\[
+A=\{2,4,6\}.
+\]
+Since three of the six outcomes are even,
+\[
+\mathbb{P}(A)=\frac{3}{6}=\frac{1}{2}.
+\]
+\end{example}
+
+\subsubsection{Random Variables and Realizations}
+Random variables are functions defined on a probability space. We use capital letters $X,Y,\ldots$ for random variables and lowercase letters $x,y,\ldots$ for their realizations or observed values. The notation
+\[
+[X=x]
+\]
+denotes the event
+\[
+\{\omega\in\Omega:X(\omega)=x\}.
+\]
+
+In supervised learning, we often regard $(X,Y)$ as a random input--output pair. A dataset
+\[
+(x_1,y_1),\ldots,(x_n,y_n)
+\]
+consists of observed realizations of independent copies of $(X,Y)$. Thus, capital $X,Y$ denote random variables before the data are observed, whereas lowercase $x_i,y_i$ denote observed data points.
+
 
 \end{document}
