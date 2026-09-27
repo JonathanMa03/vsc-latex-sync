@@ -860,5 +860,392 @@ In supervised learning, we often regard $(X,Y)$ as a random input--output pair. 
 \]
 consists of observed realizations of independent copies of $(X,Y)$. Thus, capital $X,Y$ denote random variables before the data are observed, whereas lowercase $x_i,y_i$ denote observed data points.
 
+\subsubsection{Inclusion--Exclusion}
+For events $A_1,A_2\subseteq\Omega$,
+\[
+\mathbb{P}(A_1\cup A_2)
+=\mathbb{P}(A_1)+\mathbb{P}(A_2)-\mathbb{P}(A_1\cap A_2).
+\]
+The intersection is included once in each of $\mathbb{P}(A_1)$ and $\mathbb{P}(A_2)$, so it must be subtracted once. Induction generalizes this identity to any finite collection of events.
+
+\subsubsection{Discrete Random Variables}
+A discrete random variable takes values in a discrete or countable space and has a \emph{probability mass function} (p.m.f.). For a fair coin flip represented by the values $1$ and $2$,
+\[
+R_X=\{1,2\},
+\qquad
+\mathbb{P}(X=1)=\mathbb{P}(X=2)=\frac{1}{2}.
+\]
+For a Poisson random variable,
+\[
+R_X=\N,
+\qquad
+\mathbb{P}(X=i)=\frac{e^{-\lambda}\lambda^i}{i!},
+\qquad \lambda>0.
+\]
+
+\subsubsection{Continuous Random Variables}
+A continuous random variable takes values in a subset of $\R^d$ and has a \emph{probability density function} (p.d.f.). The uniform density on $[0,1]$ is
+\[
+f(x)=
+\begin{cases}
+1, & x\in[0,1],\\
+0, & \text{otherwise}.
+\end{cases}
+\]
+The density of a Gaussian random variable $X\sim\Normal(\mu,\sigma^2)$ is
+\[
+f(x)=\frac{1}{\sqrt{2\pi\sigma^2}}
+\exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right).
+\]
+
+\subsubsection{Expectation}
+Some random variables are neither purely discrete nor purely continuous. For a discrete random variable with p.m.f. $f$,
+\[
+\E[X]=\sum_{x\in R_X}x f(x).
+\]
+For a continuous random variable with p.d.f. $f$,
+\[
+\E[X]=\int_{x\in R_X}x f(x)\,\dd x.
+\]
+Expectation is a probability-weighted average.
+
+In machine learning, the population risk is an expectation:
+\[
+R(f)=\E\bigl[\ell(f(X),Y)\bigr].
+\]
+Usually, however, we observe only the data
+\[
+(x_1,y_1),\ldots,(x_n,y_n).
+\]
+We therefore approximate the population risk by the empirical risk
+\[
+\widehat{R}(f)
+=\frac{1}{n}\sum_{i=1}^n\ell\bigl(f(x_i),y_i\bigr).
+\]
+Empirical risk minimization replaces an unknown expectation with a computable average.
+
+\subsubsection{Convexity and Jensen's Inequality}
+A function $\varphi$ is \emph{convex} if, for every $t\in[0,1]$ and every $x_1,x_2$ in its domain,
+\[
+\varphi\bigl(tx_1+(1-t)x_2\bigr)
+\leq t\varphi(x_1)+(1-t)\varphi(x_2).
+\]
+Thus, the graph of a convex function lies below the line segment joining any two points on its graph. For an affine function, expectation commutes with the function:
+\[
+\E[aX+b]=a\E[X]+b.
+\]
+For a nonlinear function $\varphi$, however, $\E[\varphi(X)]$ and $\varphi(\E[X])$ need not be equal.
+
+For convex $\varphi$, \emph{Jensen's inequality} states that
+\[
+\varphi\bigl(\E[X]\bigr)\leq\E[\varphi(X)].
+\]
+The left side first averages $X$ and then applies $\varphi$; the right side first applies $\varphi$ and then averages. Convexity says the latter is at least as large. Jensen's inequality appears in likelihood bounds, variational inference, expectation--maximization, and many generalization and optimization arguments.
+
+\begin{example}[A ratio of identically distributed variables]
+Suppose $X,Y>0$ have the same distribution and the relevant expectations exist. Because $\log$ is concave, Jensen's inequality applied to $X/Y$ gives
+\[
+\log\E\left[\frac{X}{Y}\right]
+\geq
+\E\left[\log\frac{X}{Y}\right].
+\]
+Since $X$ and $Y$ have the same distribution,
+\[
+\E\left[\log\frac{X}{Y}\right]
+=\E[\log X]-\E[\log Y]=0.
+\]
+Consequently,
+\[
+\E\left[\frac{X}{Y}\right]\geq1.
+\]
+This argument does not require $X$ and $Y$ to be independent.
+\end{example}
+
+\subsubsection{Conditional Probability and Bayes' Rule}
+Let $X\colon\Omega\to R_X$ and $Y\colon\Omega\to R_Y$ be discrete random variables. If $\mathbb{P}(X=x)>0$, define
+\[
+\mathbb{P}(Y=y\mid X=x)
+=\frac{\mathbb{P}(Y=y,X=x)}{\mathbb{P}(X=x)}.
+\]
+If $\mathbb{P}(X=x)=0$, this expression is undefined in the elementary discrete setting.
+
+For a fixed $x$ with $\mathbb{P}(X=x)>0$, conditional probability is a p.m.f. in $y$ because
+\begin{align*}
+\sum_{y\in R_Y}\mathbb{P}(Y=y\mid X=x)
+&=\sum_{y\in R_Y}
+\frac{\mathbb{P}(Y=y,X=x)}{\mathbb{P}(X=x)}\\
+&=\frac{\sum_{y\in R_Y}\mathbb{P}(Y=y,X=x)}
+{\mathbb{P}(X=x)}\\
+&=\frac{\mathbb{P}(X=x)}{\mathbb{P}(X=x)}=1.
+\end{align*}
+
+In both discrete and continuous settings, Bayes' rule has the form
+\[
+\mathbb{P}(Y\mid X)
+=\frac{\mathbb{P}(X\mid Y)\mathbb{P}(Y)}{\mathbb{P}(X)},
+\]
+with probabilities replaced by densities when appropriate. In the discrete case,
+\[
+\mathbb{P}(Y=y\mid X=x)
+=\frac{\mathbb{P}(X=x\mid Y=y)\mathbb{P}(Y=y)}
+{\mathbb{P}(X=x)}.
+\]
+Bayes classifiers choose the class having the largest posterior probability.
+
+\begin{example}[A diagnostic test]
+Let $D$ be the event that a person has a rare disease and $A$ the event of a positive test. Suppose
+\[
+\mathbb{P}(D)=0.01,
+\qquad
+\mathbb{P}(A\mid D)=0.95,
+\qquad
+\mathbb{P}(A\mid D^c)=0.03.
+\]
+Bayes' rule gives
+\begin{align*}
+\mathbb{P}(D\mid A)
+&=\frac{\mathbb{P}(A\mid D)\mathbb{P}(D)}
+{\mathbb{P}(A\mid D)\mathbb{P}(D)
++\mathbb{P}(A\mid D^c)\mathbb{P}(D^c)}\\
+&=\frac{0.95(0.01)}{0.95(0.01)+0.03(0.99)}
+\approx0.242.
+\end{align*}
+\end{example}
+
+\subsubsection{Conditional Expectation}
+Since $\mathbb{P}(Y=y\mid X=x)$ is a p.m.f. in $y$, define
+\[
+\E[Y\mid X=x]
+=\sum_{y\in R_Y}y\,\mathbb{P}(Y=y\mid X=x),
+\qquad \mathbb{P}(X=x)>0.
+\]
+For continuous random variables, the corresponding definition replaces the sum with an integral. The quantity $\E[Y\mid X=x]$ is the average value of $Y$ after restricting to the slice where $X=x$.
+
+Conditional expectation given $X$ depends only on $X$. For each possible value $x$, define
+\[
+g(x):=\E[Y\mid X=x].
+\]
+Then
+\[
+\E[Y\mid X]=g(X).
+\]
+
+For squared-loss regression, the Bayes regressor is
+\[
+x\longmapsto\E[Y\mid X=x].
+\]
+If many data points have features close to $x$, the best squared-loss prediction is their conditional average response. Many regression methods seek to approximate this unknown function from data.
+
+\subsubsection{Law of Total Expectation}
+The \emph{law of total expectation}, also called the tower property, states that
+\[
+\E\bigl[\E[Y\mid X]\bigr]=\E[Y].
+\]
+The intuition is to condition on $X$, average $Y$ within each slice $X=x$, and then average over all slices. This identity is used when decomposing expected risk, analyzing algorithms, and proving expected running-time results.
+
+For discrete random variables,
+\begin{align*}
+\E\bigl[\E[Y\mid X]\bigr]
+&=\sum_{x\in R_X}\E[Y\mid X=x]\mathbb{P}(X=x)\\
+&=\sum_{x\in R_X}
+\left(\sum_{y\in R_Y}y\mathbb{P}(Y=y\mid X=x)\right)
+\mathbb{P}(X=x)\\
+&=\sum_{x\in R_X}\sum_{y\in R_Y}
+y\mathbb{P}(Y=y,X=x)\\
+&=\sum_{y\in R_Y}y\mathbb{P}(Y=y)\\
+&=\E[Y].
+\end{align*}
+
+\begin{example}[Ten coins with different head probabilities]
+Independently flip ten coins, where coin $i$ has probability $1/i$ of landing heads. Let $A$ be the event that the total number of heads is even, and let $B$ be the event that the number of heads among coins $1,3,4,\ldots,10$ is even. Define the indicator variables
+\[
+Y=\ind_A,
+\qquad
+X=\ind_B.
+\]
+Then $\E[Y]=\mathbb{P}(A)$. Conditional on $B$, the total number of heads is even exactly when coin 2 lands tails. Conditional on $B^c$, it is even exactly when coin 2 lands heads. Since coin 2 is fair and independent of the remaining coins,
+\[
+\E[Y\mid X=1]=\mathbb{P}(A\mid B)=\frac{1}{2},
+\qquad
+\E[Y\mid X=0]=\mathbb{P}(A\mid B^c)=\frac{1}{2}.
+\]
+Therefore $\E[Y\mid X]=1/2$, and the law of total expectation gives
+\[
+\mathbb{P}(A)=\E[Y]
+=\E\bigl[\E[Y\mid X]\bigr]
+=\frac{1}{2}.
+\]
+\end{example}
+
+\subsection{Matrix Analysis}
+
+\subsubsection{Matrix Notation}
+For real matrices, write
+\[
+\mathcal{M}_{n,d}(\R)
+=\{n\times d\text{ real matrices}\},
+\qquad
+\mathcal{M}_d(\R)=\mathcal{M}_{d,d}(\R).
+\]
+The set of $d\times d$ orthogonal matrices is
+\[
+\mathcal{O}_d(\R)
+=\left\{U\in\mathcal{M}_d(\R):
+U^TU=UU^T=I_d\right\}.
+\]
+The columns of an orthogonal matrix form an orthonormal basis.
+
+\subsubsection{Eigen-Decomposition of Symmetric Matrices}
+Let $A\in\mathcal{M}_d(\R)$ be symmetric, so $A=A^T$. Then there exist an orthogonal matrix $U\in\mathcal{O}_d(\R)$ and a diagonal matrix $D\in\mathcal{M}_d(\R)$ such that
+\[
+A=UDU^T.
+\]
+The diagonal entries of $D$ are the eigenvalues of $A$, and the columns of $U$ are orthonormal eigenvectors of $A$.
+
+More explicitly, write
+\[
+U=\begin{bmatrix}u_1&\cdots&u_d\end{bmatrix},
+\qquad
+D=\diag(\lambda_1,\ldots,\lambda_d).
+\]
+Then $A=UDU^T$ means
+\[
+Au_i=\lambda_i u_i,
+\qquad i=1,\ldots,d,
+\]
+and orthonormality gives
+\[
+u_i^Tu_j=
+\begin{cases}
+1, & i=j,\\
+0, & i\neq j.
+\end{cases}
+\]
+Geometrically, a symmetric matrix stretches or compresses along mutually orthogonal eigendirections.
+
+\begin{example}[A diagonal symmetric matrix]
+Let
+\[
+A=
+\begin{pmatrix}
+3&0\\
+0&1
+\end{pmatrix}.
+\]
+Then
+\[
+A=UDU^T,
+\qquad
+U=I_2,
+\qquad
+D=
+\begin{pmatrix}
+3&0\\
+0&1
+\end{pmatrix}.
+\]
+The eigenvectors are
+\[
+e_1=\begin{pmatrix}1\\0\end{pmatrix},
+\qquad
+e_2=\begin{pmatrix}0\\1\end{pmatrix},
+\]
+with eigenvalues $3$ and $1$, respectively.
+\end{example}
+
+Eigen-decomposition is foundational for:
+\begin{itemize}
+    \item principal component analysis, through the variance directions of covariance matrices;
+    \item spectral clustering, through eigenvectors of graph Laplacians;
+    \item optimization, through Hessian eigenvalues and curvature;
+    \item Gaussian models, through covariance structure;
+    \item regularization and conditioning.
+\end{itemize}
+The main idea is that a symmetric matrix becomes simple after rotating to its eigenbasis.
+
+\subsubsection{Positive Semidefinite Matrices}
+A symmetric matrix $A\in\mathcal{M}_d(\R)$ is \emph{positive semidefinite}, written $A\succeq0$, if
+\[
+x^TAx\geq0
+\qquad\text{for every }x\in\R^d.
+\]
+If
+\[
+A=U\diag(\lambda_1,\ldots,\lambda_d)U^T,
+\]
+then the equivalent eigenvalue characterization is
+\[
+A\succeq0
+\quad\Longleftrightarrow\quad
+\lambda_i\geq0\text{ for every }i.
+\]
+
+\subsubsection{Matrix Square Root}
+Let $A\succeq0$ have eigen-decomposition
+\[
+A=U\diag(\lambda_1,\ldots,\lambda_d)U^T,
+\qquad \lambda_i\geq0.
+\]
+Define its square root by
+\[
+A^{1/2}:=
+U\diag\bigl(\sqrt{\lambda_1},\ldots,\sqrt{\lambda_d}\bigr)U^T.
+\]
+Then
+\[
+A^{1/2}A^{1/2}=A.
+\]
+Covariance matrices are positive semidefinite, and their square roots appear in Gaussian sampling and whitening transformations.
+
+\subsubsection{Singular Value Decomposition}
+Let $A\in\mathcal{M}_{n,d}(\R)$. Then there exist orthogonal matrices
+\[
+U\in\mathcal{O}_n(\R),
+\qquad
+V\in\mathcal{O}_d(\R),
+\]
+and a rectangular diagonal matrix $D\in\mathcal{M}_{n,d}(\R)$ with nonnegative diagonal entries such that
+\[
+A=UDV^T.
+\]
+The diagonal entries of $D$ are the \emph{singular values} of $A$.
+
+Let $m=\min(n,d)$ and order the singular values as
+\[
+\sigma_1(A)\geq\sigma_2(A)\geq\cdots
+\geq\sigma_m(A)\geq0.
+\]
+Writing $u_i$ and $v_i$ for the corresponding left and right singular vectors, respectively, the SVD can also be read as the rank-one expansion
+\[
+A=\sum_{i=1}^m\sigma_i(A)u_iv_i^T.
+\]
+
+Geometrically, a linear map first rotates, then stretches along orthogonal directions by its singular values, and then rotates again. In two dimensions, the image of the unit circle is an ellipse whose principal semiaxes point along the left singular vectors and have lengths given by the singular values.
+
+\paragraph{Reduced SVD}
+Let $r=\rank(A)$. The reduced SVD retains only the nonzero singular values:
+\[
+A=U_rD_rV_r^T,
+\]
+where
+\[
+U_r\in\R^{n\times r},
+\qquad
+D_r=\diag(\sigma_1,\ldots,\sigma_r)\in\R^{r\times r},
+\qquad
+V_r\in\R^{d\times r}.
+\]
+It stores only the active directions and is therefore more efficient when $r\ll\min(n,d)$.
+
+The SVD is foundational for:
+\begin{itemize}
+    \item principal component analysis and dimensionality reduction;
+    \item spectral clustering;
+    \item conditioning and numerical stability;
+    \item matrix completion and recommender systems;
+    \item model compression and low-rank regularization.
+\end{itemize}
+Large singular values identify directions in which the matrix acts strongly, while small singular values identify weak or noisy directions.
+
 
 \end{document}
