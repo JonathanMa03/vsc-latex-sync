@@ -8,19 +8,19 @@ The material were created as a personal "To-Go" reference covering topics in sta
 
 | Course Number | Course Name | Term | Last Updated |
 |---|---|---|---|
-| EN.553.632 | Bayesian Statistics | FA25 | 12/31/2025 |
-| EN.553.634 | Elements of Statistical Learning | FA26 | 10/22/2026 |
-| EN.553.636 | Introduction to Data Science | FA25 | 12/31/2025 |
-| EN.553.639 | Time Series Analysis | FA25 | 12/31/2025 |
-| EN.553.688 | Computing for Applied Math | FA25 | 12/31/2025 |
-| EN.553.724 | Probabilistic Machine Learning | SP26 | 5/20/2026 |
-| EN.553.730 | Statistical Theory | FA26 | 10/22/2026 |
-| EN.553.733 | Nonparametric Bayesian Statistics | SP26 | 5/20/2026 |
-| EN.553.734 | AI and Statistical Methods in Clinical Data Science | FA26 | 10/22/2026 |
-| EN.553.740 | Machine Learning 1 | FA26 | 10/22/2026 |
-| EN.553.747 | Mathematics of Data Science | FA25 (Audit) | 12/31/2025 |
-| EN.553.761 | Nonlinear Optimization 1 | FA26 | 10/22/2026 |
-| EN.553.762 | Nonlinear Optimization 2 | SP26 | 5/20/2026 |
+| [EN.553.632](632_BayesianStatistics/632_main.pdf) | Bayesian Statistics | FA25 | 12/31/2025 |
+| [EN.553.634](634_StatisticalLearning/634_main.pdf) | Elements of Statistical Learning | FA26 | 10/22/2026 |
+| [EN.553.636](636_IntroDataScience/636_main.pdf) | Introduction to Data Science | FA25 | 12/31/2025 |
+| [EN.553.639](639_TimeSeriesAnalysis/639_main.pdf) | Time Series Analysis | FA25 | 12/31/2025 |
+| [EN.553.688](688_ComputingAppliedMath/688_main.pdf) | Computing for Applied Math | FA25 | 12/31/2025 |
+| [EN.553.724](724_ProbabilisticML/724_main.pdf) | Probabilistic Machine Learning | SP26 | 5/20/2026 |
+| [EN.553.730](730_StatisticalTheory/730_main.pdf) | Statistical Theory | FA26 | 10/22/2026 |
+| [EN.553.733](733_NonparametricBayes/733_main.pdf) | Nonparametric Bayesian Statistics | SP26 | 5/20/2026 |
+| [EN.553.734](734_AIforClinicalDS/734_main.pdf) | Generative AI and Statistical Methods in Clinical Data Science and Biopharamceutical Statistics | FA26 | 10/22/2026 |
+| [EN.553.740](740_MachineLearning1/740_main.pdf) | Machine Learning 1 | FA26 | 10/22/2026 |
+| [EN.553.747](747_MathOfDataScience/747_main.pdf) | Mathematics of Data Science | FA25 | 12/31/2025 |
+| [EN.553.761](761_NonlinearOptimization1/761_main.pdf) | Nonlinear Optimization 1 | FA26 | 10/22/2026 |
+| [EN.553.762](762_NonlinearOptimization2/762_main.pdf) | Nonlinear Optimization 2 | SP26 | 5/20/2026 |
 
 Misc. Notes:
 - `techtools`: Various lingo to prep for interviews in BME, AI, Finance, etc.
