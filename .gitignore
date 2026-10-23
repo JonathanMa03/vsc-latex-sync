@@ -25,7 +25,6 @@
 # VSCode (optional)
 .vscode/
 
-# Keep PDFs and TEX files
-!*.tex
+# Keep rendered PDFs
 !*.pdf
 

@@ -4,20 +4,30 @@ This repository is a consolidated collection of my personal notes compiled durin
 
 The material were created as a personal "To-Go" reference covering topics in statistics, learning, and optimization
 
-Courses Taken:
-- EN.553.632 Bayesian Statistics, FA25
-- EN.553.634 Elements of Statistical Learning, FA26 Audit
-- EN.553.636 Introduction to Data Science, FA25
-- EN.553.639 Time Series Analysis, FA25
-- EN.553.688 Computing for Applied Math, FA25
-- EN.553.724 Probabilistic Machine Learning, SP26
-- EN.553.730 Statistical Theory, FA26 Audit
-- EN.553.733 Nonparametric Bayesian Statistics, SP26
-- EN.553.734 AI and Statistical Methods in Clinical Data Science, FA26
-- EN.553.747 Mathematics of Data Science, FA25 Audit
-- EN.553.761 Nonlinear Optimization 1, FA26
-- EN.553.762 Nonlinear Optimization 2, SP26
-- EN.553.796 Random Matrix Theory in Data Science and Statistics, FA26
+## Courses Taken
+
+| Course Number | Course Name | Term | Last Updated |
+|---|---|---|---|
+| EN.553.632 | Bayesian Statistics | FA25 | 12/31/2025 |
+| EN.553.634 | Elements of Statistical Learning | FA26 | 10/22/2026 |
+| EN.553.636 | Introduction to Data Science | FA25 | 12/31/2025 |
+| EN.553.639 | Time Series Analysis | FA25 | 12/31/2025 |
+| EN.553.688 | Computing for Applied Math | FA25 | 12/31/2025 |
+| EN.553.724 | Probabilistic Machine Learning | SP26 | 5/20/2026 |
+| EN.553.730 | Statistical Theory | FA26 | 10/22/2026 |
+| EN.553.733 | Nonparametric Bayesian Statistics | SP26 | 5/20/2026 |
+| EN.553.734 | AI and Statistical Methods in Clinical Data Science | FA26 | 10/22/2026 |
+| EN.553.740 | Machine Learning 1 | FA26 | 10/22/2026 |
+| EN.553.747 | Mathematics of Data Science | FA25 (Audit) | 12/31/2025 |
+| EN.553.761 | Nonlinear Optimization 1 | FA26 | 10/22/2026 |
+| EN.553.762 | Nonlinear Optimization 2 | SP26 | 5/20/2026 |
+
+Misc. Notes:
+- `techtools`: Various lingo to prep for interviews in BME, AI, Finance, etc.
+- `jma_git_guide`: A GitHub cheatsheet for project management
+- `fund_ai`: Fifty Papers on the foundations of modern AI
+
+My Notetaking template is also available in `template/`. 
 
 Special thanks to the faculty of the [AMS Department](https://engineering.jhu.edu/ams/faculty/) for their excellent instruction and mentorship, along with their course materials.
 
