@@ -178,25 +178,380 @@
 \tableofcontents
 
 \section{What is Clinical Data Science?}
-Clinical Data Science is a field that combines data science techniques with clinical knowledge to analyze and interpret healthcare data. It involves the application of statistical methods, machine learning algorithms, and computational tools to extract meaningful insights from clinical datasets, which can include electronic health records (EHRs), medical imaging, genomic data, and more.
+Clinical data science combines clinical knowledge, data engineering, statistics,
+machine learning, and computation to turn heterogeneous health information into
+evidence that supports decisions.  Its purpose is not merely to fit predictive
+models.  The central goal is to connect a clinically meaningful question to
+appropriate data, a defensible analysis, a quantified statement of uncertainty,
+and a decision that can be checked by scientists, clinicians, and regulators.
 
 \subsection{What do we want to answer?}
 \begin{itemize}
-    \item Does a Treatment work? (Causal Inference)
-    \item Is a treatment safe? (Safety Analysis)
+    \item Does a treatment work, and what is the magnitude of its effect?
+    \item Is the treatment acceptably safe relative to its benefits?
+    \item Which patients benefit most, and which are at elevated risk?
+    \item Which treatment should a particular patient receive?
 \end{itemize}
- We can use various data sources like clinical studies, protocols, and existing scientific knowledge, including websites like ClinicalTrials.gov. We want to combine statistics and AI to build reliable evidence. 
+The first question is causal, the second requires systematic safety assessment,
+and the latter two introduce treatment-effect heterogeneity, prediction, and
+individualized decision making.  These questions are related but not
+interchangeable.  For example, a model that predicts outcome accurately need
+not estimate the causal effect of changing treatment.
 
- Biopharmaceutical statistics involve a combination of cinical trial design and statistical analysis. Drug design also goes through a process:
- $$
-Discovery \rightarrow Preclinical \rightarrow Clinical (Phase I, II, III) \rightarrow Regulatory \rightarrow Post-Market
- $$
+\subsection{Sources of clinical evidence}
+
+Clinical evidence is assembled from several complementary sources:
+\begin{itemize}
+    \item \textbf{Clinical trials:} randomized treatment assignments,
+    prespecified endpoints, safety outcomes, and biomarkers;
+    \item \textbf{Real-world clinical data:} electronic health records,
+    insurance claims, registries, and laboratory systems;
+    \item \textbf{Biomedical measurements:} medical images, genomics and other
+    omics, wearable devices, and sensors;
+    \item \textbf{Scientific knowledge:} protocols, regulatory guidance,
+    publications, clinical guidelines, and prior studies.
+\end{itemize}
+These sources differ in structure, provenance, measurement error, missingness,
+and susceptibility to bias.  Randomization can support causal identification in
+a trial, whereas observational data generally require additional assumptions
+and adjustment.  Unstructured documents may encode essential definitions that
+are absent from an analysis table.
+
+The evidence pipeline can be summarized as
+\[
+ \text{clinical question}
+ \longrightarrow \text{data}
+ \longrightarrow \text{statistics and AI}
+ \longrightarrow \text{evidence}
+ \longrightarrow \text{decision}.
+\]
+Each arrow represents work: defining a target quantity, collecting appropriate
+variables, constructing analysis-ready data, choosing an estimand and method,
+validating outputs, and communicating uncertainty.
+
+\subsection{Biopharmaceutical statistics and drug development}
+
+Biopharmaceutical statistics links trial design with statistical analysis.
+Before observing the trial outcomes, statisticians help determine the target
+population, treatment arms, endpoints, randomization and stratification scheme,
+sample size, interim analyses, and error-control strategy.  After data are
+collected, they estimate treatment effects, quantify uncertainty, analyze
+efficacy and safety, assess robustness, and explain what conclusions the design
+supports.  Questions such as ``How many patients are needed?'' and ``Can
+external evidence be borrowed?'' are therefore design questions as much as
+analysis questions.
+
+Drug development is a long evidence-generation process:
+\[
+\begin{gathered}
+\text{Discovery}\rightarrow\text{Preclinical}\rightarrow
+\text{Phase I}\rightarrow\text{Phase II}\rightarrow\text{Phase III}\\
+\phantom{\text{Discovery}}\longrightarrow
+\text{Regulatory review}\rightarrow\text{Post-market}.
+\end{gathered}
+\]
+Preclinical studies occur before exposure in humans.  Phase I emphasizes
+initial safety, tolerability, pharmacokinetics, and dose; Phase II investigates
+preliminary efficacy and dose selection; Phase III provides confirmatory
+benefit--risk evidence in larger populations.  Regulatory review evaluates the
+totality of evidence, and post-market work studies effectiveness and uncommon
+or long-latency safety outcomes under real-world use.
+
+\subsection{The work of statisticians and clinical data scientists}
+
+The work spans three connected layers:
+\begin{enumerate}
+    \item \textbf{Design:} understand the disease and protocol, define the
+    population and endpoints, specify estimands, and design the study;
+    \item \textbf{Data:} determine what must be collected, define derivations,
+    reconcile sources, and construct traceable analysis datasets;
+    \item \textbf{Evidence:} analyze efficacy and safety, incorporate prior or
+    external information when justified, perform sensitivity analyses, and
+    communicate the result.
+\end{enumerate}
+Consequently, the job is not simply to receive one rectangular dataset and run
+a model.  An analysis dataset is interpreted alongside the protocol,
+statistical analysis plan (SAP), regulatory guidance, clinical definitions,
+publications, prior trials, and the tables and figures that must be produced.
+
+\subsection{From statistical software to generative AI}
+
+Traditional statistical programs in R, SAS, or similar systems apply explicit
+human-written rules to structured inputs and produce reproducible structured
+outputs.  Conventional machine learning learns a mapping from data for a
+particular prediction task.  A foundation model is broader: it can accept
+documents, images, tables, data, code, and instructions and generate language,
+code, or structured representations for many tasks.
+
+This makes generative AI relevant to workflows such as reading protocols,
+extracting definitions, interpreting tables, writing analysis code, answering
+questions across documents, and reconciling multiple information sources.
+The useful object is not necessarily a stand-alone chatbot.  It is often a
+\emph{system} in which a model calls search, database, calculation, and code
+execution tools while maintaining a traceable workflow.
+
+\begin{remark}[Prediction, generation, and action]
+A task-specific predictive model typically maps a fixed input schema to one
+output.  A generative model can produce flexible content from heterogeneous
+context.  An agentic system goes one step further by selecting and invoking
+tools, observing their outputs, and iterating toward a goal.  These additional
+capabilities also introduce additional failure modes.
+\end{remark}
+
+\subsection{Why scientific AI needs more than a plausible answer}
+
+In clinical and regulatory work, fluent prose is not sufficient.  A reliable
+workflow should provide:
+\begin{itemize}
+    \item \textbf{Accuracy:} claims and extracted values agree with authoritative
+    sources;
+    \item \textbf{Structure:} important outputs are represented in a defined,
+    machine-readable schema rather than only in prose;
+    \item \textbf{Reproducibility:} inputs, model and tool versions, prompts,
+    parameters, and intermediate results are recorded;
+    \item \textbf{Validation:} a qualified person or validated procedure can
+    verify the result against source evidence;
+    \item \textbf{Tool grounding:} the model retrieves actual documents and
+    executes exact computations instead of relying on memory or approximate
+    verbal arithmetic;
+    \item \textbf{Traceability:} every important conclusion can be linked back
+    to data, code, and document locations.
+\end{itemize}
+These requirements motivate combining generative AI with tools, statistics,
+domain knowledge, and explicit quality control.  The objective is not to
+replace statistical reasoning, but to build systems that can assist with
+complex information work without obscuring assumptions or evidence.
 
 \subsection{Clinical Protocols}
-Clinical protocols are usually written by clinicians, and statisticians need to understand the clinical context to design and analyze trials effectively. The protocol includes the study design, objectives, endpoints, statistical analysis plan, and other relevant information. \emph{The most important part is being able to communicate results to the marketing team, clinicians, managers.}
-It has all the science, operations, and motivation behind and including the statistical analysis plan. The protocol is a living document that can be updated as the study progresses.
+The clinical trial protocol is the document that prespecifies how a trial will
+be conducted before enrollment begins.  A protocol can span roughly
+$100$--$300$ pages of prose, tables, flow charts, and appendices.  It states the
+scientific objectives, population, treatments, endpoints, visit schedule,
+procedures, safety rules, and statistical design.  It must align clinical
+science, operations, data collection, and analysis.
 
-This is usually defined before any human subject is considered, usually its 300 pages, regulatory approved, and everything must follow it
+The protocol is controlled rather than casually ``living.''  Changes require
+documented amendments, version control, review, and, where applicable,
+regulatory and ethics approval.  Downstream artifacts---case-report forms,
+analysis datasets, the SAP, tables, listings, figures, clinical study reports,
+and submissions---must remain traceable to the governing version.
+
+Conceptually, the protocol connects
+\[
+\begin{gathered}
+ \text{scientific objective}\leftrightarrow\text{study population}
+ \leftrightarrow\text{treatment}\leftrightarrow\text{endpoints}\\
+ \text{endpoints}\leftrightarrow\text{data collection}
+ \leftrightarrow\text{statistical analysis}.
+\end{gathered}
+\]
+It is therefore a bridge from natural-language clinical decisions to data
+definitions and executable statistical rules.  Protocol extraction is not an
+end in itself; it is a useful test case because errors at this junction
+propagate through the entire evidence-generation process.
+
+\subsubsection{A protocol makes one controlled experiment}
+
+A multicenter trial may involve hundreds of patients, investigators, and
+sites.  The protocol makes their contributions part of one interpretable
+experiment by serving three functions:
+\begin{itemize}
+    \item \textbf{Standardization:} sites use the same eligibility rules,
+    treatment schedules, assessment procedures, visit timing, and definitions;
+    \item \textbf{Control:} key conditions are prespecified, treatment groups
+    are made comparable, and avoidable variation is reduced;
+    \item \textbf{Interpretation:} the resulting evidence identifies who was
+    studied, what was done, what was measured, and how comparisons were made.
+\end{itemize}
+Without a common protocol, a nominally multicenter trial could become a
+collection of different experiments.  The protocol therefore turns a clinical
+question into a reproducible data-generating process.
+
+It also combines multiple representations.  Narrative sections explain
+rationale and clinical judgment; eligibility lists express logical rules;
+tables encode schedules and thresholds; diagrams describe treatment flow; and
+statistical sections define populations, endpoints, models, and decisions.
+Correct interpretation often requires reconciling all of them.
+
+\subsubsection{A functional map of a protocol}
+
+Section numbering differs across sponsors, so it is more useful to ask what
+question each part answers:
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.14\textwidth}
+                >{\raggedright\arraybackslash}p{0.27\textwidth}
+                >{\raggedright\arraybackslash}p{0.43\textwidth}}
+\toprule
+\textbf{Question} & \textbf{Typical content} & \textbf{Purpose}\\
+\midrule
+Why? & Background and rationale & Disease context, unmet need, prior evidence,
+and justification for the study\\
+What? & Objectives, endpoints, hypotheses & Scientific intent, measured outcome,
+and statistical claim\\
+How? & Design and intervention & Randomization, control, masking, treatment
+regimens, and stopping rules\\
+Who? & Population and eligibility & The population created by inclusion and
+exclusion criteria\\
+When? & Assessments and schedule of activities & What is measured at each
+visit and during follow-up\\
+Analysis? & Statistical design and SAP & Analysis populations,
+derivations, models, missingness, multiplicity, and decision rules\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Public protocol packages may redact proprietary scientific material, personal
+information, or nonessential appendices.  Absence from a public copy does not
+mean that the information was absent from trial planning.  An AI extraction
+system should distinguish an explicit statement of absence from content that
+is redacted, omitted, or unavailable, and it should retain the provenance and
+version of the document it processed.
+
+\subsubsection{Objective, endpoint, and hypothesis}
+
+These terms describe different layers of the same question:
+\begin{itemize}
+    \item an \textbf{objective} states the scientific question, such as whether
+    treatment improves progression-free survival;
+    \item an \textbf{endpoint} defines the outcome variable used to represent
+    that question, including its time origin, event, assessment procedure, and
+    observation window;
+    \item a \textbf{hypothesis} states the statistical claim to be tested, such
+    as superiority of one treatment over another for the endpoint.
+\end{itemize}
+A strong protocol aligns scientific intent, measurement, and statistical
+decision.  Extracting only an endpoint name such as ``PFS'' is insufficient:
+assessment method, reviewer, visit schedule, censoring, and intercurrent events
+can change the estimand and the interpretation.
+
+Comparator choice is part of the scientific question.  An active comparator
+asks whether a new therapy improves upon an existing treatment, whereas a
+placebo comparison asks a different question.  The appropriate control depends
+on the treatment landscape at the time of design, eligibility, background
+therapy, ethics, and the intended regulatory claim.
+
+\subsubsection{Design and intervention as structured rules}
+
+Randomization specifies who receives each treatment and supports causal
+comparison by balancing baseline factors in expectation.  Stratified
+randomization promotes balance within prespecified prognostic categories and
+is often mirrored in the primary analysis.  Masking reduces behavioral and
+assessment biases; in an open-label trial, blinded independent outcome review
+may protect key endpoints even when treatment cannot be concealed.
+
+A treatment arm is not merely a drug name.  It is a structured regimen that
+includes dose, route, frequency, treatment duration, allowable timing windows,
+criteria for holding or discontinuing treatment, retreatment, concomitant and
+prohibited medications, and toxicity-management rules.  These elements must be
+represented if protocol text is converted into executable logic.
+
+\subsubsection{Eligibility is executable clinical logic}
+
+Eligibility criteria protect participants, define the population to which the
+trial directly applies, and reduce factors that would obscure treatment effects
+or make assessments unreliable.  Applying them to real candidates produces the
+enrolled population, which may be narrower than the target clinical population.
+This distinction later matters for generalizability, transportability,
+external controls, and evidence synthesis.
+
+Criteria can include nested conditions, temporal windows, laboratory
+thresholds, units, local upper limits of normal, and exceptions.  A useful
+machine-readable representation separates:
+\[
+ \text{variable},\quad \text{operator},\quad \text{threshold},\quad
+ \text{unit},\quad \text{time window},\quad \text{exception},\quad
+ \text{source citation}.
+\]
+For example, ``AST/ALT at most $2.5$ times ULN, or at most $5$ times ULN with
+liver metastases'' is a conditional rule, not one numeric cutoff.  Negation and
+scope also matter: ``no treatment within 14 days'' differs from ``no prior
+treatment.''
+
+\subsubsection{The schedule of activities specifies future data}
+
+The schedule of activities is a visit-by-assessment matrix.  Rows identify
+procedures such as imaging, laboratory tests, adverse-event collection,
+pharmacokinetics, and patient-reported outcomes; columns identify screening,
+treatment visits, end of treatment, and follow-up.  Each cell determines
+whether and when a datum should exist.
+
+Thus the schedule propagates into the eventual analysis:
+\[
+\begin{gathered}
+ \text{study-flow requirement}\longrightarrow\text{clinical record or CRF}
+ \longrightarrow\text{analysis variable}\\
+ \longrightarrow\text{endpoint derivation}\longrightarrow
+ \text{statistical result}.
+\end{gathered}
+\]
+For a time-to-event endpoint, imaging dates, lesion assessments, progression
+status, death dates, missed visits, and central review may determine the event
+indicator and censoring time.  Timing can follow the study calendar rather than
+shift automatically when a treatment cycle is delayed.
+
+\subsubsection{Efficacy, safety, and patient experience}
+
+Efficacy measurements require both a clinical assessment framework and an
+endpoint interpretation.  Tumor response, for example, depends on imaging
+modality, baseline lesions, assessment frequency, response criteria, and who
+performs the review.  Progression-free survival may combine those assessments
+with death information, whereas overall survival is derived from death dates.
+
+Safety is a repeated monitoring system rather than one endpoint.  It combines
+adverse events and severity grades, laboratory tests, vital signs, examinations,
+electrocardiograms, and events of special interest.  Protocol rules may map a
+toxicity grade and attribution to an action such as holding treatment,
+restarting after recovery, or permanent discontinuation.  Such rules are
+natural candidates for structured decision logic, but ambiguity must be
+escalated rather than silently resolved by a model.
+
+Patient-reported outcomes and health-economic measures may impose additional
+ordering and timing requirements.  For example, a quality-of-life questionnaire
+may need to be completed before drug administration, adverse-event discussion,
+or disclosure of disease status to reduce measurement bias.
+
+\subsubsection{Analysis populations and statistical commitments}
+
+An endpoint result is always about an analysis population.  The
+intention-to-treat population generally includes all randomized participants
+according to assigned treatment and preserves the randomized comparison.  A
+safety population may instead analyze all treated participants according to
+treatment received.  These choices are part of what a result means, not merely
+data-management labels.
+
+Sample size and power encode design assumptions about the control outcome,
+clinically meaningful effect, variability or event rate, accrual, follow-up,
+dropout, Type I error, and desired power.  A survival trial can be event-driven:
+enrollment $n$ matters, but the primary analysis occurs after a prespecified
+number of events or amount of follow-up.  Interim analyses and multiplicity
+rules additionally define when evidence is examined and how error is controlled
+across endpoints, treatment arms, and repeated looks.  In this sense, part of a
+protocol is a prespecified decision algorithm for accumulating evidence.
+
+\subsubsection{Cross-document traceability and AI challenges}
+
+The protocol belongs to a larger chain:
+\[
+\begin{gathered}
+ \text{protocol}\rightarrow\text{SAP}\rightarrow\text{CRF/raw data}
+ \rightarrow\text{analysis data}\\
+ \rightarrow\text{code and output}\rightarrow
+ \text{clinical study report and regulatory evidence}.
+\end{gathered}
+\]
+The same concept may appear in many places.  A PFS objective may connect to the
+imaging schedule, response criteria, event and censoring definitions in the
+SAP, derived analysis variables, an interim boundary, and the final Kaplan--
+Meier curve, hazard ratio, confidence interval, and test.  Correct extraction
+therefore requires cross-section and eventually cross-document reasoning.
+
+Protocols are difficult for computers because they are long, use specialized
+and sometimes ambiguous language, distribute meaning across prose and tables,
+contain cross-references, and encode temporal logic and exceptions.  A robust
+AI workflow should preserve document coordinates, resolve references, normalize
+units and terminology, represent uncertainty, validate structured outputs
+against a schema, and route consequential or conflicting statements for human
+review.
 
 \subsection{An Example Clinical Protocol}
 
@@ -216,5 +571,2408 @@ A protocol should be read as a chain from the clinical question to the final sta
     \item \textbf{Read safety as carefully as efficacy.} Confirm adverse-event definitions, severity grading, reporting windows, exposure adjustment, and prespecified events of special interest. The protocol uses a tiered safety analysis; not every confidence interval or nominal $p$-value is a formal multiplicity-controlled hypothesis test.
 \end{enumerate}
 A useful practical check is to build a traceability table with one row per objective or endpoint and columns for the endpoint definition, analysis population, treatment contrast, observation window, intercurrent-event and missing-data handling, statistical method, multiplicity allocation, sensitivity analyses, and protocol/SAP citation. Any blank or contradictory cell becomes a question for the statistician and clinician rather than an invitation for the model to guess.
+
+\section{Early-Phase Clinical Trial Design}
+
+Early-phase trials decide which drug candidates and doses deserve further
+development.  Patients and time are scarce, outcomes are noisy, and each new
+observation may change what is ethically appropriate for the next participant.
+The design must therefore connect a clinical question to an estimand, an
+allocation rule, stopping decisions, and prespecified operating characteristics.
+
+The phases have different emphases:
+\begin{itemize}
+    \item \textbf{Phase I} studies initial safety, tolerability,
+    pharmacokinetics (PK), pharmacodynamics (PD), and dose.  In oncology it
+    often seeks a maximum tolerated dose (MTD) or a recommended Phase II dose.
+    \item \textbf{Phase II} screens for preliminary efficacy while refining
+    safety and dose.  A single-arm Phase IIa study may compare a response rate
+    with a historical benchmark; a randomized or multi-arm Phase IIb study may
+    compare treatments or doses.
+    \item \textbf{Phase III} supplies confirmatory benefit--risk evidence,
+    usually through a larger randomized controlled design.
+    \item \textbf{Phase IV} studies effectiveness, rare or delayed harms, and
+    additional uses after marketing.
+\end{itemize}
+These descriptions are typical rather than universal.  The design should be
+understood from its objectives and estimands, not from a phase label alone.
+
+\subsection{Bayesian updating and operating characteristics}
+
+For parameter $\theta$, prior density $\pi(\theta)$, and data $D$ with
+likelihood $L(D\mid\theta)$, Bayes' rule gives
+\[
+ \pi(\theta\mid D)
+ =\frac{L(D\mid\theta)\pi(\theta)}
+ {\int L(D\mid u)\pi(u)\,\dd u}
+ \propto L(D\mid\theta)\pi(\theta).
+\]
+The posterior can answer trial-specific questions such as
+$\Prob(\theta>\theta_0\mid D)$ and supplies the posterior predictive
+distribution of future outcomes,
+\[
+ p(\widetilde D\mid D)
+ =\int p(\widetilde D\mid\theta)\pi(\theta\mid D)\,\dd\theta.
+\]
+
+Bayesian decision rules should still be evaluated over repeated simulated
+trials.  Important frequentist operating characteristics include Type I error,
+power, probability of selecting each dose, expected sample size, early-stopping
+probability, patient allocation, and toxicity exposure.  Thus Bayesian updating
+and frequentist design evaluation are complementary rather than mutually
+exclusive.
+
+External evidence can enter through an informative prior, which is valuable
+when early-phase samples are small.  Borrowing is credible only to the extent
+that populations, measurements, regimens, and study conduct are commensurate.
+Prior-data conflict can bias decisions, so protocols should prespecify robust or
+discounted borrowing and report sensitivity to the prior.
+
+\subsection{Phase I dose finding}
+
+Suppose $d_1<\cdots<d_J$ are ordered dose levels and $Y_i=1$ indicates a
+protocol-defined dose-limiting toxicity (DLT) during a fixed assessment window.
+Let
+\[
+ p_j=\Prob(Y=1\mid d_j)
+\]
+and let $\phi$ be the target toxicity probability.  A common statistical target
+is the dose whose toxicity probability is closest to $\phi$,
+\[
+ j^*=\argmin_{1\leq j\leq J}\abs{p_j-\phi},
+\]
+subject to overdose-control and clinical constraints.  Calling this dose the
+MTD is a model-based convention; the eventual recommended dose may also depend
+on PK, PD, delayed toxicities, efficacy, formulation, and feasibility.
+
+The monotonicity assumption $p_1\leq\cdots\leq p_J$ is clinically plausible for
+many cytotoxic agents but is still an assumption.  The DLT definition, grading,
+attribution, observation window, evaluability, and handling of incomplete
+follow-up must be specified before the allocation algorithm is meaningful.
+
+\subsubsection{The rule-based 3+3 design}
+
+The traditional 3+3 design treats cohorts at one dose at a time:
+\begin{itemize}
+    \item $0/3$ DLTs: escalate one dose level;
+    \item $1/3$ DLTs: expand the current dose to six participants;
+    \item $1/6$ DLTs: typically escalate;
+    \item at least $2/3$ or $2/6$ DLTs: stop escalation and de-escalate.
+\end{itemize}
+Under a conventional implementation, the estimated MTD is generally the
+highest previously tested lower dose with no more than one DLT among six, not
+the dose at which excessive toxicity was observed.  Boundary cases and the
+number required at the lower dose must be explicitly defined by the protocol.
+
+The design is transparent and easy to implement, but its dose recommendation
+is based on very small local counts.  It does not use a formal target $phi$,
+borrow information smoothly across doses, quantify uncertainty, or optimize a
+well-defined statistical criterion.  Escalation can be slow, and different true
+dose--toxicity curves can lead to poor selection probabilities.
+
+\subsubsection{Continual reassessment method}
+
+The continual reassessment method (CRM) links all doses through a parsimonious
+model.  Let $0<s_1<\cdots<s_J<1$ be a prespecified toxicity \emph{skeleton}.  A
+common one-parameter power model is
+\begin{equation}
+ p_j(a)=s_j^{\exp(a)}.
+ \label{eq:crm-power-model}
+\end{equation}
+At $a=0$, $p_j(a)=s_j$.  Because $0<s_j<1$, increasing $a$ increases the
+exponent and therefore \emph{decreases} $p_j(a)$; decreasing $a$ increases the
+fitted toxicity probabilities.  This direction is easy to misstate, although
+alternative parameterizations may reverse it.
+
+If patient $i$ receives dose index $j_i$ and has observed DLT $y_i$, the
+likelihood after $n$ evaluable participants is
+\[
+ L_n(a)=\prod_{i=1}^n
+ p_{j_i}(a)^{y_i}\{1-p_{j_i}(a)\}^{1-y_i}.
+\]
+With prior $\pi(a)$, the posterior is proportional to $L_n(a)\pi(a)$.  One CRM
+allocation rule estimates
+\[
+ \widehat p_{j,n}=\E[p_j(a)\mid D_n]
+\]
+and assigns the next cohort to the admissible dose minimizing
+$\abs{\widehat p_{j,n}-\phi}$.  The final recommendation can use the same rule
+after all outcomes have been observed.
+
+The one-parameter model is intentional: a Phase I sample is too small to
+estimate an unconstrained probability at every dose.  Linking doses lets an
+outcome at one level update beliefs about all levels.  The cost is model
+dependence, making skeleton choice, prior calibration, and scenario simulation
+essential.
+
+\subsubsection{Safety modifications}
+
+A model recommendation is not automatically an ethically permissible action.
+Common restrictions include:
+\begin{itemize}
+    \item begin at a clinically justified low dose;
+    \item prohibit skipping untried dose levels during escalation;
+    \item prohibit escalation immediately after an observed DLT;
+    \item require cohorts rather than individual-patient escalation;
+    \item stop or exclude a dose if its posterior overdose probability exceeds
+    a threshold, for example
+    $\Prob(p_j>\phi+\epsilon\mid D_n)>\gamma$;
+    \item pause when DLT outcomes are pending or when non-DLT safety information
+    requires review.
+\end{itemize}
+These restrictions may reduce statistical efficiency but improve protection
+against rapid escalation and delayed information.  They are part of the design
+and must be included in simulation; evaluating an unconstrained CRM does not
+validate the constrained trial that will actually run.
+
+\subsubsection{Simulation of operating characteristics}
+
+For each clinically plausible true curve
+$p^{(m)}=(p_1^{(m)},\ldots,p_J^{(m)})$, simulation proceeds as follows:
+\begin{enumerate}
+    \item initialize the design exactly as specified in the protocol;
+    \item assign a dose using the current rule;
+    \item simulate $Y_i\sim\Bern(p_{j_i}^{(m)})$ and any outcome delays;
+    \item update the posterior and apply safety and stopping rules;
+    \item continue until the trial terminates and record the recommendation;
+    \item repeat many independent trials.
+\end{enumerate}
+The resulting summary should include selection probability for every dose,
+probability of selecting above the target, mean allocation by dose, mean DLT
+count and rate, early stopping, and sample size.  Correct-selection probability
+alone can hide an unsafe design.  Conversely, a design that treats more patients
+near the true MTD may have a higher observed DLT rate than an overly conservative
+design, so toxicity exposure and informativeness must be interpreted jointly.
+
+\subsection{Phase II screening designs}
+
+For a binary response endpoint with probability $p$, a single-arm Phase II
+design often separates an uninteresting rate $p_0$ from a promising rate $p_1$:
+\[
+ H_0:p\leq p_0,
+ \qquad
+ H_1:p\geq p_1,
+ \qquad p_1>p_0.
+\]
+The design aims to bound Type I error by $alpha$ at $p_0$ and achieve power at
+least $1-\beta$ at $p_1$.  Because a single-arm comparison relies on a historical
+benchmark, changes in eligibility, assessment, supportive care, and case mix can
+invalidate the interpretation even if the binomial calculations are correct.
+
+\subsubsection{Simon two-stage design}
+
+Let $X_1\sim\Bin(n_1,p)$ be the number of Stage 1 responses.  Stop for futility
+if $X_1\leq r_1$; otherwise accrue to total sample size $N$ and declare the
+treatment promising if the total response count $X=X_1+X_2$ is at least $r$,
+where $X_2\sim\Bin(N-n_1,p)$ independently.  The probability of a positive
+decision at response probability $p$ is
+\begin{equation}
+ \Psi(p)=\sum_{x=r_1+1}^{n_1}
+ \binom{n_1}{x}p^x(1-p)^{n_1-x}
+ \Prob\{\Bin(N-n_1,p)\geq r-x\}.
+ \label{eq:simon-positive-probability}
+\end{equation}
+Thus the exact design constraints are
+\[
+ \Psi(p_0)\leq\alpha,
+ \qquad
+ \Psi(p_1)\geq1-\beta.
+\]
+The expected sample size at response probability $p$ is
+\begin{equation}
+ \E_p[N_{\mathrm{trial}}]
+ =n_1+(N-n_1)\Prob_p(X_1>r_1).
+ \label{eq:simon-expected-sample-size}
+\end{equation}
+
+Candidate integer quadruples $(n_1,N,r_1,r)$ can be enumerated.  A Simon
+\emph{optimal} design minimizes \eqref{eq:simon-expected-sample-size} at $p_0$
+subject to the error constraints; a \emph{minimax} design minimizes the maximum
+sample size $N$, usually with expected sample size used to break ties.  This
+makes the tradeoff explicit: early futility can save participants when the
+treatment is inactive, while the maximum sample size preserves power when it is
+promising.
+
+\subsection{Bayesian predictive probability of success}
+
+Bayesian monitoring can ask whether continuing enrollment is likely to produce
+a successful final analysis.  Consider a beta-binomial model
+\[
+ p\sim\BetaDist(a,b),
+ \qquad X\mid p\sim\Bin(n,p).
+\]
+After $x$ responses among $n$ participants,
+\[
+ p\mid x,n\sim\BetaDist(a+x,b+n-x).
+\]
+If $m=N-n$ participants remain and $Y$ is their future response count, then
+integrating over the posterior gives the beta-binomial predictive mass
+\begin{equation}
+ \Prob(Y=y\mid x,n)
+ =\binom my
+ \frac{B(a+x+y,b+N-x-y)}{B(a+x,b+n-x)},
+ \qquad y=0,\ldots,m.
+ \label{eq:beta-binomial-predictive}
+\end{equation}
+
+Suppose final success is defined by a posterior rule
+\[
+ \Prob(p>p_0\mid X_N,N)>\eta.
+\]
+Let $S(z)$ be the indicator that this rule holds when the final total is $z$.
+The predictive probability of success (PPS) at the interim is then
+\begin{equation}
+ \operatorname{PPS}(x,n)
+ =\sum_{y=0}^{m}S(x+y)\Prob(Y=y\mid x,n).
+ \label{eq:predictive-probability-success}
+\end{equation}
+This calculation averages over both future binomial variation and current
+uncertainty about $p$.  A design might stop for futility when PPS is below a
+lower boundary, continue in an intermediate region, and possibly stop for
+success above an upper boundary.
+
+Continuous monitoring is not permission to improvise after seeing the data.
+The prior, success rule, monitoring frequency, maturity requirements, boundaries,
+and handling of delayed or missing outcomes must be prespecified.  The complete
+algorithm should then be simulated under $p_0$, $p_1$, and intermediate or
+misspecified scenarios to estimate Type I error, power, expected sample size,
+and stopping behavior.
+
+\subsection{Multi-arm Phase IIb designs}
+
+Phase IIb studies may compare several doses or regimens while continuing to
+learn which arm should advance.  Equal randomization protects balance and gives
+stable comparisons.  Outcome-adaptive randomization (OAR) instead changes
+future allocation probabilities as outcomes accumulate, seeking to learn while
+assigning more participants to promising arms.
+
+Let $p_k$ be the response probability for active arm $k$ and let $D_t$ denote
+data available at adaptation time $t$.  Define the posterior best-arm
+probability
+\[
+  q_{k,t}=\Prob\!\left(p_k=\max_{\ell\in\mathcal A_t}p_\ell
+                       \given D_t\right),
+\]
+where $\mathcal A_t$ is the set of active arms.  A tempered OAR rule is
+\begin{equation}
+  \pi_{k,t}
+  =\frac{q_{k,t}^{c_t}}{\sum_{\ell\in\mathcal A_t}q_{\ell,t}^{c_t}}.
+  \label{eq:oar-tempered}
+\end{equation}
+When $c_t=0$, allocation is equal; $c_t=1$ allocates in proportion to posterior
+best-arm probability; and larger values concentrate allocation more strongly.
+Because early $q_{k,t}$ values are noisy, practical designs use an equal-
+allocation burn-in, a minimum probability floor, and gradual tempering.  With
+floor $\epsilon<1/K_t$ for $K_t=|\mathcal A_t|$, one implementation is
+\[
+  \widetilde\pi_{k,t}
+  =\epsilon+(1-K_t\epsilon)\pi_{k,t},
+\]
+which preserves $\sum_k\widetilde\pi_{k,t}=1$ and guarantees every active arm
+at least $\epsilon$ allocation.
+
+At each cohort the design makes two distinct decisions: whether each arm
+remains active and how the next participants are allocated among active arms.
+For example, an arm may be suspended for futility if
+\[
+  \Prob(p_k>p_{\min}\mid D_t)<\gamma_F,
+\]
+or declared sufficiently promising if a prespecified superiority or target-
+exceedance probability crosses an upper boundary.  These rules, including what
+happens when all arms stop or several appear promising, must be simulated as
+one complete algorithm.
+
+OAR does not automatically improve power or ethics.  Rapid adaptation can lock
+onto an arm favored by chance, reduce concurrent information on other arms,
+create time trends in treatment comparisons, and behave poorly with delayed
+outcomes.  Evaluation should report allocation distributions and participant
+outcomes in addition to arm-selection probability, power, Type I error, and
+sample size.
+
+\subsubsection{Dose response and the optimal biological dose}
+
+The most efficacious dose need not be the highest dose.  For targeted and
+biologic therapies, benefit can plateau while toxicity or burden continues to
+increase.  Let $m(d;\theta)$ be a flexible dose--response curve with placebo or
+baseline response $m(0;\theta)$ and modeled maximum $m_{\max}(\theta)$.  A
+common efficacy summary is
+\[
+  \operatorname{ED}_{95}(\theta)
+  =\inf\left\{d:
+    m(d;\theta)-m(0;\theta)
+    \ge 0.95\bigl[m_{\max}(\theta)-m(0;\theta)\bigr]
+  \right\}.
+\]
+This is not automatically the optimal biological dose (OBD).  An OBD rule may
+combine posterior efficacy, toxicity, PK/PD, durability, and feasibility, for
+example selecting the lowest admissible dose near the efficacy plateau.  A
+flexible response model can borrow information across adjacent doses, but its
+shape assumptions and the loss attached to incorrect selection require
+scenario-based sensitivity analysis.
+
+\subsubsection{Delayed outcomes}
+
+When the endpoint is slow, naive OAR updates only on participants with complete
+follow-up.  If recruitment is fast, the effective information can lag far
+behind enrollment and allocation may be driven by a small, unrepresentative
+subset.  One remedy is a joint model for an early outcome $R_i$ and later
+time-to-event outcome $(T_i,\Delta_i)$:
+\[
+ p(R_i,T_i,\Delta_i\mid Z_i=k,\vartheta)
+ =p(R_i\mid Z_i=k,\vartheta)
+  p(T_i,\Delta_i\mid R_i,Z_i=k,\vartheta).
+\]
+Participants with censored PFS still contribute survival likelihood through
+$S_k(C_i)$, while the association between early response and PFS determines how
+much the early signal informs later benefit.  Misspecifying that association
+can misdirect allocation, so designs should compare joint-model, mature-only,
+and robust fallback behavior under differing delays and correlations.
+
+\subsection{Decision-theoretic monitoring}
+
+A decision-theoretic design specifies a state, available actions, uncertain
+consequences, and utility.  At time $t$, let actions include continuing,
+abandoning the treatment, or stopping and recommending it.  Given posterior
+$\pi(\theta\mid D_t)$, the Bayes action maximizes posterior expected utility:
+\begin{equation}
+  a_t^*
+  =\argmax_{a\in\mathcal A_t}
+     \E\{U(a,\theta,\text{future data})\mid D_t\}.
+  \label{eq:posterior-expected-utility}
+\end{equation}
+Utility can value outcomes for current trial participants and future patients
+while penalizing recruitment, delay, toxicity, and incorrect recommendations.
+A weight $\lambda$ may control the relative value assigned to current versus
+future patients, but choosing it is a scientific and ethical judgment rather
+than a purely computational step.
+
+Full dynamic programming is often infeasible because the value of continuing
+depends on all future adaptations.  A practical approximation parameterizes
+decision boundaries using posterior summaries.  If $m_t$ and $s_t$ are the
+posterior mean and standard deviation of a treatment effect, a three-region
+rule might be
+\[
+ a_t=
+ \begin{cases}
+   \text{recommend}, & m_t\ge b_U(\log s_t),\\
+   \text{abandon}, & m_t\le b_L(\log s_t),\\
+   \text{continue}, & b_L(\log s_t)<m_t<b_U(\log s_t),
+ \end{cases}
+\]
+with linear boundaries $b_U(u)=\alpha_U+\beta_Uu$ and
+$b_L(u)=\alpha_L+\beta_Lu$.  Simulation or stochastic optimization chooses the
+boundary parameters to maximize expected utility subject to safety and error
+constraints.  This resembles reinforcement learning in its sequential
+state--action--reward structure, though the trial design remains a
+prespecified statistical policy.
+
+\subsection{Confirmatory Phase III designs}
+
+A confirmatory trial usually compares a prespecified treatment with a control
+in a large randomized, multicenter study.  A Bayesian final rule might declare
+success when
+\[
+  \Prob(\theta>\theta_0\mid D_N)>\eta.
+\]
+The posterior threshold $\eta$ does not by itself determine a conventional
+Type I error.  The induced false-positive probability is
+\[
+  \alpha_{\mathrm{design}}
+  =\Prob_{\theta=\theta_0}\!\left(
+       \text{the complete design declares success}
+    \right),
+\]
+which depends on the prior, sample size, outcome model, stopping rules,
+adaptations, and all interim looks.
+
+If success may be declared at looks $n_1<\cdots<n_J=N$, then under the null
+\[
+ \alpha_{\mathrm{design}}
+ =\Prob_{\theta_0}\!\left(
+   \bigcup_{j=1}^J
+   \left\{\Prob(\theta>\theta_0\mid D_{n_j})>\eta_j\right\}
+ \right).
+\]
+This union probability is generally larger than the probability of crossing
+only the final boundary.  Calibration must therefore simulate the full
+monitoring plan.  Futility stopping may reduce expected sample size, but
+selection among several arms or doses introduces another multiplicity pathway
+and must also be included when controlling false success.
+
+\subsection{Seamless Phase II/III designs}
+
+A seamless design places exploratory selection and confirmatory comparison
+under one protocol.  Stage 1 may investigate several doses; a prespecified
+transition rule selects one or more treatments for Stage 2 against control.
+Potential gains include shorter development time and reuse of eligible Stage 1
+data, but the final analysis must account for the adaptation.
+
+Let $Z_1$ and $Z_2$ be valid stagewise statistics whose null distributions are
+prespecified.  A combination test may use
+\[
+  Z=w_1Z_1+w_2Z_2,
+  \qquad w_1^2+w_2^2=1,
+\]
+with critical values calibrated for the selection rule and dependence
+structure.  Other methods use conditional error or closed testing.  Simply
+pooling observations after selecting the most favorable Stage 1 arm can bias
+estimation and inflate Type I error.  Treatment selection, sample-size
+adaptation, information timing, eligible Stage 1 data, and the final estimator
+must all be defined in advance.
+
+\subsection{Borrowing historical data}
+
+Historical controls can improve precision and reduce concurrent enrollment,
+which is attractive in rare diseases and settings with scarce participants.
+The central threat is nonexchangeability: changes in eligibility, supportive
+care, endpoint assessment, calendar time, or data quality can make historical
+and current controls systematically different.
+
+Let $D_0$ be historical data with likelihood $L_0(\theta)$ and $D$ current data
+with likelihood $L(\theta)$.  A fixed power prior is
+\begin{equation}
+  \pi(\theta\mid D_0,a_0)
+  \propto L_0(\theta)^{a_0}\pi_0(\theta),
+  \qquad 0\le a_0\le1.
+  \label{eq:power-prior}
+\end{equation}
+Here $a_0=0$ gives no borrowing and $a_0=1$ gives full likelihood borrowing.
+In regular models, $a_0n_0$ is a useful rough interpretation of historical
+effective sample size, but it is not universally exact.
+
+For binary outcomes with historical $x_0$ of $n_0$ responses and baseline prior
+$p\sim\BetaDist(a,b)$, the fixed power prior and current $x$ of $n$ responses
+give
+\[
+ p\mid D_0,D,a_0
+ \sim\BetaDist\!\left(
+   a+a_0x_0+x,\;
+   b+a_0(n_0-x_0)+n-x
+ \right).
+\]
+Thus historical successes and failures contribute fractional counts.
+
+If $a_0$ is unknown, its posterior must include the normalizing constant of the
+powered historical likelihood:
+\[
+ \pi(\theta,a_0\mid D_0,D)
+ \propto
+ L(\theta)
+ \frac{L_0(\theta)^{a_0}\pi_0(\theta)}{C(a_0)}
+ \pi(a_0),
+ \qquad
+ C(a_0)=\int L_0(u)^{a_0}\pi_0(u)\,\dd u.
+\]
+Omitting $C(a_0)$ changes the posterior for the discount parameter.  Hierarchical
+commensurate models offer another approach: historical and current parameters
+are related through a between-study distribution so conflict increases
+heterogeneity and weakens borrowing.
+
+Dynamic borrowing reduces but cannot eliminate bias under drift.  A design
+should prespecify comparability variables, cap borrowing, examine prior--data
+conflict, and simulate bias, interval coverage, Type I error, power, and
+effective sample size under agreement and clinically plausible disagreement.
+The current randomized control remains the strongest protection against
+unmeasured population differences.
+
+\subsection{Connection to AI-system evaluation}
+
+The same principles apply when an AI system is evaluated prospectively:
+performance targets must be clinically meaningful; cases are the sampling
+units; repeated looks and model revisions can inflate false-positive claims;
+adaptive allocation changes the observed case mix; and a Bayesian probability
+statement does not replace operating-characteristic evaluation.  Unlike a
+simple Bernoulli response model, AI errors may be correlated within patients,
+sites, readers, or documents and may differ across subgroups.  Trial-design
+ideas can guide evaluation, but the statistical model must reflect that
+dependence and the intended clinical use.
+
+\section{Mathematical Foundations of Large Language Models}
+
+For tokens $x_{1:T}$, an autoregressive language model uses the chain rule
+\begin{equation}
+ p_\theta(x_{1:T})=\prod_{t=1}^T p_\theta(x_t\mid x_{<t}),
+ \label{eq:autoregressive-factorization}
+\end{equation}
+and pretraining minimizes empirical negative log-likelihood,
+\[
+ \mathcal L_{\mathrm{NLL}}(\theta)
+ =-\sum_{i=1}^n\sum_{t=1}^{T_i}
+   \log p_\theta(x_{it}\mid x_{i,<t}).
+\]
+Teacher forcing supplies the true preceding tokens during training; generation
+feeds selected or sampled outputs back into the context.  Per-token
+cross-entropy is often summarized by perplexity
+$\exp\{\mathcal L_{\mathrm{NLL}}/N_{\mathrm{tok}}\}$, although perplexity does
+not directly measure clinical correctness or instruction following.
+
+An embedding matrix maps tokens to
+$h_t^{(0)}=E[x_t]+p_t\in\R^{d_{\mathrm{model}}}$, where $p_t$ supplies position
+information.  A sequence model constructs contextual states, and a final
+linear map and softmax give
+\[
+ p_\theta(x_{t+1}=v\mid x_{\le t})
+ =\operatorname{softmax}(W_oh_t+b_o)_v.
+\]
+
+\subsection{Transformer architecture}
+
+A transformer alternates token mixing by attention with positionwise nonlinear
+processing.  A common pre-normalized decoder block is
+\begin{align*}
+ U^{(\ell)}&=H^{(\ell)}+operatorname{MHA}
+       \!\left(\operatorname{LN}(H^{(\ell)})\right),\\
+ H^{(\ell+1)}&=U^{(\ell)}+operatorname{MLP}
+       \!\left(\operatorname{LN}(U^{(\ell)})\right).
+\end{align*}
+Residual paths improve information and gradient flow.  A gated MLP may use
+\[
+ \operatorname{MLP}(h)=W_2[\sigma(W_gh)\odot(W_1h)],
+\]
+with SiLU or another activation $\sigma$.
+
+An \emph{encoder} uses bidirectional self-attention for representation or
+classification; a \emph{decoder} uses causal self-attention for autoregressive
+generation; and an \emph{encoder--decoder} adds cross-attention from decoder
+queries to encoder states.  Learned absolute embeddings, sinusoidal features,
+relative biases, or rotary embeddings may encode position.
+
+\begin{proposition}[Permutation equivariance without position]
+Let $P$ permute sequence positions and
+\[
+ A(X)=\operatorname{softmax}_{\mathrm{row}}
+ \!\left(\frac{XW_Q(XW_K)^\top}{\sqrt{d_k}}\right)XW_V.
+\]
+Without positional features or a position-dependent mask, $A(PX)=PA(X)$.
+\end{proposition}
+\begin{proof}
+Writing $Q=XW_Q$, $K=XW_K$, and $V=XW_V$, permutation yields $PQ,PK,PV$ and
+the score matrix $P(QK^\top)P^\top$.  Row-wise softmax commutes with simultaneous
+row and column permutation.  Multiplication by $PV$ then gives $PA(X)$.
+\end{proof}
+Thus attention alone recognizes content but not order; positional mechanisms
+break this symmetry in a controlled fashion.
+
+\subsection{Attention and its main variants}
+
+For queries $Q$, keys $K$, values $V$, and mask $M$, scaled dot-product
+attention is
+\begin{equation}
+ \operatorname{Attn}(Q,K,V;M)
+ =\operatorname{softmax}_{\mathrm{row}}
+ \!\left(\frac{QK^\top}{\sqrt{d_k}}+M\right)V.
+ \label{eq:scaled-dot-product-attention}
+\end{equation}
+An allowed position has $M_{ij}=0$ and a prohibited one has
+$M_{ij}=-\infty$.  Each output is a convex combination of value vectors.
+Scaling stabilizes the logits: if query and key coordinates are independent,
+mean zero, and variance one, then
+\[
+ \Var(q^\top k)=d_k,
+ \qquad
+ \Var(q^\top k/\sqrt{d_k})=1.
+\]
+Without scaling, high-dimensional scores can saturate softmax.
+
+Multi-head attention learns different projections:
+\begin{align*}
+ \operatorname{head}_r
+ &=\operatorname{Attn}(XW_Q^{(r)},XW_K^{(r)},XW_V^{(r)};M),\\
+ \operatorname{MHA}(X)
+ &=\operatorname{Concat}(\operatorname{head}_1,\ldots,
+                         \operatorname{head}_h)W_O.
+\end{align*}
+Major variants include:
+\begin{itemize}
+    \item \textbf{self-attention}, with $Q,K,V$ from one sequence, and
+    \textbf{cross-attention}, with queries and key--values from different
+    sequences;
+    \item \textbf{causal attention}, masking $j>i$, and
+    \textbf{bidirectional attention}, permitting all non-padding interactions;
+    \item \textbf{local/sliding-window attention}, restricting each token to a
+    neighborhood, and structured \textbf{sparse attention}, adding selected
+    blocks or global tokens;
+    \item \textbf{multi-query attention}, sharing one key--value projection
+    across query heads, and \textbf{grouped-query attention}, sharing within
+    groups; both reduce autoregressive key--value-cache memory;
+    \item \textbf{kernel or linear attention}, using a feature map so products
+    can be reassociated, trading exact softmax behavior for improved scaling.
+\end{itemize}
+Full attention requires $O(n^2d)$ pairwise arithmetic.  Memory-efficient exact
+implementations need not store the full $n\times n$ matrix, but the arithmetic
+remains quadratic; a local window of width $w$ costs about $O(nwd)$.
+
+\subsection{State-space sequence models}
+
+A continuous-time linear state-space model (SSM) is
+\[
+ \dot h(t)=Ah(t)+Bx(t),\qquad y(t)=Ch(t)+Dx(t).
+\]
+Zero-order-hold discretization with step $\Delta$ gives
+\begin{equation}
+ h_t=\bar Ah_{t-1}+\bar Bx_t,\qquad y_t=Ch_t+Dx_t,
+ \label{eq:discrete-ssm}
+\end{equation}
+where
+\[
+ \bar A=e^{\Delta A},\qquad
+ \bar B=\int_0^\Delta e^{(\Delta-s)A}B\,\dd s.
+\]
+If $A$ is invertible, $\bar B=A^{-1}(e^{\Delta A}-I)B$.
+
+\begin{proposition}[Linear SSM as a convolution]
+For eqref{eq:discrete-ssm} with $h_0=0$,
+\[
+ y_t=Dx_t+\sum_{j=1}^t C\bar A^{t-j}\bar Bx_j.
+\]
+Thus a time-invariant linear SSM is a causal convolution with lag kernel
+$C\bar A^\ell\bar B$, plus the direct term.
+\end{proposition}
+\begin{proof}
+Repeated substitution yields
+$h_t=\sum_{j=1}^t\bar A^{t-j}\bar Bx_j$; substitute this into the output
+equation.
+\end{proof}
+
+The recurrence supports constant-size-state inference, while the convolution
+or an associative scan supports parallel training.  Eigenvalues of $\bar A$
+near the unit circle create slow-decaying memory; magnitudes above one can
+produce unstable states.  Selective SSMs allow parameters such as input/output
+projections or step sizes to depend on the current token.  This enables
+content-dependent retention but removes the fixed convolution-kernel view.
+Attention explicitly revisits prior tokens; an SSM compresses the prefix into a
+state.  Hybrid models combine both.
+
+\subsection{Sentence embeddings and sentence transformers}
+
+A sentence embedding maps a variable-length sequence to
+$z=f_\theta(x_{1:T})\in\R^d$.  Given contextual token vectors, pooling may use
+a designated token, componentwise maxima, learned attention, or masked mean
+\[
+ z=\frac{\sum_{t=1}^T m_th_t}{\sum_{t=1}^T m_t}.
+\]
+Embeddings are often normalized and compared by cosine similarity
+$s(x,x')=\widehat z_x^\top\widehat z_{x'}$.
+
+\begin{proposition}[Cosine and Euclidean rankings]
+For unit vectors $u,v$, $\norm{u-v}^2=2-2u^\top v$.  Therefore decreasing
+cosine-similarity rank equals increasing Euclidean-distance rank.
+\end{proposition}
+\begin{proof}
+Expand the squared norm and use $\norm u=\norm v=1$.
+\end{proof}
+
+A sentence transformer is commonly a shared-weight bi-encoder that embeds two
+sentences independently.  For matched pairs and in-batch candidates, a
+contrastive objective is
+\begin{equation}
+ \mathcal L_i=-\log
+ \frac{\exp\{s(z_i,z_i^+)/\tau\}}
+      {\sum_{j=1}^B\exp\{s(z_i,z_j^+)/\tau\}},
+ \label{eq:sentence-contrastive-loss}
+\end{equation}
+where $\tau$ is a temperature.  Random, in-batch, and hard negatives teach
+different distinctions; false negatives can corrupt the geometry.
+
+Bi-encoders permit corpus embeddings to be precomputed and indexed.  A new
+query needs one encoding plus nearest-neighbor search.  A cross-encoder jointly
+processes each query--candidate pair and is often more accurate but much more
+expensive.  Retrieval systems commonly use a bi-encoder followed by
+cross-encoder reranking.  In clinical text, negation, temporality, dosage, and
+abbreviations can make nearby embeddings clinically incompatible, so proximity
+is candidate evidence rather than entailment.
+
+\subsection{Reinforcement-learning fine-tuning}
+
+Supervised fine-tuning imitates demonstrations.  Reinforcement-learning
+fine-tuning optimizes a preference-derived or programmatic reward.  A common
+RLHF workflow trains a supervised reference policy, collects response
+preferences, fits a reward model, optimizes a policy under a proximity
+constraint, and evaluates it independently of the training reward.
+
+For preferred and dispreferred responses $y^+,y^-$, a Bradley--Terry reward
+loss is
+\[
+ \mathcal L_{\mathrm{RM}}(\phi)
+ =-\log\sigma\{r_\phi(x,y^+)-r_\phi(x,y^-)\}.
+\]
+It identifies reward differences, not an absolute scale.  A KL-regularized
+policy objective is
+\begin{equation}
+ \max_\pi\;
+ \E_{x,y\sim\pi(\cdot\mid x)}[r(x,y)]
+ -\beta\E_x\!\left[\operatorname{KL}
+   \{\pi(\cdot\mid x)\Vert\pi_{\mathrm{ref}}(\cdot\mid x)\}\right].
+ \label{eq:kl-regularized-rlhf}
+\end{equation}
+
+\begin{theorem}[Optimal KL-regularized policy]
+For fixed $x$, finite response space, and $\beta>0$, the maximizer supported by
+$\pi_{\mathrm{ref}}$ is
+\[
+ \pi^*(y\mid x)=
+ \frac{\pi_{\mathrm{ref}}(y\mid x)e^{r(x,y)/\beta}}
+ {\sum_{y'}\pi_{\mathrm{ref}}(y'\mid x)e^{r(x,y')/\beta}}.
+\]
+\end{theorem}
+\begin{proof}
+Add multiplier $\lambda$ for $\sum_y\pi_y=1$.  Differentiating the objective
+gives
+\[
+ r_y-\beta\{\log(\pi_y/\pi_{\mathrm{ref},y})+1\}+\lambda=0.
+\]
+Hence $\pi_y\propto\pi_{\mathrm{ref},y}e^{r_y/\beta}$; normalization gives the
+claim.  Strict concavity gives uniqueness on the supported simplex.
+\end{proof}
+
+Smaller $\beta$ favors reward more strongly; larger $\beta$ stays closer to the
+reference.  Because responses cannot be enumerated, policy-gradient methods
+approximate this solution.  PPO uses ratio
+$\rho_t(\theta)=\pi_\theta(a_t\mid s_t)/\pi_{\mathrm{old}}(a_t\mid s_t)$ and
+the clipped surrogate
+\[
+ \mathcal L_{\mathrm{PPO}}(\theta)=\E_t\left[
+ \min\{\rho_t(\theta)\widehat A_t,
+ \operatorname{clip}(\rho_t(\theta),1-\epsilon,1+\epsilon)\widehat A_t\}
+ \right].
+\]
+
+Direct preference optimization (DPO) avoids a separate reward-model sampling
+loop during policy training and uses
+\[
+ \mathcal L_{\mathrm{DPO}}(\theta)=-\log\sigma\!\left(
+ \beta\left[
+ \log\frac{\pi_\theta(y^+\mid x)}{\pi_{\mathrm{ref}}(y^+\mid x)}
+ -\log\frac{\pi_\theta(y^-\mid x)}{\pi_{\mathrm{ref}}(y^-\mid x)}
+ \right]\right).
+\]
+Related methods use AI feedback, verifiable rewards, or group-relative
+baselines.  Any reward remains a proxy: a model may learn verbosity, formatting,
+or loopholes rather than truthfulness.  Biomedical use therefore requires
+held-out clinical evaluation, provenance checks, subgroup analysis, and human
+oversight beyond reward optimization.
+
+\section{Adapting Generative AI for Biomedical Research}
+
+A general-purpose language model may possess broad linguistic and reasoning
+ability without knowing a study's private documents, current data, required
+schema, or institutional rules.  \emph{Adaptation} supplies the context or
+behavior needed for a particular biomedical workflow.  Three principal methods
+form an increasing ladder of intervention:
+\begin{enumerate}
+    \item \textbf{Prompt engineering} changes the instructions and examples in
+    the model input but leaves model weights unchanged;
+    \item \textbf{retrieval-augmented generation (RAG)} retrieves relevant
+    external evidence and places it in the model context;
+    \item \textbf{supervised fine-tuning (SFT)} trains model parameters or
+    adapters on curated input--output examples.
+\end{enumerate}
+These methods solve different problems.  Prompting is appropriate for task
+definition and output control, RAG for changing or private knowledge, and SFT
+for persistent task behavior that is demonstrated by enough high-quality data.
+
+\subsection{Models and access layers}
+
+The most specialized biomedical model is not automatically the best foundation
+for every biomedical system.  General models may offer stronger reasoning,
+coding, multimodal processing, and tool use; domain-specific models may better
+represent clinical vocabulary; smaller open-weight models may be preferred for
+cost, latency, customization, or local control.  Selection should therefore be
+based on task-specific evaluation rather than the model label alone.
+
+There are three common access layers:
+\begin{itemize}
+    \item a \textbf{web interface}, useful for interactive exploration but less
+    suitable for automated, versioned processing;
+    \item a \textbf{cloud API}, suitable for scalable and reproducible systems,
+    with cost and data-governance requirements;
+    \item \textbf{local deployment}, offering greater infrastructure and data
+    control at the cost of hardware, engineering, monitoring, and maintenance.
+\end{itemize}
+No access layer is intrinsically safe for protected health information (PHI).
+The decision depends on contracts, data retention and training policies,
+encryption, access controls, auditability, regional requirements, and
+institutional approval.  De-identification lowers some risks but does not by
+itself authorize use of a service.
+
+For local inference, memory is often the primary constraint.  A model with
+$P$ parameters stored at $b$ bits per parameter requires approximately
+\[
+    \frac{Pb}{8}\ \text{bytes}
+\]
+for weights alone.  At 16-bit precision this is about $2$ GB per billion
+parameters; actual inference additionally needs memory for activations, the
+key--value cache, runtime buffers, and framework overhead.  Quantization reduces
+weight memory but can affect output quality and hardware compatibility.
+
+\subsection{Prompt structure and generation controls}
+
+An application should separate stable instructions from the instance-specific
+request.  A \emph{system instruction} defines the role, boundaries, terminology,
+missing-data behavior, and output contract.  A \emph{user query} supplies the
+current document or record and the task to perform.  Keeping these layers
+separate makes the study procedure easier to version and audit.
+
+A robust extraction prompt usually specifies:
+\begin{enumerate}
+    \item the task and intended clinical meaning of each field;
+    \item the allowed evidence---for example, only the supplied note;
+    \item a schema, data types, controlled vocabularies, and date or unit formats;
+    \item explicit behavior for missing, conflicting, or uncertain information;
+    \item one or more representative examples when zero-shot instructions are
+    insufficient;
+    \item a prohibition on unsupported inference and a requirement for source
+    spans or citations when verification matters.
+\end{enumerate}
+
+\begin{example}[A typed extraction contract]
+Suppose a note must be mapped to age, gender, primary diagnosis, medications,
+and admission date.  A useful contract might require
+\begin{lstlisting}[language={},numbers=none]
+{
+  "patient_age": integer | null,
+  "patient_gender": string | null,
+  "primary_diagnosis": string | null,
+  "medication_names": [string],
+  "admission_date": "YYYY-MM-DD" | null,
+  "evidence": {"field_name": "verbatim source span"}
+}
+\end{lstlisting}
+The program should parse this output and validate it against a schema.  A JSON-
+looking Markdown block, a misspelled key, or an age returned as free text is not
+equivalent to valid structured data.  Failed validation should trigger repair
+or review, not silent coercion.
+\end{example}
+
+Zero-shot prompting supplies instructions only.  One-shot and few-shot prompting
+also supply demonstrations.  Examples can stabilize key names, types, and
+normalization choices, but they can also propagate mistakes or unrepresentative
+conventions.  Demonstrations should therefore be curated, versioned, and tested
+on examples unlike those shown in the prompt.
+
+If a model produces token logits $z_1,\ldots,z_K$, temperature sampling commonly
+uses
+\[
+ p_i(\tau)=\frac{\exp(z_i/\tau)}{\sum_{j=1}^K\exp(z_j/\tau)},
+ \qquad \tau>0.
+\]
+Smaller $\tau$ concentrates mass on high-logit tokens; larger $\tau$ produces
+more varied output.  As $\tau\downarrow0$, decoding approaches a choice among
+maximum-logit tokens.  Low temperature can improve repeatability, but it does
+not make a false answer true, and complete reproducibility can still depend on
+the provider, model version, decoding implementation, and seed.
+
+\subsection{Hallucination and grounding}
+
+A hallucination is fluent but unsupported or false generated content, such as
+an invented citation, trial, dosage, patient attribute, or numerical result.
+The underlying model estimates likely token continuations; it is not a database
+of verified truth.  It may also lack private data or information released after
+training.  In biomedical work these are safety and scientific-validity risks,
+not merely stylistic defects.
+
+Several controls are complementary:
+\begin{itemize}
+    \item ground answers in supplied or retrieved evidence;
+    \item require citations that point to exact source passages;
+    \item use tools for database lookup, arithmetic, and code execution;
+    \item distinguish ``not found'' from negative clinical evidence;
+    \item validate types, ranges, terminology, and cross-field consistency;
+    \item measure unsupported-claim and abstention behavior on held-out cases;
+    \item keep human review for high-consequence decisions.
+\end{itemize}
+Prompting a model to ``never hallucinate'' is a policy statement, not a complete
+control mechanism.
+
+\subsection{Retrieval-augmented generation}
+
+RAG treats the model as taking an open-book examination.  It connects an LLM to
+an indexed corpus so that only a small set of relevant evidence is placed in
+the context.  This is useful when a corpus exceeds the model's context window,
+when sending every document is expensive, or when knowledge is private or
+changes frequently.
+
+\subsubsection{Indexing and inference workflows}
+
+An offline indexing workflow typically performs
+\[
+ \text{documents}\rightarrow\text{parse/OCR}\rightarrow\text{normalize}
+ \rightarrow\text{chunk}\rightarrow\text{embed/index}\rightarrow
+ \text{store metadata}.
+\]
+At query time, the workflow is
+\[
+\begin{gathered}
+ \text{query}\rightarrow\text{retrieve candidates}\rightarrow\text{rerank}
+ \rightarrow\text{construct grounded prompt}\\
+ \longrightarrow\text{generate}\rightarrow\text{verify and cite}.
+\end{gathered}
+\]
+Metadata should include document identity, version, page or section, chunk
+boundaries, and access-control labels.  Retrieval must enforce the same data
+permissions as the underlying source systems.
+
+Clinical documents make parsing consequential.  PDF text extraction can lose
+columns, headings, superscripts, and table structure; scanned pages require OCR;
+spreadsheets need sheet, row, and column context.  Before indexing, a pipeline
+should assess extraction quality and preserve links to the original artifact.
+
+\subsubsection{Chunking}
+
+Chunking determines the unit of retrieval.  Fixed token windows are simple but
+may split definitions from exceptions.  Overlapping recursive windows preserve
+some local context at increased storage and redundancy.  Semantic chunking
+uses topic changes, while document-aware chunking respects headings, pages,
+tables, and protocol sections.  Model-directed or agentic chunking can identify
+logical units, but it introduces cost and another model-dependent step.
+
+There is a basic tradeoff.  Chunks that are too small omit necessary context;
+chunks that are too large dilute retrieval scores and consume the generation
+context.  For clinical rules, parent--child retrieval is often useful: index a
+small clause for matching but return its enclosing criterion or section for
+interpretation.  Tables should usually be serialized with headers repeated so
+that a retrieved row retains its meaning.
+
+\subsubsection{Sparse, dense, and hybrid retrieval}
+
+Sparse retrieval represents lexical occurrence.  One conventional weight for
+term $t$ in document $d$ is
+\[
+ \operatorname{tfidf}(t,d)
+ =\operatorname{tf}(t,d)
+ \left[\log\!\left(\frac{N+1}{\operatorname{df}(t)+1}\right)+1\right],
+\]
+where $N$ is the number of documents and $\operatorname{df}(t)$ counts documents
+containing $t$.  Methods such as BM25 improve length normalization and term-
+frequency saturation.  Lexical retrieval is valuable for exact drug names,
+codes, rare genes, and quoted phrases.
+
+Dense retrieval maps text to an embedding $v\in\R^d$ intended to represent
+semantic meaning.  Common comparison functions are
+\[
+ \operatorname{cos}(q,v)=\frac{q^\mathsf Tv}{\norm{q}\norm{v}},
+ \qquad q^\mathsf Tv,
+ \qquad \norm{q-v}_2.
+\]
+Cosine similarity ignores vector magnitude; dot product does not unless vectors
+are normalized; Euclidean distance reverses the ordering convention because
+smaller is better.  The embedding model and similarity metric must be matched.
+
+Hybrid retrieval fuses sparse and dense scores or rankings.  It is often more
+robust in biomedical corpora because a query can require both conceptual
+matching and exact identifiers.  Knowledge-graph retrieval instead represents
+entities and relations explicitly, which can support multi-hop questions but
+requires reliable entity resolution and graph construction.
+
+Exact nearest-neighbor search compares the query with every vector.  Approximate
+indexes trade a small amount of recall for speed: inverted-file indexes search
+nearby clusters, graph indexes such as HNSW traverse a small-world graph, and
+product quantization compresses vectors.  Index quality should be evaluated by
+retrieval recall and end-task performance, not speed alone.
+
+\subsubsection{Evaluating a RAG system}
+
+Evaluation should separate retrieval from generation.  Useful retrieval metrics
+include recall@$k$, precision@$k$, mean reciprocal rank, and whether the gold
+evidence was retrieved.  Generation evaluation asks whether the answer is
+correct, supported by retrieved evidence, complete, properly cited, and willing
+to abstain when evidence is absent.  End-to-end accuracy alone cannot reveal
+whether failure arose from parsing, chunking, retrieval, context construction,
+or the generator.
+
+\subsection{Supervised fine-tuning and LoRA}
+
+SFT uses labeled input--output pairs $(x_i,y_i)$ to modify model behavior.  For
+autoregressive generation, training minimizes token-level negative log
+likelihood,
+\[
+ \mathcal L(\phi)
+ =-\sum_i\sum_{t=1}^{|y_i|}
+ \log p_\phi(y_{it}\mid x_i,y_{i,<t}),
+\]
+where $\phi$ denotes the trainable parameters.  Suitable applications include
+stable clinical coding behavior, specialized terminology, or complex output
+formats that prompting alone does not reliably produce.  SFT is usually a poor
+substitute for RAG when the problem is simply access to changing factual
+knowledge.
+
+Full fine-tuning updates all model weights and can be expensive.  Low-rank
+adaptation (LoRA) freezes a weight matrix $W\in\R^{d_{\mathrm{out}}\times
+d_{\mathrm{in}}}$ and learns
+\[
+ W'=W+\frac{\alpha}{r}BA,
+ \qquad
+ A\in\R^{r\times d_{\mathrm{in}}},\quad
+ B\in\R^{d_{\mathrm{out}}\times r},
+ \qquad r\ll\min(d_{\mathrm{in}},d_{\mathrm{out}}).
+\]
+The layer output becomes
+\[
+ h=W'x=Wx+\frac{\alpha}{r}BAx.
+\]
+Instead of training $d_{\mathrm{out}}d_{\mathrm{in}}$ entries, the adapter
+trains $r(d_{\mathrm{in}}+d_{\mathrm{out}})$ entries.  For a square $d\times d$
+matrix this is $2dr$ rather than $d^2$.  The rank $r$, scaling $\alpha$, target
+modules, learning rate, batch size, epochs, and data mixture are validation
+choices, not harmless defaults.
+
+Fine-tuning data should have clear provenance, consistent labels, appropriate
+consent and data-use authority, and train/validation/test separation that
+prevents patient or document leakage.  Evaluation must check both desired task
+improvement and regressions in safety, calibration, general ability, and
+performance across clinically relevant subgroups.  Adapters and base-model
+versions should be stored separately or merged only with explicit versioning.
+
+\subsection{Choosing an adaptation strategy}
+
+The smallest adequate intervention is usually easiest to validate:
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.20\textwidth}
+                >{\raggedright\arraybackslash}p{0.31\textwidth}
+                >{\raggedright\arraybackslash}p{0.37\textwidth}}
+\toprule
+\textbf{Method} & \textbf{Use when} & \textbf{Primary risks}\\
+\midrule
+Prompting & Knowledge is already available and the main need is task definition,
+format, or demonstrations & Brittleness, prompt sensitivity, invalid structure,
+unsupported inference\\
+RAG & Answers depend on private, large, attributable, or changing sources &
+Parsing and retrieval failure, stale indexes, access-control leakage, weak
+citations\\
+SFT/LoRA & Persistent behavior is needed and many curated examples exist & Label
+error, memorization, data leakage, distribution shift, capability regression\\
+\bottomrule
+\end{tabular}
+\end{center}
+Methods can be combined: an adapted model may still use RAG and strict output
+validation.  The final choice should be driven by error analysis and a
+prespecified evaluation set, not by architectural novelty.
+
+\section{Agentic Systems and Tool Use}
+
+A plain language-model call maps a context to generated tokens.  An
+\emph{agentic system} places one or more model calls inside a stateful control
+loop that can select actions, call tools, observe their results, revise its
+state, and decide when to stop.  The surrounding software---not the model
+alone---enforces permissions, validates arguments, executes actions, records
+provenance, and applies termination rules.
+
+At iteration $t$, a simple abstraction is
+\[
+ a_t=\pi_\phi(g,s_t,\mathcal A),
+ \qquad
+ o_t=\operatorname{Execute}(a_t),
+ \qquad
+ s_{t+1}=\operatorname{Update}(s_t,a_t,o_t),
+\]
+where $g$ is the goal, $s_t$ is the current state, $\mathcal A$ is the allowed
+action set, $a_t$ is a proposed action, and $o_t$ is the observed result.  The
+loop ends when a validated completion condition is met, when no safe action is
+available, or when a resource bound is reached.
+
+\subsection{Agent versus deterministic workflow}
+
+Agency is a spectrum rather than an all-or-nothing property:
+\begin{itemize}
+    \item A \textbf{deterministic workflow} has a fixed sequence and explicit
+    branches.  The LLM may parse unstructured inputs at individual steps, but
+    software controls the path.  This is often the most auditable production
+    choice.
+    \item A \textbf{single autonomous agent} chooses among tools and determines
+    its next step dynamically.  It is flexible for exploratory tasks but harder
+    to test exhaustively.
+    \item A \textbf{graph with agentic nodes} fixes the allowed workflow graph
+    while permitting model-based decisions within nodes.  Typed interfaces
+    constrain errors and make intermediate products inspectable.
+    \item An \textbf{orchestrator--worker system} assigns subtasks to specialized
+    workers and then combines their results.  It can parallelize heterogeneous
+    work, but introduces coordination, consistency, and provenance problems.
+\end{itemize}
+
+For a clinical workflow, autonomy should be granted only where variation is
+useful.  A fixed pipeline is generally preferable when the process is known,
+regulated, and repeated.  Agentic decisions are most useful when the path
+cannot be fully enumerated in advance, such as investigating conflicting
+evidence across a changing document collection.
+
+\subsection{ReAct and plan--execute patterns}
+
+In a ReAct-style loop, the system alternates between selecting one action and
+observing its result before selecting the next.  This supports recovery because
+later choices can incorporate unexpected tool output.  It may, however, take
+unnecessary steps or cycle without explicit progress checks.
+
+In a plan--execute system, the model first proposes a sequence of steps and then
+executes it.  Planning can reduce myopic action selection and make the intended
+trajectory reviewable, but a plan based on a false assumption can fail midway.
+A practical hybrid maintains a high-level plan while allowing bounded
+replanning after new evidence, rather than either wandering indefinitely or
+restarting the entire task after every deviation.
+
+\subsection{Function calling}
+
+Function calling separates a model's proposal from execution.  A tool is
+defined by a name, purpose, parameter schema, output schema, permissions, and
+failure behavior.  The model emits a structured request; the harness validates
+it, runs authorized code, and appends the result to the agent state.
+
+\begin{example}[A validated clinical calculation tool]
+Suppose an agent may calculate a confidence interval but may not fabricate one.
+Its tool contract could be represented schematically as
+\begin{lstlisting}[language={},numbers=none]
+name: binomial_confidence_interval
+input:
+  events: integer, minimum 0
+  total: integer, minimum 1
+  confidence_level: number in (0, 1)
+  method: enum["exact", "wilson"]
+output:
+  estimate: number
+  lower: number
+  upper: number
+  method: string
+\end{lstlisting}
+Before execution, ordinary code checks $0\leq\texttt{events}\leq
+\texttt{total}$ and validates every type and range.  The calculator returns
+numbers and method metadata; the model may explain them, but it does not perform
+the underlying arithmetic itself.  For consequential actions, the harness can
+require explicit human approval even after validation.
+\end{example}
+
+A bounded tool loop can be expressed as follows.
+\begin{algorithm}[H]
+\caption{Validated agent loop}
+\begin{algorithmic}[1]
+\Require goal $g$, initial context $c$, allowed tools $\mathcal T$, maximum turns $K$
+\State $s\gets\operatorname{Initialize}(g,c)$
+\For{$t=1,\ldots,K$}
+    \State $r\gets\operatorname{Model}(s,\operatorname{Schemas}(\mathcal T))$
+    \If{$r$ requests completion}
+        \State validate required fields, citations, and completion criteria
+        \If{valid} \State \Return $r$ \EndIf
+    \Else
+        \State validate tool name, arguments, permissions, and resource limits
+        \State $o\gets\operatorname{ExecuteSafely}(r)$
+        \State append the request, result, status, and provenance to $s$
+    \EndIf
+\EndFor
+\State \Return an explicit incomplete status and the accumulated audit record
+\end{algorithmic}
+\end{algorithm}
+
+Tool descriptions should state what the tool does, not merely its Python
+signature.  Ambiguous overlap between tools can cause unstable selection.
+Outputs should distinguish successful results, empty results, retryable errors,
+permission failures, and invalid requests.  Tool calls should be idempotent
+where possible; actions with external side effects require stronger approval
+and duplicate-call protection.
+
+\subsection{Structured generation and semantic validation}
+
+An instruction such as ``return JSON'' is not the same as schema-constrained
+generation.  Under ordinary prompting, the model may add Markdown fences,
+omit a required key, or return a number as a string.  A JSON Schema defines
+allowed objects, required properties, types, enumerations, ranges, and whether
+additional fields are permitted.
+
+When a model service supports native constrained decoding, the decoder tracks
+which token sequences can still lead to a schema-valid result and masks invalid
+continuations.  If $V_t^{\mathrm{valid}}$ is the set of valid next tokens for
+the current partial output, the constrained distribution is
+\[
+ \widetilde p(v\mid c_t)
+ =\frac{p(v\mid c_t)\ind\{v\in V_t^{\mathrm{valid}}\}}
+ {\sum_{u\in V_t^{\mathrm{valid}}}p(u\mid c_t)}.
+\]
+This can guarantee syntactic structure when the schema and decoder are
+supported.  It does not guarantee that a value is scientifically correct.  A
+schema-valid p-value can still come from the wrong model, dataset, population,
+or contrast.
+
+Clinical extraction contracts should therefore carry more than a value.  A
+useful field representation includes
+\begin{lstlisting}[language={},numbers=none]
+{
+  "value": ...,
+  "source_document": "...",
+  "source_section": "...",
+  "evidence": "verbatim supporting text",
+  "status": "found | missing | conditional | conflicting"
+}
+\end{lstlisting}
+The status prevents the agent from prematurely resolving language such as
+``use multiple imputation if missingness exceeds 10\%; otherwise use observed
+cases.''  Both branches and their condition must be preserved until the data
+determine which applies.  If a methods section specifies ANCOVA while a table
+shell specifies MMRM, the correct structured result is a conflict requiring
+adjudication, not a silent choice.
+
+\subsubsection{JSON, schema, and structured output are different}
+
+JSON is a notation that a parser can read.  JSON Schema is a producer--consumer
+contract specifying the expected keys, types, cardinalities, allowed values,
+and extra-field policy.  Structured output is the generation mechanism used to
+produce an instance of that contract.  These form a ladder:
+\[
+ \text{free text}\longrightarrow\text{requested format}
+ \longrightarrow\text{valid JSON}\longrightarrow
+ \text{schema-constrained record}.
+\]
+Moving upward reduces formatting uncertainty, but none of these steps alone
+establishes factual correctness.
+
+A schema lets the producer promise stable field names, required fields, and
+types, while the consumer can perform predictable lookup and type-safe
+operations.  Disallowing unspecified properties also makes unexpected content
+detectable.  Schema design is nevertheless a scientific
+choice: a perfectly enforced but conceptually wrong schema creates consistently
+wrong records.
+
+\subsubsection{Begin with the unit of record and downstream use}
+
+The first question is what one object represents: a trial, arm, endpoint,
+eligibility criterion, analysis, or estimand.  This is analogous to defining
+what one row means in a statistical dataset.  A sentence stating that a trial
+has two co-primary endpoints should normally produce two endpoint records, not
+one string containing both names.
+
+The downstream use determines the appropriate representation:
+\begin{itemize}
+    \item summarizing one protocol may prioritize readability and rich source
+    text;
+    \item comparing many trials requires stable fields, controlled vocabulary,
+    and explicit missingness;
+    \item quantitative analysis additionally requires numeric types, units,
+    estimands, and deterministic validation rules.
+\end{itemize}
+Copying document headings into JSON does not necessarily model the objects and
+relationships needed by the workflow.
+
+Shared context should be stored once, while repeatable objects belong in arrays:
+\begin{lstlisting}[language={},numbers=none]
+{
+  "trial_id": "NCT01866319",
+  "document_id": "KEYNOTE006_report_v1",
+  "treatment_arms": [...],
+  "endpoints": [ {...}, {...} ],
+  "extraction_metadata": {...}
+}
+\end{lstlisting}
+Using a scalar `\texttt{primary\_endpoint}' silently assumes there can be only
+one.  Cardinality is therefore a scientific assumption encoded in the data
+model, not a cosmetic programming decision.
+
+\subsubsection{Types, nesting, and controlled vocabularies}
+
+Types determine which downstream operations are valid.  The string
+`\texttt{"18 years"}' requires reparsing before numerical comparison, whereas
+\begin{lstlisting}[language={},numbers=none]
+"minimum_age": {"value": 18, "unit": "years"}
+\end{lstlisting}
+supports range checks and explicit unit conversion.  A Boolean should be
+represented as `\texttt{true}' or `\texttt{false}', not one of many strings such
+as ``Yes,'' ``Y,'' or ``TRUE.''  If the document is silent, null plus an
+information status is different from false.
+
+Nesting preserves relationships.  Instead of storing
+`\texttt{"endpoint": "PFS at 24 months by central review"}', represent the
+endpoint name, timeframe, unit, and assessment method as related fields.  This
+prevents downstream code from repeatedly parsing an opaque phrase and allows a
+missing component to be represented independently.
+
+Controlled vocabularies make cross-study comparison possible.  For example,
+endpoint role might be restricted to `\texttt{primary}', `\texttt{secondary}',
+`\texttt{exploratory}', `\texttt{safety}', `\texttt{other}', and
+`\texttt{unclear}'.  Such an enumeration is useful only if it fits the
+scientific task.  Forcing an unsupported category is worse than preserving an
+unclear status.
+
+\subsubsection{Missingness and uncertainty are data}
+
+A required field need not be known.  Requiring a nullable field means every
+record must address the question, even when the answer is unavailable.  A
+single null, however, can erase clinically relevant distinctions.  Useful
+statuses include:
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.20\textwidth}
+                >{\raggedright\arraybackslash}p{0.46\textwidth}
+                >{\raggedright\arraybackslash}p{0.22\textwidth}}
+\toprule
+\textbf{Status} & \textbf{Meaning} & \textbf{Typical action}\\
+\midrule
+reported & The source states the value clearly & Validate and use\\
+not reported & The searched source does not provide the value & Search another source\\
+ambiguous & More than one interpretation is plausible & Request review\\
+not applicable & The field does not apply to this design & Exclude appropriately\\
+conflicting & Sources or passages disagree & Reconcile evidence\\
+\bottomrule
+\end{tabular}
+\end{center}
+Collapsing these states into null loses decision-relevant information.  A raw
+model confidence such as $0.95$ is not a substitute unless its meaning and
+calibration have been defined and evaluated for the task.
+
+\subsubsection{A worked endpoint record}
+
+An endpoint record should preserve identity, scientific meaning, uncertainty,
+and evidence.  One possible design is:
+\begin{lstlisting}[language={},numbers=none]
+{
+  "endpoint_id": "ep_01",
+  "endpoint_role": "primary",
+  "name_as_reported": "progression-free survival",
+  "normalized_concept": "PFS",
+  "definition": {"value": null, "status": "not_reported"},
+  "timeframe": {
+    "value": null, "unit": null, "status": "not_reported"
+  },
+  "assessment_method": {
+    "value": "blinded_central_review", "status": "reported"
+  },
+  "analysis_population": {
+    "value": "all_randomized", "status": "reported"
+  },
+  "treatment_contrast": {"value": null, "status": "not_reported"},
+  "source": {
+    "document_id": "KEYNOTE006_report_v1",
+    "section": "Methods",
+    "printed_page": 3,
+    "source_text": "...supporting passage..."
+  },
+  "interpretation_notes": []
+}
+\end{lstlisting}
+The original wording and normalized value are both retained.  Normalization
+supports comparison but must not erase the evidence it summarizes.  Page number
+alone is weak provenance because PDF and printed pagination may differ, versions
+can move content, and one page contains many claims.  Exact supporting text,
+section, document identifier, and version should travel with the value.
+
+\subsubsection{Extraction, normalization, and inference}
+
+These are distinct transformations:
+\[
+ \underbrace{\text{``all randomized participants''}}_{\text{extracted}}
+ \longrightarrow
+ \underbrace{\texttt{all\_randomized}}_{\text{normalized}}
+ \longrightarrow
+ \underbrace{\text{``ITT-like''}}_{\text{inferred}}.
+\]
+The first records source language, the second maps it to a common label, and the
+third applies domain interpretation.  Combining all three into `\texttt{ITT}'
+makes an error difficult to localize and may overstate what the source says.
+The record should distinguish them and state whether inference was permitted.
+
+\subsubsection{Layered validation}
+
+Reliable extraction is a workflow with a prompt, a schema, and validators.  It
+should ask separate questions:
+\begin{enumerate}
+    \item \textbf{Structural:} does the object satisfy required keys, types,
+    cardinalities, enums, and extra-field policy?
+    \item \textbf{Semantic:} are values and relationships plausible, such as
+    nonnegative age and lower bound no greater than upper bound?
+    \item \textbf{Referential:} do a contrast's treatment arms exist, and do
+    identifiers resolve to the same trial and document version?
+    \item \textbf{Clinical:} is PFS classified as time-to-event, and do the
+    chosen fields preserve endpoint meaning?
+    \item \textbf{Evidential:} does the cited passage explicitly support the
+    value, is context omitted, and do other passages conflict?
+\end{enumerate}
+Deterministic code should enforce checks such as
+\[
+ \texttt{status=not\_reported}\Rightarrow\texttt{value=null},
+ \qquad
+ \texttt{lower\_bound}\leq\texttt{upper\_bound}.
+\]
+Language-based evidence review is a separate step, ideally with the claim and
+source passage presented together.  Human review remains appropriate for
+ambiguity, conflicts, and consequential scientific mappings.
+
+Eligibility criteria add further logical structure.  One sentence can encode
+multiple linked rule records containing inclusion/exclusion type, clinical
+domain, concept, operator, value and unit, time window, negation, Boolean
+connective, and exception.  Flattening the entire sentence into one criterion
+string prevents reliable computation of nested AND/OR logic.
+
+\subsection{Model Context Protocol}
+
+Ordinary function calling is application-specific: each team may invent its
+own schemas, transports, authentication, and result formats.  Model Context
+Protocol (MCP) provides a standardized way for an AI host to discover and call
+capabilities supplied by external servers.
+
+Conceptually, an MCP deployment contains:
+\begin{itemize}
+    \item a \textbf{host}, the agent application that manages the model,
+    orchestration, permissions, and user interaction;
+    \item a \textbf{client}, maintained by the host for communicating with an
+    MCP server;
+    \item a \textbf{server}, which exposes tools or resources backed by code,
+    databases, or other services.
+\end{itemize}
+MCP standardizes the interface, not the correctness or safety of the underlying
+operation.  Authentication, least-privilege authorization, input validation,
+network isolation, logging, version pinning, and data-governance review remain
+necessary.  A server that can read a clinical database should expose only the
+minimum queries and records required for the approved task.
+
+\subsection{Skills and progressive context loading}
+
+A skill is a reusable package of task instructions, domain rules, examples,
+schemas, or workflow guidance.  Rather than place an entire manual in every
+prompt, an agent can discover the relevant skill and load only the portions
+needed for the current task.  This progressive disclosure conserves context and
+reduces interference from irrelevant instructions.
+
+Skills and tools play different roles.  A skill tells the system \emph{how} to
+perform a process; a tool gives it an executable capability.  For example, a
+protocol-extraction skill may define the endpoint schema, cross-reference
+resolution procedure, and review checklist, while an MCP tool fetches protocol
+pages from an approved repository.  Both should be versioned because a change
+to instructions can alter outputs as materially as a code change.
+
+\subsection{Worked workflow: SAP to primary analysis}
+
+Consider a study whose SAP defines the primary endpoint as change from baseline
+in HbA1c at Week 24, the full analysis set (FAS) as the primary population, and
+the model
+\begin{equation}
+ Y_i=\beta_0+\beta_1\ind\{A_i=1\}+\beta_2B_i+\varepsilon_i,
+ \qquad \E(\varepsilon_i\mid A_i,B_i)=0,
+ \label{eq:ancova-agent-example}
+\end{equation}
+where $Y_i$ is Week 24 change, $A_i$ is randomized treatment, and $B_i$ is
+baseline HbA1c.  The treatment contrast is $\beta_1$, adjusted for baseline.
+The agentic workflow should be decomposed before implementation:
+\begin{enumerate}
+    \item extract endpoint, visit, population, model, covariates, contrast,
+    missing-data rule, and source evidence from the SAP;
+    \item validate that required subject-level and efficacy variables exist;
+    \item verify that baseline and Week 24 records can be linked and that the
+    endpoint derivation matches the SAP;
+    \item construct the FAS from its operational definition and reconcile it
+    with population flags;
+    \item run tested ANCOVA code only after every required QC gate passes;
+    \item review sample sizes by arm, exclusions and missingness, coefficient
+    estimates, confidence intervals, p-values, warnings, diagnostics, and
+    provenance.
+\end{enumerate}
+
+The LLM is useful in Step 1 because SAP language varies and information can be
+distributed across sections.  Steps 2--5 are principally deterministic.  The
+agent may decide when to invoke them, but tested code determines whether a
+column exists, whether treatment values are allowed, whether endpoint subjects
+belong to the FAS, and how the regression is fit.
+
+For two treatment groups, a minimal analysis contract could require
+\[
+ \{\texttt{USUBJID},\texttt{TRT01P},\texttt{BASE},
+ \texttt{CHG},\texttt{AVISIT},\texttt{FASFL}\}.
+\]
+Semantic checks go beyond column presence: subject identifiers should be
+unique at the expected level; `\texttt{CHG}' should reconcile with
+post-baseline minus baseline values; Week 24 selection and visit windows should
+match the SAP; treatment categories should match randomization; and the fitted
+sample should equal the reported analysis population after missing-data rules.
+
+The final artifact should bind together the SAP contract, document citations,
+dataset and code versions, QC table, model specification, software output,
+diagnostics, and reviewer status.  A numerical result without this provenance
+is not an analysis-ready deliverable.
+
+\subsection{Hooks as deterministic enforcement}
+
+A \emph{hook} is an event-triggered action run automatically by the harness
+before or after an operation.  A skill says how an agent should perform a task;
+a hook enforces what the system must do regardless of the model's choice.  This
+distinction converts ``remember to check'' into ``execution is impossible until
+the check passes.''
+
+For the ANCOVA workflow, a pre-tool hook can require:
+\begin{itemize}
+    \item a complete, schema-valid SAP contract with no unresolved critical
+    conflicts;
+    \item presence and validity of required variables and treatment values;
+    \item availability of the Week 24 endpoint under the specified visit rule;
+    \item a reproducible FAS definition and agreement between endpoint subjects
+    and the population;
+    \item approved data, code, and analysis-contract versions.
+\end{itemize}
+The hook returns a structured pass/fail result with failed checks and evidence.
+Only a pass authorizes the ANCOVA tool.  The model cannot override the gate by
+arguing that the analysis is probably safe.
+
+Other useful hook points include:
+\begin{itemize}
+    \item \textbf{session start:} load the approved protocol, SAP, versions, and
+    study-specific permissions;
+    \item \textbf{user input:} detect patient identifiers or prohibited data;
+    \item \textbf{before tool use:} enforce authorization, protected paths,
+    network destinations, QC prerequisites, and approval requirements;
+    \item \textbf{after tool use:} validate identifiers, schemas, numerical
+    ranges, and provenance records;
+    \item \textbf{file change:} rerun statistical tests or QC when analysis code
+    or derived data change;
+    \item \textbf{completion:} require evidence tables, resolved failures,
+    citations, and reviewer approval before reporting a complete status.
+\end{itemize}
+Hooks should themselves be small, deterministic, tested, fail closed for
+high-consequence operations, and emit auditable reasons.  A hook that depends on
+an unconstrained LLM judgment is guidance disguised as enforcement.
+
+\subsection{Context and memory management}
+
+Agent contexts grow as prompts, plans, tool results, and intermediate drafts
+accumulate.  More context is not always better: irrelevant material can dilute
+attention, create contradictory instructions, increase latency and cost, and
+make provenance unclear.  Context management should therefore distinguish:
+\begin{itemize}
+    \item \textbf{working state}, the compact information required for the next
+    decision;
+    \item \textbf{authoritative evidence}, retrieved on demand with citations;
+    \item \textbf{episodic history}, prior actions and results used for recovery
+    and audit;
+    \item \textbf{durable memory}, only facts explicitly approved for reuse
+    across tasks.
+\end{itemize}
+Long tool outputs can be stored outside the prompt and referenced by identifiers.
+Summaries should retain source links and critical exceptions, and a later step
+should be able to retrieve the original rather than treat a lossy summary as
+primary evidence.  PHI should not be written into durable memory unless the
+storage and intended reuse are specifically authorized.
+
+\subsection{Reliability controls for agents}
+
+Agentic loops amplify both capability and error.  Useful controls include:
+\begin{enumerate}
+    \item set maximum turns, wall-clock time, token budgets, tool-call counts,
+    and monetary limits;
+    \item define typed inputs and outputs for every node and validate them at
+    runtime;
+    \item expose only necessary tools and require approval for consequential or
+    irreversible actions;
+    \item maintain per-step logs of model version, prompts, tool arguments,
+    outputs, errors, citations, and status;
+    \item use deterministic software for arithmetic, date logic, database
+    constraints, and statistical computation;
+    \item retry only errors likely to be transient, and cap retries;
+    \item return an explicit incomplete or uncertain status rather than forcing
+    an answer when evidence or authority is missing.
+\end{enumerate}
+
+Asking the same model to review its own answer is not an independent check.  It
+may repeat or rationalize the same error because the draft anchors the review.
+A verifier is more useful when it receives explicit criteria and primary
+evidence, tests claims rather than tone, and can reject the answer.  Independence
+can be strengthened with deterministic validation, a separately prompted or
+separately trained model, or human review.  Even then, correlated failures are
+possible, so evaluation must measure the complete system rather than assume
+that adding another agent guarantees correctness.
+
+Responsibility remains distributed across the system: the model interprets
+context and proposes actions; tools retrieve, validate, and compute; skills
+encode reusable procedures; state preserves artifacts and decisions; controls
+enforce gates and permissions; the harness coordinates execution and logging;
+and qualified humans resolve ambiguity and approve consequential decisions.
+Reliability comes from these layers working together, not from assigning every
+responsibility to a more capable model.
+
+\section{Eligibility Agents}
+
+Clinical-trial eligibility criteria sit at the boundary between scientific
+design and trial operations.  Operationally, they protect participants and
+determine whether sites can recruit enough people.  Scientifically, they define
+the population to which the treatment effect applies.  A system that reverses
+a negation, drops a time window, or changes ``at most one'' to ``none'' does not
+merely make a clerical error: it changes the enrolled population and therefore
+the estimand.
+
+Suppose a trial estimates
+\[
+    \tau_{\mathcal E}
+      = \E\!\left[Y(1)-Y(0)\mid X\in\mathcal E\right],
+\]
+where $\mathcal E$ is the population satisfying the protocol's eligibility
+rules.  If an automated screen actually applies an erroneous rule set
+$\widetilde{\mathcal E}$, its data target
+$\tau_{\widetilde{\mathcal E}}$ instead.  The two quantities need not agree,
+especially when the mistaken criteria are treatment-history, disease-severity,
+or prognostic-factor restrictions.  The same issue affects transportability
+and external controls: borrowing data is credible only when eligibility and
+baseline covariates define sufficiently comparable populations.
+
+\subsection{From prose to atomic computable rules}
+
+A single protocol bullet often contains several logically different rules.  As
+a running example, consider a melanoma trial requiring patients to be at least
+18 years old, to have unresectable stage III or IV melanoma, ECOG performance
+status 0 or 1, known BRAF V600 status, no prior ipilimumab, and at most one
+previous systemic therapy.  The useful unit of extraction is not the sentence
+but the \emph{atomic rule}:
+\begin{align*}
+  r_1(x)&=\ind\{\operatorname{age}(x)\ge 18\},\\
+  r_2(x)&=\ind\{\operatorname{stage}(x)\in\{\mathrm{III},\mathrm{IV}\}
+                    \text{ and disease is unresectable}\},\\
+  r_3(x)&=\ind\{\operatorname{ECOG}(x)\in\{0,1\}\},\\
+  r_4(x)&=\ind\{\text{a BRAF V600 result is observed}\},\\
+  r_5(x)&=\ind\{\text{no prior ipilimumab exposure}\},\\
+  r_6(x)&=\ind\{\#\text{ prior systemic therapies}\le 1\}.
+\end{align*}
+If all are inclusion conditions, the computable eligibility indicator is
+\[
+    e(x)=\prod_{j=1}^6 r_j(x).
+\]
+This Boolean notation is deliberately incomplete until time and evidence are
+specified.  For example, ECOG may have to be measured within 14 days before
+treatment, and treatment exposure must be assessed before enrollment.  In
+practice the truth value is often three- or four-valued rather than Boolean:
+met, not met, unknown, or not applicable.  Treating unknown as false silently
+turns missing data into ineligibility.
+
+An extraction record should preserve both the source wording and a normalized
+meaning.  Useful fields include
+\begin{center}
+\begin{xltabular}{0.94\textwidth}{>{\bfseries\raggedright\arraybackslash}p{0.27\textwidth}X}
+\toprule
+Field & Purpose \\
+\midrule
+criterion identifier & Stable reference for review and downstream decisions. \\
+polarity and atomic text & Inclusion versus exclusion, plus the exact clinical rule. \\
+domain and variable & Clinical meaning, such as performance status/ECOG. \\
+operator, value, and unit & The computable constraint, such as membership in $\{0,1\}$. \\
+time window & When the fact must hold relative to screening or treatment. \\
+evidence span & Document, section, page, and exact supporting text. \\
+computability & Direct, mapped, NLP required, clinical judgment, or unavailable. \\
+uncertainty and review status & Ambiguous, conflicting, accepted, or requiring review. \\
+\bottomrule
+\end{xltabular}
+\end{center}
+The distinction between source and normalization prevents a common error:
+``known BRAF V600 status'' means that a result is available, not that the
+mutation is positive.  Similarly, ``ipilimumab-naive'' is a negated exposure,
+and ``up to one'' permits both zero and one.
+
+\subsubsection{Logic, time, and evidence}
+
+Relations are as important as entities.  Extracting the tokens
+\emph{ipilimumab}, \emph{systemic therapy}, and \emph{one} is insufficient unless
+the representation links
+\[
+  \neg\operatorname{prior\_ipilimumab}(x)
+  \quad\land\quad
+  \operatorname{count}\{\text{prior systemic therapies of }x\}\le 1.
+\]
+AND, OR, NOT, counts, exceptions, and temporal relations should be stored
+explicitly, preferably as an abstract syntax tree or directed graph.  That
+intermediate representation separates clinical meaning from local execution.
+It can later be translated to an OMOP cohort definition, SQL, or patient-note
+review without repeatedly reinterpreting the prose.
+
+Computability is itself an output.  A date of birth may support a direct age
+check; a laboratory value may first require concept and unit mapping; a cancer
+stage may require extraction from notes; ``clinically significant'' may require
+expert judgment; and an external treatment history may be unavailable.  The
+label tells the agent whether to execute, map, retrieve, ask, or defer.
+Uncertainty should likewise distinguish \emph{not reported}, \emph{ambiguous},
+\emph{not applicable}, and \emph{conflicting}; one null value loses the action
+implied by each state.
+
+\subsection{The representation lineage before large language models}
+
+Modern eligibility agents inherit a sequence of earlier design ideas:
+\begin{itemize}
+    \item \textbf{ERGO} separated human-readable criteria from an intermediate
+    clinical representation and its executable Boolean query.  Its lasting
+    principle is to define meaning before choosing database code.
+    \item \textbf{EliXR} treated eligibility language as recurring semantic
+    patterns with roles such as finding, modifier, stage, value, and polarity.
+    \item \textbf{EliIE} decomposed extraction into entity recognition,
+    negation detection, relation extraction, and normalization to a common
+    data model.  These subtasks remain present in LLM systems as prompts,
+    tools, or validators.
+    \item \textbf{Chia} represented entities, attributes, and their relations
+    as directed graphs, making nested eligibility logic recoverable rather
+    than leaving it implicit in a list of spans.
+    \item \textbf{Criteria2Query} connected the semantic representation to
+    OMOP concept sets and reviewable cohort queries.  This exposed choices
+    that text extraction alone cannot settle: which vocabulary concept, data
+    table, observation window, and missing-data rule should be used?
+\end{itemize}
+
+For example, implementing ``known BRAF V600 status'' may require a reviewed
+concept set for variant tests, a search of measurement and molecular-report
+sources, and an existence query before enrollment.  An executable
+approximation is
+\begin{lstlisting}[language=SQL]
+EXISTS (
+  SELECT 1
+  FROM measurement m
+  WHERE m.person_id = p.person_id
+    AND m.measurement_concept_id IN (<reviewed BRAF V600 test concepts>)
+    AND m.measurement_date <= index_date
+    AND m.value_as_concept_id IS NOT NULL
+)
+\end{lstlisting}
+This query checks that status is observed, not that the result is positive.
+The concept set and source table are study- and database-specific artifacts
+that require review.
+
+\subsection{LLM extraction and query generation}
+
+Large language models replace some task-specific interfaces with a general
+instruction-following interface, but preprocessing and representation remain
+part of the method.  An AutoCriteria-style workflow is:
+\begin{enumerate}
+    \item identify inclusion and exclusion sections and preserve criterion
+    identifiers;
+    \item split long text at sentence boundaries into manageable chunks;
+    \item prompt for attributes, values, modifiers, types, temporal phrases,
+    relations, and exact evidence spans using a fixed output schema;
+    \item merge, deduplicate, and clean outputs;
+    \item validate a calibrated sample with domain experts and revise the
+    extraction policy.
+\end{enumerate}
+Domain knowledge belongs in the schema.  Oncology emphasizes tumor
+characteristics, biomarkers, and treatment history; neurodegenerative disease
+may require cognitive scales and imaging; liver disease adds fibrosis and
+imaging measures.  A general model does not eliminate these domain-specific
+types.
+
+C2Q-style systems then assign distinct responsibilities to distinct steps:
+concept extraction, concept-set construction, SQL generation, explanation, and
+human editing.  This decomposition matters because a fluent explanation is not
+evidence that the selected concept identifiers or query logic are correct.
+Each step should have its own input contract and evaluation target.
+
+\subsection{Patient-to-trial matching}
+
+Query generation works naturally for structured records, whereas oncology
+history is longitudinal and often buried in notes.  A recruitment agent must
+therefore combine retrieval with criterion-level clinical reasoning.  A
+TrialGPT-style workflow has three stages:
+\begin{enumerate}
+    \item \textbf{Retrieval:} derive prioritized conditions from the patient
+    summary, run sparse and biomedical dense retrieval, and fuse their
+    rankings to reduce thousands of trials to a candidate set.
+    \item \textbf{Matching:} compare the patient evidence against every atomic
+    inclusion and exclusion rule.  Return a label, rationale, and evidence
+    spans for each comparison.
+    \item \textbf{Ranking:} aggregate criterion-level decisions into a
+    trial-level score while keeping the score traceable to its local evidence.
+\end{enumerate}
+
+The labels must respect criterion polarity.  For an inclusion rule, useful
+states are included, not included, insufficient information, and not
+applicable.  For an exclusion rule, they are excluded, not excluded,
+insufficient information, and not applicable.  A patient with stage IV
+melanoma, ECOG 1, documented ipilimumab exposure, and no BRAF report would be
+included on disease and performance status, excluded by the ipilimumab-naive
+rule, and unknown on BRAF evidence.  Text similarity alone cannot produce this
+decision.
+
+One transparent trial score uses hard vetoes before soft ranking.  Let $I_t$
+and $X_t$ be the inclusion and exclusion criteria for trial $t$.  Define
+\[
+  V_t=\ind\!\left\{
+      \text{some }j\in I_t\text{ is not met, or some }j\in X_t\text{ is met}
+  \right\}.
+\]
+If $V_t=1$, the trial is not currently eligible.  Otherwise a review-priority
+score can be
+\[
+  S_t=\frac{\sum_j w_j m_{tj}}{\sum_j w_j}
+      -\lambda\frac{\sum_j w_j u_{tj}}{\sum_j w_j},
+\]
+where $m_{tj}$ marks compatible criteria, $u_{tj}$ marks unresolved criteria,
+and $w_j$ reflects clinical importance.  This is only a prioritization rule,
+not a probability of eligibility, unless it is calibrated against labeled
+outcomes.  The interface should display vetoes and unknowns rather than only
+$S_t$.
+
+\subsection{A controlled eligibility-agent loop}
+
+A reliable agent is a loop with narrow responsibilities:
+\[
+ \text{plan}\longrightarrow\text{extract}\longrightarrow\text{normalize}
+ \longrightarrow\text{validate}\longrightarrow\text{review}.
+\]
+On validation failure it revises the relevant artifact, not the clinical
+standard.  Useful tools include a source parser, vocabulary lookup, unit
+converter, schema validator, evidence checker, database query runner, and a
+human-review queue.  Code should verify arithmetic, units, dates, operators,
+and schemas; model judgment is reserved for language and contextual
+interpretation.
+
+Validation proceeds in layers:
+\begin{enumerate}
+    \item \textbf{Structural:} required fields, types, enumerations, and graph
+    references satisfy the schema.
+    \item \textbf{Semantic:} concepts, units, operators, polarity, count
+    constraints, and temporal order are clinically plausible.
+    \item \textbf{Evidential:} every extracted claim is entailed by a cited
+    source span; normalized claims remain faithful to it.
+    \item \textbf{Clinical:} ambiguity, conflict, and judgment-dependent rules
+    are routed to a qualified reviewer.
+\end{enumerate}
+Valid JSON can still reverse a negation or invent a threshold, so structural
+validation alone is inadequate.  Provenance should travel with each claim:
+source document and version, section, page, exact text, extraction run, mapping
+version, and reviewer decision.  This allows an error to be localized to
+extraction, normalization, inference, or missing evidence.
+
+\begin{example}[Evidence-linked review]
+Suppose the source says ``known BRAF V600 status,'' but the model outputs
+\texttt{operator = equals}, \texttt{value = positive}, and no evidence.  The
+schema validator may pass.  Semantic validation fails because observed status
+was changed into positivity, and evidential validation fails because no source
+span supports the claim.  The corrected object represents existence of a
+reported result and sends the actual positive/negative value to a separate
+field if the record supplies it.
+\end{example}
+
+Human-in-the-loop review should be targeted rather than a manual repetition of
+the whole workflow.  Appropriate triggers include vague language such as
+``clinically significant,'' missing molecular results, conflicting treatment
+histories, inaccessible external records, low-confidence vocabulary mappings,
+and any unsupported hard exclusion.  The reviewer sees the atomic rule,
+patient evidence, model decision, and failed checks together.
+
+\subsection{Evaluation and statistical consequences}
+
+Entity-level precision, recall, and $F_1$ are useful but do not fully measure an
+eligibility agent.  A missed main criterion may be more consequential than
+several correctly extracted modifiers.  Evaluation should therefore include:
+\begin{itemize}
+    \item exact atomic-rule recovery, including negation, counts, OR groups,
+    exceptions, units, and time windows;
+    \item evidence-span precision and whether every normalized claim is
+    supported;
+    \item criterion-level matching accuracy with results stratified by
+    inclusion/exclusion and known/unknown status;
+    \item retrieval recall at the number of trials a reviewer can inspect;
+    \item trial-level ranking and calibration, plus screening time and reviewer
+    disagreement;
+    \item error rates across demographic and clinical subgroups, sites, note
+    styles, and missingness patterns.
+\end{itemize}
+
+Subgroup analysis is essential.  If $M$ denotes an incorrect match decision
+and $G$ a patient subgroup, aggregate accuracy can conceal
+\[
+    \Prob(M=1\mid G=g_1)\ne \Prob(M=1\mid G=g_2).
+\]
+Differential matching error changes who is approached or enrolled, creating
+selection bias and potentially changing the observed effect.  Prospective
+monitoring should therefore track eligibility yields, reasons for exclusion,
+unknown rates, overrides, and downstream enrollment by subgroup and site.
+
+Finally, the extracted rule object can support more than recruitment.  It can
+compare populations across protocols, estimate feasibility in local data,
+identify restrictive criteria during protocol design, and assess whether an
+external cohort is similar enough for transport or borrowing.  Reuse is safe
+only when the same evidence, versioning, uncertainty, and validation metadata
+travel with the object.
+
+\section{Schedule-of-Activities Agents}
+
+Eligibility criteria answer who may enroll; the schedule of activities (SOA)
+answers what should happen and when.  Together they convert a scientific design
+into operational rules.  The SOA may prescribe visits, treatment, laboratory
+tests, imaging, questionnaires, safety follow-up, and conditional assessments.
+Its apparent table of marks is not the complete specification: column headers,
+merged cells, footnotes, surrounding prose, protocol amendments, and arm- or
+phase-specific exceptions all contribute meaning.
+
+The collection pathway should remain explicit:
+\[
+\begin{aligned}
+  \text{protocol plan}
+  &\longrightarrow \text{site or vendor assessment}
+  \longrightarrow \text{source record}\\
+  &\longrightarrow \text{eCRF/transfer}
+  \longrightarrow \text{integrated trial data}
+  \longrightarrow \text{analysis dataset}.
+\end{aligned}
+\]
+A case report form (CRF) defines fields to be collected; an electronic CRF is
+the implemented form; and electronic data capture (EDC) is the system that
+hosts and manages those forms.  Other systems---central laboratories, imaging
+vendors, and electronic patient-reported outcome platforms---may transfer data
+directly.  Participant identifiers, dates, controlled terminology, and units
+must be reconciled when these sources are integrated.
+
+\subsection{Planned events are not observed measurements}
+
+An SOA describes planned requiredness.  An observed-data record describes what
+actually happened.  Imaging scheduled at Week 12 may occur at Week 13, a
+pre-dose laboratory test may be drawn after dosing, and a scheduled
+questionnaire may have no response.  A robust data model therefore keeps
+separate variables for
+\begin{itemize}
+    \item the nominal event and its allowed window;
+    \item whether the event was required for this participant;
+    \item whether it was performed;
+    \item the actual date and time, result, unit, and method;
+    \item if absent, the reason not performed;
+    \item the source record and data-processing lineage.
+\end{itemize}
+Equating ``scheduled'' with ``observed'' masks protocol deviations and creates
+incorrect assumptions about missing data.
+
+For a planned event $j$, let $T_j^{\mathrm{nom}}$ be its nominal time and
+$[L_j,U_j]$ its window relative to an anchor.  If its actual time is
+$T_j^{\mathrm{obs}}$, a simple timing classification is
+\[
+  D_j=
+  \begin{cases}
+    \text{missing}, & T_j^{\mathrm{obs}}\text{ is absent},\\
+    \text{early}, & T_j^{\mathrm{obs}}<L_j,\\
+    \text{in window}, & L_j\le T_j^{\mathrm{obs}}\le U_j,\\
+    \text{late}, & T_j^{\mathrm{obs}}>U_j.
+  \end{cases}
+\]
+This classification is valid only after determining that the event was
+applicable and required.  A conditional event whose trigger is false is not a
+missing required event.
+
+\subsection{A computable event representation}
+
+The extraction target is a scheduled event with rules and evidence, not merely
+a marked cell.  A useful event record contains:
+\begin{center}
+\begin{xltabular}{0.94\textwidth}{>{\bfseries\raggedright\arraybackslash}p{0.25\textwidth}X}
+\toprule
+Field & Interpretation \\
+\midrule
+event and activity identifiers & A stable occurrence and the clinical activity to perform. \\
+timepoint, phase, and arm & Visit context and the population to which the event applies. \\
+requiredness & Required, optional, or conditional, with the condition retained. \\
+anchor, offset, and unit & The reference event and nominal displacement from it. \\
+early/late window & Allowed deviation from nominal time, including whether boundaries are inclusive. \\
+recurrence and stopping rule & Interval, number or end boundary, and transition to later schedules. \\
+modalities and exceptions & Allowed methods and overrides such as ``before dosing.'' \\
+source evidence & Table, row, column-header path, cell symbol, footnote, page, and document version. \\
+uncertainty and review & Specified, not reported, ambiguous, conflicting, or not applicable. \\
+\bottomrule
+\end{xltabular}
+\end{center}
+
+The full context of a cell is hierarchical.  A chemistry mark beneath
+\emph{Treatment / Cycle 2 / Day 1} cannot safely be represented as ``Day 1''
+alone.  Likewise, a footnote marker must be resolved within the correct table
+and protocol version.  The original wording and its normalized meaning should
+travel together: for example, retain ``Q6W'' while normalizing its interval to
+six weeks.
+
+\subsubsection{Anchors and windows}
+
+Timing requires an anchor, offset, unit, and possibly asymmetric tolerances.
+For an anchor time $A$, offset $d$, early allowance $w_-$, and late allowance
+$w_+$,
+\[
+ T^{\mathrm{nom}}=A+d,
+ \qquad
+ \mathcal W=[A+d-w_-,\;A+d+w_+].
+\]
+Thus ``Day 14 $\pm 3$ days after first dose'' produces an allowed interval from
+Day 11 through Day 17 relative to the first-dose timestamp.  Substituting the
+randomization date as $A$ yields correct arithmetic for the wrong clinical
+rule.  Anchor identity is therefore a semantic validation target, not a minor
+metadata field.
+
+Different activities may use different clocks.  Treatment can occur every
+three weeks while tumor imaging follows a study-week schedule.  Treatment
+discontinuation also need not imply study discontinuation: a participant may
+stop drug, enter safety follow-up, and remain under survival follow-up.  These
+transitions should be represented as distinct state and stopping rules.
+
+\subsubsection{Expanding recurrence rules}
+
+An LLM may interpret a recurrence phrase, but deterministic code should expand
+and check it.  For start time $s$, interval $q>0$, and inclusive endpoint $e$,
+the nominal sequence is
+\[
+  \mathcal T(s,q,e)=\{s+kq:k=0,1,\ldots,
+       \lfloor(e-s)/q\rfloor\}.
+\]
+For example, imaging every six weeks from Week 12 through Week 48 gives
+\[
+  \mathcal T(12,6,48)=\{12,18,24,30,36,42,48\}.
+\]
+If the protocol then changes to every 12 weeks, the next rule starts at Week 60,
+not Week 48, unless the source explicitly duplicates the boundary event.  A
+piecewise schedule can be written
+\[
+ \mathcal T
+ =\mathcal T(12,6,48)
+   \cup\{48+12k:k=1,2,\ldots\},
+\]
+with the infinite second sequence truncated by a participant-level stopping
+condition such as progression, withdrawal, death, or study closure.
+
+\begin{example}[Detecting an unsupported schedule]
+Suppose a published report says ``Week 12, every six weeks through Week 48,
+then every 12 weeks.''  An extracted object beginning at Week 6, repeating
+every six weeks to study end, using a $\pm3$ day window, and anchoring to drug
+cycles contains four distinct errors.  The start and end contradict the text;
+the Q12W phase is missing; the window was invented; and the anchor requires
+verification.  Structural JSON validation would detect none of these, whereas
+rule expansion and evidence checks expose them directly.
+\end{example}
+
+\subsection{Conditional events and participant-specific schedules}
+
+For a conditional activity $a$ with trigger $C_a(H_t)$ based on history up to
+time $t$, planned requiredness is
+\[
+  R_a(t)=\ind\{C_a(H_t)=1\}.
+\]
+The source phrase ``ECG if clinically indicated'' should not be converted into
+an unconditional ECG or discarded as noncomputable.  The record retains the
+activity, conditional status, trigger language, evidence, and decision owner.
+A clinician may determine the trigger for an individual participant.  If the
+available record does not establish the trigger, requiredness remains unknown.
+
+Participant-specific schedule generation can be viewed as a state machine.
+At each transition, treatment status, disease progression, adverse events,
+withdrawal, or other protocol conditions activate or deactivate future rules.
+Unscheduled assessments form separate events linked to their clinical reason;
+they should not be forced onto the nearest planned visit without an explicit
+analysis convention.
+
+\subsection{AI-assisted SOA digitization}
+
+A schedule agent should distinguish document reconstruction from clinical
+interpretation:
+\begin{enumerate}
+    \item \textbf{Locate:} identify the authoritative protocol version,
+    schedule pages, continued tables, legends, and referenced sections.
+    \item \textbf{Recover layout:} reconstruct rows, nested column headers,
+    merged cells, symbols, and footnote identifiers.
+    \item \textbf{Retrieve context:} resolve footnotes and prose references
+    with locations and version scope.
+    \item \textbf{Interpret:} propose activities, timing, conditions,
+    recurrence, stopping rules, exceptions, and uncertainty states.
+    \item \textbf{Normalize and validate:} create stable records, expand
+    recurrence with code, compare every field with evidence, and queue only
+    unresolved cases for review.
+\end{enumerate}
+
+Narrow tools make this workflow auditable.  A layout parser returns cells and
+header paths; a retriever returns referenced text; the language model proposes
+event rules; a schedule engine performs date arithmetic and recurrence
+expansion; and validators return failures and a review queue.  Missing evidence
+triggers targeted retrieval and revision.  If ambiguity remains after the loop
+stops, it remains visible rather than being converted into a guessed value.
+
+Validation again has distinct layers:
+\begin{itemize}
+    \item \textbf{structural:} valid identifiers, types, header paths, and
+    resolved references;
+    \item \textbf{temporal:} plausible anchors, units, windows, recurrence
+    boundaries, transition points, and stopping conditions;
+    \item \textbf{evidential:} every field traces to a cell, header, note, or
+    source sentence in the correct document version;
+    \item \textbf{clinical:} conditionality, conflicting instructions, and
+    consequential ambiguity receive expert review.
+\end{itemize}
+
+\subsection{Evaluation and downstream traceability}
+
+Cell-level accuracy is insufficient because not all errors have equal impact.
+Evaluation should separately score row activities, timepoints, marked cells,
+header paths, and footnote links; then assess anchor, window, condition,
+recurrence, and stopping-rule meaning.  Schedule behavior can be tested by
+expanding rules on synthetic anchor dates and comparing the resulting events
+and participant-specific branches with a reference schedule.  Evidence
+coverage measures the proportion of output fields supported by correctly
+located source text.
+
+The resulting verified schedule can support visit planning, eCRF design,
+protocol-deviation review, protocol comparison, and endpoint traceability.
+For deviation review, the schedule supplies expected events and windows while
+actual assessment records supply completion and timing.  For endpoint work,
+the lineage should connect
+\[
+\begin{aligned}
+  \text{protocol activity}
+  &\longrightarrow\text{collection field}
+  \longrightarrow\text{source value}\\
+  &\longrightarrow\text{derived variable}
+  \longrightarrow\text{endpoint analysis}.
+\end{aligned}
+\]
+This makes it possible to determine whether an absent endpoint component was
+never planned, conditionally not required, missed operationally, or lost during
+data processing.
+
+Standards play complementary roles: protocol specifications promote consistent
+source structure, digital study models represent activities and timelines, and
+healthcare-exchange standards transport definitions and observations.  A
+definitional plan must still remain distinct from a participant's actual
+clinical record, and conversion into a standard does not eliminate the need to
+verify the extracted meaning.
+
+\section{From Schedules to Time-to-Event Endpoints}
+
+The SOA provides opportunities to observe a participant, but it does not itself
+define an endpoint.  Endpoint construction joins five layers:
+\[
+ \text{plan}\longrightarrow\text{observation}
+ \longrightarrow\text{clinical assessment}
+ \longrightarrow\text{endpoint derivation}
+ \longrightarrow\text{analysis}.
+\]
+For progression-free survival (PFS), scheduled imaging becomes an acquired
+scan; measurements and clinical rules produce a response assessment; that
+assessment is combined with vital status and censoring rules to produce a
+participant-level time and event indicator.  Each arrow requires both data and
+an authoritative rule.
+
+\subsection{Defining and deriving progression-free survival}
+
+Let $R_i$ be participant $i$'s randomization date, $P_i$ the earliest qualifying
+objective-progression date under the designated assessment stream, and $D_i$
+the qualifying death date.  The endpoint event date is
+\[
+  E_i=\min(P_i,D_i),
+\]
+where a nonexistent or nonqualifying candidate is treated as $+\infty$.  If
+$E_i$ occurs before the analysis cutoff and satisfies all prespecified rules,
+\[
+  \Delta_i=1,
+  \qquad
+  T_i=E_i-R_i,
+\]
+and the event type records whether $E_i=P_i$ or $E_i=D_i$.  If no event
+qualifies, a prespecified censoring rule produces $C_i$ and
+\[
+  \Delta_i=0,
+  \qquad
+  T_i=C_i-R_i.
+\]
+Whether elapsed time includes the origin day is a study convention and must be
+implemented consistently.  More importantly, $C_i$ cannot be improvised from
+the last row in a dataset: the SAP determines which adequate disease assessment
+or follow-up date supports censoring and how missed visits, new anticancer
+therapy, and incomplete assessments are handled.
+
+The inputs commonly arrive from different systems:
+\begin{center}
+\begin{xltabular}{0.94\textwidth}{>{\bfseries\raggedright\arraybackslash}p{0.25\textwidth}X}
+\toprule
+Endpoint component & Typical evidence and role \\
+\midrule
+origin & Randomization system supplies the observed origin date. \\
+progression candidate & Imaging acquisition plus the designated central or investigator assessment supplies date, method, and result. \\
+death candidate & Site, registry, or survival follow-up supplies the vital-status date. \\
+event type and date & Deterministic derivation applies event hierarchy and temporal rules. \\
+censoring date & Derivation combines last adequate status with the approved censoring convention. \\
+\bottomrule
+\end{xltabular}
+\end{center}
+Acquisition, review, assigned-result, and data-transfer dates around the same
+scan serve different purposes.  A progression assessment normally uses the
+clinical assessment date specified by the endpoint definition, not the date on
+which a vendor transmitted the record.
+
+\subsubsection{A deterministic derivation algorithm}
+
+For each participant, an auditable implementation performs the following:
+\begin{enumerate}
+    \item retrieve and validate the endpoint origin;
+    \item select the governing assessment stream and order all adequate
+    assessments by clinical date;
+    \item find the earliest qualifying progression candidate;
+    \item retrieve death and verify its date relative to the origin, cutoff,
+    and other endpoint rules;
+    \item apply missed-assessment, subsequent-therapy, adequacy, and other
+    qualifiers to both candidates;
+    \item select the first qualifying event, or apply the prespecified
+    censoring rule if none exists;
+    \item emit time, indicator, event type, evidence references, rule version,
+    and unresolved review flags.
+\end{enumerate}
+
+For example, if a participant is randomized on January 1, has stable disease
+at Week 12, partial response at Week 18, and centrally confirmed progression on
+June 19, the PFS event is progression on June 19.  If instead the participant
+has no progression and dies May 25, death is the PFS event.  A participant
+alive at cutoff with no qualifying event is censored according to the approved
+rule, commonly at a last adequate nonprogressive assessment rather than at the
+cutoff itself.
+
+\subsection{RECIST assessments are longitudinal}
+
+Tumor imaging becomes an endpoint assessment only after applying a response
+system such as RECIST 1.1.  Its inputs include target-lesion measurements,
+non-target disease status, and new lesions; the output may be complete response
+(CR), partial response (PR), stable disease (SD), or progressive disease (PD).
+
+Target-lesion progression depends on a trajectory, not on a single scan.  Let
+$S_{ij}$ be the sum of target-lesion diameters for participant $i$ at assessment
+$j$, and let
+\[
+  N_{ij}=\min_{k\le j}S_{ik}
+\]
+be the on-study nadir through that assessment.  Under the standard target-
+lesion RECIST rule, PD requires both a relative increase of at least 20\% from
+the nadir and an absolute increase of at least 5 mm:
+\[
+  \frac{S_{ij}-N_{ij}}{N_{ij}}\ge 0.20
+  \quad\text{and}\quad
+  S_{ij}-N_{ij}\ge 5\text{ mm}.
+\]
+For a nadir of 40 mm and current sum of 50 mm, the increases are 25\% and
+10 mm, so both conditions hold.  Unequivocal progression of non-target disease
+or a qualifying new lesion can provide other routes to PD.  The precise
+endpoint must state whether investigator assessment or blinded independent
+central review governs; an available result from the wrong stream is evidence,
+but not automatically the primary event.
+
+An unscheduled scan may still qualify.  ``Unscheduled'' describes its relation
+to the visit plan, not its clinical validity.  The derivation should preserve
+why it occurred, its acquisition quality, assessment stream, and applicable
+protocol rule.
+
+\subsection{Traceability from activity to endpoint}
+
+A PFS record should link each derived field to both its value evidence and the
+rule that transformed it.  A useful traceability graph has the endpoint record
+as its root, with branches to
+\begin{itemize}
+    \item the randomization record supporting origin;
+    \item every progression candidate, its actual scan, assessment result,
+    reviewer stream, and planned or unscheduled context;
+    \item the death candidate and vital-status evidence;
+    \item the governing endpoint, adequacy, event-selection, and censoring
+    rules with document versions.
+\end{itemize}
+The same imaging stream may feed PFS, objective response, duration of response,
+and change in tumor size, but each endpoint uses a different rule.  Reuse the
+evidence, not the endpoint conclusion.
+
+The SOA supplies planned timing, windows, modalities, and follow-up
+opportunities.  It usually does not supply actual dates and results, full
+progression criteria, the governing reviewer, event hierarchy, or missing-data
+and censoring rules.  An agent must retrieve these semantics from the endpoint
+section, imaging charter, response criteria, discontinuation rules, eCRF and
+data specifications, and SAP.  It must not manufacture them to complete a
+schema.
+
+\begin{example}[Evidence without a finalizable primary event]
+A participant is randomized January 1, has stable disease at Week 12, misses
+Week 18, and has investigator-assessed PD on an unscheduled May 20 scan.  The
+primary endpoint requires central review, but no central result is available;
+the participant is known alive through June 30.  The May 20 scan and
+investigator result should be retained as a progression candidate.  The primary
+progression date and any censoring date remain unresolved until the central
+result is retrieved or the approved endpoint rule specifies how to handle its
+absence.  Schema completeness is not a reason to choose a date.
+\end{example}
+
+\subsection{Assessment time is an observation mechanism}
+
+Biological progression generally occurs between assessments.  If the last
+nonprogressive assessment is at $L_i$ and the first progressive assessment at
+$U_i$, then the latent progression time $P_i^*$ is interval censored:
+\[
+  L_i<P_i^*\le U_i.
+\]
+The conventional observed date $P_i=U_i$ is a detection time, not necessarily
+the biological onset.  If assessments occur every $q$ time units and latent
+progression is approximately uniform between visits, the detection delay
+$W_i=U_i-P_i^*$ satisfies
+\[
+  W_i\sim\operatorname{Uniform}(0,q),
+  \qquad
+  \E(W_i)=\frac q2,
+  \qquad
+  \Var(W_i)=\frac{q^2}{12}.
+\]
+This simple calculation explains why changing from six-week to twelve-week
+imaging can add roughly three weeks of mean detection delay under idealized
+conditions.
+
+Assessment frequency can therefore affect reported PFS distributions, event
+yield by cutoff, and power.  If randomized arms have different schedules, or
+if visit attendance differs by treatment or prognosis, the observation process
+can distort comparisons.  Missing assessments widen the interval containing
+latent progression and may interact with subsequent therapy or censoring
+rules.  Central review can standardize interpretation of available images, but
+it cannot recover missing scans, repair poor acquisition, equalize schedules,
+or restore lost vital-status follow-up.
+
+Treatment discontinuation and endpoint follow-up must also be separated.  A
+participant may stop study treatment yet continue imaging and survival
+follow-up.  Ending all observation at treatment discontinuation loses endpoint
+information and may induce informative censoring when discontinuation is
+related to prognosis.
+
+\subsection{Endpoint--schedule consistency checks}
+
+Before a schedule is operationalized, a traceability agent should verify:
+\begin{enumerate}
+    \item \textbf{coverage:} every endpoint component has a collection path;
+    \item \textbf{duration:} follow-up continues beyond treatment when the
+    endpoint requires it;
+    \item \textbf{reviewer:} the governing assessment stream is explicit;
+    \item \textbf{timing:} nominal, acquisition, assessment, and transfer dates
+    remain distinct;
+    \item \textbf{rules:} events, adequacy, and censoring trace to authoritative
+    versioned text;
+    \item \textbf{balance:} randomized groups have comparable observation
+    opportunities unless a justified analysis addresses the difference.
+\end{enumerate}
+Common failures include no post-treatment imaging, disagreement between the
+endpoint section and SOA, an unspecified reviewer stream, no vital-status
+follow-up, and invented visit windows.  A syntactically valid schedule can
+still encode an invalid or non-identifiable endpoint.
+
+\subsection{Endpoint-aware schedule optimization}
+
+Lean design does not mean minimizing the number of rows or visits at any cost.
+Endpoint and safety activities are protected; unlinked or duplicative
+activities are challenged; timing or collection mode may be redesigned; and
+candidate schedules are evaluated for information, participant burden,
+feasibility, and auditability.
+
+Let $s$ denote a candidate schedule.  One multi-objective formulation is
+\[
+  \min_{s\in\mathcal S}
+  \left\{
+      -I(s),\; B_{\mathrm{participant}}(s),\;
+      B_{\mathrm{site}}(s),\; C(s)
+  \right\},
+\]
+where $I(s)$ measures endpoint information, the $B$ terms measure burden, and
+$C(s)$ measures cost.  Feasible schedules must satisfy safety requirements,
+clinical validity, regulatory constraints, arm balance, and endpoint
+identifiability.  Equivalently, stakeholders may choose weights and minimize
+\[
+  J(s)=-w_I I(s)+w_PB_{\mathrm{participant}}(s)
+       +w_SB_{\mathrm{site}}(s)+w_C C(s),
+\]
+but a single weighted score can hide tradeoffs.  A Pareto frontier exposes
+schedules for which no objective can improve without worsening another.
+
+Simulation evaluates candidates before adoption:
+\begin{enumerate}
+    \item generate latent progression, death, dropout, treatment stop, and
+    possibly subsequent therapy under clinically plausible scenarios;
+    \item apply the candidate planned schedule, visit windows, unscheduled
+    assessments, missedness, and review process;
+    \item derive observed endpoint events and censoring exactly as the future
+    analysis would;
+    \item compare detection delay, event yield, bias, precision or power,
+    visits, scans, participant time, site workload, and cost;
+    \item stress-test deviations, differential missingness, and model
+    misspecification before expert and regulatory review.
+\end{enumerate}
+A schedule with fewer scans may be attractive operationally but unacceptable if
+it creates long detection delays, insufficient events, differential follow-up,
+or an endpoint whose derivation cannot be audited.  Optimization begins from
+endpoint requirements, not from row counts.
 
 \end{document}

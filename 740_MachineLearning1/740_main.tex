@@ -1095,6 +1095,21 @@ U^TU=UU^T=I_d\right\}.
 \]
 The columns of an orthogonal matrix form an orthonormal basis.
 
+\begin{example}[A data matrix]
+A dataset with $n$ samples and $d$ features is often stored as
+\[
+X=
+\begin{bmatrix}
+---x_1^T---\\
+---x_2^T---\\
+\vdots\\
+---x_n^T---
+\end{bmatrix}
+\in\mathcal{M}_{n,d}(\R).
+\]
+Matrix analysis helps identify directions of high variance, low-rank structure, conditioning, and stable computation.
+\end{example}
+
 \subsubsection{Eigen-Decomposition of Symmetric Matrices}
 Let $A\in\mathcal{M}_d(\R)$ be symmetric, so $A=A^T$. Then there exist an orthogonal matrix $U\in\mathcal{O}_d(\R)$ and a diagonal matrix $D\in\mathcal{M}_d(\R)$ such that
 \[
@@ -1246,6 +1261,1355 @@ The SVD is foundational for:
     \item model compression and low-rank regularization.
 \end{itemize}
 Large singular values identify directions in which the matrix acts strongly, while small singular values identify weak or noisy directions.
+
+\subsubsection{Trace Inner Product and von Neumann's Inequality}
+For matrices $A,B$ of the same size, define the \emph{Frobenius inner product} by
+\[
+\inner{A}{B}_F:=\tr(A^TB).
+\]
+If $A=(a_{ij})$ and $B=(b_{ij})$, then
+\[
+\tr(A^TB)=\sum_{i,j}a_{ij}b_{ij}.
+\]
+
+Let $A,B\in\mathcal{M}_{n,d}(\R)$, let $m=\min(n,d)$, and order their singular values decreasingly. The \emph{von Neumann trace inequality} states that
+\[
+\tr(A^TB)
+\leq\sum_{i=1}^m\sigma_i(A)\sigma_i(B).
+\]
+Equality holds when the two matrices have aligned left and right singular-vector directions. This is the matrix analogue of Cauchy--Schwarz: the strongest trace alignment is obtained by aligning the strongest singular directions.
+
+\subsubsection{Connection to Principal Component Analysis}
+For PCA, a covariance matrix $\Sigma$ is symmetric and positive semidefinite. The first principal component solves
+\[
+\max_{\norm{u}_2=1}u^T\Sigma u.
+\]
+The top $p$ principal directions solve
+\[
+\max_{U^TU=I_p}\tr(U^T\Sigma U).
+\]
+Thus, PCA directions maximize variance subject to orthonormality constraints.
+
+\subsubsection{Matrix Norms}
+For $A\in\mathcal{M}_{n,d}(\R)$, common matrix norms include the operator norm, Frobenius norm, nuclear norm, and Ky Fan norms. They differ in how they aggregate the singular values of $A$.
+
+\paragraph{Operator norm}
+The operator norm is
+\[
+\norm{A}_{\mathrm{op}}
+:=\max_{\norm{x}_2=1}\norm{Ax}_2
+=\sigma_1(A).
+\]
+It is the largest stretching factor of the linear map $x\mapsto Ax$.
+
+\paragraph{Frobenius norm}
+The Frobenius norm is
+\[
+\norm{A}_F:=\sqrt{\tr(A^TA)}.
+\]
+Equivalently, with $m=\min(n,d)$,
+\[
+\norm{A}_F^2
+=\sum_{i,j}a_{ij}^2
+=\sum_{i=1}^m\sigma_i(A)^2.
+\]
+It is the Euclidean norm of all matrix entries, or equivalently of all singular values.
+
+\paragraph{Nuclear norm}
+The nuclear norm is
+\[
+\norm{A}_*
+:=\sum_{i=1}^m\sigma_i(A),
+\qquad m=\min(n,d).
+\]
+It is a convex surrogate for matrix rank, analogous to the use of the $\ell^1$ norm to encourage vector sparsity.
+
+\subsubsection{Low-Rank Approximation}
+Given $X\in\mathcal{M}_{n,d}(\R)$, the best rank-$p$ approximation problem is
+\[
+\min_{\substack{Z\in\mathcal{M}_{n,d}(\R)\\\rank(Z)\leq p}}
+\norm{Z-X}_F.
+\]
+
+\begin{theorem}[Eckart--Young--Mirsky]
+Let
+\[
+X=U\diag(\sigma_1,\ldots,\sigma_m)V^T,
+\qquad
+\sigma_1\geq\cdots\geq\sigma_m\geq0,
+\]
+be an SVD of $X$. A best rank-$p$ approximation is obtained by truncating the SVD:
+\[
+X_p
+=U_{[:,1:p]}\diag(\sigma_1,\ldots,\sigma_p)V_{[:,1:p]}^T.
+\]
+Its approximation error is
+\[
+\norm{X-X_p}_F^2
+=\sum_{i=p+1}^m\sigma_i(X)^2.
+\]
+\end{theorem}
+The error is exactly the energy in the discarded singular values. Low-rank approximation is effective when the singular values decay quickly: retaining rank $p$ preserves the first $p$ directions and discards the tail.
+
+Best low-rank approximations are used in PCA and dimensionality reduction, recommender systems and matrix completion, model compression, denoising, and low-rank regularization. Many high-dimensional datasets concentrate their useful structure in a small number of directions.
+
+\section{Optimization and Unconstrained Optimization}
+Most supervised-learning problems ask us to choose parameters $w$ that make a loss small. A typical objective is
+\[
+\min_{w\in\R^d}F(w),
+\qquad
+F(w)=\frac{1}{n}\sum_{i=1}^n
+\ell\bigl(f_w(x_i),y_i\bigr)+\lambda R(w).
+\]
+Least squares, logistic regression, support vector machines, matrix factorization, and neural networks can all be formulated as optimization problems.
+
+For example, linear regression uses
+\[
+f_w(x)=\inner{w}{x}
+\]
+and empirical squared loss
+\[
+F(w)=\frac{1}{2n}\sum_{i=1}^n
+\bigl(\inner{w}{x_i}-y_i\bigr)^2.
+\]
+The optimization task is to find
+\[
+w^*\in\argmin_{w\in\R^d}F(w).
+\]
+
+\subsection{Basic Optimization Terminology}
+\subsubsection{Infimum and Supremum}
+Let $I\subseteq\R$. A number $u\in[-\infty,+\infty]$ is a lower bound of $I$ if
+\[
+u\leq x\qquad\text{for every }x\in I.
+\]
+The infimum is the greatest lower bound:
+\[
+\inf I
+:=\max\{u\in[-\infty,+\infty]:u\leq x
+\text{ for every }x\in I\}.
+\]
+Similarly, the supremum is the least upper bound:
+\[
+\sup I
+:=\min\{u\in[-\infty,+\infty]:u\geq x
+\text{ for every }x\in I\}.
+\]
+For example, if $I=(0,1)$, then
+\[
+\inf I=0,
+\qquad
+\sup I=1,
+\]
+but neither $\min I$ nor $\max I$ exists.
+
+For an objective function $F\colon\Omega\subseteq\R^d\to\R$, define
+\[
+\inf_{\Omega}F:=\inf\{F(x):x\in\Omega\},
+\qquad
+\sup_{\Omega}F:=\sup\{F(x):x\in\Omega\}.
+\]
+
+\subsubsection{Global and Local Optimizers}
+A point $x^*\in\Omega$ is a \emph{global minimizer} of $F$ on $\Omega$ if
+\[
+F(x^*)\leq F(y)
+\qquad\text{for every }y\in\Omega.
+\]
+A global maximizer satisfies the reversed inequality. We write
+\[
+\argmin_{\Omega}F
+:=\left\{x\in\Omega:F(x)=\min_{\Omega}F\right\}.
+\]
+
+A point $x^*\in\Omega$ is a \emph{local minimizer} if there exists an open ball $B\subseteq\R^d$ containing $x^*$ such that
+\[
+F(x^*)\leq F(y)
+\qquad\text{for every }y\in B\cap\Omega.
+\]
+A local minimizer only outperforms nearby feasible points; a global minimizer outperforms every feasible point.
+
+\subsubsection{Optimization Problems and Existence}
+An optimization problem has the form
+\[
+\min_{x\in\Omega}F(x),
+\]
+where $\Omega\subseteq\R^d$ is the feasible set and $F\colon\Omega\to\R$ is the objective function. In unconstrained optimization, $\Omega=\R^d$ or $\Omega$ is open.
+
+An infimum need not be attained. For example, if
+\[
+F(x)=e^x,
+\qquad x\in\R,
+\]
+then $\inf_{\R}F=0$, but there is no $x\in\R$ for which $e^x=0$.
+
+Common problem classes include:
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Type} & \textbf{Typical form}\\
+\midrule
+Unconstrained smooth & $F\in C^1$, $\Omega=\R^d$\\
+Smooth constrained & $\Omega=\{x:g_i(x)\leq0\}$\\
+Convex optimization & $\Omega$ convex and $F$ convex\\
+Linear programming & $F$ and $g_i$ affine\\
+Quadratic programming & $F$ quadratic, constraints affine\\
+Combinatorial & $\Omega$ finite or discrete\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{First-Order Necessary Condition}
+Let $F\colon\Omega\subseteq\R^d\to\R$, where $\Omega$ is open. We seek a point
+\[
+x^*\in\argmin_{\Omega}F.
+\]
+
+\begin{theorem}[Necessary first-order condition]
+Suppose $F\in C^1(\Omega)$ and $x^*\in\Omega$ is a local minimizer of $F$. Then
+\[
+\nabla F(x^*)=0.
+\]
+\end{theorem}
+
+\begin{proof}
+Because $x^*$ is a local minimizer and $\Omega$ is open, for every unit direction $h$ there is an $\varepsilon_0>0$ such that
+\[
+x^*+\varepsilon h\in\Omega
+\quad\text{and}\quad
+F(x^*+\varepsilon h)\geq F(x^*)
+\]
+for all sufficiently small $\varepsilon\in[0,\varepsilon_0]$.
+
+Define the one-dimensional function
+\[
+\phi(t):=F(x^*+th).
+\]
+Then
+\[
+\phi'(t)=dF(x^*+th)h,
+\]
+and the fundamental theorem of calculus gives
+\[
+F(x^*+\varepsilon h)-F(x^*)
+=\int_0^\varepsilon dF(x^*+th)h\,\dd t.
+\]
+If $dF(x^*)h<0$, continuity implies that moving slightly in direction $h$ decreases $F$, contradicting local minimality. If $dF(x^*)h>0$, then $dF(x^*)(-h)<0$, giving the same contradiction in direction $-h$. Hence
+\[
+dF(x^*)h=0
+\qquad\text{for every }h,
+\]
+which is equivalent to $\nabla F(x^*)=0$.
+\end{proof}
+
+\subsection{Second-Order Optimality Conditions}
+Taylor's theorem explains the local geometry of optimization. In one dimension,
+\[
+F(x_0+h)
+=F(x_0)+F'(x_0)h
++\frac{1}{2}F''(x_0)h^2+o(h^2).
+\]
+The linear term describes the local slope and possible descent directions, while the quadratic term describes curvature. At a smooth local minimum, the first-order term vanishes and the second-order model cannot bend downward.
+
+\begin{theorem}[Necessary second-order condition]
+Suppose $F\in C^2(\Omega)$, where $\Omega\subseteq\R^d$ is open, and $x^*\in\Omega$ is a local minimizer. Then
+\[
+\nabla F(x^*)=0
+\qquad\text{and}\qquad
+\nabla^2F(x^*)\succeq0.
+\]
+Equivalently,
+\[
+h^T\nabla^2F(x^*)h\geq0
+\qquad\text{for every }h\in\R^d.
+\]
+\end{theorem}
+
+\begin{proof}
+Fix $h\in\R^d$ and define $\phi(t)=F(x^*+th)$. Since $x^*$ is a local minimizer,
+\[
+\phi(t)-\phi(0)\geq0
+\]
+for sufficiently small $t$. Taylor's theorem gives, for some $\xi_t$ between $0$ and $t$,
+\[
+\phi(t)-\phi(0)
+=t\phi'(0)+\frac{t^2}{2}\phi''(\xi_t).
+\]
+The first-order condition gives $\phi'(0)=0$. Dividing by $t^2/2$ and letting $t\to0$ yields
+\[
+\phi''(0)=h^T\nabla^2F(x^*)h\geq0.
+\]
+\end{proof}
+
+\begin{theorem}[Sufficient condition for a local minimum]
+Suppose $F\in C^2(\Omega)$. If
+\[
+\nabla F(x^*)=0
+\qquad\text{and}\qquad
+\nabla^2F(x^*)\succ0,
+\]
+then $x^*$ is a local minimizer of $F$.
+\end{theorem}
+Positive semidefiniteness of the Hessian is necessary but, by itself, need not be sufficient.
+
+\begin{example}[A saddle point]
+Consider
+\[
+F(x,y)=x^2-y^2.
+\]
+At the origin,
+\[
+\nabla F(0,0)=0,
+\qquad
+\nabla^2F(0,0)=
+\begin{pmatrix}
+2&0\\
+0&-2
+\end{pmatrix}.
+\]
+The Hessian is indefinite, so $(0,0)$ is a saddle point rather than a local minimum.
+\end{example}
+
+These conditions describe local structure only. Objectives arising in neural-network training, matrix factorization, and deep reinforcement learning can be nonconvex, so a local minimizer need not be global.
+
+\subsection{Convexity and Global Optimality}
+A function
+\[
+F\colon\R^d\to(-\infty,+\infty]
+\]
+is \emph{convex} if
+\[
+F\bigl((1-\lambda)x+\lambda y\bigr)
+\leq(1-\lambda)F(x)+\lambda F(y)
+\]
+for all $x,y\in\R^d$ and $\lambda\in[0,1]$. If the inequality is strict whenever $x\neq y$ and $\lambda\in(0,1)$, then $F$ is \emph{strictly convex}. Geometrically, the graph of a convex function lies below every chord joining two points on its graph.
+
+Least squares and logistic regression have convex objectives, whereas neural-network training is typically nonconvex.
+
+\begin{theorem}[Local minima of convex functions are global]
+If $F$ is convex, then every local minimizer of $F$ is a global minimizer.
+\end{theorem}
+
+\begin{proof}
+Suppose $x^*$ is a local minimizer but is not global. Then there is some $y$ such that $F(y)<F(x^*)$. For $\lambda\in(0,1)$, convexity gives
+\[
+F\bigl((1-\lambda)x^*+\lambda y\bigr)
+\leq(1-\lambda)F(x^*)+\lambda F(y)
+<F(x^*).
+\]
+For sufficiently small $\lambda$, the point $(1-\lambda)x^*+\lambda y$ is arbitrarily close to $x^*$, contradicting local minimality.
+\end{proof}
+
+\subsection{Gradient-Based Methods}
+Suppose we can evaluate $F(x_t)$ and $\nabla F(x_t)$ at one point at a time. An iterative method has the form
+\[
+x_{t+1}=x_t+\alpha_t h_t,
+\]
+where $h_t$ is a direction and $\alpha_t>0$ is a step size. The gradient points uphill, while the negative gradient points downhill; the step size controls how far the algorithm moves.
+
+\subsubsection{Directions of Descent}
+A nonzero vector $h\in\R^d$ is a \emph{direction of descent} for $F$ at $x$ if there exists $\varepsilon_0>0$ such that
+\[
+F(x+\varepsilon h)<F(x)
+\qquad\text{for every }\varepsilon\in(0,\varepsilon_0].
+\]
+If $F\in C^1$ and
+\[
+h^T\nabla F(x)<0,
+\]
+then $h$ is a direction of descent. Indeed, the first-order expansion gives
+\[
+F(x+\varepsilon h)-F(x)
+=\varepsilon h^T\nabla F(x)+o(\varepsilon).
+\]
+The leading term is negative, so the objective decreases for sufficiently small positive $\varepsilon$.
+
+The negative-gradient direction
+\[
+h=-\nabla F(x)
+\]
+satisfies
+\[
+h^T\nabla F(x)=-\norm{\nabla F(x)}_2^2<0
+\]
+whenever $\nabla F(x)\neq0$. It is the steepest descent direction in the Euclidean norm.
+
+\subsubsection{Quadratic Geometry}
+Euclidean gradient descent can zig-zag on ill-conditioned objectives. Preconditioning and Newton-type methods attempt to correct this geometry.
+
+For example, let
+\[
+F(x)=\frac{1}{2}x^TAx-b^Tx,
+\qquad A\in S_d^{++}.
+\]
+Then
+\[
+\nabla F(x)=Ax-b,
+\]
+and the unique minimizer satisfies
+\[
+Ax^*=b,
+\qquad
+x^*=A^{-1}b.
+\]
+Plain gradient descent uses
+\[
+x_{t+1}=x_t-\alpha_t(Ax_t-b).
+\]
+
+\subsubsection{Step Size and Line Search}
+Even when $h_t$ is a descent direction, an excessively large step can increase the objective. A line search chooses
+\[
+\alpha\in(0,\alpha_{\max}]
+\]
+so that $F(x+\alpha h)$ decreases sufficiently. Exact line search minimizes $F(x+\alpha h)$ over $\alpha$, while approximate line searches use conditions such as the Armijo or Wolfe rules.
+
+\subsection{Stochastic Gradient Methods}
+In machine learning, an empirical objective often has the form
+\[
+F(w)=\frac{1}{n}\sum_{i=1}^nF_i(w),
+\qquad
+\nabla F(w)=\frac{1}{n}\sum_{i=1}^n\nabla F_i(w).
+\]
+When $n$ is large, computing the full sum at every iteration is expensive, so a randomly selected subset of the data is used to approximate the gradient.
+
+For least squares,
+\[
+F(w)=\frac{1}{2n}\sum_{i=1}^n
+\bigl(\inner{w}{x_i}-y_i\bigr)^2,
+\]
+and
+\[
+\nabla F(w)=\frac{1}{n}\sum_{i=1}^n
+\bigl(\inner{w}{x_i}-y_i\bigr)x_i.
+\]
+
+Choose a random mini-batch $I_t\subseteq\{1,\ldots,n\}$ with $\lvert I_t\rvert\ll n$, and define
+\[
+g_t=\frac{1}{\lvert I_t\rvert}
+\sum_{i\in I_t}
+\bigl(\inner{w_t}{x_i}-y_i\bigr)x_i.
+\]
+The mini-batch update is
+\[
+w_{t+1}=w_t-\alpha_tg_t.
+\]
+
+A typical step-size condition for convergence is
+\[
+\sum_{t=1}^{\infty}\alpha_t=\infty,
+\qquad
+\sum_{t=1}^{\infty}\alpha_t^2<\infty.
+\]
+The first condition ensures that the iterates keep moving far enough to reach the target, while the second allows stochastic noise to be averaged out. A common example is $\alpha_t=1/t$.
+
+Optimization appears across machine learning in several forms:
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Method} & \textbf{Objective} & \textbf{Optimization type}\\
+\midrule
+Least squares & squared error & convex, smooth\\
+Ridge regression & squared error $+\ell^2$ penalty & strongly convex if $\lambda>0$\\
+Logistic regression & cross-entropy & convex, smooth\\
+SVM & hinge loss $+$ regularization & convex, nonsmooth\\
+Lasso & squared error $+\ell^1$ penalty & convex, nonsmooth\\
+Neural networks & empirical loss & typically nonconvex\\
+\bottomrule
+\end{tabular}
+\end{center}
+Optimization is therefore not merely solving equations; it is the design of dynamics that move toward useful regions of a loss landscape.
+
+\subsubsection{SGD Example: Computing a Mean}
+Given numbers $y_1,\ldots,y_n$, consider
+\[
+F(w)=\frac{1}{n}\sum_{i=1}^nF_i(w),
+\qquad
+F_i(w)=\frac{1}{2}(w-y_i)^2.
+\]
+Since
+\[
+\nabla F(w)=\frac{1}{n}\sum_{i=1}^n(w-y_i)
+=w-\bar y,
+\qquad
+\bar y=\frac{1}{n}\sum_{i=1}^ny_i,
+\]
+the minimizer is $w^*=\bar y$.
+
+At iteration $t$, draw $i_t$ uniformly from $\{1,\ldots,n\}$. Because $\nabla F_{i_t}(w)=w-y_{i_t}$, the SGD update is
+\[
+w_{t+1}
+=w_t-\alpha_t(w_t-y_{i_t})
+=(1-\alpha_t)w_t+\alpha_ty_{i_t}.
+\]
+Thus each iteration moves $w_t$ a fraction $\alpha_t$ of the way toward a randomly selected observation.
+
+With $\alpha_t=1/t$, the iterate becomes the running average
+\[
+w_{t+1}=\frac{y_{i_1}+\cdots+y_{i_t}}{t}.
+\]
+The sampled values are i.i.d. with mean $\bar y$, so the strong law of large numbers gives
+\[
+w_t\longrightarrow\bar y=w^*
+\qquad\text{almost surely}.
+\]
+
+Other step-size choices illustrate why both summability conditions matter. A constant step size violates $\sum_t\alpha_t^2<\infty$, so stochastic fluctuations do not die out. The rapidly decaying choice $\alpha_t=1/t^2$ violates $\sum_t\alpha_t=\infty$, so the iterates may stop moving before reaching the target.
+
+\section{Introduction to Learning and Kernel Density Estimation}
+We observe finitely many data points from an unknown process and use them to learn about unseen data. Two basic tasks are:
+\begin{itemize}
+    \item \emph{supervised learning}: observe input--output pairs $(X_i,Y_i)$ and learn to predict $Y$ from $X$;
+    \item \emph{generative modeling}: observe inputs $X_i$ and learn their distribution.
+\end{itemize}
+
+In supervised learning, the training set is
+\[
+\mathcal{T}=\{(X_1,Y_1),\ldots,(X_n,Y_n)\},
+\]
+where the pairs are i.i.d. from an unknown distribution. The goal is to predict the response for a new pair $(X,Y)$ drawn from the same distribution. Examples include medical-risk prediction, spam filtering, house-price prediction, and activity recognition.
+
+For generative modeling, suppose
+\[
+\mathcal{T}=\{X_1,\ldots,X_n\},
+\qquad
+X_1,\ldots,X_n\iid f,
+\]
+where $f$ is an unknown density. A simple pipeline first estimates $f$ from the observations and then samples new data from the estimated density. Applications include generation of images, text, audio, molecules, weather fields, and trajectories.
+
+\subsection{Kernels and Bandwidth}
+\begin{definition}[Kernel]
+A function $K\colon\R^d\to[0,\infty)$ is a \emph{kernel} if:
+\begin{enumerate}
+    \item it integrates to one,
+    \[
+    \int_{\R^d}K(x)\,\dd x=1;
+    \]
+    \item it is symmetric, $K(x)=K(-x)$;
+    \item it satisfies a mild integrability condition, such as
+    \[
+    \int_{\R^d}\norm{x}_2K(x)\,\dd x<\infty.
+    \]
+\end{enumerate}
+\end{definition}
+
+A common choice is the Gaussian kernel
+\[
+K(x)=\frac{1}{(2\pi)^{d/2}}
+\exp\left(-\frac{\norm{x}_2^2}{2}\right).
+\]
+In one dimension this reduces to $K(x)=(2\pi)^{-1/2}e^{-x^2/2}$.
+
+Given a bandwidth $\delta>0$, define the rescaled kernel
+\[
+K_\delta(x):=\frac{1}{\delta^d}K\left(\frac{x}{\delta}\right).
+\]
+A small bandwidth produces a narrow, local bump, while a large bandwidth produces a wider, smoother bump.
+
+\begin{proposition}
+If $K$ is a kernel, then $K_\delta$ is also a kernel.
+\end{proposition}
+
+\begin{proof}
+Nonnegativity is immediate. With the substitution $y=x/\delta$, so that $\dd x=\delta^d\dd y$,
+\[
+\int_{\R^d}K_\delta(x)\,\dd x
+=\int_{\R^d}\frac{1}{\delta^d}
+K\left(\frac{x}{\delta}\right)\dd x
+=\int_{\R^d}K(y)\,\dd y=1.
+\]
+Symmetry follows from
+\[
+K_\delta(-x)
+=\frac{1}{\delta^d}K\left(-\frac{x}{\delta}\right)
+=K_\delta(x).
+\]
+Finally,
+\[
+\int_{\R^d}\norm{x}_2K_\delta(x)\,\dd x
+=\delta\int_{\R^d}\norm{y}_2K(y)\,\dd y<\infty.
+\]
+\end{proof}
+
+\subsection{Kernel Density Estimation}
+Given $X_1,\ldots,X_n$, a kernel $K$, and a bandwidth $\delta>0$, the \emph{kernel density estimator} is
+\[
+\widehat f_\delta(x)
+:=\frac{1}{n}\sum_{i=1}^nK_\delta(x-X_i)
+=\frac{1}{n\delta^d}\sum_{i=1}^n
+K\left(\frac{x-X_i}{\delta}\right).
+\]
+At location $x$, every observation contributes a bump centered at $X_i$, and the estimate averages these bumps. KDE therefore converts discrete sample points into a smooth density estimate.
+
+Bandwidth controls the statistical tradeoff:
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Bandwidth} & \textbf{Appearance} & \textbf{Statistical behavior}\\
+\midrule
+Small $\delta$ & very wiggly & low bias, high variance\\
+Medium $\delta$ & balanced & often useful\\
+Large $\delta$ & very smooth & high bias, low variance\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Basic Properties}
+The KDE is nonnegative because every kernel term is nonnegative:
+\[
+\widehat f_\delta(x)\geq0.
+\]
+It also integrates to one:
+\begin{align*}
+\int_{\R^d}\widehat f_\delta(x)\,\dd x
+&=\frac{1}{n}\sum_{i=1}^n
+\int_{\R^d}K_\delta(x-X_i)\,\dd x\\
+&=\frac{1}{n}\sum_{i=1}^n1=1.
+\end{align*}
+Thus $\widehat f_\delta$ is itself a density.
+
+The KDE also preserves the sample mean:
+\[
+\int_{\R^d}x\widehat f_\delta(x)\,\dd x
+=\frac{1}{n}\sum_{i=1}^nX_i
+=\overline X_n.
+\]
+Indeed, with $y=x-X_i$,
+\begin{align*}
+\int_{\R^d}xK_\delta(x-X_i)\,\dd x
+&=\int_{\R^d}(y+X_i)K_\delta(y)\,\dd y\\
+&=X_i,
+\end{align*}
+because symmetry gives $\int yK_\delta(y)\,\dd y=0$ and $\int K_\delta(y)\,\dd y=1$. Hence the center of mass of the KDE is the empirical center of the data.
+
+\subsection{Pointwise Error and Bias--Variance}
+To emphasize its dependence on the random training sample, write
+\[
+\widehat f_\delta(x;\mathcal{T}),
+\qquad
+\mathcal{T}=(X_1,\ldots,X_n).
+\]
+For fixed $x$ and $\delta$, this is a random variable. Its pointwise mean squared error is
+\[
+\operatorname{MSE}(x)
+:=\E_{\mathcal{T}}
+\left[\bigl(\widehat f_\delta(x;\mathcal{T})-f(x)\bigr)^2\right].
+\]
+This criterion evaluates the density estimate at one fixed location $x$, averaging only over the random sample.
+
+The bias--variance decomposition is
+\[
+\operatorname{MSE}(x)
+=\Var\bigl(\widehat f_\delta(x;\mathcal{T})\bigr)
++\left(\E\bigl[\widehat f_\delta(x;\mathcal{T})\bigr]-f(x)\right)^2.
+\]
+Variance measures randomness caused by the sample, whereas bias measures the systematic smoothing error caused by the bandwidth. Small bandwidth typically produces low bias and high variance; large bandwidth typically produces high bias and low variance.
+
+\begin{proof}[Proof of the bias--variance decomposition]
+Fix $x$ and write
+\[
+Z_x:=\widehat f_\delta(x;\mathcal{T}),
+\qquad
+B:=\E[Z_x]-f(x).
+\]
+Adding and subtracting $\E[Z_x]$ gives
+\begin{align*}
+\E\bigl[(Z_x-f(x))^2\bigr]
+&=\E\bigl[(Z_x-\E[Z_x]+B)^2\bigr]\\
+&=\E\bigl[(Z_x-\E[Z_x])^2\bigr]
++2B\E[Z_x-\E[Z_x]]+B^2\\
+&=\Var(Z_x)+B^2.
+\end{align*}
+\end{proof}
+
+\subsection{Bias and Variance Bounds for KDE}
+\begin{theorem}[KDE bias]
+Assume $f$ is twice differentiable and
+\[
+\norm{\nabla^2f(y)}_{\mathrm{op}}\leq L
+\qquad\text{for every }y,
+\]
+and suppose
+\[
+\mu_2:=\int_{\R^d}\norm{z}_2^2K(z)\,\dd z<\infty.
+\]
+Then, for every $x\in\R^d$ and $\delta>0$,
+\[
+\left\lvert\E[\widehat f_\delta(x)]-f(x)\right\rvert
+\leq\frac{L\mu_2}{2}\delta^2.
+\]
+Consequently, the squared bias is $O(\delta^4)$.
+\end{theorem}
+
+\begin{proof}
+Since the observations have common density $f$,
+\begin{align*}
+\E[\widehat f_\delta(x)]
+&=\int_{\R^d}K_\delta(x-y)f(y)\,\dd y\\
+&=\int_{\R^d}K(z)f(x-\delta z)\,\dd z.
+\end{align*}
+Therefore,
+\[
+\E[\widehat f_\delta(x)]-f(x)
+=\int_{\R^d}K(z)\bigl(f(x-\delta z)-f(x)\bigr)\,\dd z.
+\]
+A second-order Taylor expansion gives
+\[
+f(x-\delta z)-f(x)
+=-\delta\nabla f(x)^Tz
++\frac{\delta^2}{2}z^T\nabla^2f(\xi_z)z
+\]
+for an intermediate point $\xi_z$. Symmetry of $K$ implies $\int zK(z)\,\dd z=0$, so the first-order term vanishes. Using the Hessian bound,
+\[
+\left\lvert\E[\widehat f_\delta(x)]-f(x)\right\rvert
+\leq\frac{L\delta^2}{2}
+\int_{\R^d}\norm{z}_2^2K(z)\,\dd z.
+\]
+\end{proof}
+
+More generally, if $f$ has bounded derivatives through order $s\geq2$ and $K$ is a matching higher-order kernel, then
+\[
+\left\lvert\E[\widehat f_\delta(x)]-f(x)\right\rvert
+=O(\delta^s),
+\qquad
+\text{squared bias}=O(\delta^{2s}).
+\]
+
+\begin{theorem}[KDE variance]
+Assume $X_1,\ldots,X_n$ are i.i.d. with density $f$, where $f(y)\leq M$ for every $y$, and assume
+\[
+\int_{\R^d}K(z)^2\,\dd z<\infty.
+\]
+Then, for every $x\in\R^d$, $\delta>0$, and $n\geq1$,
+\[
+\Var\bigl(\widehat f_\delta(x)\bigr)
+\leq\frac{M}{n\delta^d}
+\int_{\R^d}K(z)^2\,\dd z.
+\]
+\end{theorem}
+
+\begin{proof}
+Independence and identical distribution give
+\[
+\Var\bigl(\widehat f_\delta(x)\bigr)
+=\frac{1}{n}\Var\bigl(K_\delta(x-X)\bigr),
+\qquad X\sim f.
+\]
+Dropping the squared mean and substituting $z=(x-y)/\delta$,
+\begin{align*}
+\Var\bigl(K_\delta(x-X)\bigr)
+&\leq\E\bigl[K_\delta(x-X)^2\bigr]\\
+&=\frac{1}{\delta^d}
+\int_{\R^d}K(z)^2f(x-\delta z)\,\dd z\\
+&\leq\frac{M}{\delta^d}
+\int_{\R^d}K(z)^2\,\dd z.
+\end{align*}
+\end{proof}
+
+Thus larger $n$ and larger $\delta$ reduce variance, whereas higher dimension worsens it.
+
+\subsection{Bandwidth Rate and the Curse of Dimensionality}
+Under the preceding smoothness assumptions, the pointwise MSE has the form
+\[
+\operatorname{MSE}(x)
+\leq\frac{C_1}{n\delta^d}+C_2\delta^{2s}.
+\]
+Balancing variance and squared bias gives
+\[
+\frac{1}{n\delta^d}\asymp\delta^{2s},
+\qquad
+\delta\asymp n^{-1/(2s+d)}.
+\]
+At this bandwidth, both terms have the same order:
+\[
+\operatorname{MSE}(x)\asymp n^{-2s/(2s+d)}.
+\]
+Greater smoothness $s$ improves the rate, while greater dimension $d$ worsens it.
+
+To obtain MSE of order at most $\varepsilon$, the required sample size scales as
+\[
+n\asymp\varepsilon^{-(2s+d)/(2s)}.
+\]
+The exponent grows with $d$, which is the \emph{curse of dimensionality}. As dimension increases, space expands quickly, observations become sparse, and local averaging becomes unstable.
+
+A common working assumption is the \emph{manifold hypothesis}: high-dimensional real data concentrate near a much lower-dimensional set and therefore have only a few effective degrees of freedom. This is a hypothesis rather than a theorem. When it holds, learning methods can exploit intrinsic rather than ambient dimension, motivating manifold learning, representation learning, and modern generative models.
+
+\section{Prediction Basics and the Bayes Predictor}
+Let $X\in\mathcal{R}_X$ be an input and $Y\in\mathcal{R}_Y$ an output. We observe
+\[
+\mathcal{T}=\bigl((X_1,Y_1),\ldots,(X_n,Y_n)\bigr),
+\]
+where the pairs are i.i.d. from an unknown distribution $\rho$. The goal is to construct a predictor
+\[
+f\colon\mathcal{R}_X\to\mathcal{R}_Y
+\]
+that predicts $Y$ from $X$ on a new pair drawn from $\rho$.
+
+In regression, $\mathcal{R}_Y\subseteq\R$ and the response is numerical. In classification, $\mathcal{R}_Y$ is finite and the response is a category. Both use the same prediction framework; the main difference is the output space and the loss function.
+
+\subsection{Loss Functions}
+A loss function
+\[
+r\colon\mathcal{R}_Y\times\mathcal{R}_Y\to[0,\infty)
+\]
+measures the quality of a prediction. If $Y$ is the true output and $f(X)$ is the prediction, the incurred loss is $r(Y,f(X))$. The choice of loss determines what constitutes the best predictor.
+
+For regression, a common choice is squared loss:
+\[
+r(y,\widehat y)=(y-\widehat y)^2.
+\]
+For classification, the zero--one loss is
+\[
+r(y,\widehat y)=
+\begin{cases}
+0, & y=\widehat y,\\
+1, & y\neq\widehat y.
+\end{cases}
+\]
+If different errors have different consequences, a cost-sensitive loss is more appropriate. For example, with labels $\{\text{healthy},\text{sick}\}$, one may assign loss $1$ to a false positive and loss $10$ to a false negative.
+
+\subsubsection{Probabilistic Classification}
+For categorical $Y$, a predictor may output a probability distribution rather than a hard label:
+\[
+f\colon\mathcal{R}_X\to\Delta(\mathcal{R}_Y),
+\qquad
+f(x,y)\geq0,
+\qquad
+\sum_{y\in\mathcal{R}_Y}f(x,y)=1.
+\]
+The output $f(x,y)$ approximates $\mathbb{P}(Y=y\mid X=x)$. A common loss is the negative log-likelihood
+\[
+r\bigl(y,f(x,\cdot)\bigr)=-\log f(x,y),
+\]
+which depends on the probability assigned to the true class. A confident incorrect prediction receives a large loss, while a confident correct prediction receives loss near zero.
+
+\subsection{Expected Risk}
+The \emph{expected risk}, also called the generalization error, of a predictor $f$ is
+\[
+R(f):=\E_{(X,Y)\sim\rho}\bigl[r(Y,f(X))\bigr].
+\]
+It is the average loss on a new pair from the population distribution. A good predictor has small expected risk.
+
+A \emph{Bayes predictor} is a minimizer over all predictors:
+\[
+f^*\in\argmin_fR(f)
+=\argmin_f\E\bigl[r(Y,f(X))\bigr].
+\]
+It is the best possible predictor for the chosen loss.
+
+\subsection{Conditional Risk and the Pointwise Rule}
+For a fixed input $x$ and prediction $y'\in\mathcal{R}_Y$, define the \emph{conditional risk}
+\[
+\E\bigl[r(Y,y')\mid X=x\bigr].
+\]
+Only $Y$ is random: this is the average loss of predicting $y'$ over labels that may occur with input $x$. If $\mathcal{R}_Y$ is finite, then
+\[
+\E\bigl[r(Y,y')\mid X=x\bigr]
+=\sum_{y\in\mathcal{R}_Y}
+r(y,y')\mathbb{P}(Y=y\mid X=x).
+\]
+
+\begin{theorem}[Pointwise characterization of the Bayes predictor]
+Suppose $f^*$ satisfies
+\[
+f^*(x)\in\argmin_{y'\in\mathcal{R}_Y}
+\E\bigl[r(Y,y')\mid X=x\bigr]
+\qquad\text{for every }x.
+\]
+Then $f^*$ is a Bayes predictor: for every predictor $g$,
+\[
+R(f^*)\leq R(g).
+\]
+\end{theorem}
+
+\begin{proof}
+The law of total expectation gives
+\[
+R(f)=\E\left[\E\bigl[r(Y,f(X))\mid X\bigr]\right].
+\]
+For each fixed $x$, the inner conditional expectation depends on $f$ only through the single value $f(x)$. By the definition of $f^*(x)$,
+\[
+\E\bigl[r(Y,f^*(x))\mid X=x\bigr]
+\leq
+\E\bigl[r(Y,g(x))\mid X=x\bigr].
+\]
+Substituting $x=X$ and taking expectations yields $R(f^*)\leq R(g)$.
+\end{proof}
+
+\subsection{Bayes Regression under Squared Loss}
+Assume $\mathcal{R}_Y\subseteq\R$, use squared loss, and suppose
+$\E[Y^2]<\infty$. Then the Bayes predictor is the conditional mean:
+\[
+f^*(x)=\E[Y\mid X=x].
+\]
+Thus, among all observations having features $x$, the ideal prediction is their
+average response.
+
+\begin{theorem}[Squared-loss Bayes predictor]
+For the loss $r(y,y')=(y-y')^2$,
+\[
+f^*(x)=\E[Y\mid X=x]
+\]
+minimizes the conditional risk at every $x$.
+\end{theorem}
+
+\begin{proof}
+Fix $x$ and write $m(x)=\E[Y\mid X=x]$. For any prediction $y'\in\R$,
+add and subtract the conditional mean:
+\[
+Y-y'=\bigl(Y-m(x)\bigr)+\bigl(m(x)-y'\bigr).
+\]
+Expanding the square and conditioning on $X=x$ gives
+\begin{align*}
+\E\bigl[(Y-y')^2\mid X=x\bigr]
+={}&\E\bigl[(Y-m(x))^2\mid X=x\bigr]\\
+&+2\bigl(m(x)-y'\bigr)
+  \E\bigl[Y-m(x)\mid X=x\bigr]
+  +\bigl(m(x)-y'\bigr)^2.
+\end{align*}
+The middle term vanishes because
+\[
+\E[Y-m(x)\mid X=x]=0.
+\]
+Hence
+\[
+\E\bigl[(Y-y')^2\mid X=x\bigr]
+=\E\bigl[(Y-m(x))^2\mid X=x\bigr]
+ +\bigl(m(x)-y'\bigr)^2.
+\]
+The first term does not depend on $y'$, and the second is minimized at
+$y'=m(x)$. The pointwise characterization therefore proves the result.
+\end{proof}
+
+The identity in the proof is also a conditional bias--variance decomposition:
+departing from the conditional mean adds the nonnegative penalty
+$\bigl(m(x)-y'\bigr)^2$.
+
+\subsection{Bayes Classification under Zero--One Loss}
+Assume $\mathcal{R}_Y$ is finite and
+\[
+r(y,y')=\mathbf{1}\{y\neq y'\}.
+\]
+Then a Bayes classifier predicts a most probable label conditional on the
+observed features:
+\[
+f^*(x)\in\argmax_{y\in\mathcal{R}_Y}
+\mathbb{P}(Y=y\mid X=x).
+\]
+This is the \emph{maximum a posteriori}, or MAP, rule. The prior
+$\mathbb{P}(Y=y)$ ignores the observed input, whereas the posterior
+$\mathbb{P}(Y=y\mid X=x)$ incorporates it.
+
+\begin{proof}
+For fixed $x$ and a proposed label $y'$,
+\begin{align*}
+\E\bigl[\mathbf{1}\{Y\neq y'\}\mid X=x\bigr]
+&=\mathbb{P}(Y\neq y'\mid X=x)\\
+&=1-\mathbb{P}(Y=y'\mid X=x).
+\end{align*}
+Minimizing this expression is equivalent to maximizing the posterior
+probability of the predicted label.
+\end{proof}
+
+For example, suppose the posterior probabilities of the labels low, medium,
+and high risk at a patient's feature vector $x$ are respectively
+$0.20$, $0.35$, and $0.45$. Under zero--one loss, the Bayes classifier predicts
+high risk. A probabilistic classifier can instead report the entire vector of
+posterior probabilities, which preserves uncertainty that a hard MAP decision
+hides.
+
+\subsection{From the Bayes Rule to a Learning Algorithm}
+Both ideal rules depend on the unknown conditional distribution of $Y$ given
+$X=x$:
+\[
+\E[Y\mid X=x]
+\qquad\text{or}\qquad
+\mathbb{P}(Y=y\mid X=x).
+\]
+The Bayes rule is therefore an ideal target, not usually a directly available
+algorithm. Learning is difficult because the joint distribution of $(X,Y)$
+must be inferred from finitely many observations.
+
+Writing the training data as
+\[
+\mathcal{T}=\bigl((X_1,Y_1),\ldots,(X_n,Y_n)\bigr),
+\]
+a learning algorithm is a map
+\[
+\mathcal{A}\colon\mathcal{T}\longmapsto f_{\mathcal{T}}.
+\]
+Two broad construction strategies are:
+\begin{enumerate}
+    \item \emph{model-based prediction}: estimate the joint or conditional
+    distribution and plug the estimate into the Bayes rule;
+    \item \emph{empirical risk minimization}: choose a predictor from a
+    prescribed function class by minimizing its average training loss.
+\end{enumerate}
+Gaussian models, naive Bayes, kernel density estimation, and kernel regression
+are examples of the first strategy. The second strategy is developed next.
+
+\subsection{Joint Gaussian Model for Regression}
+Let $X\in\R^d$ and $Y\in\R$, and suppose the joint vector is Gaussian:
+\[
+\begin{pmatrix}X\\Y\end{pmatrix}
+\sim\mathcal{N}\left(
+\begin{pmatrix}\mu_X\\\mu_Y\end{pmatrix},
+\begin{pmatrix}
+\Sigma_{XX} & \Sigma_{XY}\\
+\Sigma_{YX} & \Sigma_{YY}
+\end{pmatrix}
+\right).
+\]
+Here $\Sigma_{XX}$ describes variation among the features, while
+$\Sigma_{YX}$ records how the response co-varies with each feature.
+
+\begin{theorem}[Gaussian conditional mean]
+If $\Sigma_{XX}$ is invertible, then the conditional distribution of $Y$ given
+$X=x$ is Gaussian and
+\[
+\E[Y\mid X=x]
+=\mu_Y+\Sigma_{YX}\Sigma_{XX}^{-1}(x-\mu_X).
+\]
+Consequently, the squared-loss Bayes predictor is affine in $x$.
+\end{theorem}
+
+Writing
+\[
+\beta=\Sigma_{YX}\Sigma_{XX}^{-1},
+\qquad
+b=\mu_Y-\beta\mu_X,
+\]
+the predictor becomes
+\[
+f^*(x)=b+\beta x.
+\]
+Thus linear regression can be interpreted as the Bayes predictor under a joint
+Gaussian model. In one dimension, the slope is
+\[
+\beta=\frac{\Cov(X,Y)}{\Var(X)}.
+\]
+
+The theorem follows by writing the joint Gaussian density, fixing $x$, and
+completing the square in $y$. Terms depending only on $x$ enter the normalizing
+constant; the remaining quadratic in $y$ is the kernel of a Gaussian density.
+
+In practice, replace the unknown parameters with their sample estimates:
+\[
+\widehat\mu_X=\frac1n\sum_{i=1}^nX_i,
+\qquad
+\widehat\mu_Y=\frac1n\sum_{i=1}^nY_i,
+\]
+and similarly estimate $\Sigma_{XX}$ and $\Sigma_{YX}$. The plug-in predictor is
+\[
+\widehat f(x)=\widehat\mu_Y+
+\widehat\Sigma_{YX}\widehat\Sigma_{XX}^{-1}
+(x-\widehat\mu_X).
+\]
+
+\subsection{Naive Bayes}
+For classification, a simpler distributional model assumes that the feature
+coordinates $X=(X^{(1)},\ldots,X^{(d)})$ are conditionally independent given
+the class. Then
+\[
+p(x\mid Y=y)=\prod_{j=1}^d p(x^{(j)}\mid Y=y).
+\]
+Bayes' rule gives
+\[
+\mathbb{P}(Y=y\mid X=x)
+=\frac{p(x\mid Y=y)\mathbb{P}(Y=y)}{p(x)}.
+\]
+Because $p(x)$ is the same for every candidate class,
+\[
+\mathbb{P}(Y=y\mid X=x)
+\propto
+\mathbb{P}(Y=y)\prod_{j=1}^d p(x^{(j)}\mid Y=y).
+\]
+The MAP classifier therefore selects the class maximizing the right-hand side.
+
+Conditional independence is often unrealistic, but it reduces estimation of a
+high-dimensional conditional density to estimation of one-dimensional
+distributions. This simplicity can be valuable with limited data; text and
+spam classification are standard examples.
+
+\subsection{Kernel Regression from a Joint Density Estimate}
+Another model-based approach estimates the joint density of $(X,Y)$ by KDE and
+plugs it into the conditional-mean Bayes rule. For $X\in\R^d$ and $Y\in\R$, let
+\[
+\widehat p_{X,Y}(x,y)
+=\frac1n\sum_{i=1}^n
+K_h\bigl((x,y)-(X_i,Y_i)\bigr).
+\]
+Suppose the joint kernel factors as
+\[
+K_h\bigl((x,y)-(X_i,Y_i)\bigr)
+=K_{X,h}(x-X_i)K_{Y,h}(y-Y_i).
+\]
+Integrating out $y$ gives the marginal estimate
+\[
+\widehat p_X(x)=\frac1n\sum_{j=1}^nK_{X,h}(x-X_j),
+\]
+so the estimated conditional density is the mixture
+\[
+\widehat p(y\mid x)
+=\sum_{i=1}^n w_i(x)K_{Y,h}(y-Y_i),
+\qquad
+w_i(x)=
+\frac{K_{X,h}(x-X_i)}
+{\sum_{j=1}^nK_{X,h}(x-X_j)}.
+\]
+The weights are nonnegative and sum to one; training inputs nearer to $x$ get
+larger weight.
+
+If the $Y$-kernel is centered, then
+\[
+\int_{\R} yK_{Y,h}(y-Y_i)\,\dd y=Y_i.
+\]
+Therefore the plug-in estimate of the squared-loss Bayes predictor is
+\begin{align*}
+\widehat f(x)
+&=\int_{\R}y\widehat p(y\mid x)\,\dd y\\
+&=\sum_{i=1}^nw_i(x)Y_i\\
+&=\frac{\sum_{i=1}^nK_{X,h}(x-X_i)Y_i}
+{\sum_{j=1}^nK_{X,h}(x-X_j)}.
+\end{align*}
+This is the \emph{Nadaraya--Watson kernel regression estimator}: a local
+weighted average of responses whose weights depend only on proximity in the
+feature space.
+
+As in density estimation, the bandwidth controls a bias--variance tradeoff. A
+small bandwidth produces highly local predictions with low bias but high
+variance. A large bandwidth averages more observations, reducing variance at
+the cost of greater bias.
+
+\subsection{The Empirical Distribution and Memorization}
+A particularly rough estimate of the population distribution is the empirical
+distribution
+\[
+\widehat P_{X,Y}=\frac1n\sum_{i=1}^n\delta_{(X_i,Y_i)},
+\]
+where $\delta_z$ is a point mass at $z$. Plugging this estimate directly into a
+pointwise prediction rule can simply memorize the data:
+\[
+\widehat f(X_i)=Y_i
+\qquad\text{for every training observation }i.
+\]
+It fits the observed inputs exactly but gives no principled prescription for a
+new input. This motivates either smoothing the distribution estimate or
+restricting the set of admissible predictors.
+
+\subsection{Empirical Risk Minimization}
+The population risk
+\[
+R(f)=\E[r(Y,f(X))]
+\]
+is generally unavailable because the distribution of $(X,Y)$ is unknown. Its
+observable analogue is the \emph{empirical risk}
+\[
+\widehat R_{\mathcal{T}}(f)
+=\frac1n\sum_{i=1}^n r(Y_i,f(X_i)).
+\]
+Given a function class $\mathcal{F}$, an \emph{empirical risk minimizer} is
+\[
+\widehat f_{\mathcal{T}}
+\in\argmin_{f\in\mathcal{F}}\widehat R_{\mathcal{T}}(f).
+\]
+ERM replaces the unknown population average by the corresponding average over
+the training sample.
+
+\subsubsection{Least-Squares Regression as ERM}
+For the affine function class
+\[
+\mathcal{F}=\{x\mapsto w^\top x+b:w\in\R^d,\ b\in\R\}
+\]
+and squared loss, ERM becomes
+\[
+(\widehat w,\widehat b)
+\in\argmin_{w,b}\frac1n\sum_{i=1}^n
+\bigl(Y_i-(w^\top X_i+b)\bigr)^2.
+\]
+Thus ordinary least squares is squared-loss ERM over affine predictors.
+
+\subsubsection{Classification as ERM}
+With zero--one loss, ERM solves
+\[
+\widehat f_{\mathcal{T}}
+\in\argmin_{f\in\mathcal{F}}
+\frac1n\sum_{i=1}^n\mathbf{1}\{Y_i\neq f(X_i)\}.
+\]
+The class $\mathcal{F}$ might consist of linear classifiers, decision trees,
+kernel classifiers, or neural networks. The same ERM principle applies, but
+the choice of function class changes both computation and generalization.
+
+\subsection{Why the Function Class Matters}
+If $\mathcal{F}$ contains every function from $\mathcal{R}_X$ to
+$\mathcal{R}_Y$, ERM can memorize the sample. For example, suppose the inputs
+$X_1,\ldots,X_n$ are distinct and $Y\in\R$. Define
+\[
+\widehat f_{\mathcal{T}}(x)=
+\begin{cases}
+Y_i, & x=X_i\text{ for some }i,\\
+0, & \text{otherwise}.
+\end{cases}
+\]
+Its squared training error is zero, yet its value at any unseen input is
+unrelated to the underlying regression function. Zero training error is
+therefore not the same as good prediction.
+
+Restricting $\mathcal{F}$ controls flexibility:
+\begin{itemize}
+    \item if $\mathcal{F}$ is too small, it may not approximate the true
+    relationship well;
+    \item if $\mathcal{F}$ is too large, it may fit random features of the
+    training sample and become unstable.
+\end{itemize}
+This is the model-flexibility version of the bias--variance tradeoff. Increasing
+flexibility generally reduces approximation bias but can increase variance.
+
+\subsection{Regularized ERM}
+Rather than restricting the function class sharply, one can penalize complex
+predictors:
+\[
+\widehat f_{\mathcal{T}}
+\in\argmin_{f\in\mathcal{F}}
+\left\{
+\frac1n\sum_{i=1}^n r(Y_i,f(X_i))
++\lambda\Omega(f)
+\right\}.
+\]
+The first term rewards fit to the observed data, while $\Omega(f)$ discourages
+complexity and $\lambda\geq0$ controls the tradeoff. For linear predictors,
+ridge uses $\Omega(w)=\lVert w\rVert_2^2$ and lasso uses
+$\Omega(w)=\lVert w\rVert_1$. Weight decay in neural networks serves the same
+broad purpose.
+
+\subsection{Training Error Is Not Test Error}
+For a fixed predictor $f$, define
+\[
+Z_i=r(Y_i,f(X_i)).
+\]
+The variables $Z_i$ are i.i.d., and the law of large numbers gives
+\[
+\widehat R_{\mathcal{T}}(f)
+=\frac1n\sum_{i=1}^nZ_i
+\longrightarrow R(f)
+\qquad\text{as }n\to\infty.
+\]
+The condition that $f$ is fixed is essential. An empirical risk minimizer
+$\widehat f_{\mathcal{T}}$ depends on the same observations used to calculate
+$\widehat R_{\mathcal{T}}(\widehat f_{\mathcal{T}})$. The simple fixed-function
+law of large numbers therefore does not justify using training error as an
+estimate of its future error.
+
+Schematically, the same sample performs two jobs:
+\[
+\mathcal{T}\longmapsto\widehat f_{\mathcal{T}}
+\longmapsto\widehat R_{\mathcal{T}}
+(\widehat f_{\mathcal{T}}).
+\]
+Because the predictor was selected to fit that sample, its training error is
+typically optimistically biased. As model flexibility grows, training error may
+continue to fall even after test error begins to rise.
+
+\subsection{Independent Test and Validation Sets}
+If an independent test set
+\[
+\mathcal{T}_{\mathrm{test}}
+=\bigl((X'_1,Y'_1),\ldots,(X'_q,Y'_q)\bigr)
+\]
+is available, the fitted predictor can be evaluated by
+\[
+\widehat R_{\mathrm{test}}(\widehat f_{\mathcal{T}})
+=\frac1q\sum_{j=1}^q
+r\bigl(Y'_j,\widehat f_{\mathcal{T}}(X'_j)\bigr).
+\]
+Independence matters: the test observations were not used to choose the
+predictor.
+
+When only one dataset is available, split it into disjoint training and
+validation subsets,
+\[
+\mathcal{T}=\mathcal{T}_{\mathrm{train}}
+\mathbin{\dot\cup}\mathcal{T}_{\mathrm{val}}.
+\]
+Fit $\widehat f_{\mathcal{T}_{\mathrm{train}}}$ on the training subset and
+compute
+\[
+\widehat R_{\mathrm{val}}
+=\frac{1}{|\mathcal{T}_{\mathrm{val}}|}
+\sum_{(X_i,Y_i)\in\mathcal{T}_{\mathrm{val}}}
+r\bigl(Y_i,\widehat f_{\mathcal{T}_{\mathrm{train}}}(X_i)\bigr).
+\]
+Allocating more observations to training can improve the fitted model, whereas
+allocating more to validation makes the error estimate more precise.
+
+\subsection{Cross-Validation}
+Cross-validation repeats the train--validate pattern so that every observation
+is held out once and used for training multiple times. For $m$-fold
+cross-validation, partition the sample into disjoint folds:
+\[
+\mathcal{T}=\mathcal{T}_1\mathbin{\dot\cup}\cdots
+\mathbin{\dot\cup}\mathcal{T}_m.
+\]
+For fold $j$, define
+\[
+\mathcal{T}^{(-j)}=\mathcal{T}\setminus\mathcal{T}_j,
+\qquad
+\widehat f^{(-j)}=\widehat f_{\mathcal{T}^{(-j)}}.
+\]
+The fold error is
+\[
+\widehat R_j
+=\frac{1}{|\mathcal{T}_j|}
+\sum_{(X_i,Y_i)\in\mathcal{T}_j}
+r\bigl(Y_i,\widehat f^{(-j)}(X_i)\bigr),
+\]
+and the cross-validation error is
+\[
+\widehat R_{\mathrm{CV}}=\frac1m\sum_{j=1}^m\widehat R_j.
+\]
+When $m=n$, each fold contains one observation; this is
+\emph{leave-one-out cross-validation}.
+
+\subsubsection{What Cross-Validation Estimates}
+Condition on the training folds $\mathcal{T}^{(-j)}$. Since the held-out fold
+$\mathcal{T}_j$ is independent of the data used to fit
+$\widehat f^{(-j)}$,
+\[
+\E\left[\widehat R_j\mid\mathcal{T}^{(-j)}\right]
+=R\bigl(\widehat f^{(-j)}\bigr).
+\]
+Taking expectations once more yields
+\[
+\E[\widehat R_j]
+=\E\left[R\bigl(\widehat f^{(-j)}\bigr)\right].
+\]
+Thus $m$-fold CV estimates the average risk of predictors trained on $m-1$
+folds, not exactly the risk of the final predictor trained on all $n$
+observations. Since each fold model uses less data, CV may be slightly
+pessimistic for the final full-data fit.
+
+\subsection{Cross-Validation for Hyperparameter Selection}
+Suppose a family of learning algorithms is indexed by a hyperparameter
+$\lambda$, producing $\widehat f_{\mathcal{T},\lambda}$. Examples include a
+kernel bandwidth, regularization strength, tree depth, or number of nearest
+neighbors. Compute the CV error for each candidate and select
+\[
+\widehat\lambda
+\in\argmin_\lambda\widehat R_{\mathrm{CV}}(\lambda).
+\]
+Then refit on the full training sample using $\widehat\lambda$.
+
+Hyperparameter selection changes the complete learning algorithm into the
+data-dependent procedure
+\[
+\mathcal{T}\longmapsto\widehat\lambda(\mathcal{T})
+\longmapsto
+\widehat f_{\mathcal{T},\widehat\lambda(\mathcal{T})}.
+\]
+Consequently, the CV score minimized to choose $\widehat\lambda$ is not a fresh,
+unbiased test-error estimate for the selected procedure. Honest final
+evaluation requires data not used in either fitting or hyperparameter
+selection, or an outer validation loop such as nested cross-validation.
 
 
 \end{document}

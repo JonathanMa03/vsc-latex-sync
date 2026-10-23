@@ -177,114 +177,748 @@
 
 \tableofcontents
 
-\section{Gradient Method}
+\section{Foundations of Nonlinear Optimization}
 
-Consider
+An unconstrained nonlinear optimization problem has the form
 \[
-    \min_{x\in\R^d} f(x),
+ \min_{x\in\R^n}f(x),
 \]
-where $f$ is differentiable. A point $x^*$ is a global minimizer if
-$f(x^*)\leq f(x)$ for every $x$, a local minimizer if this holds in a
-neighborhood, and a stationary point if $\grad f(x^*)=0$.
+whereas a constrained problem is $\min_{x\in\Omega}f(x)$ for a feasible set
+$\Omega\subseteq\operatorname{dom}f$. The objective may be smooth or
+nonsmooth and convex or nonconvex.
 
-\begin{definition}[Smoothness and strong convexity]
-The function $f$ is $L$-smooth if
+\begin{definition}[Local and global solutions]
+A feasible point $x^*$ is a local solution if some $r>0$ satisfies
 \[
-    \norm{\grad f(x)-\grad f(y)}\leq L\norm{x-y}.
+ f(x^*)\leq f(x)
+ \quad\text{for every }x\in\Omega\text{ with }\norm{x-x^*}<r.
 \]
-It is $\mu$-strongly convex if
+It is a strict local solution if the inequality is strict for every such
+$x\neq x^*$, and a global solution if it holds for every $x\in\Omega$.
+The optimal value is $f^*=\inf_{x\in\Omega}f(x)$.
+\end{definition}
+
+The infimum need not be attained: $\inf_{x\in\R}e^x=0$, but no finite $x$
+achieves it. A continuous function attains its minimum on a nonempty compact
+set. A useful noncompact alternative is coercivity.
+
+\begin{definition}[Coercivity]
+A function $f:\R^n\to\R$ is coercive if
+$f(x)\to+\infty$ whenever $\norm{x}\to\infty$.
+\end{definition}
+
+A lower-semicontinuous coercive function attains its infimum on a nonempty
+closed feasible set: a sufficiently low sublevel set is bounded, closedness
+makes it compact, and minimization can be restricted to that compact set.
+
+\subsection{Taylor Formulas and Smoothness}
+
+Differentiability and twice differentiability give the local expansions
+\begin{align*}
+ f(x+p)&=f(x)+\grad f(x)^\mathsf Tp+o(\norm p),\\
+ f(x+p)&=f(x)+\grad f(x)^\mathsf Tp
+ +\frac12p^\mathsf T\Hess f(x)p+o(\norm p^2).
+\end{align*}
+The integral forms are exact.
+
+\begin{theorem}[Taylor's theorem in integral form]
+If $f$ is continuously differentiable on the segment from $x$ to $x+p$, then
+\begin{equation}
+ f(x+p)=f(x)+\int_0^1\grad f(x+tp)^\mathsf Tp\dd t.
+ \label{eq:taylor-integral-first}
+\end{equation}
+If $f$ is twice continuously differentiable there, then
+\begin{equation}
+ f(x+p)=f(x)+\grad f(x)^\mathsf Tp
+ +\int_0^1(1-t)p^\mathsf T\Hess f(x+tp)p\dd t.
+ \label{eq:taylor-integral-second}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Set $\phi(t)=f(x+tp)$. The chain rule gives
+$\phi'(t)=\grad f(x+tp)^\mathsf Tp$, and the fundamental theorem of calculus
+proves \cref{eq:taylor-integral-first}. Moreover,
+$\phi''(t)=p^\mathsf T\Hess f(x+tp)p$. Applying the fundamental theorem twice
+and reversing the integration order gives
 \[
- f(y)\geq f(x)+\inner{\grad f(x)}{y-x}
-       +\frac{\mu}{2}\norm{y-x}^2.
+ \phi(1)-\phi(0)-\phi'(0)
+ =\int_0^1\int_0^t\phi''(s)\dd s\dd t
+ =\int_0^1(1-s)\phi''(s)\dd s,
+\]
+which proves \cref{eq:taylor-integral-second}.
+\end{proof}
+
+\begin{definition}[Lipschitz continuity and smoothness]
+The function $f$ is $G$-Lipschitz on $D$ if
+\[
+ |f(x)-f(y)|\leq G\norm{x-y}.
+\]
+A differentiable $f$ is $L$-smooth on $D$ if
+\[
+ \norm{\grad f(x)-\grad f(y)}\leq L\norm{x-y}.
 \]
 \end{definition}
 
-For twice differentiable $f$, the sufficient Hessian conditions are
-$\Hess f(x)\preceq LI$ for smoothness and
-$\Hess f(x)\succeq\mu I$ for strong convexity. Convexity makes every local
-minimum global; strong convexity makes the minimizer unique.
-
 \begin{lemma}[Descent lemma]
-If $f$ is $L$-smooth, then
-\[
- f(y)\leq f(x)+\inner{\grad f(x)}{y-x}
-            +\frac L2\norm{y-x}^2.
-\]
+If $D$ is convex and $f$ is $L$-smooth on $D$, then
+\begin{equation}
+ f(y)\leq f(x)+\grad f(x)^\mathsf T(y-x)
+ +\frac L2\norm{y-x}^2
+ \label{eq:descent-lemma}
+\end{equation}
+for all $x,y\in D$.
 \end{lemma}
 
 \begin{proof}
-Apply the fundamental theorem of calculus to
-$f(x+t(y-x))$ and bound the change in the gradient using Lipschitz
-continuity.
+Put $p=y-x$ in \cref{eq:taylor-integral-first}. By Cauchy--Schwarz and
+smoothness,
+\begin{align*}
+ f(y)-f(x)-\grad f(x)^\mathsf Tp
+ &=\int_0^1\{\grad f(x+tp)-\grad f(x)\}^\mathsf Tp\dd t\\
+ &\leq\int_0^1Lt\norm p^2\dd t
+ =\frac L2\norm p^2.
+\end{align*}
 \end{proof}
+
+If $f$ is twice continuously differentiable on an open convex set, the bound
+$-LI\preceq\Hess f(x)\preceq LI$ implies $L$-smoothness. Indeed,
+\[
+ \grad f(y)-\grad f(x)
+ =\int_0^1\Hess f(x+t(y-x))(y-x)\dd t.
+\]
+Conversely, $L$-smoothness implies $\norm{\Hess f(x)}_2\leq L$: apply the
+gradient Lipschitz bound to $x+tv$, divide by $|t|$, and let $t\to0$ for every
+unit vector $v$. For a convex twice differentiable function this becomes
+$0\preceq\Hess f(x)\preceq LI$.
+
+\subsection{Optimality Conditions}
+
+\begin{theorem}[Unconstrained first- and second-order conditions]
+Let $x^*$ be an interior local minimizer.
+\begin{enumerate}
+ \item If $f$ is differentiable at $x^*$, then $\grad f(x^*)=0$.
+ \item If $f$ is twice differentiable at $x^*$, then
+ $\Hess f(x^*)\succeq0$.
+ \item If $\grad f(x^*)=0$, $\Hess f(x^*)\succ0$, and the Hessian is
+ continuous near $x^*$, then $x^*$ is a strict local minimizer.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+If $\grad f(x^*)\neq0$, the direction $p=-\grad f(x^*)$ gives
+\[
+ f(x^*+tp)=f(x^*)-t\norm{\grad f(x^*)}^2+o(t)<f(x^*)
+\]
+for sufficiently small $t>0$, contradicting local optimality. If some $v$
+satisfies $v^\mathsf T\Hess f(x^*)v<0$, second-order Taylor expansion along
+$tv$ produces the same contradiction. Finally, positive definiteness and
+continuity imply $\Hess f(z)\succeq mI$ in a neighborhood for some $m>0$;
+the second-order integral formula then yields
+$f(x^*+p)\geq f(x^*)+(m/2)\norm p^2$ locally.
+\end{proof}
+
+A point with $\grad f(x)=0$ is stationary, but for nonconvex objectives this
+need not mean local optimality. For example, $x^3$ is stationary at zero but
+has no local minimum there. Even a positive-semidefinite Hessian is not
+sufficient: both $x^4$ and $-x^4$ have zero Hessian at the origin.
+
+For a nonempty closed convex set $\Omega$, define the normal cone
+\[
+ N_\Omega(x)=\{v\in\R^n:v^\mathsf T(y-x)\leq0
+ \text{ for every }y\in\Omega\}.
+\]
+If $f$ is differentiable and convex and $\Omega$ is convex, then $x^*$ solves
+$\min_{x\in\Omega}f(x)$ if and only if
+\begin{equation}
+ 0\in\grad f(x^*)+N_\Omega(x^*),
+ \label{eq:normal-cone-optimality}
+\end{equation}
+equivalently $\grad f(x^*)^\mathsf T(y-x^*)\geq0$ for every $y\in\Omega$.
+Necessity follows by differentiating
+$f(x^*+t(y-x^*))$ at $t=0$ from the right; sufficiency follows from the convex
+first-order inequality introduced below.
+
+\section{Convex Sets and Functions}
+
+\begin{definition}[Convex set]
+A set $C\subseteq\R^n$ is convex if
+\[
+ x,y\in C,\quad\theta\in[0,1]
+ \quad\Longrightarrow\quad
+ \theta x+(1-\theta)y\in C.
+\]
+Its convex hull is
+\[
+ \operatorname{conv}(S)
+ =\left\{\sum_{i=1}^m\theta_ix_i:
+ x_i\in S,\ \theta_i\geq0,\ \sum_i\theta_i=1\right\}.
+\]
+\end{definition}
+
+Affine spaces, halfspaces, norm balls, polyhedra, and the positive-semidefinite
+cone are convex. Arbitrary intersections, affine images, affine inverse
+images, and coordinate projections preserve convexity. For example, the
+linear matrix inequality set
+\[
+ \left\{x\in\R^n:A_0+\sum_{i=1}^nx_iA_i\succeq0\right\}
+\]
+is convex because it is the affine inverse image of the PSD cone.
+
+If $z$ lies outside a nonempty closed convex set $C$, a hyperplane strictly
+separates $z$ from $C$. To see the geometry, let $x=\operatorname{proj}_C(z)$
+and $a=z-x$. Differentiating
+$\norm{z-(x+t(y-x))}^2$ at $t=0$ gives
+$a^\mathsf T(y-x)\leq0$ for every $y\in C$. Thus with $b=a^\mathsf Tx$,
+\[
+ a^\mathsf Ty\leq b<a^\mathsf Tz,
+\]
+since $a^\mathsf Tz-b=\norm{z-x}^2>0$.
+
+\begin{definition}[Convex function]
+An extended-real-valued function $f$ is convex if its domain is convex and
+\[
+ f(\theta x+(1-\theta)y)
+ \leq\theta f(x)+(1-\theta)f(y)
+\]
+for all $x,y$ in its domain and $\theta\in[0,1]$.
+\end{definition}
+
+Allowing $+\infty$ incorporates constraints: the indicator
+$\delta_C(x)$ equals $0$ on $C$ and $+\infty$ elsewhere, so minimizing
+$f+\delta_C$ is equivalent to minimizing $f$ over $C$.
+
+\begin{theorem}[Equivalent convexity tests]
+On a convex domain:
+\begin{enumerate}
+ \item $f$ is convex iff its restriction to every line is convex.
+ \item If $f$ is differentiable, it is convex iff
+ \begin{equation}
+  f(y)\geq f(x)+\grad f(x)^\mathsf T(y-x).
+  \label{eq:convex-first-order}
+ \end{equation}
+ \item If $f$ is twice differentiable on an open domain, it is convex iff
+ $\Hess f(x)\succeq0$ everywhere.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Line restrictions translate the segment definition directly into one
+dimension. Convexity applied to $x+t(y-x)$, followed by subtraction, division
+by $t$, and $t\downarrow0$, proves \cref{eq:convex-first-order}. Conversely,
+apply that inequality at $z=(1-\theta)x+\theta y$ separately to $x$ and $y$;
+weighting and adding cancels the gradient terms and recovers the segment
+inequality. Finally, the second derivative of the line restriction is
+$d^\mathsf T\Hess f(x+td)d$, so all line restrictions are convex exactly when
+the Hessian is positive semidefinite.
+\end{proof}
+
+The epigraph $\operatorname{epi}f=\{(x,t):f(x)\leq t\}$ of a convex function
+is convex, as is every sublevel set. The converse for sublevel sets is false
+(it characterizes quasiconvexity, not convexity). Convexity is preserved by
+nonnegative sums, pointwise suprema, affine composition, suitable monotone
+compositions, perspectives, and partial minimization of jointly convex
+functions.
+
+\subsection{Strong Convexity and Smooth Convexity}
+
+\begin{definition}[Strong convexity]
+A differentiable function is $\mu$-strongly convex, $\mu>0$, if
+\begin{equation}
+ f(y)\geq f(x)+\grad f(x)^\mathsf T(y-x)
+ +\frac\mu2\norm{y-x}^2.
+ \label{eq:strong-convexity}
+\end{equation}
+Equivalently, $f(x)-(\mu/2)\norm x^2$ is convex. For twice differentiable
+$f$, this is equivalent to $\Hess f(x)\succeq\mu I$ everywhere.
+\end{definition}
+
+Strong convexity is stronger than strict convexity: $x^4$ is strictly convex
+but not strongly convex on $\R$. If $f$ is differentiable and strongly convex
+on $\R^n$, it has a unique minimizer $x^*$ and
+\begin{align}
+ f(x)-f^*&\geq\frac\mu2\norm{x-x^*}^2,
+ \label{eq:sc-growth}\\
+ f(x)-f^*&\leq\frac1{2\mu}\norm{\grad f(x)}^2,
+ \label{eq:sc-gradient-gap}\\
+ \norm{\grad f(x)}&\geq\mu\norm{x-x^*}.
+ \label{eq:sc-gradient-distance}
+\end{align}
+The first follows from \cref{eq:strong-convexity} at $x^*$. For the second,
+minimize the quadratic lower model in $y$, whose minimizer is
+$y=x-\grad f(x)/\mu$. The third follows from strong monotonicity,
+\[
+ \{\grad f(x)-\grad f(y)\}^\mathsf T(x-y)\geq\mu\norm{x-y}^2,
+\]
+with $y=x^*$ and Cauchy--Schwarz.
+
+For convex $L$-smooth functions, the gradient is $1/L$-cocoercive:
+\begin{equation}
+ \{\grad f(x)-\grad f(y)\}^\mathsf T(x-y)
+ \geq\frac1L\norm{\grad f(x)-\grad f(y)}^2.
+ \label{eq:cocoercivity}
+\end{equation}
+To derive it, first note that any convex $L$-smooth $h$ minimized at $u$
+satisfies, by applying the descent lemma at $v-\grad h(v)/L$,
+\[
+ h(v)-h(u)\geq\frac1{2L}\norm{\grad h(v)}^2.
+\]
+Apply this to $h_x(z)=f(z)-\grad f(x)^\mathsf Tz$, which is minimized at $x$,
+once with $(x,y)$ and once with their roles reversed. Adding the resulting
+inequalities proves \cref{eq:cocoercivity}.
+
+If $f$ and $\Omega$ are convex, every local minimizer over $\Omega$ is global:
+otherwise, the segment toward a better feasible point would contain
+arbitrarily close points with smaller objective. The set of global minimizers
+is convex, and strict convexity permits at most one. Smoothness therefore
+provides a global quadratic upper model, strong convexity a quadratic lower
+model, and the condition number $\kappa=L/\mu$ will govern first-order rates.
+
+\section{Gradient Method}
+
+Throughout this section, $f$ is continuously differentiable and bounded below
+by $f^*>-\infty$. Convexity is imposed only when stated.
+
+\subsection{Descent Directions and Steepest Descent}
+
+A vector $d$ is a descent direction at $x$ if some $\bar\alpha>0$ satisfies
+$f(x+\alpha d)<f(x)$ for every $\alpha\in(0,\bar\alpha]$. If
+$\grad f(x)^\mathsf Td<0$, then $d$ is a descent direction: continuity makes
+$\grad f(x+td)^\mathsf Td<0$ for all sufficiently small $t\geq0$, and
+\[
+ f(x+\alpha d)-f(x)
+ =\int_0^\alpha\grad f(x+td)^\mathsf Td\dd t<0.
+\]
+
+In Euclidean geometry, the unit direction of steepest local decrease solves
+\[
+ \min_{\norm d\leq1}\grad f(x)^\mathsf Td
+ =-\norm{\grad f(x)},
+ \qquad
+ d=-\frac{\grad f(x)}{\norm{\grad f(x)}}.
+\]
+More generally, for a norm $\norm{\cdot}$ with dual norm
+$\norm{\cdot}_*$, the minimum equals $-\norm{\grad f(x)}_*$. Thus
+``steepest'' depends on geometry; preconditioned and Newton directions amount
+to choosing a different local norm.
+
+\subsection{Descent and Nonconvex Complexity}
 
 Gradient descent uses
 \begin{equation}
     x_{k+1}=x_k-\alpha_k\grad f(x_k).
     \label{eq:gradient-descent}
 \end{equation}
-With $\alpha=1/L$, the descent lemma gives
+For an $L$-smooth objective and constant step $\alpha$, the descent lemma gives
+\begin{equation}
+ f(x-\alpha\grad f(x))
+ \leq f(x)-\alpha\left(1-\frac{L\alpha}{2}\right)
+ \norm{\grad f(x)}^2.
+ \label{eq:gd-general-descent}
+\end{equation}
+Every $\alpha\in(0,2/L)$ therefore produces strict descent at a nonstationary
+point. The choice $\alpha=1/L$ maximizes the guaranteed decrease:
 \[
     f(x_{k+1})\leq f(x_k)-\frac1{2L}\norm{\grad f(x_k)}^2.
 \]
 
-\begin{theorem}[Basic gradient-descent rates]
-Let $f$ be convex and $L$-smooth, and let $x^*$ be a minimizer. Gradient
-descent with $\alpha=1/L$ satisfies
+\begin{theorem}[Global stationarity complexity]
+If $f$ is $L$-smooth and bounded below, gradient descent with constant
+$\alpha\in(0,2/L)$ satisfies
+\begin{equation}
+ \min_{0\leq k<T}\norm{\grad f(x_k)}^2
+ \leq
+ \frac{f(x_0)-f^*}{T\alpha(1-L\alpha/2)}.
+ \label{eq:gd-nonconvex-rate}
+\end{equation}
+For $\alpha=1/L$,
+\[
+ \min_{0\leq k<T}\norm{\grad f(x_k)}
+ \leq\sqrt{\frac{2L\{f(x_0)-f^*\}}{T}}.
+\]
+Thus $O(L(f(x_0)-f^*)/\varepsilon^2)$ iterations suffice to find an
+$\varepsilon$-stationary point.
+\end{theorem}
+
+\begin{proof}
+Sum \cref{eq:gd-general-descent} from $k=0$ to $T-1$ and use
+$f(x_T)\geq f^*$. The minimum of the $T$ squared gradient norms is no larger
+than their average.
+\end{proof}
+
+The same argument shows
+$\sum_{k=0}^\infty\norm{\grad f(x_k)}^2<\infty$ and therefore
+$\norm{\grad f(x_k)}\to0$. It does not by itself show that the full iterate
+sequence converges or that any limit is a local minimum.
+
+\subsection{Smooth Convex Objectives}
+
+\begin{theorem}[Sublinear convergence]
+Suppose $f$ is convex and $L$-smooth with minimizer $x^*$. For any constant
+$\alpha\in(0,1/L]$, gradient descent satisfies
+\begin{equation}
+ f(x_k)-f^*\leq\frac{\norm{x_0-x^*}^2}{2\alpha k},
+ \qquad k\geq1.
+ \label{eq:gd-convex-rate}
+\end{equation}
+For $\alpha=1/L$, this becomes
 \[
  f(x_k)-f(x^*)\leq\frac{L\norm{x_0-x^*}^2}{2k}.
 \]
-If $f$ is also $\mu$-strongly convex, then
+\end{theorem}
+
+\begin{proof}
+Write $g_k=\grad f(x_k)$. Descent and convexity yield
+\begin{align*}
+ f(x_{k+1})
+ &\leq f(x_k)-\frac\alpha2\norm{g_k}^2\\
+ &\leq f^*+g_k^\mathsf T(x_k-x^*)-\frac\alpha2\norm{g_k}^2\\
+ &=f^*+\frac1{2\alpha}
+ \left(\norm{x_k-x^*}^2-\norm{x_{k+1}-x^*}^2\right).
+\end{align*}
+Summing telescopes. Since the objective values are nonincreasing, the final
+gap is no larger than the average of the first $k$ gaps, proving
+\cref{eq:gd-convex-rate}.
+\end{proof}
+
+Smooth convexity also gives the useful sandwich
+\begin{equation}
+ \frac1{2L}\norm{\grad f(x)}^2
+ \leq f(x)-f^*
+ \leq\frac L2\norm{x-x^*}^2.
+ \label{eq:smooth-convex-sandwich}
+\end{equation}
+The left inequality follows because $f^*$ is no larger than
+$f(x-\grad f(x)/L)$ and the descent lemma bounds that trial value. The right
+follows by applying the descent lemma with base point $x^*$ and using
+$\grad f(x^*)=0$.
+
+\subsection{Smooth Strongly Convex Objectives}
+
+\begin{theorem}[Linear convergence in function value]
+If $f$ is also $\mu$-strongly convex, gradient descent with $\alpha=1/L$
+satisfies
 \[
  f(x_k)-f(x^*)\leq
  \left(1-\frac{\mu}{L}\right)^k\{f(x_0)-f(x^*)\}.
 \]
+Thus $O(\kappa\log((f(x_0)-f^*)/\varepsilon))$ iterations suffice for a
+function gap at most $\varepsilon$, where $\kappa=L/\mu$.
 \end{theorem}
 
-The condition number $\kappa=L/\mu$ controls the linear rate. Poor feature
-scaling produces elongated level sets and slow zig-zagging. Stop using a
-combination of gradient norm, relative objective change, step norm, and an
-iteration budget; objective change alone can be misleading on flat regions.
+\begin{proof}
+Strong convexity implies the Polyak--\L{}ojasiewicz inequality
+$\norm{\grad f(x)}^2\geq2\mu(f(x)-f^*)$ by
+\cref{eq:sc-gradient-gap}. Substituting it into the $1/L$ descent bound gives
+\[
+ f(x_{k+1})-f^*
+ \leq\left(1-\frac\mu L\right)(f(x_k)-f^*),
+\]
+and iteration proves the claim.
+\end{proof}
+
+A slightly different step is optimal for worst-case contraction in distance.
+For an $L$-smooth, $\mu$-strongly convex function,
+\begin{equation}
+ \{\grad f(x)-\grad f(y)\}^\mathsf T(x-y)
+ \geq\frac{\mu L}{\mu+L}\norm{x-y}^2
+ +\frac1{\mu+L}\norm{\grad f(x)-\grad f(y)}^2.
+ \label{eq:strong-smooth-interpolation}
+\end{equation}
+Expanding one gradient step, using \cref{eq:strong-smooth-interpolation} with
+$y=x^*$, and choosing $\alpha=2/(L+\mu)$ cancels the gradient-square term and
+gives
+\begin{equation}
+ \norm{x_{k+1}-x^*}
+ \leq\frac{L-\mu}{L+\mu}\norm{x_k-x^*}
+ =\frac{\kappa-1}{\kappa+1}\norm{x_k-x^*}.
+ \label{eq:gd-optimal-distance-step}
+\end{equation}
+
+\subsection{Quadratics and Preconditioning}
+
+For
+\[
+ f(x)=\frac12x^\mathsf TQx-b^\mathsf Tx,qquad Q\succ0,
+\]
+the minimizer is $x^*=Q^{-1}b$ and the error obeys
+\[
+ e_{k+1}=(I-\alpha Q)e_k,qquad e_k=x_k-x^*.
+\]
+If the eigenvalues of $Q$ lie in $[\mu,L]$, the worst contraction factor is
+$\max_{\lambda\in[\mu,L]}|1-\alpha\lambda|$. Balancing the two endpoints
+again gives $\alpha=2/(L+\mu)$ and factor $(\kappa-1)/(\kappa+1)$.
+
+Exact line search along the negative gradient does at least as well as that
+trial step. In the energy norm $\norm e_Q^2=e^\mathsf TQe$,
+\[
+ \norm{(I-2Q/(L+\mu))e}_Q
+ \leq\frac{L-\mu}{L+\mu}\norm e_Q.
+\]
+Since $f(x)-f^*=\tfrac12\norm{x-x^*}_Q^2$, steepest descent with exact line
+search satisfies
+\[
+ f(x_{k+1})-f^*
+ \leq\left(\frac{\kappa-1}{\kappa+1}\right)^2
+       (f(x_k)-f^*).
+\]
+
+Large $\kappa$ produces elongated contours and zig-zagging. A positive-definite
+preconditioner changes the update to
+\[
+ x_{k+1}=x_k-\alpha P\grad f(x_k),
+\]
+which is steepest descent in the norm
+$\norm d_{P^{-1}}=(d^\mathsf TP^{-1}d)^{1/2}$. For a quadratic, the ideal but
+usually impractical choice $P=Q^{-1}$ solves the problem in one step with
+$\alpha=1$. Quasi-Newton methods try to learn this inverse curvature.
+
+\subsection{Stopping Criteria}
+
+For a general nonconvex objective, gradient norm is the primary first-order
+stopping measure. Strong convexity additionally provides the computable
+certificates
+\[
+ f(x_k)-f^*\leq\frac{\norm{\grad f(x_k)}^2}{2\mu},
+ \qquad
+ \norm{x_k-x^*}\leq\frac{\norm{\grad f(x_k)}}{\mu}.
+\]
+In floating-point computation, use a scaled test such as
+\[
+ \norm{\grad f(x_k)}_\infty
+ \leq\varepsilon_{\mathrm{abs}}
+ +\varepsilon_{\mathrm{rel}}\max\{1,|f(x_k)|\},
+\]
+together with safeguards based on step norm and an iteration budget. Objective
+change alone can be misleading on flat regions.
 
 \section{Quasi-Newton Method}
 
-Newton's method locally approximates
+\subsection{Newton's Method as a Model Method}
+
+At $x_k$, write $g_k=\grad f(x_k)$ and form the quadratic model
 \[
- f(x+p)\approx f(x)+g^\mathsf Tp+\tfrac12p^\mathsf THp
+ m_k(p)=f(x_k)+g_k^\mathsf Tp+\frac12p^\mathsf T\Hess f(x_k)p.
 \]
-and solves $Hp=-g$, where $g=\grad f(x)$ and $H=\Hess f(x)$. Near a
-nondegenerate minimizer, full Newton steps converge quadratically under
-standard Lipschitz-Hessian assumptions. Far from a minimizer, $H$ can be
-indefinite and the Newton direction need not descend.
+If $\Hess f(x_k)\succ0$, its minimizer is the Newton direction, computed by
+solving
+\begin{equation}
+ \Hess f(x_k)p_k^N=-g_k
+ \label{eq:newton-system}
+\end{equation}
+rather than forming an inverse. It is a descent direction because
+\[
+ g_k^\mathsf Tp_k^N
+ =-g_k^\mathsf T\Hess f(x_k)^{-1}g_k<0
+\]
+whenever $g_k\neq0$. Far from a solution, the Hessian may be indefinite or
+the quadratic model inaccurate, so a globalized method uses
+$x_{k+1}=x_k+\alpha_kp_k^N$ with line search or a trust region.
+
+\begin{theorem}[Local quadratic convergence of Newton's method]
+Suppose $\grad f(x^*)=0$, $\Hess f(x^*)\succ0$, the Hessian is locally
+$M$-Lipschitz, and $\Hess f(x)\succeq\mu I$ in a neighborhood of $x^*$.
+For $x_k$ sufficiently close to $x^*$, the unit Newton step satisfies
+\begin{equation}
+ \norm{x_{k+1}-x^*}
+ \leq\frac{M}{2\mu}\norm{x_k-x^*}^2.
+ \label{eq:newton-quadratic-rate}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Let $e_k=x_k-x^*$ and $G_k=\Hess f(x_k)$. The fundamental theorem of calculus
+and $\grad f(x^*)=0$ give
+\[
+ \grad f(x_k)=\int_0^1\Hess f(x^*+te_k)e_k\dd t.
+\]
+Therefore
+\[
+ e_{k+1}
+ =G_k^{-1}\int_0^1
+ \{G_k-\Hess f(x^*+te_k)\}e_k\dd t.
+\]
+Since $\norm{G_k^{-1}}_2\leq1/\mu$ and Hessian Lipschitzness bounds the
+integrand by $M(1-t)\norm{e_k}^2$, integration proves
+\cref{eq:newton-quadratic-rate}.
+\end{proof}
+
+\subsection{The Secant Equation}
 
 Quasi-Newton methods replace the Hessian or inverse Hessian with an estimate.
 Set $s_k=x_{k+1}-x_k$ and $y_k=\grad f(x_{k+1})-\grad f(x_k)$. The secant
-condition is
+The fundamental theorem of calculus gives
+\begin{equation}
+ y_k=\left\{\int_0^1\Hess f(x_k+ts_k)\dd t\right\}s_k,
+ \label{eq:average-hessian-secant}
+\end{equation}
+so $y_k$ is the action of an average Hessian on $s_k$. This motivates the
+secant conditions
 \[
-    B_{k+1}s_k=y_k.
+ B_{k+1}s_k=y_k,
+ \qquad H_{k+1}y_k=s_k,
 \]
+for Hessian and inverse-Hessian approximations. One vector equation cannot
+determine a symmetric $n\times n$ matrix, so quasi-Newton updates additionally
+change the previous approximation as little as possible in a suitable weighted
+matrix norm.
+
+\subsection{BFGS, DFP, and SR1}
+
 The BFGS update is
-\[
+\begin{equation}
  B_{k+1}=B_k-\frac{B_ks_ks_k^\mathsf TB_k}{s_k^\mathsf TB_ks_k}
               +\frac{y_ky_k^\mathsf T}{y_k^\mathsf Ts_k}.
-\]
-If $B_k\succ0$ and $y_k^\mathsf Ts_k>0$, then $B_{k+1}\succ0$. Wolfe line
-search guarantees this curvature condition for a descent direction.
+ \label{eq:bfgs-hessian}
+\end{equation}
 
 In inverse form, with $\rho_k=(y_k^\mathsf Ts_k)^{-1}$,
-\[
+\begin{equation}
  H_{k+1}=(I-\rho_ks_ky_k^\mathsf T)H_k
          (I-\rho_ky_ks_k^\mathsf T)+\rho_ks_ks_k^\mathsf T,
+ \label{eq:bfgs-inverse}
+\end{equation}
+while the DFP inverse update is
+\[
+ H_{k+1}=H_k-\frac{H_ky_ky_k^\mathsf TH_k}{y_k^\mathsf TH_ky_k}
+ +\frac{s_ks_k^\mathsf T}{y_k^\mathsf Ts_k}.
 \]
-and the direction is $p_k=-H_kg_k$. L-BFGS stores only the last few
-$(s_k,y_k)$ pairs and applies the inverse implicitly, making memory
-$O(md)$ instead of $O(d^2)$.
+BFGS and DFP are dual members of the Broyden family.
+
+The symmetric-rank-one update is
+\begin{equation}
+ B_{k+1}=B_k+
+ \frac{(y_k-B_ks_k)(y_k-B_ks_k)^\mathsf T}
+ {(y_k-B_ks_k)^\mathsf Ts_k}.
+ \label{eq:sr1-update}
+\end{equation}
+SR1 can represent indefinite curvature, which is useful in nonconvex
+trust-region methods. It is skipped when its denominator is too small relative
+to $\norm{y_k-B_ks_k}\norm{s_k}$.
+
+All these formulas satisfy their respective secant equations. For example,
+multiplying \cref{eq:bfgs-hessian} by $s_k$ gives
+\[
+ B_ks_k-B_ks_k\frac{s_k^\mathsf TB_ks_k}{s_k^\mathsf TB_ks_k}
+ +y_k\frac{y_k^\mathsf Ts_k}{y_k^\mathsf Ts_k}=y_k.
+\]
+For SR1, writing $u_k=y_k-B_ks_k$ yields
+$(B_k+u_ku_k^\mathsf T/(u_k^\mathsf Ts_k))s_k=y_k$.
+
+\begin{theorem}[BFGS preserves positive definiteness]
+If $H_k\succ0$ and $y_k^\mathsf Ts_k>0$, then the inverse BFGS update satisfies
+$H_{k+1}\succ0$. Consequently $p_k=-H_kg_k$ is a descent direction whenever
+$g_k\neq0$.
+\end{theorem}
+
+\begin{proof}
+Let $V=I-\rho_ky_ks_k^\mathsf T$. For every nonzero $z$,
+\[
+ z^\mathsf TH_{k+1}z=(Vz)^\mathsf TH_k(Vz)+\rho_k(s_k^\mathsf Tz)^2.
+\]
+Both terms are nonnegative. If both vanished, then $Vz=0$ and
+$s_k^\mathsf Tz=0$, which together imply $z=0$, a contradiction.
+\end{proof}
+
+If $f$ is $\mu$-strongly convex, \cref{eq:average-hessian-secant} gives
+$y_k^\mathsf Ts_k\geq\mu\norm{s_k}^2>0$. More generally, a Wolfe line search
+guarantees the curvature condition for a descent direction.
+
+\subsection{BFGS and Limited-Memory BFGS Algorithms}
+
+Full BFGS computes $p_k=-H_kg_k$, chooses a Wolfe step $\alpha_k$, sets
+$s_k=\alpha_kp_k$, evaluates $y_k=g_{k+1}-g_k$, and applies
+\cref{eq:bfgs-inverse}. It requires $O(n^2)$ storage and matrix-vector work per
+iteration. The common initial choice is $H_0=I$; after a curvature pair is
+available, the scalar initialization
+\[
+ H_k^0=\gamma_kI,
+ \qquad
+ \gamma_k=\frac{s_{k-1}^\mathsf Ty_{k-1}}
+ {y_{k-1}^\mathsf Ty_{k-1}}
+\]
+matches inverse curvature along the most recent direction.
+
+L-BFGS stores only the most recent $m$ pairs, often $5\leq m\leq20$, and
+applies the implicit inverse by the two-loop recursion.
+
+\begin{algorithm}[H]
+\caption{L-BFGS two-loop recursion for $p_k=-H_kg_k$}
+\begin{algorithmic}[1]
+\State $q\gets g_k$ and $\rho_i\gets1/(y_i^\mathsf Ts_i)$.
+\For{$i=k-1,k-2,\ldots,k-m$}
+  \State $a_i\gets\rho_i s_i^\mathsf Tq$; $q\gets q-a_iy_i$.
+\EndFor
+\State $r\gets H_k^0q$.
+\For{$i=k-m,k-m+1,\ldots,k-1$}
+  \State $b_i\gets\rho_i y_i^\mathsf Tr$; $r\gets r+s_i(a_i-b_i)$.
+\EndFor
+\State \Return $p_k=-r$.
+\end{algorithmic}
+\end{algorithm}
+
+The time and storage cost is $O(mn)$; use only the pairs that exist when
+$k<m$. Fixed-memory L-BFGS is scalable but does not generally inherit full
+BFGS's local superlinear convergence theorem.
+
+\subsection{Global and Local Convergence}
+
+Under a representative global result, suppose $f$ is twice continuously
+differentiable and convex, the initial level set is bounded, and
+$0<\mu I\preceq\Hess f(x)\preceq LI$ near that set. BFGS initialized with
+$H_0\succ0$ and using a Wolfe line search satisfies
+$\grad f(x_k)\to0$ and $x_k\to x^*$.
+
+The logic combines three ingredients. Curvature bounds give
+\[
+ \mu\norm{s_k}^2\leq y_k^\mathsf Ts_k,
+ \qquad \norm{y_k}\leq L\norm{s_k},
+\]
+so the updates remain positive definite. The Wolfe search and Zoutendijk
+theory control the gradient projected along the search directions. Finally,
+the BFGS identities
+\begin{align*}
+ \tr(B_{k+1})
+ &=\tr(B_k)-\frac{\norm{B_ks_k}^2}{s_k^\mathsf TB_ks_k}
+   +\frac{\norm{y_k}^2}{y_k^\mathsf Ts_k},\\
+ \det(B_{k+1})
+ &=\det(B_k)\frac{y_k^\mathsf Ts_k}{s_k^\mathsf TB_ks_k}
+\end{align*}
+prevent the search directions from becoming nearly orthogonal to the negative
+gradient too persistently. Merely writing down the BFGS update does not itself
+establish global convergence.
+
+For the local result, let $B^*=\Hess f(x^*)$. The Dennis--Mor\'e condition is
+\begin{equation}
+ \frac{\norm{(B_k-B^*)p_k}}{\norm{p_k}}\longrightarrow0.
+ \label{eq:dennis-more}
+\end{equation}
+It requires curvature accuracy along the steps, not entrywise convergence of
+$B_k$.
 
 \begin{theorem}[Local BFGS behavior]
 For a twice continuously differentiable, strongly convex objective with
 Lipschitz Hessian near $x^*$, BFGS with a suitable Wolfe line search converges
-superlinearly under the standard Dennis--Moré conditions.
+superlinearly once unit steps are accepted and \cref{eq:dennis-more} holds:
+\[
+ \frac{\norm{x_{k+1}-x^*}}{\norm{x_k-x^*}}\longrightarrow0.
+\]
 \end{theorem}
+
+\begin{proof}
+Let $e_k=x_k-x^*$. Hessian Lipschitzness gives
+$\grad f(x_k)=B^*e_k+O(\norm{e_k}^2)$. For an eventual unit step,
+$e_{k+1}=e_k+p_k$ and $B_kp_k=-\grad f(x_k)$, so
+\[
+ B^*e_{k+1}
+ =B^*e_k-\grad f(x_k)+(B^*-B_k)p_k.
+\]
+Uniform positive definiteness and local gradient Lipschitzness imply
+$\norm{p_k}=O(\norm{e_k})$. The first term on the right is
+$O(\norm{e_k}^2)$, while \cref{eq:dennis-more} makes the second
+$o(\norm{p_k})=o(\norm{e_k})$. Since $B^*$ is nonsingular,
+$\norm{e_{k+1}}=o(\norm{e_k})$.
+\end{proof}
 
 In computation, solve Newton systems rather than invert Hessians. Regularize
 an indefinite Hessian using $H+\lambda I$, use a trust region, or switch to a
@@ -296,106 +930,575 @@ Given a descent direction $p_k$ with $g_k^\mathsf Tp_k<0$, line search chooses
 $\alpha_k>0$ and sets $x_{k+1}=x_k+\alpha_kp_k$. Exact line search minimizes
 $\phi(\alpha)=f(x_k+\alpha p_k)$ but is usually unnecessary.
 
-\begin{definition}[Armijo and Wolfe conditions]
+Merely requiring $f(x_{k+1})<f(x_k)$ is too weak: vanishing steps can converge
+to a nonstationary point. A useful analysis instead seeks a uniform reduction
+\begin{equation}
+ f(x_{k+1})\leq f(x_k)-C\norm{g_k}^2,\qquad C>0.
+ \label{eq:uniform-sufficient-reduction}
+\end{equation}
+If $f$ is bounded below, summing this inequality gives
+\[
+ C\sum_{k=0}^{T-1}\norm{g_k}^2
+ \leq f(x_0)-f(x_T)\leq f(x_0)-f^*.
+\]
+Hence $\sum_k\norm{g_k}^2<\infty$, $g_k\to0$, and
+\[
+ \min_{0\leq k<T}\norm{g_k}
+ \leq\sqrt{\frac{f(x_0)-f^*}{CT}}.
+\]
+For convex $f$, every accumulation point is globally optimal. If $f$ is
+$\mu$-strongly convex and $2\mu C<1$, the PL inequality yields
+\[
+ f(x_{k+1})-f^*
+ \leq(1-2\mu C)\{f(x_k)-f^*\}.
+\]
+
+\subsection{Exact Line Search}
+
+Exact line search can be expensive and is rarely warranted when the direction
+itself comes from a local approximation. For a quadratic
+\[
+ f(x)=\frac12x^\mathsf TQx-b^\mathsf Tx,\qquad Q\succ0,
+\]
+and steepest-descent direction $p_k=-g_k$, however, it has the closed form
+\begin{equation}
+ \alpha_k=\frac{g_k^\mathsf Tg_k}{g_k^\mathsf TQg_k}.
+ \label{eq:quadratic-exact-line-search}
+\end{equation}
+Indeed,
+\[
+ \phi(\alpha)=f(x_k)-\alpha g_k^\mathsf Tg_k
+ +\frac{\alpha^2}{2}g_k^\mathsf TQg_k,
+\]
+and solving $\phi'(\alpha)=0$ proves
+\cref{eq:quadratic-exact-line-search}. Since
+$g_{k+1}=g_k-\alpha_kQg_k$, consecutive gradients satisfy
+$g_{k+1}^\mathsf Tg_k=0$. This orthogonality explains steepest descent's
+zig-zagging on poorly conditioned quadratics.
+
+\subsection{Armijo Backtracking}
+
+\begin{definition}[Armijo condition]
 The Armijo sufficient-decrease condition is
 \[
  f(x_k+\alpha p_k)
  \leq f(x_k)+c_1\alpha g_k^\mathsf Tp_k,
  \qquad 0<c_1<1.
 \]
-The curvature condition is
-\[
- \grad f(x_k+\alpha p_k)^\mathsf Tp_k
- \geq c_2g_k^\mathsf Tp_k,\qquad c_1<c_2<1.
-\]
-The strong Wolfe condition replaces the latter with an absolute-value bound.
 \end{definition}
 
 Backtracking starts from an initial step, often one, and repeatedly multiplies
-it by $\rho\in(0,1)$ until Armijo holds.
+it by $\beta\in(0,1)$ until Armijo holds.
 
 \begin{algorithm}[H]
 \caption{Backtracking line search}
 \begin{algorithmic}[1]
-\State Choose $\alpha\gets\alpha_0$, $\rho\in(0,1)$, $c_1\in(0,1)$.
+\State Choose $\alpha\gets\bar\alpha$, $\beta\in(0,1)$, $c_1\in(0,1)$.
 \While{$f(x+\alpha p)>f(x)+c_1\alpha\grad f(x)^\mathsf Tp$}
-  \State $\alpha\gets\rho\alpha$.
+  \State $\alpha\gets\beta\alpha$.
 \EndWhile
 \State Return $\alpha$.
 \end{algorithmic}
 \end{algorithm}
 
-\begin{proposition}
-If $\grad f$ is $L$-Lipschitz and $p$ is a descent direction, backtracking
-terminates after finitely many reductions.
-\end{proposition}
+\begin{theorem}[Finite termination and a step lower bound]
+Suppose $\grad f$ is $L$-Lipschitz on the search segment and $g^\mathsf Tp<0$.
+Armijo holds whenever
+\begin{equation}
+ 0<\alpha\leq
+ \frac{2(1-c_1)(-g^\mathsf Tp)}{L\norm p^2}.
+ \label{eq:armijo-sufficient-step}
+\end{equation}
+Consequently, backtracking terminates finitely and accepts
+\begin{equation}
+ \alpha\geq
+ \min\left\{\bar\alpha,
+ \frac{2\beta(1-c_1)(-g^\mathsf Tp)}{L\norm p^2}\right\}.
+ \label{eq:armijo-step-lower-bound}
+\end{equation}
+\end{theorem}
 
-The Wolfe conditions prevent steps that are too short and support global
-convergence theory for nonlinear conjugate-gradient and quasi-Newton methods.
+\begin{proof}
+The descent lemma gives
+\[
+ f(x+\alpha p)\leq f(x)+\alpha g^\mathsf Tp
+ +\frac{L\alpha^2}{2}\norm p^2.
+\]
+This upper bound implies Armijo when
+$(1-c_1)\alpha g^\mathsf Tp+(L\alpha^2/2)\norm p^2\leq0$, which is
+\cref{eq:armijo-sufficient-step}. The geometric trial sequence must enter this
+interval. If the initial trial is too large, the last rejected trial exceeds
+the right side of \cref{eq:armijo-sufficient-step}; multiplying it by $\beta$
+gives \cref{eq:armijo-step-lower-bound}.
+\end{proof}
+
+For gradient descent, $p=-g$, so the accepted step is uniformly bounded below
+by
+\[
+ \underline\alpha
+ =\min\left\{\bar\alpha,\frac{2\beta(1-c_1)}L\right\}>0,
+\]
+and
+\[
+ f(x_{k+1})\leq f(x_k)-c_1\underline\alpha\norm{g_k}^2.
+\]
+Thus the stationarity and strongly convex conclusions following
+\cref{eq:uniform-sufficient-reduction} apply.
+
+\subsection{Wolfe Conditions}
+
+Write $\phi(\alpha)=f(x_k+\alpha p_k)$. The Wolfe conditions are
+\begin{align}
+ \phi(\alpha)&\leq\phi(0)+c_1\alpha\phi'(0),
+ \label{eq:wolfe-armijo}\\
+ \phi'(\alpha)&\geq c_2\phi'(0),
+ \qquad 0<c_1<c_2<1.
+ \label{eq:wolfe-curvature}
+\end{align}
+Since $\phi'(0)<0$, the curvature condition requires the slope to become
+substantially less negative, preventing an unnecessarily short step. The
+strong Wolfe condition
+\[
+ |\phi'(\alpha)|\leq c_2|\phi'(0)|
+\]
+also prevents stepping too far beyond a one-dimensional minimizer.
+
+\begin{theorem}[Existence of Wolfe steps]
+Suppose $\phi$ is continuously differentiable, bounded below for $\alpha>0$,
+and $\phi'(0)<0$. For every $0<c_1<c_2<1$, some positive interval contains
+steps satisfying both Wolfe conditions.
+\end{theorem}
+
+\begin{proof}
+Define
+$\psi(\alpha)=\phi(\alpha)-\phi(0)-c_1\alpha\phi'(0)$. Then
+$\psi(0)=0$ and $\psi'(0)=(1-c_1)\phi'(0)<0$, so $\psi<0$ initially.
+Because $\phi$ is bounded below while
+$\phi(0)+c_1\alpha\phi'(0)\to-\infty$, eventually $\psi>0$. Let
+$\bar\alpha$ be the first subsequent zero; Armijo holds on
+$(0,\bar\alpha]$. If curvature failed throughout this interval, then
+$\phi'(\alpha)<c_2\phi'(0)$ there. Integration would give
+\[
+ \phi(\bar\alpha)-\phi(0)
+ <c_2\bar\alpha\phi'(0)
+ <c_1\bar\alpha\phi'(0),
+\]
+contradicting $\psi(\bar\alpha)=0$.
+\end{proof}
+
+For BFGS, $s_k=\alpha_kp_k$ and $y_k=g_{k+1}-g_k$. Wolfe curvature implies
+\begin{align*}
+ y_k^\mathsf Ts_k
+ &=\alpha_k(g_{k+1}^\mathsf Tp_k-g_k^\mathsf Tp_k)\\
+ &\geq\alpha_k(c_2-1)g_k^\mathsf Tp_k>0,
+\end{align*}
+so the BFGS inverse approximation remains positive definite. Armijo alone
+does not guarantee this on a nonconvex objective.
+
+\subsection{Zoutendijk's Condition}
+
+Define the angle between $-g_k$ and $p_k$ by
+\[
+ \cos\theta_k
+ =-\frac{g_k^\mathsf Tp_k}{\norm{g_k}\norm{p_k}}.
+\]
+A direction sequence is gradient related when, for fixed positive constants,
+\[
+ \cos\theta_k\geq\epsilon_0,\qquad
+ \gamma_1\norm{g_k}\leq\norm{p_k}\leq\gamma_2\norm{g_k}.
+\]
+
+\begin{theorem}[Zoutendijk condition]
+Assume $f$ is bounded below on its initial level set, its gradient is
+Lipschitz on a neighborhood of that set, every $p_k$ is a descent direction,
+and every step satisfies Wolfe. Then
+\begin{equation}
+ \sum_{k=0}^\infty\cos^2\theta_k\norm{g_k}^2<\infty.
+ \label{eq:zoutendijk}
+\end{equation}
+If $\cos\theta_k\geq\epsilon_0>0$, then $g_k\to0$.
+\end{theorem}
+
+\begin{proof}
+Gradient Lipschitzness along the step and Wolfe curvature imply
+\[
+ \alpha_k\geq
+ \frac{(1-c_2)(-g_k^\mathsf Tp_k)}{L\norm{p_k}^2}.
+\]
+Substitute this into Armijo:
+\[
+ f(x_k)-f(x_{k+1})
+ \geq\frac{c_1(1-c_2)}L
+ \frac{(g_k^\mathsf Tp_k)^2}{\norm{p_k}^2}
+ =\frac{c_1(1-c_2)}L\cos^2\theta_k\norm{g_k}^2.
+\]
+Summing telescopes and $f$ is bounded below, proving
+\cref{eq:zoutendijk}. A uniform acute-angle bound then makes the squared
+gradient norms summable.
+\end{proof}
+
+The theorem separates responsibilities: the line search guarantees progress
+along the chosen direction, while the direction-generation method must avoid
+directions becoming nearly orthogonal to $-g_k$. Newton directions are
+gradient related when
+$\mu I\preceq\Hess f(x)\preceq LI$, since
+\[
+ \frac{-g^\mathsf Tp}{\norm g\norm p}\geq\frac\mu L,
+ \qquad
+ \frac1L\norm g\leq\norm p\leq\frac1\mu\norm g.
+\]
+Similar bounds hold for $p_k=-H_kg_k$ when $H_k$ is uniformly positive
+definite and bounded.
+
+\subsection{Eventual Full Newton Steps}
+
+\begin{theorem}[Eventual acceptance of the unit Newton step]
+Suppose the Hessian is Lipschitz near $x^*$,
+$\grad f(x^*)=0$, and $\Hess f(x^*)\succ0$. If $c_1<1/2$, then sufficiently
+near $x^*$ the Newton step satisfies Armijo with $\alpha=1$. Backtracking
+Newton therefore eventually recovers quadratic convergence.
+\end{theorem}
+
+\begin{proof}
+Let $g=\grad f(x)$, $H=\Hess f(x)$, and $p=-H^{-1}g$. Hessian Lipschitzness
+with constant $M$ gives
+\[
+ f(x+p)\leq f(x)+g^\mathsf Tp+\frac12p^\mathsf THp
+ +\frac M6\norm p^3
+ =f(x)+\frac12g^\mathsf Tp+\frac M6\norm p^3.
+\]
+Near $x^*$, $H\succeq\mu I$, so
+$-g^\mathsf Tp=p^\mathsf THp\geq\mu\norm p^2$. The unit step satisfies
+Armijo whenever
+\[
+ \frac M6\norm p\leq\left(\frac12-c_1\right)\mu.
+\]
+As $x\to x^*$, $p\to0$, so this eventually holds.
+\end{proof}
+
+For BFGS, Wolfe search both preserves positive definiteness and, under standard
+local assumptions, eventually accepts unit steps, enabling superlinear
+convergence.
 
 \section{Subgradient Method}
 
-For a convex, possibly nondifferentiable function $f$, a vector $g$ is a
-subgradient at $x$ if
+Let $f:\R^n\to\R\cup\{+\infty\}$ be proper and convex. A vector $g$ is a
+\emph{subgradient} at $x\in\operatorname{dom} f$ if
 \[
-    f(y)\geq f(x)+g^\mathsf T(y-x)\quad\text{for all }y.
+    f(y)\geq f(x)+g^\mathsf T(y-x)\qquad\text{for every }y\in\R^n.
 \]
-The set $\partial f(x)$ of all subgradients is the subdifferential.
-For $f(x)=\abs x$, $\partial f(0)=[-1,1]$. A point minimizes a proper convex
-function exactly when $0\in\partial f(x)$.
-
-The subgradient iteration is
+The closed convex set of all such vectors is the \emph{subdifferential}
+$\partial f(x)$. If $f$ is differentiable at $x$, then
+$\partial f(x)=\{\nabla f(x)\}$; in general it may contain many supporting
+slopes. Important examples are
 \[
-    x_{k+1}=x_k-\alpha_kg_k,\qquad g_k\in\partial f(x_k).
+ \partial\abs{x}=\begin{cases}
+   \{1\},&x>0,\\[-2pt]
+   [-1,1],&x=0,\\[-2pt]
+   \{-1\},&x<0,
+ \end{cases}
+ \qquad
+ \partial\norm{x}_2=\begin{cases}
+   \{x/\norm{x}_2\},&x\neq0,\\
+   \{g:\norm{g}_2\leq1\},&x=0.
+ \end{cases}
 \]
-Unlike a gradient, $-g_k$ need not be a descent direction, so objective values
-may oscillate.
-
-\begin{theorem}[Subgradient bound]
-Suppose $\norm{g_k}\leq G$ and $\norm{x_0-x^*}\leq R$. Then
+More generally, for a norm and its dual norm,
 \[
- \min_{0\leq j<k}\{f(x_j)-f(x^*)\}
- \leq\frac{R^2+G^2\sum_{j=0}^{k-1}\alpha_j^2}
-           {2\sum_{j=0}^{k-1}\alpha_j}.
+ \partial\norm{x}=\{g:\norm{g}_*\leq1,\ g^\mathsf Tx=\norm{x}\}.
 \]
-Thus steps satisfying $\sum_k\alpha_k=\infty$ and
-$\sum_k\alpha_k^2<\infty$ give convergence of the best objective value.
-\end{theorem}
 
-With a horizon known in advance, constant steps of order $1/\sqrt{k}$ give
-the characteristic $O(k^{-1/2})$ rate. Proximal methods are usually much
-faster when the nonsmooth term has a tractable proximal map.
+\subsection{Subdifferential calculus and optimality}
+
+For proper convex functions, with the usual relative-interior qualification
+where needed,
+\begin{align*}
+ \partial(af)(x)&=a\partial f(x), &&a>0,\\
+ \partial(f_1+\cdots+f_m)(x)&=\partial f_1(x)+\cdots+\partial f_m(x),\\
+ \partial\bigl(f(Ax+b)\bigr)&=A^\mathsf T\partial f(Ax+b).
+\end{align*}
+If $f(x)=\max_i f_i(x)$ and $I(x)=\{i:f_i(x)=f(x)\}$, then
+\[
+ \partial f(x)=\operatorname{conv}\!\left(\bigcup_{i\in I(x)}\partial f_i(x)\right).
+\]
+Equivalently, the one-sided directional derivative is the support function
+of the subdifferential:
+\[
+ f'(x;d)=\max_{g\in\partial f(x)}g^\mathsf Td.
+\]
+Thus an arbitrary negative subgradient need not be a descent direction. The
+minimum-norm subgradient $g_{\min}$ is special: away from a minimizer,
+$f'(x;-g_{\min})=-\norm{g_{\min}}^2<0$.
+
+The nonsmooth Fermat rule is
+\[
+ x^*\in\argmin_x f(x)\quad\Longleftrightarrow\quad0\in\partial f(x^*).
+\]
+For minimization over a nonempty closed convex set $C$, define
+\[
+ N_C(x)=\{v:v^\mathsf T(y-x)\leq0\text{ for every }y\in C\}.
+\]
+Since $N_C(x)=\partial\delta_C(x)$, constrained optimality becomes
+\[
+ 0\in\partial f(x^*)+N_C(x^*).
+\]
+For example, $0\in\nabla h(x^*)+\lambda\partial\norm{x^*}_1$ explains the
+coordinatewise thresholding behavior of $\ell_1$ regularization.
+
+\subsection{Projected subgradient iteration}
+
+Choose $s_k\in\partial f(x_k)$ and update
+\[
+ x_{k+1}=\operatorname{proj}_C(x_k-\alpha_ks_k),
+\]
+where $C=\R^n$ gives the unconstrained method. Euclidean projection is
+nonexpansive. Indeed, if $p=\operatorname{proj}_C(u)$ and
+$q=\operatorname{proj}_C(v)$, projection
+optimality gives
+\[
+ (u-p)^\mathsf T(q-p)\leq0,
+ \qquad (v-q)^\mathsf T(p-q)\leq0.
+\]
+Adding these inequalities and applying Cauchy--Schwarz yields
+\[
+ \norm{p-q}^2\leq(u-v)^\mathsf T(p-q)
+ \leq\norm{u-v}\norm{p-q},
+\]
+hence $\norm{p-q}\leq\norm{u-v}$.
+
+Let $x^*$ minimize $f$ over $C$. Nonexpansiveness and the subgradient
+inequality give the fundamental distance recursion
+\begin{align*}
+ \norm{x_{k+1}-x^*}^2
+ &\leq\norm{x_k-\alpha_ks_k-x^*}^2\\
+ &=\norm{x_k-x^*}^2-2\alpha_ks_k^\mathsf T(x_k-x^*)
+       +\alpha_k^2\norm{s_k}^2\\
+ &\leq\norm{x_k-x^*}^2-2\alpha_k\bigl(f(x_k)-f^*\bigr)
+       +\alpha_k^2\norm{s_k}^2.
+\end{align*}
+This distance-based analysis is necessary because the objective values need
+not decrease from one iteration to the next.
+
+\subsection{Master bound and step sizes}
+
+Assume $\norm{x_0-x^*}\leq R$ and $\norm{s_k}\leq G$. Summing the distance
+recursion for $k=0,\ldots,T-1$ gives
+\[
+ \sum_{k=0}^{T-1}\alpha_k\bigl(f(x_k)-f^*\bigr)
+ \leq\frac{R^2+G^2\sum_{k=0}^{T-1}\alpha_k^2}{2}.
+\]
+For the weighted average
+\[
+ \bar x_T=\frac{\sum_{k=0}^{T-1}\alpha_kx_k}
+                  {\sum_{k=0}^{T-1}\alpha_k},
+\]
+convexity, and separately the fact that a minimum is no larger than an
+average, produce the common master bound
+\begin{equation}\label{eq:subgradient-master}
+ \max\!\left\{f(\bar x_T)-f^*,\;
+ \min_{0\leq k<T}f(x_k)-f^*\right\}
+ \leq\frac{R^2+G^2\sum_{k=0}^{T-1}\alpha_k^2}
+           {2\sum_{k=0}^{T-1}\alpha_k}.
+\end{equation}
+With a constant step $\alpha_k=\alpha$,
+\[
+ f(\bar x_T)-f^*\leq\frac{R^2}{2T\alpha}+\frac{G^2\alpha}{2}.
+\]
+For a known horizon, $\alpha=R/(G\sqrt{T})$ balances the terms and gives
+\[
+ f(\bar x_T)-f^*\leq\frac{RG}{\sqrt{T}},
+\]
+so $O(R^2G^2/\epsilon^2)$ iterations suffice for accuracy $\epsilon$.
+If $\alpha_k\to0$ and $\sum_k\alpha_k=\infty$, then
+\[
+ \frac{\sum_{k<T}\alpha_k^2}{\sum_{k<T}\alpha_k}\longrightarrow0,
+\]
+so the best-iterate gap vanishes. The stronger classical conditions
+$\sum_k\alpha_k=\infty$ and $\sum_k\alpha_k^2<\infty$ also control the
+distance sequence.
+
+When $f^*$ is known, Polyak's step
+\[
+ \alpha_k=\frac{f(x_k)-f^*}{\norm{s_k}^2}
+\]
+turns the recursion into
+\[
+ \norm{x_{k+1}-x^*}^2
+ \leq\norm{x_k-x^*}^2
+ -\frac{\bigl(f(x_k)-f^*\bigr)^2}{\norm{s_k}^2}.
+\]
+Thus distance to every solution decreases monotonically and the best gap is
+again at most $RG/\sqrt{T}$. An overestimate of $f^*$ destroys this guarantee.
+
+\subsection{Strongly convex objectives}
+
+If $f$ is $\mu$-strongly convex, then
+\[
+ s_k^\mathsf T(x_k-x^*)\geq f(x_k)-f^*
+             +\frac{\mu}{2}\norm{x_k-x^*}^2,
+\]
+and therefore
+\[
+ \norm{x_{k+1}-x^*}^2
+ \leq(1-\mu\alpha_k)\norm{x_k-x^*}^2
+ -2\alpha_k\bigl(f(x_k)-f^*\bigr)+\alpha_k^2G^2.
+\]
+Taking $\alpha_k=1/(\mu k)$ for $k=1,\ldots,T$ and rearranging gives
+\[
+ f(x_k)-f^*\leq\frac{\mu}{2}
+ \left((k-1)\norm{x_k-x^*}^2-k\norm{x_{k+1}-x^*}^2\right)
+ +\frac{G^2}{2\mu k}.
+\]
+The distance terms telescope. For
+$\bar x_T=T^{-1}\sum_{k=1}^T x_k$, convexity then yields
+\[
+ f(\bar x_T)-f^*\leq\frac{G^2(1+\log T)}{2\mu T}.
+\]
+More careful weighting removes the logarithm and gives
+$O(G^2/(\mu T))$. Despite its broad applicability, the basic method can be
+nonmonotone and step-size sensitive; proximal, bundle, smoothing, or
+primal--dual methods exploit additional structure more effectively.
 
 \section{Proximal Gradient Method}
 
 Consider the composite convex problem
 \[
-    \min_x F(x)=f(x)+g(x),
+    \min_x F(x)=f(x)+h(x),
 \]
-where $f$ is differentiable and $L$-smooth while $g$ is convex and may be
-nonsmooth.
+where $f$ is convex and differentiable with $L$-Lipschitz gradient, while
+$h$ is proper, closed, and convex but may be nonsmooth or extended-valued.
+This includes constraints through $h=\delta_C$ and sparsity penalties through
+$h(x)=\lambda\norm{x}_1$.
 
 \begin{definition}[Proximal operator]
 For $\alpha>0$,
 \[
- \operatorname{prox}_{\alpha g}(v)
- =\argmin_x\left\{g(x)+\frac1{2\alpha}\norm{x-v}^2\right\}.
+ \operatorname{prox}_{\alpha h}(v)
+ =\argmin_x\left\{h(x)+\frac1{2\alpha}\norm{x-v}^2\right\}.
 \]
 \end{definition}
+The objective defining the proximal map is $1/\alpha$-strongly convex, so its
+minimizer exists and is unique. Its optimality condition is
+\begin{equation}\label{eq:prox-optimality}
+ p=\operatorname{prox}_{\alpha h}(v)
+ \quad\Longleftrightarrow\quad
+ \frac{v-p}{\alpha}\in\partial h(p).
+\end{equation}
 
-The proximal-gradient step is
+The proximal map is \emph{firmly nonexpansive}. If
+$p=\operatorname{prox}_{\alpha h}(u)$ and
+$q=\operatorname{prox}_{\alpha h}(v)$, monotonicity of $\partial h$ gives
+\begin{align*}
+ 0&\leq\left\langle p-q,
+ \frac{u-p}{\alpha}-\frac{v-q}{\alpha}\right\rangle,\\
+ \norm{p-q}^2&\leq\langle p-q,u-v\rangle.
+\end{align*}
+Cauchy--Schwarz therefore implies ordinary nonexpansiveness.
+
+\subsection{Examples of proximal mappings}
+
+If $h(x)=\sum_i h_i(x_i)$, the proximal problem separates coordinatewise.
+For $\tau=\alpha\lambda$, this gives soft thresholding:
+\[
+ \left[\operatorname{prox}_{\alpha\lambda\norm{\cdot}_1}(v)\right]_i
+ =\operatorname{sign}(v_i)(\abs{v_i}-\tau)_+.
+\]
+Indeed, the scalar condition
+$0\in\lambda\partial\abs p+(p-v)/\alpha$ yields $p=v-\tau$ for
+$v>\tau$, $p=v+\tau$ for $v<-\tau$, and $p=0$ for $\abs v\leq\tau$.
+Other useful formulas include
+\begin{align*}
+ \operatorname{prox}_{\alpha\lambda\norm{\cdot}_2}(v)
+ &=\left(1-\frac{\tau}{\norm v_2}\right)_+v,\\
+ \operatorname{prox}_{\alpha(\lambda/2)\norm{\cdot}_2^2}(v)
+ &=\frac{v}{1+\alpha\lambda},\\
+ \operatorname{prox}_{\alpha\delta_C}(v)&=\operatorname{proj}_C(v).
+\end{align*}
+For a matrix $V=U\operatorname{diag}(\sigma_i)W^\mathsf T$, singular-value
+thresholding gives
+\[
+ \operatorname{prox}_{\alpha\lambda\norm{\cdot}_*}(V)
+ =U\operatorname{diag}\bigl((\sigma_i-\tau)_+\bigr)W^\mathsf T.
+\]
+Thus coordinate sparsity, group sparsity, low rank, and simple constraints can
+all be handled by choosing an appropriate proximal map.
+
+The Moreau decomposition is sometimes the easiest route to a formula. With
+$h^*$ the convex conjugate,
+\[
+ v=\operatorname{prox}_{\alpha h}(v)
+   +\alpha\operatorname{prox}_{h^*/\alpha}(v/\alpha).
+\]
+For example, since $(\lambda\norm{\cdot}_\infty)^*$ is the indicator of the
+$\ell_1$ ball of radius $\lambda$,
+\[
+ \operatorname{prox}_{\alpha\lambda\norm{\cdot}_\infty}(v)
+ =v-\operatorname{proj}_{\{z:\norm z_1\leq\alpha\lambda\}}(v).
+\]
+
+\subsection{The proximal-gradient step}
+
+The descent lemma motivates the quadratic model
+\[
+ Q_\alpha(y;x)=f(x)+\langle\nabla f(x),y-x\rangle
+       +\frac{1}{2\alpha}\norm{y-x}^2+h(y).
+\]
+When $0<\alpha\leq1/L$, this model majorizes $F(y)$. Completing the square
+shows that its minimizer is the proximal-gradient step
 \begin{equation}
- x_{k+1}=\operatorname{prox}_{\alpha g}
-             \{x_k-\alpha\grad f(x_k)\}.
+ x_{k+1}=\operatorname{prox}_{\alpha h}
+             \bigl(x_k-\alpha\grad f(x_k)\bigr).
  \label{eq:proximal-gradient}
 \end{equation}
-It minimizes a quadratic upper model of $f$ plus the exact $g$. Examples are
+The associated gradient mapping
 \[
- \operatorname{prox}_{\alpha\lambda\norm{\cdot}_1}(v)
- =\operatorname{sign}(v)(\abs v-\alpha\lambda)_+,
-\qquad
- \operatorname{prox}_{\ind_C}(v)=\Pi_C(v).
+ G_\alpha(x)=\frac1\alpha\left[x-
+ \operatorname{prox}_{\alpha h}(x-\alpha\nabla f(x))\right]
 \]
+reduces to $\nabla f(x)$ when $h=0$. By \eqref{eq:prox-optimality},
+\[
+ G_\alpha(x)=0
+ \quad\Longleftrightarrow\quad
+ 0\in\nabla f(x)+\partial h(x)
+ \quad\Longleftrightarrow\quad x\in\argmin F.
+\]
+
+\subsection{Three-point inequality and descent}
+
+Let $x^+=\operatorname{prox}_{\alpha h}(x-\alpha\nabla f(x))$. Proximal
+optimality supplies
+\[
+ r^+=\frac{x-x^+}{\alpha}-\nabla f(x)\in\partial h(x^+).
+\]
+For any $y\in\operatorname{dom}h$, combine the subgradient inequality for
+$h$, convexity of $f$, and the descent lemma:
+\begin{align*}
+ F(x^+)-F(y)
+ &\leq\langle\nabla f(x),x^+-y\rangle
+       +\frac L2\norm{x^+-x}^2+\langle r^+,x^+-y\rangle\\
+ &=\frac1\alpha\langle x-x^+,x^+-y\rangle
+       +\frac L2\norm{x^+-x}^2.
+\end{align*}
+Using
+\[
+ 2\langle x-x^+,x^+-y\rangle
+ =\norm{x-y}^2-\norm{x^+-y}^2-\norm{x-x^+}^2
+\]
+gives the central three-point estimate
+\begin{equation}\label{eq:prox-three-point}
+ F(x^+)\leq F(y)+\frac1{2\alpha}
+ \left(\norm{x-y}^2-\norm{x^+-y}^2
+ -(1-\alpha L)\norm{x^+-x}^2\right).
+\end{equation}
+A slightly sharper comparison with $y=x$ in the strongly convex proximal
+model gives, for $0<\alpha<2/L$,
+\begin{equation}\label{eq:prox-decrease}
+ F(x^+)\leq F(x)-\alpha\left(1-\frac{\alpha L}{2}\right)
+ \norm{G_\alpha(x)}^2.
+\end{equation}
+Hence the usual choice $\alpha\leq1/L$ decreases the objective.
+
+\subsection{Convergence rates}
 
 \begin{theorem}[Proximal-gradient rate]
 If $F$ is convex, $f$ is $L$-smooth, and a minimizer exists, then with
@@ -404,80 +1507,371 @@ $\alpha=1/L$,
     F(x_k)-F(x^*)\leq\frac{L\norm{x_0-x^*}^2}{2k}.
 \]
 \end{theorem}
+To prove the theorem, set $y=x^*$ and $\alpha=1/L$ in
+\eqref{eq:prox-three-point}:
+\[
+ F(x_{j+1})-F^*\leq\frac L2
+ \left(\norm{x_j-x^*}^2-\norm{x_{j+1}-x^*}^2\right).
+\]
+Summing from $j=0$ to $k-1$ telescopes. Since the objective values are
+nonincreasing by \eqref{eq:prox-decrease},
+\[
+ k\bigl(F(x_k)-F^*\bigr)
+ \leq\sum_{j=1}^k\bigl(F(x_j)-F^*\bigr)
+ \leq\frac L2\norm{x_0-x^*}^2.
+\]
 
-The gradient mapping
-$G_\alpha(x)=\alpha^{-1}[x-\operatorname{prox}_{\alpha g}
-(x-\alpha\grad f(x))]$ generalizes the gradient: $G_\alpha(x)=0$ exactly at
-a first-order solution.
+If $f$ is additionally $\mu$-strongly convex, the same proof gains the term
+$-(\mu/2)\norm{x_k-x^*}^2$. Combining it with strong convexity of $F$ yields
+\[
+ (L+\mu)\norm{x_{k+1}-x^*}^2
+ \leq(L-\mu)\norm{x_k-x^*}^2,
+\]
+and consequently
+\[
+ \norm{x_k-x^*}^2
+ \leq\left(\frac{L-\mu}{L+\mu}\right)^k\norm{x_0-x^*}^2.
+\]
+Even when $f$ is nonconvex, \eqref{eq:prox-decrease} remains valid for convex
+$h$. If $F$ is bounded below and $0<\alpha<2/L$, summing it gives
+\[
+ \min_{0\leq j<k}\norm{G_\alpha(x_j)}^2
+ \leq\frac{F(x_0)-\inf F}{k\alpha(1-\alpha L/2)},
+\]
+so an $\epsilon$-stationary point requires $O(1/\epsilon^2)$ iterations.
+
+\subsection{Backtracking and ISTA}
+
+When $L$ is unknown, repeatedly replace a trial step by
+$\alpha\leftarrow\beta\alpha$, where $\beta\in(0,1)$, until the smooth-term
+majorization test
+\[
+ f(x^+)\leq f(x)+\langle\nabla f(x),x^+-x\rangle
+       +\frac1{2\alpha}\norm{x^+-x}^2
+\]
+holds. This test terminates once $\alpha\leq1/L$; it must be applied to the
+smooth function $f$, not the full objective $F$.
+
+For the Lasso,
+\[
+ \min_x\frac12\norm{Ax-b}^2+\lambda\norm{x}_1,
+\]
+proximal gradient becomes the iterative shrinkage-thresholding algorithm
+(ISTA):
+\[
+ x_{k+1}=\operatorname{soft}_{\alpha_k\lambda}
+ \bigl(x_k-\alpha_kA^\mathsf T(Ax_k-b)\bigr).
+\]
+Its accelerated version, FISTA, appears in the next section.
 
 \section{Nesterov’s Accelerated Gradient Method}
 
-Acceleration combines a gradient step with momentum. For convex $L$-smooth
-$f$, one common form is
+Momentum methods retain information from two consecutive iterates. They can
+reduce the zig-zagging caused by ill-conditioning, but their guarantees
+depend strongly on how and where the gradient is evaluated.
+
+\subsection{Heavy-ball momentum}
+
+Polyak's heavy-ball iteration is
+\begin{equation}\label{eq:heavy-ball}
+ x_{k+1}=x_k-\alpha\nabla f(x_k)+\beta(x_k-x_{k-1}),
+ \qquad \alpha>0,\quad0\leq\beta<1.
+\end{equation}
+Equivalently, $v_{k+1}=\beta v_k+\nabla f(x_k)$ and
+$x_{k+1}=x_k-\alpha v_{k+1}$, so the velocity averages recent gradients.
+For the quadratic
 \[
- x_{k+1}=y_k-\frac1L\grad f(y_k),\qquad
- y_{k+1}=x_{k+1}+\frac{k}{k+3}(x_{k+1}-x_k).
+ f(x)=\frac12x^\mathsf TQx-b^\mathsf Tx,qquad Q\succ0,
+\]
+the error in an eigendirection of $Q$ with eigenvalue $\lambda$ obeys
+\[
+ e_{k+1}^{(\lambda)}=(1+\beta-\alpha\lambda)e_k^{(\lambda)}
+       -\beta e_{k-1}^{(\lambda)}.
+\]
+Thus stability is determined by the roots of
+$r^2-(1+\beta-\alpha\lambda)r+\beta=0$ for every
+$\lambda\in[\mu,L]$.
+
+For positive-definite quadratics, the parameters
+\[
+ \alpha_{\mathrm{HB}}=\frac{4}{(\sqrt L+\sqrt\mu)^2},
+ \qquad
+ \beta_{\mathrm{HB}}=\left(\frac{\sqrt L-\sqrt\mu}
+                                  {\sqrt L+\sqrt\mu}\right)^2
+\]
+give spectral radius at most
+\[
+ \rho_{\mathrm{HB}}=\frac{\sqrt\kappa-1}{\sqrt\kappa+1},
+ \qquad \kappa=\frac L\mu.
+\]
+To see this, write $q=(\sqrt L-\sqrt\mu)/(\sqrt L+\sqrt\mu)$. The middle
+coefficient of the scalar recurrence ranges from $2q$ to $-2q$, while the
+root product is $q^2$. The endpoint roots are repeated roots $\pm q$, and
+interior complex-conjugate roots have modulus $q$. These parameters are exact
+for quadratics but need not be stable for a general smooth convex function.
+
+\subsection{Nesterov acceleration for convex functions}
+
+Nesterov's method evaluates the gradient at an extrapolated point. Set
+$x_0=y_1$ and $t_1=1$, and for $k\geq1$ compute
+\begin{align}
+ x_k&=y_k-\frac1L\nabla f(y_k),\label{eq:nag-step}\\
+ t_{k+1}&=\frac{1+\sqrt{1+4t_k^2}}{2},\label{eq:nag-t}\\
+ y_{k+1}&=x_k+\frac{t_k-1}{t_{k+1}}(x_k-x_{k-1}).\label{eq:nag-extra}
+\end{align}
+The scalar recursion is chosen so that
+\[
+ t_{k+1}^2-t_{k+1}=t_k^2,
+ \qquad t_k\geq\frac{k+1}{2}.
 \]
 
+The proof begins with a one-step inequality. If
+$x^+=y-L^{-1}\nabla f(y)$, then for every $z$,
+\begin{equation}\label{eq:nag-one-step}
+ f(x^+)\leq f(z)+\frac L2
+ \left(\norm{z-y}^2-\norm{z-x^+}^2\right).
+\end{equation}
+Indeed, the descent lemma and convexity give
+\begin{align*}
+ f(x^+)&\leq f(y)+\langle\nabla f(y),x^+-y\rangle
+              +\frac L2\norm{x^+-y}^2,\\
+ f(y)&\leq f(z)+\langle\nabla f(y),y-z\rangle.
+\end{align*}
+Substituting $\nabla f(y)=L(y-x^+)$ and applying the three-point identity
+produces \eqref{eq:nag-one-step}.
+
 \begin{theorem}[Accelerated rate]
-Nesterov's method can be chosen so that
+If $f$ is convex and $L$-smooth, \eqref{eq:nag-step}--\eqref{eq:nag-extra}
+satisfy
 \[
     f(x_k)-f(x^*)\leq\frac{2L\norm{x_0-x^*}^2}{(k+1)^2}.
 \]
-For $\mu$-strongly convex $f$, accelerated methods achieve a linear factor of
-order $1-1/\sqrt{\kappa}$ rather than $1-1/\kappa$.
 \end{theorem}
 
-FISTA applies the same idea to proximal gradient and achieves $O(k^{-2})$ for
-composite convex objectives. Momentum can cause nonmonotone objectives and
-oscillation. Adaptive restart resets momentum when the objective or gradient
-geometry indicates overshooting.
+For the derivation, define
+\[
+ z_k=t_kx_k-(t_k-1)x_{k-1}.
+\]
+The extrapolation identity implies
+$t_{k+1}y_{k+1}-(t_{k+1}-1)x_k=z_k$. Apply
+\eqref{eq:nag-one-step} at $y_{k+1}$ once with $z=x_k$ and once with
+$z=x^*$, weight and add the inequalities, and use convexity together with
+$t_{k+1}^2-t_{k+1}=t_k^2$. Completing squares yields the potential recursion
+\begin{equation}\label{eq:nag-potential}
+ \frac{2t_{k+1}^2}{L}\bigl(f(x_{k+1})-f^*\bigr)
+   +\norm{z_{k+1}-x^*}^2
+ \leq
+ \frac{2t_k^2}{L}\bigl(f(x_k)-f^*\bigr)
+   +\norm{z_k-x^*}^2.
+\end{equation}
+The initial potential is at most $\norm{x_0-x^*}^2$. Dropping the
+nonnegative norm in \eqref{eq:nag-potential} and using
+$t_k\geq(k+1)/2$ proves the rate. Notice that the potential decreases even
+though the objective values themselves need not be monotone.
+
+\subsection{Strongly convex acceleration}
+
+When $f$ is also $\mu$-strongly convex and $\mu$ is known, use constant
+extrapolation:
+\begin{align*}
+ x_{k+1}&=y_k-\frac1L\nabla f(y_k),\\
+ y_{k+1}&=x_{k+1}+\beta(x_{k+1}-x_k),
+ &\beta&=\frac{\sqrt L-\sqrt\mu}{\sqrt L+\sqrt\mu}.
+\end{align*}
+Writing $q=\sqrt{\mu/L}$ and introducing
+$v_k=x_{k-1}+q^{-1}(x_k-x_{k-1})$, one can combine smoothness with the
+strong-convexity lower bound and complete squares to obtain the Lyapunov
+contraction
+\[
+ E_{k+1}\leq(1-q)E_k,
+ \qquad
+ E_k=f(x_k)-f^*+\frac\mu2\norm{v_k-x^*}^2.
+\]
+Therefore
+\[
+ f(x_k)-f^*\leq C\left(1-\frac1{\sqrt\kappa}\right)^k.
+\]
+Gradient descent needs $O(\kappa\log(1/\epsilon))$ iterations, whereas the
+accelerated complexity is $O(\sqrt\kappa\log(1/\epsilon))$.
+
+\subsection{FISTA}
+
+For the composite objective $F=f+h$, replace the gradient step by
+\[
+ x_k=\operatorname{prox}_{h/L}
+ \left(y_k-\frac1L\nabla f(y_k)\right)
+\]
+and keep the same $t_k$ and extrapolation recursions. This is the fast
+iterative shrinkage-thresholding algorithm (FISTA). The proximal-gradient
+three-point estimate gives, for every $z$,
+\[
+ F(x^+)\leq F(z)+\frac L2
+ \left(\norm{z-y}^2-\norm{z-x^+}^2\right).
+\]
+Since this is exactly \eqref{eq:nag-one-step} with $F$ replacing $f$, the
+same potential proof yields
+\[
+ F(x_k)-F^*\leq\frac{2L\norm{x_0-x^*}^2}{(k+1)^2}.
+\]
+Backtracking tests the quadratic upper model only for the smooth term $f$;
+no differentiability of $h$ is needed.
+
+\subsection{Restart and safeguards}
+
+Momentum can become misaligned when the local curvature changes. Common
+safeguards include restarting with $t_k=1$ when
+$F(x_k)>F(x_{k-1})$, or when
+\[
+ \langle x_k-x_{k-1},x_{k+1}-x_k\rangle>0.
+\]
+Monotone FISTA chooses the better of the accelerated candidate and an
+ordinary proximal-gradient candidate. Restart often recovers nearly linear
+behavior on strongly convex problems even when $\mu$ is unknown.
 
 \section{Frank-Wolfe Method}
 
 Frank--Wolfe solves $\min_{x\in C}f(x)$ for a compact convex set $C$ using a
 linear minimization oracle rather than projection:
-\[
- s_k\in\argmin_{s\in C}\grad f(x_k)^\mathsf Ts,\qquad
- x_{k+1}=(1-\gamma_k)x_k+\gamma_ks_k.
-\]
-It is useful when linear optimization over $C$ is cheap but Euclidean
-projection is expensive, as for nuclear-norm balls.
+\begin{align*}
+ s_k&\in\argmin_{s\in C}\langle\nabla f(x_k),s\rangle,\\
+ d_k&=s_k-x_k,\\
+ x_{k+1}&=x_k+\gamma_kd_k,qquad \gamma_k\in[0,1].
+\end{align*}
+The update is a convex combination of feasible points, so feasibility is
+automatic. When $C=\operatorname{conv}\{a_1,\ldots,a_m\}$, each oracle call
+returns an atom, and $x_k$ is a combination of at most $k+1$ atoms. This is
+useful when linear optimization is cheap but Euclidean projection is
+expensive, as on simplices, flow polytopes, and nuclear-norm balls.
+
+\subsection{The Frank--Wolfe gap}
 
 The Frank--Wolfe gap
 \[
     g_{\mathrm{FW}}(x)=
-    \max_{s\in C}\grad f(x)^\mathsf T(x-s)
+    \max_{s\in C}\langle\nabla f(x),x-s\rangle
+    =\langle\nabla f(x),x-s(x)\rangle
 \]
-is computable and satisfies $f(x)-f(x^*)\leq g_{\mathrm{FW}}(x)$ for convex
-$f$. It is both a stopping criterion and a certificate.
+is both a stopping criterion and a computable certificate. Convexity gives
+\[
+ f(x)-f^*\leq\langle\nabla f(x),x-x^*\rangle
+ \leq\max_{s\in C}\langle\nabla f(x),x-s\rangle=g_{\mathrm{FW}}(x).
+\]
+The gap is nonnegative because $s=x$ is feasible in the maximum. Hence
+$g_{\mathrm{FW}}(x)=0$ if and only if $x$ is optimal.
+
+\subsection{Curvature and descent}
+
+An affine-invariant smoothness measure is the curvature constant
+\[
+ C_f=\sup_{\substack{x,s\in C\\\gamma\in(0,1]}}
+ \frac{2}{\gamma^2}\left[f(x+\gamma(s-x))-f(x)
+ -\gamma\langle\nabla f(x),s-x\rangle\right].
+\]
+If $\nabla f$ is $L$-Lipschitz and $C$ has diameter
+$D=\sup_{x,y\in C}\norm{x-y}$, the descent lemma gives $C_f\leq LD^2$.
+Using the oracle direction in the definition of curvature yields
+\begin{equation}\label{eq:fw-descent}
+ f\bigl(x+\gamma(s(x)-x)\bigr)
+ \leq f(x)-\gamma g_{\mathrm{FW}}(x)+\frac{\gamma^2}{2}C_f.
+\end{equation}
+Common choices are $\gamma_k=2/(k+2)$, exact line search over $[0,1]$, or
+the curvature-adaptive step
+\[
+ \gamma_k=\min\left\{\frac{g_{\mathrm{FW}}(x_k)}{C_f},1\right\}.
+\]
+
+\subsection{Primal convergence and gap complexity}
+
+Let $h_k=f(x_k)-f^*$. Since $h_k\leq g_{\mathrm{FW}}(x_k)$,
+\eqref{eq:fw-descent} gives the fundamental recursion
+\begin{equation}\label{eq:fw-recursion}
+ h_{k+1}\leq(1-\gamma_k)h_k+\frac{\gamma_k^2}{2}C_f.
+\end{equation}
 
 \begin{theorem}[Frank--Wolfe rate]
-If $f$ is convex and $L$-smooth on compact $C$ with diameter $D$, then with
-$\gamma_k=2/(k+2)$,
+With $\gamma_0=1$ and $\gamma_k=2/(k+2)$ thereafter,
 \[
-    f(x_k)-f(x^*)\leq\frac{2LD^2}{k+2}.
+    f(x_k)-f^*\leq\frac{2C_f}{k+2}leq\frac{2LD^2}{k+2}.
 \]
+The same bound holds under exact line search.
 \end{theorem}
+
+For the proof, the first full step gives $h_1\leq C_f/2$. If
+$h_k\leq2C_f/(k+2)$, substitute $\gamma_k=2/(k+2)$ into
+\eqref{eq:fw-recursion} to obtain
+\[
+ h_{k+1}\leq\frac{2C_f(k+1)}{(k+2)^2}
+ \leq\frac{2C_f}{k+3},
+\]
+where the last inequality follows from
+$(k+1)(k+3)\leq(k+2)^2$. Induction proves the result.
+
+The primal rate does not by itself bound the current Frank--Wolfe gap. With
+exact line search or minimization of the quadratic upper bound in
+\eqref{eq:fw-descent}, summing a constant test step over the window
+$k=K,\ldots,2K$ gives
+\[
+ \min_{K\leq k\leq2K}g_{\mathrm{FW}}(x_k)
+ \leq\frac{4C_f}{K+2}.
+\]
+Thus $O(C_f/\epsilon)$ oracle calls suffice to produce an explicit
+$\epsilon$-optimality certificate.
+
+\subsection{Linear minimization oracles}
+
+For the probability simplex, the oracle places all mass on a smallest
+component of the gradient:
+\[
+ s=e_i,qquad i\in\argmin_j[\nabla f(x)]_j.
+\]
+For the $\ell_1$ ball $\{x:\norm{x}_1\leq\tau\}$,
+\[
+ s=-\tau\operatorname{sign}([\nabla f(x)]_i)e_i,qquad
+ i\in\argmax_j\abs{[\nabla f(x)]_j}.
+\]
+Each iteration introduces at most one new nonzero coordinate. For the
+nuclear-norm ball $\{X:\norm X_*\leq\tau\}$, if $uv^\mathsf T$ is a leading
+singular-vector pair of $\nabla f(X)$, then
+\[
+ S=-\tau uv^\mathsf T.
+\]
+Only a leading singular-vector computation is required, and the iterate's
+rank increases by at most one.
+
+\subsection{Away steps and variants}
 
 Iterates are convex combinations of oracle outputs, often giving sparse or
 low-rank solutions early. Standard Frank--Wolfe can zig-zag near a boundary;
-away-step variants achieve faster rates under additional geometry.
+it can add atoms quickly but remove their weights only gradually. If
+$x_k=\sum_{a\in\mathcal A_k}\lambda_a a$, an away step chooses
+\[
+ v_k\in\argmax_{v\in\mathcal A_k}\langle\nabla f(x_k),v\rangle
+\]
+and moves along $x_k-v_k$ up to the largest step preserving nonnegative
+coefficients. Pairwise Frank--Wolfe transfers weight directly from $v_k$ to
+$s_k$. For strongly convex objectives over polytopes, these variants can
+converge linearly under a geometric-width condition. Fully corrective,
+approximate-oracle, stochastic, and block-coordinate variants are also
+useful when the active set or oracle has additional structure.
 
 \section{Proximal Point Algorithm}
 
-The proximal point algorithm for a proper closed convex $f$ is
+Let $F:\R^n\to\R\cup\{+\infty\}$ be proper, closed, and convex, with a
+nonempty solution set $X^*=\argmin F$. The proximal point algorithm is
 \begin{equation}
-    x_{k+1}=\operatorname{prox}_{\lambda_k f}(x_k)
-    =\argmin_x\left\{f(x)+\frac1{2\lambda_k}\norm{x-x_k}^2\right\}.
+    x_{k+1}=\operatorname{prox}_{\lambda_k F}(x_k)
+    =\argmin_x\left\{F(x)+\frac1{2\lambda_k}\norm{x-x_k}^2\right\}.
     \label{eq:ppa}
 \end{equation}
 Its optimality condition is
-$0\in\partial f(x_{k+1})+\lambda_k^{-1}(x_{k+1}-x_k)$, or
-$x_k-x_{k+1}\in\lambda_k\partial f(x_{k+1})$.
+\begin{equation}\label{eq:ppa-opt}
+ s_{k+1}:=\frac{x_k-x_{k+1}}{\lambda_k}\in\partial F(x_{k+1}).
+\end{equation}
+Thus PPA is an implicit subgradient method: unlike ordinary subgradient
+descent, it evaluates the subgradient at the new point.
 
 \begin{theorem}[Fejér monotonicity]
-If $x^*$ minimizes $f$, then every exact proximal point step satisfies
+If $x^*\in X^*$, every exact proximal point step satisfies
 \[
  \norm{x_{k+1}-x^*}^2
  \leq\norm{x_k-x^*}^2-\norm{x_{k+1}-x_k}^2.
@@ -485,6 +1879,73 @@ If $x^*$ minimizes $f$, then every exact proximal point step satisfies
 If $\inf_k\lambda_k>0$ and a minimizer exists, the iterates converge to a
 minimizer in finite dimensions.
 \end{theorem}
+
+To derive the inequality, use $0\in\partial F(x^*)$ and monotonicity of the
+subdifferential with \eqref{eq:ppa-opt}:
+\[
+ \langle x_{k+1}-x^*,x_k-x_{k+1}\rangle\geq0.
+\]
+Expanding
+\[
+ \norm{x_k-x^*}^2=\norm{x_k-x_{k+1}}^2
+ +\norm{x_{k+1}-x^*}^2
+ +2\langle x_k-x_{k+1},x_{k+1}-x^*\rangle
+\]
+proves Fejér decrease. Hence the sequence is bounded and
+$\sum_k\norm{x_{k+1}-x_k}^2<\infty$. If $\inf_k\lambda_k>0$, then
+$s_{k+1}\to0$; closedness of the subdifferential graph makes every cluster
+point optimal, and Fejér monotonicity forces the whole sequence to converge.
+
+For a constant parameter $\lambda_k\equiv\lambda$, the subgradient
+inequality and the same three-point identity give
+\begin{align*}
+ F(x_{j+1})-F^*
+ &\leq\langle s_{j+1},x_{j+1}-x^*\rangle\\
+ &=\frac1{2\lambda}\left(\norm{x_j-x^*}^2
+ -\norm{x_{j+1}-x^*}^2-\norm{x_{j+1}-x_j}^2\right).
+\end{align*}
+Summing telescopes. Since each proximal step decreases $F$,
+\[
+ F(x_k)-F^*\leq\frac{\norm{x_0-x^*}^2}{2\lambda k}.
+\]
+
+\subsection{Resolvents and the Moreau envelope}
+
+For a set-valued operator $T$, its resolvent is
+$J_{\lambda T}=(I+\lambda T)^{-1}$. Condition \eqref{eq:ppa-opt} says
+\[
+ \operatorname{prox}_{\lambda F}=J_{\lambda\partial F}.
+\]
+This extends PPA to finding a zero of a maximal monotone operator. The Fejér
+proof uses only monotonicity and therefore carries over unchanged.
+
+The Moreau envelope
+\[
+ F_\lambda(x)=\min_z\left\{F(z)+\frac1{2\lambda}\norm{z-x}^2\right\}
+\]
+is convex and continuously differentiable, with
+\begin{equation}\label{eq:moreau-gradient}
+ \nabla F_\lambda(x)=\frac1\lambda
+ \left(x-\operatorname{prox}_{\lambda F}(x)\right).
+\end{equation}
+Danskin's theorem gives the formula. Firm nonexpansiveness of the proximal
+map makes $I-\operatorname{prox}_{\lambda F}$ firmly nonexpansive, so
+$\nabla F_\lambda$ is $1/\lambda$-Lipschitz. Consequently, PPA is gradient
+descent with step $\lambda_k$ on the smooth surrogate $F_{\lambda_k}$.
+
+\subsection{Inexact proximal steps}
+
+Exact solution of the proximal subproblem may be as hard as the original
+problem. A standard inexact condition is
+\[
+ \frac{x_k-x_{k+1}}{\lambda_k}-e_{k+1}\in\partial F(x_{k+1}),
+ \qquad
+ \sum_{k=0}^\infty\lambda_k\norm{e_{k+1}}<\infty.
+\]
+The summability requirement makes the accumulated perturbation finite, and a
+quasi-Fejér version of the preceding proof gives convergence. Relative-error
+criteria scale the inner tolerance with $\norm{x_{k+1}-x_k}$ and avoid
+oversolving early subproblems.
 
 PPA is robust but each step may be as difficult as the original problem. Its
 importance is conceptual: proximal gradient, augmented Lagrangian, and ADMM
@@ -503,13 +1964,14 @@ the augmented Lagrangian is
  =f(x)+y^\mathsf T(Ax-b)+\frac\rho2\norm{Ax-b}^2.
  \label{eq:augmented-lagrangian}
 \end{equation}
-The method of multipliers alternates
+Allowing a possibly varying penalty $\rho_k>0$, the method of multipliers
+alternates
 \[
- x_{k+1}\in\argmin_x\mathcal L_\rho(x,y_k),\qquad
- y_{k+1}=y_k+\rho(Ax_{k+1}-b).
+ x_{k+1}\in\argmin_x\mathcal L_{\rho_k}(x,y_k),\qquad
+ y_{k+1}=y_k+\rho_k(Ax_{k+1}-b).
 \]
 The quadratic penalty improves feasibility without requiring
-$\rho\to\infty$, while the dual variable accumulates constraint violations.
+$\rho_k\to\infty$, while the dual variable accumulates constraint violations.
 
 Under convexity and standard constraint qualifications, a pair $(x^*,y^*)$
 is optimal when
@@ -519,12 +1981,66 @@ is optimal when
 These KKT residuals should be monitored. Inner minimization need not be exact,
 but its tolerances must become sufficiently accurate for convergence theory.
 
+\subsection{ALM as proximal point on the dual}
+
+Let
+\[
+ d(y)=\inf_x\{f(x)+\langle y,Ax-b\rangle\},
+ \qquad \phi(y)=-d(y).
+\]
+Under standard regularity, $\phi$ is closed and convex. Optimality of the
+$x$-subproblem gives
+\begin{align*}
+ 0&\in\partial f(x_{k+1})
+ +A^\mathsf T\bigl(y_k+\rho_k(Ax_{k+1}-b)\bigr)\\
+ &=\partial f(x_{k+1})+A^\mathsf Ty_{k+1}.
+\end{align*}
+Thus $x_{k+1}$ minimizes the ordinary Lagrangian at $y_{k+1}$. The dual
+subgradient formula then gives
+\[
+ Ax_{k+1}-b\in\partial d(y_{k+1}),
+ \qquad b-Ax_{k+1}\in\partial\phi(y_{k+1}).
+\]
+Using the multiplier update,
+\[
+ 0\in\partial\phi(y_{k+1})+\frac1{\rho_k}(y_{k+1}-y_k),
+\]
+which is exactly the proximal optimality condition. Therefore
+\begin{equation}\label{eq:alm-dual-ppa}
+ y_{k+1}=\operatorname{prox}_{\rho_k\phi}(y_k)
+ =\argmin_y\left\{-d(y)+\frac1{2\rho_k}\norm{y-y_k}^2\right\}.
+\end{equation}
+
+If the dual solution set is nonempty, applying PPA's Fejér inequality to
+\eqref{eq:alm-dual-ppa} yields, for every dual solution $y^*$,
+\[
+ \norm{y_{k+1}-y^*}^2
+ \leq\norm{y_k-y^*}^2
+ -\rho_k^2\norm{Ax_{k+1}-b}^2.
+\]
+Hence, when $\inf_k\rho_k>0$, the multipliers converge to a dual solution and
+$Ax_{k+1}-b\to0$. The same summable-error principle used for inexact PPA
+allows approximate solution of the ALM subproblems without requiring them to
+be solved excessively accurately at early iterations.
+
 \section{Alternating Direction Method of Multipliers}
 
 ADMM addresses
 \[
-    \min_{x,z}f(x)+g(z)\quad\text{subject to}\quad Ax+Bz=c.
+    \min_{x,z}f(x)+h(z)\quad\text{subject to}\quad Ax+Bz=c,
 \]
+where both functions may be nonsmooth. Its augmented Lagrangian is
+\[
+ \mathcal L_\rho(x,z,y)=f(x)+h(z)+\langle y,Ax+Bz-c\rangle
+ +\frac\rho2\norm{Ax+Bz-c}^2.
+\]
+Whereas ALM jointly minimizes over $(x,z)$, ADMM performs one
+Gauss--Seidel sweep followed by the multiplier update:
+\begin{align*}
+ x_{k+1}&\in\argmin_x\mathcal L_\rho(x,z_k,y_k),\\
+ z_{k+1}&\in\argmin_z\mathcal L_\rho(x_{k+1},z,y_k),\\
+ y_{k+1}&=y_k+\rho(Ax_{k+1}+Bz_{k+1}-c).
+\end{align*}
 Using the scaled dual variable $u=y/\rho$, the iterations are
 \begin{align*}
  x_{k+1}&=\argmin_x\left\{
@@ -536,24 +2052,134 @@ Using the scaled dual variable $u=y/\rho$, the iterations are
 Separating $x$ and $z$ can turn a difficult joint problem into two simple
 subproblems.
 
-\begin{definition}[ADMM residuals]
-The primal residual is
-$r_{k+1}=Ax_{k+1}+Bz_{k+1}-c$. In the common constraint $x=z$, the dual
-residual is $s_{k+1}=\rho(z_{k+1}-z_k)$, up to the appropriate matrix factor
-in the general form.
-\end{definition}
+\subsection{Residuals and stopping criteria}
+
+Define the primal and dual residuals by
+\begin{equation}\label{eq:admm-residuals}
+ r_{k+1}=Ax_{k+1}+Bz_{k+1}-c,
+ \qquad
+ s_{k+1}=\rho A^\mathsf TB(z_{k+1}-z_k).
+\end{equation}
+To see the second formula, optimality of the $z$ update and the multiplier
+update give
+\[
+ 0\in\partial h(z_{k+1})+B^\mathsf Ty_{k+1}.
+\]
+The $x$-optimality condition becomes
+\[
+ 0\in\partial f(x_{k+1})+A^\mathsf Ty_{k+1}
+       -\rho A^\mathsf TB(z_{k+1}-z_k).
+\]
+Thus a small primal residual enforces feasibility, while a small dual
+residual makes $x$-stationarity accurate. For the constraint $x=z$, the norm
+of the dual residual is simply $\rho\norm{z_{k+1}-z_k}$.
 
 Stop only when both residuals are small relative to absolute and relative
-tolerances. A large $\rho$ emphasizes feasibility but can slow dual progress;
-a small $\rho$ does the reverse. Residual balancing adapts $\rho$ while
-rescaling $u$ consistently.
+tolerances. One scale-aware choice is
+\begin{align*}
+ \epsilon_{\mathrm{pri}}
+ &=\sqrt p\,\epsilon_{\mathrm{abs}}+\epsilon_{\mathrm{rel}}
+ \max\{\norm{Ax_k},\norm{Bz_k},\norm c\},\\
+ \epsilon_{\mathrm{dual}}
+ &=\sqrt n\,\epsilon_{\mathrm{abs}}+\epsilon_{\mathrm{rel}}
+ \norm{A^\mathsf Ty_k}.
+\end{align*}
 
-\begin{theorem}[Convex ADMM convergence]
-If $f$ and $g$ are proper, closed, convex, a saddle point exists, and the
-subproblems are solved exactly, then the primal residual converges to zero,
-objective values converge to the optimum, and dual variables converge under
-standard rank conditions.
+\subsection{Global convergence}
+
+Assume $f$ and $h$ are proper, closed, and convex, a saddle point
+$(x^*,z^*,y^*)$ exists, and both subproblems are solved exactly. Define
+\[
+ V_k=\frac1\rho\norm{y_k-y^*}^2
+       +\rho\norm{B(z_k-z^*)}^2.
+\]
+
+\begin{theorem}[ADMM Lyapunov decrease]
+For fixed $\rho>0$,
+\begin{equation}\label{eq:admm-lyapunov}
+ V_{k+1}\leq V_k-\rho\norm{r_{k+1}}^2
+ -\rho\norm{B(z_{k+1}-z_k)}^2.
+\end{equation}
+Consequently, $r_k\to0$, $s_k\to0$, and objective values converge to the
+optimum. If $A$ and $B$ have full column rank, the entire primal--dual
+sequence converges to a solution.
 \end{theorem}
+
+Here is the main algebra behind the result. The $x$-stationarity relation and
+the KKT condition at $(x^*,z^*,y^*)$ give, by monotonicity of $\partial f$,
+\[
+ -\langle A(x_{k+1}-x^*),y_{k+1}-y^*\rangle
+ +\rho\langle A(x_{k+1}-x^*),B(z_{k+1}-z_k)\rangle\geq0.
+\]
+Likewise, monotonicity of $\partial h$ gives
+\[
+ -\langle B(z_{k+1}-z^*),y_{k+1}-y^*\rangle\geq0.
+\]
+Add the inequalities, use primal feasibility of $(x^*,z^*)$, the identity
+$y_{k+1}-y_k=\rho r_{k+1}$, and monotonicity between consecutive $z$ updates.
+Applying
+\[
+ 2\langle a-b,a-c\rangle
+ =\norm{a-c}^2-\norm{b-c}^2+\norm{a-b}^2
+\]
+to the dual and $Bz$ terms yields \eqref{eq:admm-lyapunov}. Summing it proves
+residual convergence. Subgradient inequalities give the objective sandwich
+\[
+ -\langle y^*,r_k\rangle\leq f(x_k)+h(z_k)-p^*
+ \leq-\langle y_k,r_k\rangle
+ +\rho\langle B(z_k-z_{k-1}),r_k-B(z_k-z^*)\rangle,
+\]
+whose two sides tend to zero by the Lyapunov bound.
+
+\subsection{Two-function splitting and Lasso}
+
+To minimize $f(x)+h(x)$, introduce a copy $z$ and impose $x-z=0$. Then
+\begin{align*}
+ x_{k+1}&=\operatorname{prox}_{f/\rho}(z_k-u_k),\\
+ z_{k+1}&=\operatorname{prox}_{h/\rho}(x_{k+1}+u_k),\\
+ u_{k+1}&=u_k+x_{k+1}-z_{k+1}.
+\end{align*}
+This is useful when the individual proximal maps are simpler than the
+proximal map of their sum.
+
+For the Lasso
+\[
+ \min_x\frac12\norm{Dx-b}^2+\lambda\norm{x}_1,
+\]
+the split $x=z$ gives
+\begin{align*}
+ (D^\mathsf TD+\rho I)x_{k+1}
+ &=D^\mathsf Tb+\rho(z_k-u_k),\\
+ z_{k+1}&=\operatorname{soft}_{\lambda/\rho}(x_{k+1}+u_k),\\
+ u_{k+1}&=u_k+x_{k+1}-z_{k+1}.
+\end{align*}
+For fixed $\rho$, factor $D^\mathsf TD+\rho I$ once and reuse triangular
+solves rather than forming an inverse.
+
+Matrix problems admit the same pattern. Splitting a nuclear norm from a
+simple constraint produces a singular-value-thresholding update followed by
+a projection; splitting entrywise sparsity from a PSD constraint alternates
+soft thresholding with eigenvalue clipping.
+
+\subsection{Consensus and penalty adaptation}
+
+For distributed learning with local objectives $f_i$, rewrite
+\[
+ \min_z\sum_{i=1}^m f_i(z)
+ \quad\text{as}\quad
+ \min_{x_1,\ldots,x_m,z}\sum_{i=1}^m f_i(x_i)
+ \quad\text{subject to }x_i=z.
+\]
+ADMM separates the local $x_i$ updates, while the $z$ update averages the
+shifted local variables; only that aggregate must be communicated.
+
+A large $\rho$ emphasizes primal feasibility but can slow dual progress, and
+a small $\rho$ does the reverse. Residual balancing increases $\rho$ when
+$\norm r$ dominates $\norm s$ and decreases it in the opposite case. Because
+$u=y/\rho$, changing $\rho$ requires rescaling $u$ to preserve the same
+unscaled multiplier. Over-relaxation replaces $Ax_{k+1}$ in the $z$ and dual
+updates by a weighted combination of $Ax_{k+1}$ and the previous affine
+term; values moderately above one often improve practical convergence.
 
 \section{Coordinate Descent Method}
 

@@ -265,6 +265,39 @@ $\Var(Y)$. For $\widehat\mu_\alpha=\alpha\bar Y$,
 Differentiation gives the oracle shrinkage
 $\alpha^*=\mu^2/(\mu^2+\sigma^2/n)$. Although unavailable without knowing
 $\mu$ and $\sigma^2$, it demonstrates how bias can reduce MSE.
+
+More explicitly,
+\[
+ \operatorname{Bias}_{\mathcal D}(\widehat\mu_\alpha)
+ =\E_{\mathcal D}[\widehat\mu_\alpha]-\mu
+ =(\alpha-1)\mu,
+ \qquad
+ \Var_{\mathcal D}(\widehat\mu_\alpha)
+ =\frac{\alpha^2\sigma^2}{n},
+\]
+so the preceding MSE is variance plus squared bias. Substitution of
+$\alpha^*$ gives the minimum oracle MSE
+\[
+ \operatorname{MSE}(\widehat\mu_{\alpha^*})
+ =\frac{\mu^2\sigma^2}{n\mu^2+\sigma^2}.
+\]
+
+Now let $Y_0$ be a new response, independent of the training sample and drawn
+from the same population. Conditional on the fitted value
+$\widehat\mu_\alpha$, its generalization error is
+\begin{align*}
+ R_{\mathcal D}(\widehat\mu_\alpha)
+ &=\E\bigl[(Y_0-\widehat\mu_\alpha)^2\mid\mathcal D\bigr]\\
+ &=\sigma^2+(\mu-\widehat\mu_\alpha)^2.
+\end{align*}
+Averaging over repeated training samples yields
+\[
+ \E_{\mathcal D}R_{\mathcal D}(\widehat\mu_\alpha)
+ =\underbrace{\sigma^2}_{\text{irreducible error}}
+ +\underbrace{\operatorname{MSE}(\widehat\mu_\alpha)}_{\text{estimation error}}.
+\]
+Thus estimation MSE and expected prediction error are not identical: predicting
+a fresh response adds its irreducible variance $\sigma^2$.
 \end{example}
 
 \subsection{Optimal Prediction}
@@ -276,7 +309,16 @@ Conditioning on $X=x$ reduces prediction to a pointwise decision:
 \end{equation}
 Under squared loss, $f^*(x)=\E[Y\mid X=x]$; under absolute loss, any
 conditional median is optimal. Under zero-one loss, the optimal classifier
-chooses the most probable class.
+chooses the most probable class. More precisely, if
+$Y\in\{1,\ldots,K\}$ and $\eta_k(x)=P(Y=k\mid X=x)$, then
+\[
+ g^*(x)\in\argmax_{1\leq k\leq K}\eta_k(x),
+ \qquad
+ \min_a\E[\ind\{Y\neq a\}\mid X=x]
+ =1-\max_{1\leq k\leq K}\eta_k(x).
+\]
+Thus regression and classification share the same conditional-risk framework;
+changing the response space and loss changes the resulting Bayes rule.
 
 \begin{proof}[Squared-loss calculation]
 Writing $m(x)=\E[Y\mid X=x]$,
@@ -328,6 +370,47 @@ For $r=0.1$, $\ell$ is approximately $0.32$ in dimension two, $0.63$ in
 dimension five, and $0.79$ in dimension ten. A neighborhood containing enough
 observations is no longer local. Structured model classes overcome this curse
 by sharing information across feature space, but introduce approximation bias.
+
+The same phenomenon appears in a Euclidean ball. If $X$ is uniform in the
+unit ball in $\R^p$, scaling of volume gives
+\[
+ P(\lVert X\rVert_2\leq r)=r^p,
+ \qquad 0\leq r\leq1.
+\]
+Consequently, its median radius is $2^{-1/p}$, which approaches $1$ as
+$p\to\infty$. Thus half the volume lies outside a radius increasingly close to
+the boundary. In high dimensions, even a neighborhood containing a moderate
+fraction of the population must extend almost across the entire support.
+
+\subsection{Structured Function Classes}
+When the data are too sparse for reliable local averaging, learning requires
+assumptions that share information across input values. For a scalar feature,
+a degree-$q$ polynomial class is
+\[
+ \mathcal F_q
+ =\left\{x\mapsto\beta_0+\beta_1x+\cdots+\beta_qx^q:
+ (\beta_0,\ldots,\beta_q)\in\R^{q+1}\right\}.
+\]
+These classes are nested:
+\[
+ \mathcal F_1\subseteq\mathcal F_2\subseteq\cdots.
+\]
+Therefore their best empirical risks satisfy
+\[
+ \inf_{f\in\mathcal F_{q+1}}\widehat R_n(f)
+ \leq
+ \inf_{f\in\mathcal F_q}\widehat R_n(f).
+\]
+Enlarging a model class can never worsen its optimized training fit, although
+it may worsen generalization error.
+
+Linear and polynomial models are parametric: a finite coefficient vector fixes
+their functional form. Nearest-neighbor averaging is local and nonparametric:
+its effective complexity grows with the sample and it does not impose one
+global formula. More structure typically improves stability and
+interpretability but can increase approximation bias; less structure offers
+greater flexibility at the price of higher variance and weaker
+interpretability.
 
 \subsection{Generalization Error}
 
@@ -429,6 +512,36 @@ The best population linear predictor and its ERM estimate are distinct:
 \]
 Even when $m(x)$ is nonlinear, $x^\mathsf T\beta^*$ is the best linear
 approximation under the population distribution.
+
+To derive the population coefficient, expand
+\begin{align*}
+ \E[(Y-X^\mathsf T\beta)^2]
+ &=\E[Y^2]-2\beta^\mathsf T\E[XY]
+   +\beta^\mathsf T\E[XX^\mathsf T]\beta.
+\end{align*}
+Differentiating gives the population normal equations
+\[
+ \E[XX^\mathsf T]\beta^*=\E[XY].
+\]
+If $\E[XX^\mathsf T]$ is invertible, then
+\begin{equation}
+ \beta^*=\E[XX^\mathsf T]^{-1}\E[XY].
+ \label{eq:population-linear-projection}
+\end{equation}
+In contrast, the empirical normal equations divide by $n$ to give
+\[
+ \left(\frac1nX^\mathsf TX\right)\widehat\beta
+ =\frac1nX^\mathsf Ty,
+\]
+and hence
+\[
+ \widehat\beta
+ =\left(\frac1nX^\mathsf TX\right)^{-1}
+   \left(\frac1nX^\mathsf Ty\right).
+\]
+Thus OLS is the plug-in analogue of the best population linear predictor:
+the empirical second moment and cross-moment replace their population
+counterparts.
 
 \subsection{Estimation and Geometry}
 
@@ -567,6 +680,46 @@ The expected optimism is approximately $2\sigma^2d/n$. Under correct linear
 specification, added dimensions cost estimation variance; under
 misspecification, they may also reduce approximation bias.
 
+For a fixed design, the corresponding training-error calculation is exact.
+Let
+\[
+ H=X(X^\mathsf TX)^{-1}X^\mathsf T,
+ \qquad e=(I-H)y.
+\]
+Under the correctly specified model $y=X\beta+\varepsilon$, the identity
+$(I-H)X=0$ gives $e=(I-H)\varepsilon$. Since $I-H$ is symmetric and
+idempotent,
+\begin{align*}
+ \E[\lVert e\rVert_2^2\mid X]
+ &=\E[\varepsilon^\mathsf T(I-H)\varepsilon\mid X]\\
+ &=\sigma^2\tr(I-H)
+ =\sigma^2(n-d).
+\end{align*}
+Therefore
+\[
+ \E\left[\frac1n\lVert y-X\widehat\beta\rVert_2^2
+ \middle|X\right]
+ =\sigma^2\left(1-\frac dn\right).
+\]
+
+There is also an exact fixed-design version of the test-error calculation.
+At row $x_i^\mathsf T$ of $X$, a new independent response has expected squared
+prediction error
+\[
+ \sigma^2+\sigma^2x_i^\mathsf T
+ (X^\mathsf TX)^{-1}x_i
+ =\sigma^2(1+h_{ii}).
+\]
+Averaging over the $n$ observed predictor rows and using
+$\sum_i h_{ii}=\tr(H)=d$ yields
+\[
+ \frac1n\sum_{i=1}^n
+ \E[(Y_i^{\mathrm{new}}-x_i^\mathsf T\widehat\beta)^2\mid X]
+ =\sigma^2\left(1+\frac dn\right).
+\]
+The gap between new-response and training error is consequently exactly
+$2\sigma^2d/n$ for this fixed-design comparison.
+
 \section{Multiple Regression}
 
 An intercept, numeric predictors, and encoded categorical variables are
@@ -580,6 +733,30 @@ slope obtained by residualizing both $Y$ and $X_j$ against the remaining
 predictors. Multiple regression therefore compares variation in $X_j$ not
 linearly explained by the other columns.
 
+To see this algebraically, partition the design as $X=[x_1\;X_2]$ and let
+\[
+ P_2=X_2(X_2^\mathsf TX_2)^{-1}X_2^\mathsf T,
+ \qquad M_2=I-P_2.
+\]
+For any fixed $\beta_1$, minimizing over the coefficients of $X_2$ projects
+$y-x_1\beta_1$ onto $\operatorname{Col}(X_2)$. The remaining objective is
+therefore
+\[
+ \lVert M_2(y-x_1\beta_1)\rVert_2^2.
+\]
+Differentiating with respect to $\beta_1$ gives
+\begin{equation}
+ \widehat\beta_1
+ =\frac{x_1^\mathsf TM_2y}{x_1^\mathsf TM_2x_1}
+ =\frac{(M_2x_1)^\mathsf T(M_2y)}
+        {(M_2x_1)^\mathsf T(M_2x_1)}.
+ \label{eq:fwl-residualized-slope}
+\end{equation}
+Thus $\widehat\beta_1$ is the simple-regression slope between the part of
+$x_1$ unexplained by $X_2$ and the part of $y$ unexplained by $X_2$. If
+$x_1$ is orthogonal to every column of $X_2$, then $M_2x_1=x_1$, so adding
+$X_2$ does not change its coefficient.
+
 \subsection{Interactions and Basis Expansions}
 
 An interaction permits one effect to depend on another:
@@ -588,6 +765,20 @@ An interaction permits one effect to depend on another:
 \]
 Then $\partial m/\partial x_1=\beta_1+\beta_{12}x_2$, so $\beta_1$ is the
 effect of $x_1$ only at $x_2=0$. Centering can improve interpretation.
+
+For a binary group indicator $Z\in\{0,1\}$, the additive model
+\[
+ m(x,z)=\beta_0+\beta_1x+\beta_2z
+\]
+fits parallel lines: group $0$ has intercept $\beta_0$, group $1$ has
+intercept $\beta_0+\beta_2$, and both have slope $\beta_1$. Adding an
+interaction,
+\[
+ m(x,z)=\beta_0+\beta_1x+\beta_2z+\beta_3xz,
+\]
+allows group $1$ to have slope $\beta_1+\beta_3$. Hence $\beta_2$ is the
+between-group intercept change at $x=0$, while $\beta_3$ is the
+between-group slope change.
 
 A basis expansion uses fixed transformations $h_m$:
 \[
@@ -609,6 +800,36 @@ Thus $p(x)=\{1+\exp[-(\beta_0+x^\mathsf T\beta)]\}^{-1}$. A unit increase in
 $x_j$ multiplies conditional odds by $e^{\beta_j}$ holding other modeled
 features fixed; it does not add a constant amount to probability.
 
+\subsection{Log Loss and Probability Estimation}
+When the prediction is a probability $q\in(0,1)$ rather than a class label,
+the binary log loss is
+\[
+ L_{\log}(y,q)=-y\log q-(1-y)\log(1-q).
+\]
+Fix $x$ and write $p=P(Y=1\mid X=x)$. The conditional risk of reporting $q$
+is
+\[
+ R_x(q)=-p\log q-(1-p)\log(1-q).
+\]
+Its derivatives are
+\[
+ R_x'(q)=-\frac pq+\frac{1-p}{1-q}
+ =\frac{q-p}{q(1-q)},
+ \qquad
+ R_x''(q)=\frac{p}{q^2}+\frac{1-p}{(1-q)^2}>0.
+\]
+Hence the unique minimizer is
+\[
+ q^*(x)=p=P(Y=1\mid X=x).
+\]
+Thus zero--one loss targets the most likely class, whereas log loss targets the
+entire conditional probability. Equivalently,
+\[
+ R_x(q)=H(p)+D_{\mathrm{KL}}
+ \bigl(\operatorname{Bern}(p)\,\|\,\operatorname{Bern}(q)\bigr),
+\]
+so any incorrect probability incurs nonnegative excess conditional risk.
+
 \subsection{Likelihood}
 
 Including the intercept in $x_i$, the Bernoulli log-likelihood is
@@ -617,6 +838,13 @@ Including the intercept in $x_i$, the Bernoulli log-likelihood is
  [y_ix_i^\mathsf T\beta-\log\{1+e^{x_i^\mathsf T\beta}\}].
  \label{eq:logistic-likelihood}
 \end{equation}
+The negative log-likelihood is exactly the empirical log loss:
+\[
+ -\ell(\beta)=\sum_{i=1}^n
+ L_{\log}\bigl(y_i,p_\beta(x_i)\bigr).
+\]
+Consequently, logistic maximum likelihood is empirical risk minimization under
+log loss.
 If $p_i=p(x_i)$, then
 \[
  \grad\ell(\beta)=X^\mathsf T(y-p),\qquad
@@ -655,14 +883,166 @@ the Bayes classifier is
 \]
 with Bayes error $R^*=\E[1-\max_k\eta_k(X)]$.
 
+\subsection{Plug-in Classification and kNN}
+A plug-in classifier first estimates the conditional class probabilities and
+then substitutes them into the Bayes rule:
+\[
+ \widehat g(x)\in\argmax_k\widehat\eta_k(x).
+\]
+For $k$-nearest-neighbor classification, let $N_k(x)$ denote the indices of
+the $k$ training inputs closest to $x$. Estimate
+\[
+ \widehat\eta_c(x)
+ =\frac1k\sum_{i\in N_k(x)}\ind\{Y_i=c\},
+ \qquad c=1,\ldots,K,
+\]
+and predict the local majority class. Small $k$ produces a flexible boundary
+with low smoothing bias and high sampling variance; large $k$ produces a
+smoother, less variable boundary with greater bias.
+
+For direct multiclass probability modeling, softmax regression uses
+\[
+ p_k(x)=
+ \frac{\exp(\alpha_k+x^\mathsf T\beta_k)}
+ {\sum_{j=1}^K\exp(\alpha_j+x^\mathsf T\beta_j)},
+ \qquad k=1,\ldots,K.
+\]
+The probabilities are positive and sum to one. After fitting by multiclass log
+loss, the corresponding zero--one-loss prediction is
+$\widehat g(x)=\argmax_k\widehat p_k(x)$. One class or one coefficient vector
+must be fixed as a reference because adding the same score to every class does
+not change the probabilities.
+
 Generative classifiers model priors $\pi_k$ and class densities $f_k$, then
 apply
 \[
  P(Y=k\mid X=x)=\frac{\pi_kf_k(x)}{\sum_j\pi_jf_j(x)}.
 \]
-LDA assumes normal class distributions with a shared covariance, producing
-linear boundaries. QDA allows separate covariance matrices and quadratic
-boundaries, trading lower bias for substantially more parameters.
+
+\subsection{Linear Discriminant Analysis}
+Linear discriminant analysis assumes
+\[
+ X\mid Y=k\sim\mathcal N(\mu_k,\Sigma),
+ \qquad k=1,\ldots,K,
+\]
+with a common covariance matrix across classes. For classification, the
+denominator in Bayes' theorem is common to all $k$, so it suffices to maximize
+$\log\pi_k+\log f_k(x)$. Apart from constants common to every class,
+\begin{align*}
+ \log\pi_k+\log f_k(x)
+ &=-\frac12(x-\mu_k)^\mathsf T\Sigma^{-1}(x-\mu_k)
+   +\log\pi_k+\text{constant}\\
+ &=x^\mathsf T\Sigma^{-1}\mu_k
+   -\frac12\mu_k^\mathsf T\Sigma^{-1}\mu_k
+   +\log\pi_k
+   -\frac12x^\mathsf T\Sigma^{-1}x+	ext{constant}.
+\end{align*}
+The final quadratic term does not depend on $k$ and cancels when classes are
+compared. Define the LDA discriminant score
+\begin{equation}
+ \delta_k(x)=x^\mathsf T\Sigma^{-1}\mu_k
+ -\frac12\mu_k^\mathsf T\Sigma^{-1}\mu_k+log\pi_k.
+ \label{eq:lda-discriminant}
+\end{equation}
+Then
+\[
+ g_{\mathrm{LDA}}(x)=\argmax_k\delta_k(x).
+\]
+Since each $\delta_k$ is affine in $x$, the pairwise boundary
+$\delta_k(x)=\delta_\ell(x)$ is a hyperplane. The class means, covariance,
+and priors determine its orientation and location.
+
+Given $n_k$ observations in class $k$, the usual fitted quantities are
+\[
+ \widehat\pi_k=\frac{n_k}{n},
+ \qquad
+ \widehat\mu_k=\frac1{n_k}\sum_{i:Y_i=k}X_i,
+\]
+and the pooled within-class covariance
+\[
+ \widehat\Sigma
+ =\frac1{n-K}\sum_{k=1}^K
+   \sum_{i:Y_i=k}(X_i-\widehat\mu_k)(X_i-\widehat\mu_k)^\mathsf T.
+\]
+Substituting these estimates into \eqref{eq:lda-discriminant} produces the
+fitted LDA rule.
+
+\subsection{Quadratic Discriminant Analysis}
+Quadratic discriminant analysis instead assumes
+\[
+ X\mid Y=k\sim\mathcal N(\mu_k,\Sigma_k).
+\]
+Its discriminant score is
+\begin{equation}
+ \delta_k^{\mathrm{QDA}}(x)
+ =-\frac12\log|\Sigma_k|
+  -\frac12(x-\mu_k)^\mathsf T\Sigma_k^{-1}(x-\mu_k)
+  +\log\pi_k.
+ \label{eq:qda-discriminant}
+\end{equation}
+Because the covariance differs by class, the terms
+$x^\mathsf T\Sigma_k^{-1}x$ no longer cancel. Pairwise decision boundaries
+are therefore quadratic.
+
+LDA estimates one covariance matrix with $p(p+1)/2$ free entries, whereas QDA
+estimates $K$ such matrices. QDA can reduce bias when class covariances truly
+differ, but its greater parameter count increases variance and requires more
+data. LDA imposes more structure and is typically more stable.
+
+For two classes, the posterior log-odds make the relationship to logistic
+regression explicit:
+\[
+ \log\frac{P(Y=1\mid X=x)}{P(Y=0\mid X=x)}
+ =\log\frac{\pi_1f_1(x)}{\pi_0f_0(x)}.
+\]
+Shared covariance makes this expression affine in $x$; distinct covariances
+make it quadratic. Logistic regression models the posterior log-odds directly,
+whereas LDA and QDA obtain them from a model for $X\mid Y$.
+
+\subsection{Naive Bayes}
+Naive Bayes assumes the feature coordinates are conditionally independent
+within each class:
+\[
+ f_k(x)=p(X=x\mid Y=k)
+ =\prod_{j=1}^p f_{kj}(x_j).
+\]
+The resulting discriminant score can be written
+\[
+ \log\pi_k+\sum_{j=1}^p\log f_{kj}(x_j).
+\]
+Each marginal $f_{kj}$ may be modeled according to its feature type, for
+example Gaussian, Bernoulli, Poisson, or nonparametrically. Gaussian naive
+Bayes corresponds to class-specific diagonal covariance matrices. It uses far
+fewer covariance parameters than QDA, at the cost of the strong conditional
+independence assumption.
+
+\subsection{Multiclass Decisions under a Loss Matrix}
+Estimating class probabilities and choosing an action are distinct steps. Let
+$L(j,k)$ be the loss for predicting class $j$ when the true class is $k$.
+At a fixed $x$, the conditional risk of action $j$ is
+\[
+ R_x(j)=\sum_{k=1}^K L(j,k)\eta_k(x),
+ \qquad \eta_k(x)=P(Y=k\mid X=x).
+\]
+The Bayes action is
+\begin{equation}
+ g_L^*(x)\in\argmin_{1\leq j\leq K}R_x(j).
+ \label{eq:multiclass-loss-rule}
+\end{equation}
+Only under zero--one loss does this reduce to choosing the most probable class.
+
+For example, suppose
+\[
+ \eta(x)=\begin{pmatrix}0.45\\0.35\\0.20\end{pmatrix},
+ \qquad
+ L=\begin{pmatrix}0&1&5\\1&0&1\\5&1&0\end{pmatrix},
+\]
+where rows are predictions and columns are true classes. Then
+\[
+ R_x(1)=1.35,\qquad R_x(2)=0.65,\qquad R_x(3)=2.60.
+\]
+Class $1$ is most probable, but class $2$ minimizes expected loss because it
+avoids the costly confusion between classes $1$ and $3$.
 
 \subsection{Thresholds}
 
@@ -672,11 +1052,47 @@ class $1$ when
     \eta(x)>\frac{c_{10}}{c_{10}+c_{01}}.
     \label{eq:cost-threshold}
 \end{equation}
+Indeed, fixing $x$ and writing $\eta(x)=P(Y=1\mid X=x)$, the two conditional
+risks are
+\[
+ R_x(1)=c_{10}\{1-\eta(x)\},\qquad
+ R_x(0)=c_{01}\eta(x).
+\]
+The inequality $R_x(1)<R_x(0)$ rearranges to
+$\eta(x)>c_{10}/(c_{10}+c_{01})$, which proves
+\cref{eq:cost-threshold}. Thus a threshold is not an arbitrary convention: it
+encodes the relative consequences of the two errors.
 The threshold $1/2$ is optimal only for equal costs. Changing a threshold
 changes decisions, not ranking or calibration. Select it on validation data
 using deployment costs or capacity constraints.
 
+For a threshold rule $g_t(x)=\ind\{\widehat\eta(x)>t\}$, let
+$\pi_1=P(Y=1)$ and $\pi_0=P(Y=0)$. Its population cost can be written in terms
+of its ROC operating point:
+\begin{align}
+ R(g_t)
+ &=c_{01}P(g_t(X)=0,Y=1)+c_{10}P(g_t(X)=1,Y=0)\notag\\
+ &=c_{01}\pi_1\{1-\operatorname{TPR}(t)\}
+   +c_{10}\pi_0\operatorname{FPR}(t).
+ \label{eq:roc-operating-risk}
+\end{align}
+Thus the preferred ROC operating point depends on error costs and class
+prevalence; the curve alone does not select a deployment threshold.
+
 \subsection{ROC and Calibration}
+
+For binary classification, the confusion matrix records true positives
+($\mathrm{TP}$), false positives ($\mathrm{FP}$), true negatives
+($\mathrm{TN}$), and false negatives ($\mathrm{FN}$). The principal rates are
+\[
+ \operatorname{TPR}=\frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FN}},\qquad
+ \operatorname{FPR}=\frac{\mathrm{FP}}{\mathrm{FP}+\mathrm{TN}},\qquad
+ \operatorname{specificity}=1-\operatorname{FPR}.
+\]
+TPR is also called sensitivity or recall. These are conditional rates and
+should not be confused with precision
+$\mathrm{TP}/(\mathrm{TP}+\mathrm{FP})$, which depends directly on class
+prevalence.
 
 For threshold $t$,
 \[
@@ -687,6 +1103,41 @@ The ROC curve plots TPR against FPR. AUC is the probability that a random
 positive receives a higher score than a random negative, with half credit for
 ties. It assesses ranking, not probability accuracy, and may hide behavior in
 the operational low-FPR region.
+
+To see the ranking interpretation, let $S^+$ and $S^-$ be independent scores
+drawn from the positive and negative classes, and let $F_-$ be the cdf of
+$S^-$. For continuous scores,
+\begin{align*}
+ \operatorname{AUC}
+ &=\int \operatorname{TPR}(t)\,dF_-(t)\\
+ &=\int P(S^+>t)\,dF_-(t)
+ =\E\{P(S^+>S^-\mid S^-)\}\\
+ &=P(S^+>S^-).
+\end{align*}
+This also shows why any strictly increasing transformation of the scores
+leaves the ROC curve and AUC unchanged.
+When scores are discrete, ties may have positive probability and the precise
+pairwise formula is
+\[
+ \operatorname{AUC}=P(S^+>S^-)+\frac12P(S^+=S^-).
+\]
+Consequently a score independent of the class has AUC $1/2$, whether the score
+distribution is continuous or discrete.
+
+For multiclass evaluation, one-versus-rest calculations produce a metric for
+each class. A \emph{macro average} gives every class equal weight, for example
+\[
+ \operatorname{TPR}_{\mathrm{macro}}
+ =\frac1K\sum_{k=1}^K\operatorname{TPR}_k.
+\]
+A \emph{micro average} first pools all one-versus-rest counts:
+\[
+ \operatorname{TPR}_{\mathrm{micro}}
+ =\frac{\sum_k\operatorname{TP}_k}
+        {\sum_k(\operatorname{TP}_k+\operatorname{FN}_k)}.
+\]
+Macro averaging exposes performance on rare classes, while micro averaging is
+dominated by common classes.
 
 A score is calibrated when
 $P(Y=1\mid\widehat\eta(X)=q)=q$. Reliability plots, log loss, and Brier score
@@ -700,6 +1151,34 @@ The quantity of interest is performance of the entire training procedure,
 including tuning. A test set estimates this only if it is untouched until the
 procedure is finalized. Repeatedly checking test performance turns the test
 set into training information.
+
+Let $D=\{(X_i,Y_i)\}_{i=1}^n$ and let $\widehat f_D$ denote the predictor
+produced by a learning procedure. Its training error is
+\[
+ \widehat R_D(\widehat f_D)
+ =\frac1n\sum_{i=1}^n L\{Y_i,\widehat f_D(X_i)\},
+\]
+whereas, conditional on the realized training set, its generalization error is
+\begin{equation}
+ R(\widehat f_D)
+ =\E\!\left[L\{Y,\widehat f_D(X)\}\mid D\right],
+ \label{eq:conditional-generalization-error}
+\end{equation}
+for a fresh $(X,Y)$ from the population. Training error is generally
+optimistic because the same observations were used both to choose
+$\widehat f_D$ and to assess it.
+
+An independent test set $T$ gives the conditional estimate
+\[
+ \widehat R_T(\widehat f_D)
+ =\frac1{|T|}\sum_{(X_i,Y_i)\in T}L\{Y_i,\widehat f_D(X_i)\}.
+\]
+Once test performance is used to choose among procedures, however, the chosen
+index $\widehat m=\argmin_m\widehat R_T(\widehat f_D^{(m)})$ depends on $T$.
+Consequently $\widehat R_T(\widehat f_D^{(\widehat m)})$ is optimistic as a
+final assessment. The three distinct roles are therefore: training data fit
+parameters, validation data select the procedure, and untouched test data
+assess the finalized procedure.
 
 \subsection{Validation and CV}
 
@@ -715,10 +1194,37 @@ Five- or ten-fold CV is a common variance--computation compromise. Leave-one-
 out CV has nearly maximal training sets but can have high variance and is not
 always preferable.
 
+More explicitly, leave-one-out cross-validation (LOOCV) fits
+$\widehat f_{D_{-i}}$ on $D_{-i}=D\setminus\{(X_i,Y_i)\}$ and reports
+\begin{equation}
+ \widehat R_{\mathrm{LOO}}
+ =\frac1n\sum_{i=1}^n
+ L\{Y_i,\widehat f_{D_{-i}}(X_i)\}.
+ \label{eq:loocv-error}
+\end{equation}
+Each response is assessed by a predictor that did not use it. Thus LOOCV
+targets the expected generalization error of the \emph{learning procedure}
+trained on $n-1$ observations, rather than the conditional error of one fixed
+fitted model. The distinction from training on all $n$ observations is often
+small for stable procedures and large $n$, but it is conceptually important.
+For least squares, substituting \cref{eq:loo-ols} into squared-error loss gives
+\[
+ \widehat R_{\mathrm{LOO}}
+ =\frac1n\sum_{i=1}^n\left(\frac{e_i}{1-h_{ii}}\right)^2,
+\]
+so one full-data fit suffices.
+
 Preprocessing must be refit within each training fold. For grouped,
 longitudinal, spatial, or time-ordered data, folds must respect dependence and
 deployment direction. Random row splits can leak subjects or future
 information.
+
+``Preprocessing'' includes every data-dependent operation: feature screening,
+standardization, imputation, transformations, dimensionality reduction, and
+model fitting. For example, selecting the predictors most correlated with
+$Y$ using the full dataset before CV leaks validation responses into the
+training process. The selection must instead be repeated separately inside
+each training fold.
 
 Nested CV uses inner folds for tuning and outer folds for evaluation. The
 one-standard-error rule chooses the simplest model whose estimated error is
@@ -732,6 +1238,30 @@ refits the complete procedure, and approximates sampling variability from the
 replicates. About $1-e^{-1}\approx0.632$ of distinct observations appear in a
 large bootstrap sample; the rest are out-of-bag observations.
 
+Formally, if $D=\{Z_1,\ldots,Z_n\}$ consists of i.i.d. observations from an
+unknown distribution $P$, the empirical distribution is
+\[
+ \widehat P_D=\frac1n\sum_{i=1}^n\delta_{Z_i},
+ \qquad \widehat P_D(Z=Z_i)=\frac1n.
+\]
+The bootstrap substitutes $\widehat P_D$ for $P$ and draws conditionally
+independent datasets
+\[
+ D^{*(1)},\ldots,D^{*(B)}\overset{\mathrm{iid}}{\sim}\widehat P_D^{,n}.
+\]
+Recomputing a statistic $T$ on each sample gives the bootstrap distribution
+$T^{*(1)},\ldots,T^{*(B)}$, which approximates the repeated-sampling
+distribution of $T(D)$. This is a conditional simulation: the observed data
+are held fixed while the bootstrap randomness varies.
+
+The $0.632$ fact follows by fixing observation $Z_i$. It is absent on one draw
+with probability $1-1/n$, hence
+\[
+ P_*(Z_i\notin D^*)=\left(1-\frac1n\right)^n\longrightarrow e^{-1},
+ \qquad
+ P_*(Z_i\in D^*)\longrightarrow1-e^{-1}.
+\]
+
 Bootstrap standard errors estimate variability of parameters or predictions:
 \[
  \widehat{\operatorname{se}}_{\mathrm{boot}}(\widehat\theta)
@@ -742,6 +1272,51 @@ Percentile, basic, and BCa intervals make different corrections. The ordinary
 bootstrap can fail for nonsmooth statistics, parameters on boundaries,
 extreme tails, or dependent observations. Use block bootstrap for suitable
 dependent sequences.
+
+What is resampled must match the intended sampling experiment. Resampling
+observed pairs $(X_i,Y_i)$ lets both the design and response vary and targets
+random-design uncertainty. If regression inference is conditional on fixed
+$X$, a residual bootstrap instead fits the model, centers the residuals
+$e_i=Y_i-\widehat Y_i$, samples $e_i^*$ with replacement, constructs
+\[
+ Y_i^*=\widehat Y_i+e_i^*,
+\]
+and refits using the original $X_i$. Independently resampling observations
+from a time series destroys serial dependence; a suitable block bootstrap
+preserves local dependence. In all cases, the bootstrap should imitate the
+population experiment whose uncertainty is being estimated.
+
+\subsubsection{Bootstrap Aggregation}
+
+Bootstrap replicates can also be averaged rather than merely inspected for
+their spread. For predictions, bootstrap aggregation (\emph{bagging}) uses
+\[
+ \widehat f_{\mathrm{bag}}(x)
+ =\frac1B\sum_{b=1}^B\widehat f_{D^{*(b)}}(x)
+ \longrightarrow
+ \E_*\{\widehat f_{D^*}(x)\mid D\}.
+\]
+This can reduce variance for unstable methods, whose fitted rules change
+substantially after small perturbations of the training data.
+
+The effect is especially transparent for 1-nearest-neighbor regression. Fix
+$x_0$ and order the training points by distance as
+$X_{(1)},\ldots,X_{(n)}$. Let $J$ be the rank of the first point that appears
+in a size-$n$ bootstrap sample. Then
+\begin{align*}
+ w_j=P_*(J=j)
+ &=\left(\frac{n-j+1}{n}\right)^n
+   -\left(\frac{n-j}{n}\right)^n\\
+ &\longrightarrow e^{-(j-1)}-e^{-j}.
+\end{align*}
+Therefore infinitely bagged 1-NN is the weighted-neighbor rule
+\[
+ \E_*\{\widehat f^{\mathrm{1NN}}_{D^*}(x_0)\mid D\}
+ =\sum_{j=1}^n w_jY_{(j)}
+ \approx .632Y_{(1)}+.233Y_{(2)}+.086Y_{(3)}+\cdots.
+\]
+Bagging has changed the learning rule from a discontinuous single-neighbor
+prediction into a smoother average of nearby responses.
 
 CV fold errors are correlated because fitted training sets overlap; treating
 them as independent observations understates uncertainty. Comparing two
@@ -768,25 +1343,113 @@ Searching many models creates selection bias. Standard errors and $p$-values
 computed as if the selected model had been fixed in advance are generally too
 optimistic.
 
+\subsection{Subset Selection}
+
+For a subset $S\subseteq\{1,\ldots,p\}$, define the least-squares training
+criterion
+\[
+ \operatorname{RSS}(S)
+ =\min_{\beta_0,\{\beta_j:j\in S\}}
+   \sum_{i=1}^n\left(Y_i-\beta_0-\sum_{j\in S}\beta_jX_{ij}\right)^2.
+\]
+Best-subset selection retains, for every size $k$, the candidate
+\[
+ S_k^*\in\argmin_{|S|=k}\operatorname{RSS}(S).
+\]
+There are $\binom pk$ candidates of size $k$ and $2^p$ subsets in total, so
+exhaustive search quickly becomes infeasible. Although
+$\operatorname{RSS}(S_k^*)$ cannot increase with $k$, the best subsets need
+not be nested: $S_k^*$ need not be contained in $S_{k+1}^*$. Training RSS is
+used to find the best candidate \emph{within} each size; CV or a complexity
+criterion must still choose the size.
+
+Forward stepwise selection starts with $S_0=\varnothing$ and greedily updates
+\[
+ j_k^*\in\argmin_{j\notin S_k}\operatorname{RSS}(S_k\cup\{j\}),
+ \qquad S_{k+1}=S_k\cup\{j_k^*\}.
+\]
+Backward stepwise selection starts with all predictors and greedily removes
+\[
+ j_k^*\in\argmin_{j\in S_k}\operatorname{RSS}(S_k\setminus\{j\}),
+ \qquad S_{k-1}=S_k\setminus\{j_k^*\}.
+\]
+Both produce nested paths after roughly $1+p(p+1)/2$ fits, but their greedy
+paths need not contain the best subset of a given size. Backward selection
+also requires that the full model be fit, so it is unavailable in ordinary
+least squares when $p\geq n$. When CV evaluates either procedure, the entire
+selection path must be recomputed inside each training fold.
+
 \subsection{Complexity and Degree of Freedom}
 
-For a linear smoother $\widehat y=Sy$, effective degrees of freedom are
+Degrees of freedom measure how strongly fitted values respond to the observed
+responses, not simply the number of nonzero parameters.
+
+For a fixed-design Gaussian model
+$Y=\mu+\varepsilon$ with
+$\operatorname{Var}(\varepsilon\mid X)=\sigma^2I$, the covariance definition
+is
+\begin{equation}
+ \operatorname{df}(\widehat Y)
+ =\frac1{\sigma^2}\sum_{i=1}^n
+   \operatorname{Cov}(\widehat Y_i,Y_i\mid X).
+ \label{eq:covariance-df}
+\end{equation}
+If $\widehat Y=HY$ is a linear smoother, then
+\begin{align*}
+ \operatorname{Cov}(\widehat Y_i,Y_i\mid X)
+ &=\sum_jH_{ij}\operatorname{Cov}(Y_j,Y_i\mid X)
+ =\sigma^2H_{ii},
+\end{align*}
+and hence $\operatorname{df}(\widehat Y)=\tr(H)$. For OLS with a fixed,
+rank-$d$ design,
 \[
-    \operatorname{df}=\tr(S).
+ \tr\{X(X^\mathsf TX)^{-1}X^\mathsf T\}
+ =\tr\{(X^\mathsf TX)^{-1}X^\mathsf TX\}=d.
 \]
-OLS has $S=H$ and $\operatorname{df}=p$. For nonlinear procedures, a covariance
-definition is
+
+Adaptive search consumes additional degrees of freedom beyond the number of
+coefficients eventually retained. For a simple example, let
+$Y_1,Y_2\overset{\mathrm{iid}}{\sim}N(0,\sigma^2)$ and fit whichever coordinate
+has larger absolute value:
 \[
- \operatorname{df}
- =\frac1{\sigma^2}\sum_{i=1}^n\Cov(\widehat y_i,y_i).
+ \widehat Y=
+ \begin{cases}
+  (Y_1,0),&|Y_1|\geq|Y_2|,\\
+  (0,Y_2),&|Y_2|>|Y_1|.
+ \end{cases}
 \]
-It measures sensitivity of fitted values to observed responses, not simply
-the number of nonzero parameters.
+Only one coordinate is retained, yet \cref{eq:covariance-df} gives
+\[
+ \operatorname{df}(\widehat Y)
+ =\frac1{\sigma^2}\E\{\max(Y_1^2,Y_2^2)\}
+ =1+\frac2\pi\approx1.64>1.
+\]
+The excess is the cost of using $Y$ to search for the apparently stronger
+coordinate.
 
 Mallows' $C_p$ and Stein's unbiased risk estimate correct training error by an
 optimism term proportional to degrees of freedom. Complexity can also be
 controlled through norm constraints, tree depth, early stopping, margin, or
 algorithmic stability.
+
+More precisely, let $Y^{\mathrm{new}}$ be an independent response vector at
+the same fixed design points and define
+$R_{\mathrm{train}}=n^{-1}\norm{Y-\widehat Y}^2$. Then
+\begin{equation}
+ \frac1n\E\norm{Y^{\mathrm{new}}-\widehat Y}^2
+ =\E(R_{\mathrm{train}})
+  +\frac{2\sigma^2}{n}\operatorname{df}(\widehat Y).
+ \label{eq:optimism-df}
+\end{equation}
+For a fixed $d$-parameter least-squares model, this suggests the corrected
+error estimate
+\[
+ \widehat R_{C_p}=\frac{\operatorname{RSS}}n+\frac{2\widehat\sigma^2d}{n},
+\]
+or equivalently the classical standardized form
+$C_p=\operatorname{RSS}/\widehat\sigma^2-n+2d$. If variable selection is
+adaptive, substituting only the selected coefficient count for $d$ ignores
+search degrees of freedom and can under-penalize the procedure.
 
 \section{Ridge Regression}
 
@@ -801,9 +1464,35 @@ giving
 \[
     \widehat\beta_\lambda=(X^\mathsf TX+\lambda I)^{-1}X^\mathsf Ty.
 \]
+For centered $X$ and $y$, differentiating the objective gives
+\[
+ \nabla_\beta\{\norm{y-X\beta}^2+\lambda\norm\beta^2\}
+ =-2X^\mathsf Ty+2(X^\mathsf TX+\lambda I)\beta,
+\]
+so the ridge normal equations are
+$(X^\mathsf TX+\lambda I)\widehat\beta_\lambda=X^\mathsf Ty$.
+For every nonzero $v$ and $\lambda>0$,
+\[
+ v^\mathsf T(X^\mathsf TX+\lambda I)v
+ =\norm{Xv}^2+\lambda\norm v^2>0.
+\]
+Thus $X^\mathsf TX+\lambda I$ is positive definite and the ridge solution is
+unique even when predictors are linearly dependent or $p>n$.
+
 The intercept is normally left unpenalized. Predictors must be standardized
 because the penalty depends on units. Ridge is also the posterior mode and
 mean under a Gaussian prior in the Gaussian linear model.
+
+Concretely, a common transformation is
+\[
+ Z_{ij}=\frac{X_{ij}-\bar X_j}{s_j},
+ \qquad
+ s_j^2=\frac1n\sum_{i=1}^n(X_{ij}-\bar X_j)^2.
+\]
+Without it, changing a predictor from dollars to thousands of dollars changes
+the corresponding squared-coefficient penalty by a factor of $10^6$.
+Centering and scaling constants must be estimated within each CV training
+fold and then applied unchanged to its validation fold.
 
 \subsection{Shrinkage}
 
@@ -837,8 +1526,57 @@ freedom are
 \[
     \operatorname{df}(\lambda)=\sum_{j=1}^r\frac{d_j^2}{d_j^2+\lambda}.
 \]
-The SVD expression is central in interviews: it explains stability, shrinkage,
-and why ridge remains well-defined when $X^\mathsf TX$ is singular.
+This counts penalized slope complexity; add one when an intercept is fit but
+left unpenalized.
+
+The SVD also exposes what ridge changes relative to OLS. When $r<p$, every OLS
+solution has the form
+\[
+ \widehat\beta_{\mathrm{OLS}}
+ =VD^{-1}U^\mathsf Ty+w,
+ \qquad V^\mathsf Tw=0.
+\]
+The two terms are orthogonal, so $w=0$ gives the unique minimum-norm OLS
+solution. In singular directions,
+\begin{align*}
+ \widehat\beta_{\mathrm{OLS}}^{\min}
+ &=\sum_{j=1}^r\frac{u_j^\mathsf Ty}{d_j}v_j,\\
+ \widehat\beta_\lambda
+ &=\sum_{j=1}^r\frac{d_j}{d_j^2+\lambda}(u_j^\mathsf Ty)v_j.
+\end{align*}
+Hence ridge multiplies the OLS coefficient in direction $v_j$ by
+$d_j^2/(d_j^2+\lambda)$, shrinking weakly identified directions with small
+$d_j$ most strongly.
+The SVD expression explains stability, shrinkage, and why ridge remains
+well-defined when $X^\mathsf TX$ is singular.
+
+\subsection{Bias--Variance Tradeoff}
+
+Write the fixed-design model as $y=\mu+\varepsilon$ with
+$\operatorname{Var}(\varepsilon\mid X)=\sigma^2I$, and define the ridge
+smoother
+\[
+ H_\lambda=X(X^\mathsf TX+\lambda I)^{-1}X^\mathsf T
+ =U\diag\left\{\frac{d_j^2}{d_j^2+\lambda}\right\}U^\mathsf T.
+\]
+Then
+\[
+ \operatorname{Bias}(\widehat y_\lambda\mid X)
+ =(H_\lambda-I)\mu,
+ \qquad
+ \operatorname{Var}(\widehat y_\lambda\mid X)=\sigma^2H_\lambda^2.
+\]
+Consequently the average variance contribution to prediction error is
+\begin{equation}
+ \frac1n\tr\{\operatorname{Var}(\widehat y_\lambda\mid X)\}
+ =\frac{\sigma^2}{n}\sum_{j=1}^r
+   \left(\frac{d_j^2}{d_j^2+\lambda}\right)^2.
+ \label{eq:ridge-variance}
+\end{equation}
+Increasing $\lambda$ decreases this variance monotonically while generally
+increasing squared bias. Cross-validation estimates the value of $\lambda$
+that best balances the two for prediction; the one-standard-error rule chooses
+the largest penalty whose CV error is within one standard error of the minimum.
 
 \section{Lasso Regression}
 
@@ -859,10 +1597,80 @@ predictors it may select one arbitrarily, making the selected set unstable.
 Ridge tends to distribute weight across the group. Elastic net combines
 $\ell_1$ and squared $\ell_2$ penalties and often stabilizes grouped features.
 
+Subset selection can be written as an $\ell_0$-penalized problem,
+\[
+ \min_\beta\left\{\frac12\norm{y-X\beta}^2
+ +\lambda_0\norm\beta_0\right\},
+ \qquad
+ \norm\beta_0=\sum_{j=1}^p\ind\{\beta_j\neq0\}.
+\]
+It charges the same amount for every retained predictor, regardless of its
+coefficient magnitude. This objective is nonconvex and generally requires a
+combinatorial search because choices interact when predictors are correlated.
+The lasso replaces the discontinuous $\ell_0$ count by the convex relaxation
+$\norm\beta_1$. Geometrically, an $\ell_2$ constraint is a smooth ball, whereas
+the $\ell_1$ ball has corners on coordinate axes; an RSS contour often first
+touches an $\ell_1$ corner, producing exact zeros.
+
+\subsection{Orthonormal Design: Hard, Soft, and Ridge Shrinkage}
+
+Suppose the response and predictors are centered and $X^\mathsf TX=I$. Define
+$z=X^\mathsf Ty=\widehat\beta_{\mathrm{OLS}}$. Then
+\[
+ \frac12\norm{y-X\beta}^2
+ =\text{constant}+\frac12\sum_{j=1}^p(\beta_j-z_j)^2,
+\]
+so each penalized problem separates coordinate by coordinate.
+
+For best subset selection, coordinate $j$ compares the cost $z_j^2/2$ from
+setting $b=0$ with the cost $\lambda_0$ from setting $b=z_j$. Therefore
+\begin{equation}
+ \widehat\beta_j^{\ell_0}
+ =z_j\ind\{|z_j|>\sqrt{2\lambda_0}\},
+ \label{eq:hard-threshold}
+\end{equation}
+which is \emph{hard thresholding}: retain the OLS coefficient unchanged or
+delete it.
+
+For the lasso, minimize
+$q(b)=\tfrac12(b-z_j)^2+\lambda_1|b|$. Away from zero,
+\[
+ q'(b)=
+ \begin{cases}
+  b-z_j+\lambda_1,&b>0,\\
+  b-z_j-\lambda_1,&b<0.
+ \end{cases}
+\]
+At zero the subgradient condition is
+$0\in-z_j+\lambda_1[-1,1]$, which holds exactly when
+$|z_j|\leq\lambda_1$. Hence
+\begin{equation}
+ \widehat\beta_j^{\mathrm{lasso}}
+ =\operatorname{sign}(z_j)(|z_j|-\lambda_1)_+,
+ \label{eq:orthonormal-soft-threshold}
+\end{equation}
+the soft-thresholding rule. In contrast, ridge with objective
+$\tfrac12\norm{y-X\beta}^2+\tfrac{\lambda_2}{2}\norm\beta^2$ gives
+\begin{equation}
+ \widehat\beta_j^{\mathrm{ridge}}=\frac{z_j}{1+\lambda_2}.
+ \label{eq:orthonormal-ridge}
+\end{equation}
+Thus $\ell_0$ deletes or retains, lasso deletes or shrinks, and ridge shrinks
+every coordinate continuously.
+
 Exact support recovery needs conditions stronger than those needed for good
 prediction, including sufficient signal and restrictions on correlations.
 A sparse fitted model should not automatically be interpreted as identifying
 the true causal variables.
+
+The preferred penalty depends on signal structure. Lasso is often effective
+when relatively few predictors carry signal, because setting irrelevant
+coefficients to zero can substantially reduce variance. Ridge can perform
+better when signal is dense or distributed across correlated groups, because
+deleting coefficients creates unnecessary bias and lasso may select one
+member of a correlated group arbitrarily. One-hot encoded levels and basis
+expansions are examples where group-aware penalties may be preferable to
+coordinatewise lasso.
 
 \subsection{KKT}
 
@@ -902,18 +1710,93 @@ should be checked through KKT residuals or the primal--dual gap.
 
 \section{Regression Splines and Basis Expansions}
 
+Regularization reduces estimation variance within a chosen model class, but it
+cannot remove approximation bias caused by an overly restrictive class. For
+example, shrinking the coefficients of $\beta_0+\beta_1x$ still leaves a
+straight line. A basis expansion instead writes
+\[
+ f(x)=\sum_{j=0}^M\beta_jh_j(x).
+\]
+For a fixed collection of basis functions, define $B_{ij}=h_j(x_i)$. Then
+fitting remains ordinary linear regression:
+\[
+ \widehat\beta=(B^\mathsf TB)^{-1}B^\mathsf Ty
+\]
+when $B$ has full column rank. The fitting algorithm is unchanged; what has
+changed is the linear space of candidate functions.
+
+\subsection{Polynomial and Local Bases}
+
+Polynomial regression uses $h_j(x)=x^j$:
+\[
+ f(x)=\beta_0+\beta_1x+\cdots+\beta_dx^d.
+\]
+It is nonlinear in $x$ but linear in its coefficients, and degree $d$ can be
+chosen by CV. Increasing $d$ lowers approximation bias but raises estimation
+variance and can make the fit unstable near boundaries. With $p$ predictors,
+a complete polynomial expansion through total degree $d$ contains
+\[
+ M(p,d)=\binom{p+d}{d}
+\]
+terms including the intercept. Thus explicitly enumerating nonlinearities and
+interactions quickly becomes combinatorial.
+
+Step functions provide local constant fits by using interval indicators.
+They are easy to interpret but discontinuous. A more useful local construction
+uses the hinge function
+\[
+ (x-\xi)_+=\max(x-\xi,0).
+\]
+A linear spline with interior knots $\xi_1,\ldots,\xi_K$ has representation
+\begin{equation}
+ f(x)=\beta_0+\beta_1x+\sum_{k=1}^K\theta_k(x-\xi_k)_+.
+ \label{eq:linear-spline-hinge}
+\end{equation}
+It is continuous, has $K+2$ coefficients, and its slope changes by $\theta_k$
+after knot $\xi_k$.
+
+\subsection{Cubic Regression Splines}
+
 A degree-$d$ regression spline is piecewise polynomial with continuity
-constraints at knots $\xi_1,\ldots,\xi_K$. A truncated-power basis is
+constraints at knots $\xi_1,\ldots,\xi_K$. A cubic spline requires the
+function and its first two derivatives to agree across every knot. Counting
+parameters makes its dimension transparent: $K+1$ cubic pieces have
+$4(K+1)$ raw coefficients, while value, slope, and curvature matching impose
+$3K$ constraints. Hence the spline space has dimension
+\[
+ 4(K+1)-3K=K+4.
+\]
+The truncated-power basis
+\[
+ 1,x,x^2,x^3,(x-\xi_1)_+^3,\ldots,(x-\xi_K)_+^3
+\]
+has exactly this size and automatically enforces the smoothness constraints.
+More generally, a degree-$d$ truncated-power basis is
 \[
  1,x,\ldots,x^d,(x-\xi_1)_+^d,\ldots,(x-\xi_K)_+^d.
 \]
-Cubic splines are twice continuously differentiable. B-spline bases span the
-same space but have local support and much better numerical conditioning.
+
+B-spline bases span the same spline space but have local support and much
+better numerical conditioning. Each cubic B-spline basis function is nonzero
+on at most four consecutive knot spans, so changing one coefficient while
+holding the others fixed changes the represented function only locally.
+This does \emph{not} mean that changing one observation and refitting has only
+a local effect: least squares may change many coefficients, so the fitted
+curve can move throughout the domain.
 
 With a fixed basis matrix $B$, fitting is linear regression. Flexibility is
 controlled by degree, knot locations, number of knots, or a roughness penalty.
-Boundary behavior matters: natural cubic splines constrain the function to be
-linear beyond the boundary knots and often extrapolate more sensibly.
+Knots are often placed at empirical quantiles so data-rich regions receive
+more resolution, while CV can select their number. Boundary behavior matters:
+natural cubic splines impose $f''=0$ at both boundary knots and extend linearly
+outside them. With $K$ interior knots their dimension is $K+2$, two fewer than
+an unrestricted cubic spline, and their tail behavior is typically more stable
+than that of a high-degree global polynomial.
+
+Local support alone does not solve high-dimensional feature growth. If each of
+$p$ predictors has $m$ basis functions, a full tensor-product basis has $m^p$
+terms. Additive models avoid this explosion by excluding interactions unless
+they are introduced deliberately.
 
 \subsection{Smoothing Splines}
 

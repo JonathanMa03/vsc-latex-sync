@@ -283,6 +283,69 @@ $S/n$ reduces squared-error risk.  The reduction $S$ therefore supports a
 strictly better nonrandomized estimator than the original rule.
 \end{example}
 
+\subsection{Admissibility and pointwise risk comparison}
+
+Because $R(\theta,\delta)$ is a function rather than a single number, two
+rules may trade places as $\theta$ varies. The weakest natural optimality
+requirement rules out procedures that are uniformly improvable.
+
+\begin{definition}[Admissibility]
+A decision rule $\delta$ is \emph{inadmissible} if there is another rule
+$\delta'$ such that
+\[
+ R(\theta,\delta')\leq R(\theta,\delta)
+ \quad\text{for every }\theta\in\Theta,
+\]
+with strict inequality for at least one $\theta$. Otherwise $\delta$ is
+\emph{admissible}.
+\end{definition}
+
+Inadmissibility is decisive: once a dominating rule is available, there is
+no parameter value at which the original rule has lower risk. Admissibility
+is only a minimal requirement, however, and can leave many qualitatively
+different procedures incomparable.
+
+\begin{example}[Three estimators of a coin bias]
+Let $X_1,\ldots,X_n\iid\Bern(p)$, with $p\in(0,1)$, and use squared-error
+loss. Consider
+\[
+ \delta_n=\bar X,
+ \qquad \delta_1=X_1,
+ \qquad \delta_{1/2}=\frac12.
+\]
+The sample mean is unbiased with variance $p(1-p)/n$, so
+\[
+ R(p,\delta_n)=\frac{p(1-p)}{n}.
+\]
+Since $X_1^2=X_1$,
+\begin{align*}
+ R(p,\delta_1)
+ &=\E_p[(X_1-p)^2]
+ =\Var_p(X_1)=p(1-p),\\
+ R(p,\delta_{1/2})&=\left(p-\frac12\right)^2.
+\end{align*}
+Thus $\delta_n$ dominates $\delta_1$ whenever $n>1$, so the first-flip
+estimator is inadmissible. Neither $\delta_n$ nor $\delta_{1/2}$ dominates
+the other: the constant estimator has zero risk at $p=1/2$, while its risk
+near zero or one is close to $1/4$.
+
+In fact, the apparently unhelpful rule $\delta_{1/2}$ is admissible. If a
+rule $\delta$ dominated it, then at $p=1/2$ we would have
+\[
+ 0\leq R(1/2,\delta)\leq R(1/2,\delta_{1/2})=0.
+\]
+Every binary sample has positive probability under $p=1/2$, so this forces
+$\delta(x)=1/2$ for every $x\in\{0,1\}^n$. Hence the competing rule is
+identical to $\delta_{1/2}$ and cannot improve strictly anywhere. The sample
+mean is also admissible, although establishing that fact requires a more
+general argument than the elementary dominance calculation above.
+\end{example}
+
+This example explains why later criteria are needed. Bayes procedures
+collapse the risk function by averaging against a prior, whereas minimax
+procedures compare worst-case risk. Both impose more structure than mere
+admissibility.
+
 \section{Sufficiency}
 
 \begin{definition}[Sufficient statistic]
@@ -333,16 +396,40 @@ there are nonnegative measurable functions $g_\theta$ and $h$ such that
 where $h$ does not depend on $\theta$.
 \end{theorem}
 
-\begin{proof}[Proof sketch]
-If \eqref{eq:factorization-theorem} holds, then within a fiber
-$\{x:T(x)=t\}$ the relative weights of possible observations are determined
-by $h(x)$, independently of $\theta$.  Normalizing these weights gives a
-parameter-free conditional law of $X$ given $T=t$.  Conversely, if this
-conditional law is parameter-free, disintegrate $P_\theta$ into the marginal
-law of $T$ and the common conditional law of $X$ given $T$; their densities
-provide $g_\theta$ and $h$.  A fully general proof uses regular conditional
-probabilities and the Radon--Nikodym theorem.
+\begin{proof}[Discrete case]
+Suppose first that $T$ is sufficient. Since
+$\{X=x\}\subseteq\{T(X)=T(x)\}$,
+\begin{align*}
+ p_\theta(x)
+ &=P_\theta\{T(X)=T(x)\}
+   P_\theta\{X=x\mid T(X)=T(x)\}\\
+ &=g_\theta(T(x))h(x),
+\end{align*}
+where the second factor is free of $\theta$ by sufficiency. This is the
+desired factorization.
+
+Conversely, suppose $p_\theta(x)=g_\theta(T(x))h(x)$. When $t=T(x)$ and the
+conditioning event has positive probability,
+\begin{align*}
+ P_\theta(X=x\mid T=t)
+ &=\frac{g_\theta(t)h(x)}
+ {\sum_{x':T(x')=t}g_\theta(t)h(x')}\\
+ &=\frac{h(x)}{\sum_{x':T(x')=t}h(x')}.
+\end{align*}
+This expression is independent of $\theta$; when $T(x)\neq t$, the
+conditional probability is zero. Hence $T$ is sufficient. For general
+dominated models the same idea is formalized using regular conditional
+probabilities, disintegration, and the Radon--Nikodym theorem.
 \end{proof}
+
+An immediate likelihood interpretation is worth recording. Under the
+factorization, for any two parameter values with nonzero densities,
+\begin{equation}\label{eq:sufficient-relative-likelihood}
+ \frac{f_\theta(x)}{f_{\theta'}(x)}
+ =\frac{g_\theta(T(x))}{g_{\theta'}(T(x))}.
+\end{equation}
+Thus every comparison of the relative support that the observation gives to
+$\theta$ versus $\theta'$ depends on the data only through $T(x)$.
 
 \begin{example}[Bernoulli sample]
 For $x\in\{0,1\}^n$,
@@ -421,12 +508,78 @@ $S=\sum_iX_i$.  The parameter space is all of $\R$, so this is a full,
 regular, one-parameter exponential family.
 \end{example}
 
+\begin{example}[Exponential distribution in canonical form]
+If $X\sim\Exp(\lambda)$ with $\lambda>0$, then
+\[
+ f_\lambda(x)=\lambda e^{-\lambda x}\ind\{x>0\}
+ =\ind\{x>0\}\exp\{-\lambda x+\log\lambda\}.
+\]
+In the form $h(x)\exp\{\eta T(x)-A(\eta)\}$, one convenient choice is
+\[
+ h(x)=\ind\{x>0\},\qquad T(x)=x,qquad
+ \eta=-\lambda<0,qquad A(\eta)=-\log(-\eta).
+\]
+For an iid sample, the joint likelihood depends on the observations only
+through $\sum_iX_i$, so this sum is sufficient for $\lambda$. This example
+also highlights a common sign convention: $\lambda$ is the ordinary rate
+parameter, whereas the canonical natural parameter is $-\lambda$.
+\end{example}
+
+\begin{example}[Geometric distribution]
+Let $X\sim\mathrm{Geom}(p)$ on $\{0,1,2,\ldots\}$, with
+$P_p(X=x)=(1-p)p^x$ for $0<p<1$. Then
+\[
+ P_p(X=x)=\ind\{x\geq0\}\exp\{x\log p+\log(1-p)\}.
+\]
+Thus $T(x)=x$, the canonical parameter is $\eta=\log p<0$, and
+$A(\eta)=-\log(1-e^\eta)$. The normalizer follows from
+$\sum_{x=0}^\infty e^{\eta x}=(1-e^\eta)^{-1}$. For an iid sample,
+$\sum_iX_i$ is sufficient for $p$.
+\end{example}
+
+\subsubsection{Minimal representations and curved families}
+
+An exponential-family formula may contain redundant coordinates. A
+rank-$k$ canonical representation is \emph{minimal} when neither its
+statistics nor its varying natural parameters satisfy a nontrivial affine
+constraint:
+\begin{align*}
+ \sum_{j=1}^k a_jT_j(x)=a_0\text{ for every }x
+ &\quad\Longrightarrow\quad a_1=\cdots=a_k=0,\\
+ \sum_{j=1}^k b_j\eta_j=b_0\text{ for every }\eta\in H
+ &\quad\Longrightarrow\quad b_1=\cdots=b_k=0.
+\end{align*}
+Constants on the statistic side can be absorbed into the log-partition
+function, while parameter-free functions of $x$ can be absorbed into the
+carrier $h(x)$.
+
+For example, if $T_1(x)=T_2(x)=x$, then
+$\eta_1T_1(x)+\eta_2T_2(x)=(\eta_1+\eta_2)x$; only one parameter combination
+is identifiable. Conversely, if $\eta_1+\eta_2=1$, then
+\[
+ \eta_1x+\eta_2x^2=\eta_1(x-x^2)+x^2,
+\]
+and the parameter-free $x^2$ term belongs in the carrier. Both formulas
+reduce to rank-one representations.
+
+A minimal rank-$k$ family is sometimes called \emph{full-rank} when its
+natural parameter set contains a nonempty open $k$-dimensional rectangle. If
+the natural parameters lie on a lower-dimensional nonlinear set, the family
+is \emph{curved}. This differs from a \emph{full natural family}, which uses
+the entire parameter space where the log-partition function is finite.
+
 \begin{example}[A curved exponential family]
 Let $X_1,\ldots,X_n\iid\Normal(\mu,\mu^2)$ with $\mu>0$.  The joint density
-factors through $(\sum_iX_i,\sum_iX_i^2)$, but its two natural parameters are
-constrained by a one-dimensional relation.  It is therefore a curved
-subfamily of a two-parameter exponential family.  Curved families need not
-inherit all completeness properties of the containing full family.
+factors through $(\sum_iX_i,\sum_iX_i^2)$. Its natural parameters are
+\[
+ \eta_1=\frac1\mu,
+ \qquad \eta_2=-\frac1{2\mu^2},
+ \qquad \eta_2=-\frac12\eta_1^2.
+\]
+The constraint is nonlinear and cannot be removed by absorbing an affine
+term into the carrier. It is therefore a curved one-dimensional subfamily of
+a rank-two exponential family. Curved families need not inherit all
+completeness properties of the containing full-rank family.
 \end{example}
 
 The log-partition function encodes moments of the natural statistic.  If
@@ -516,6 +669,84 @@ which one likelihood is zero and the other is not.  Hence $X_{(n)}$ is
 minimal sufficient.
 \end{example}
 
+\begin{theorem}[Minimal exponential families give minimal sufficient statistics]
+Suppose a canonical rank-$k$ exponential family has density
+\[
+ f_\eta(x)=h(x)\exp\{\eta^\mathsf TT(x)-A(\eta)\}
+\]
+and the representation is minimal in the sense described above. Then the
+natural statistic $T(X)$ is minimal sufficient.
+\end{theorem}
+
+\begin{proof}
+For sample points with positive carrier density,
+\[
+ \frac{f_\eta(x)}{f_\eta(y)}
+ =\frac{h(x)}{h(y)}\exp\{\eta^\mathsf T[T(x)-T(y)]\}.
+\]
+If $T(x)=T(y)$, this ratio is independent of $\eta$. Conversely, if the
+ratio is independent of $\eta$, then
+$\eta^\mathsf T[T(x)-T(y)]$ is constant over the natural parameter set.
+Minimality forces $T(x)-T(y)=0$. The likelihood-ratio criterion proves the
+claim.
+\end{proof}
+
+\begin{example}[Curved normal family]
+Let $X_1,\ldots,X_n\iid\Normal(\theta,\theta^2)$ with $\theta>0$, and set
+\[
+ T_1(x)=\sum_i x_i,
+ \qquad T_2(x)=\sum_i x_i^2.
+\]
+Up to a parameter-free factor,
+\[
+ \frac{f_\theta(x)}{f_\theta(y)}
+ =\exp\left\{-\frac{T_2(x)-T_2(y)}{2\theta^2}
+ +\frac{T_1(x)-T_1(y)}{\theta}\right\}.
+\]
+If this is constant for every $\theta>0$, put $u=1/\theta$. Its logarithm is
+the polynomial
+\[
+ -\frac12[T_2(x)-T_2(y)]u^2+[T_1(x)-T_1(y)]u.
+\]
+Both coefficients must vanish. Hence $(T_1,T_2)$ is minimal sufficient even
+though the family is curved.
+\end{example}
+
+\subsection{Ancillarity}
+
+\begin{definition}[Ancillary statistic]
+A statistic $A(X)$ is \emph{ancillary} if its distribution is the same for
+every $\theta\in\Theta$. It is \emph{first-order ancillary} if only its mean
+$\E_\theta[A(X)]$ is independent of $\theta$.
+\end{definition}
+
+Ancillarity is different from sufficiency. A sufficient statistic retains
+all parameter information; an ancillary statistic has a parameter-free
+marginal distribution, although it may still describe the sample
+configuration and provide a useful conditioning variable.
+
+\begin{example}[Normal location differences]
+If $X_1,\ldots,X_n\iid\Normal(\mu,1)$, then
+\[
+ X_2-X_1=(X_2-\mu)-(X_1-\mu)\sim\Normal(0,2),
+\]
+independently of $\mu$. Thus $X_2-X_1$ is ancillary. More generally, the
+joint distribution of the centered residuals $X_i-\bar X$ is free of $\mu$.
+\end{example}
+
+\begin{example}[Range in a location family]
+Let $X_i=\theta+Z_i$, where the iid error distribution is known; this
+includes the Cauchy location family. Then
+\[
+ X_{(n)}-X_{(1)}=Z_{(n)}-Z_{(1)},
+\]
+so the sample range is ancillary. In the Cauchy location model, essentially
+the full vector of order statistics is needed for minimal sufficiency, yet
+its range is ancillary. Minimal sufficiency therefore means that no further
+\emph{lossless} reduction is possible, not that every function of the
+statistic is informative about the parameter.
+\end{example}
+
 \subsection{Complete Sufficiency}
 
 Sufficiency says that a statistic retains all information in the sample.
@@ -552,9 +783,68 @@ of Laplace transforms implies that this signed measure is zero, and therefore
 $a(T)=0$ almost surely throughout the family.
 \end{proof}
 
+\begin{example}[Completeness of the normal sample mean]
+Let $X_1,\ldots,X_n\iid\Normal(\theta,1)$, where $\theta\in\R$.  Since
+$\bar X\sim\Normal(\theta,1/n)$, it suffices to prove the claim for a single
+observation $Z\sim\Normal(\theta,\sigma^2)$ with known $\sigma^2>0$.
+Suppose $a$ is integrable and
+\[
+    \E_\theta[a(Z)]=0
+    \qquad\text{for every }\theta\in\R.
+\]
+Write $a=a^+-a^-$, where $a^+,a^-\geq0$.  Expanding the normal density and
+cancelling its positive factor $e^{-\theta^2/(2\sigma^2)}$ gives
+\[
+ \int a^+(z)e^{-z^2/(2\sigma^2)}e^{(\theta/\sigma^2)z}\,\dd z
+ =
+ \int a^-(z)e^{-z^2/(2\sigma^2)}e^{(\theta/\sigma^2)z}\,\dd z
+ \quad\text{for all }\theta.
+\]
+At $\theta=0$ the two sides have a common finite value $c$.  If $c=0$, then
+$a^+=a^-=0$ almost everywhere.  If $c>0$, normalize
+\[
+ q_\pm(z)=c^{-1}a^\pm(z)e^{-z^2/(2\sigma^2)}.
+\]
+The preceding identity says that $q_+$ and $q_-$ have the same moment
+generating function on all of $\R$.  Uniqueness of moment generating
+functions implies $q_+=q_-$ almost everywhere, and therefore $a=0$ almost
+everywhere.  Every normal law has a positive Lebesgue density, so
+$a(Z)=0$ almost surely for every $\theta$.  Thus $\bar X$ is complete (and,
+by factorization, sufficient).
+\end{example}
+
 The openness condition matters.  If a $k$-dimensional exponential family is
 restricted to a lower-dimensional curve, a nonzero function may have mean
 zero at every parameter value in the restricted family.
+
+\begin{example}[The curved normal statistic is not complete]
+Return to $X_1,\ldots,X_n\iid\Normal(\theta,\theta^2)$ with $\theta>0$ and
+the minimal sufficient statistic
+\[
+ T_1=\sum_{i=1}^nX_i,
+ \qquad
+ T_2=\sum_{i=1}^nX_i^2.
+\]
+The first two moments needed below are
+\[
+ \E_\theta[T_2]=2n\theta^2,
+ \qquad
+ \E_\theta[T_1^2]
+ =\Var_\theta(T_1)+\{\E_\theta(T_1)\}^2
+ =n(n+1)\theta^2.
+\]
+Consequently the nonzero function
+\[
+ a(T_1,T_2)=T_1^2-\frac{n+1}{2}T_2
+\]
+has expectation zero for every $\theta>0$.  It is not almost surely zero;
+for example, at the sample point $(1,0,\ldots,0)$ it equals $(1-n)/2$ when
+$n\geq2$, and continuity gives a neighborhood of nonzero values with
+positive probability.  Hence $(T_1,T_2)$ is minimal sufficient but not
+complete.  This is precisely what can fail when the natural parameter set
+lies on a lower-dimensional curve rather than containing an open subset of
+the ambient parameter space.
+\end{example}
 
 \begin{example}[Completeness of the binomial count]
 Let $S\sim\Bin(n,p)$, $0<p<1$, and suppose $\E_p[a(S)]=0$ for every $p$.
@@ -679,27 +969,56 @@ probability that a fixed set of $m$ positions is contained among the $s$
 heads, and it has no dependence on $p$.
 \end{example}
 
+\begin{example}[Constant estimators]
+Again let $X_1,\ldots,X_n\iid\Bern(p)$, but consider the constant estimator
+$U\equiv 1/2$ of $p$.  For every statistic $T$,
+\[
+    \E_p[U\mid T]=\frac12,
+\]
+so Rao--Blackwellization makes no change.  In particular, the theorem is an
+\emph{improvement principle}, not an unconditional optimality theorem: it
+cannot improve a rule that contains no sample information.  Moreover, the
+constant rule has zero squared-error risk at $p=1/2$, illustrating why no
+single estimator can minimize risk pointwise among all estimators without
+some restriction, such as unbiasedness.
+\end{example}
+
 Rao--Blackwellization need not produce a unique or globally optimal estimator
 by itself.  Completeness supplies the missing uniqueness.
 
 \begin{theorem}[Lehmann--Scheff\'e]
-If $T$ is complete and sufficient and $U$ is any unbiased estimator of
-$g(\theta)$ with finite variance, then
+Suppose $T$ is complete and sufficient and there exists an unbiased
+estimator $U$ of $g(\theta)$.  Then
 \[
     \delta(T)=\E_\theta[U\mid T]
 \]
-is the unique unbiased estimator of $g(\theta)$ that is a function of $T$,
-and it has variance no larger than that of any unbiased estimator.  Thus it is
-the uniformly minimum variance unbiased estimator of $g(\theta)$.
+is the unique unbiased estimator of $g(\theta)$ that is a function of $T$.
+For any loss $L(\theta,a)$ that is convex in $a$ (and for which the relevant
+risks are finite), $\delta$ is uniformly minimum risk among unbiased
+estimators.  If the loss is strictly convex, it is the unique such rule up to
+$P_\theta$-null sets.  In particular, under squared-error loss and finite
+second moments, $\delta$ is the unique uniformly minimum variance unbiased
+estimator of $g(\theta)$.
 \end{theorem}
 
 \begin{proof}
-Rao--Blackwellization shows that $\delta(T)$ is unbiased and has no larger
-variance than $U$.  If $\delta_1(T)$ and $\delta_2(T)$ are two unbiased
-functions of $T$, then their difference has expectation zero for all
-$\theta$.  Completeness implies $\delta_1(T)=\delta_2(T)$ almost surely.
-Applying Rao--Blackwellization to any competing unbiased estimator proves the
-minimum-variance claim.
+The tower property shows that $\delta(T)$ is unbiased.  If $\delta_1(T)$ and
+$\delta_2(T)$ are two unbiased functions of $T$, their difference has
+expectation zero for all $\theta$; completeness therefore gives
+$\delta_1(T)=\delta_2(T)$ almost surely.
+
+Now let $V$ be any competing unbiased estimator and define
+$V^*(T)=\E_\theta[V\mid T]$.  Sufficiency makes this a parameter-free
+function of $T$, and the tower property makes it unbiased.  The uniqueness
+just proved forces $V^*(T)=\delta(T)$ almost surely.  Conditional Jensen's
+inequality then gives
+\[
+ R(\theta,\delta)=R(\theta,V^*)\leq R(\theta,V)
+ \qquad\text{for every }\theta.
+\]
+For strictly convex loss, equality forces $V=V^*=\delta$ almost surely.
+Taking squared-error loss yields the UMVU conclusion because the risk of an
+unbiased estimator equals its variance.
 \end{proof}
 
 For the coin model, the binomial count $S$ is complete and sufficient.
@@ -793,6 +1112,66 @@ the expectation of any function of $S$ is a polynomial in $p$ of degree at
 most $n$.
 \end{example}
 
+\begin{example}[Uniform upper endpoint]
+Let $X_1,\ldots,X_n\iid\mathrm{Uniform}(0,\theta)$ and
+$M=X_{(n)}$.  The maximum is complete and sufficient, while $2X_1$ is an
+unbiased estimator of $\theta$.  Conditional on $M=m$, exchangeability gives
+probability $1/n$ that $X_1$ is the maximum; otherwise $X_1$ is uniform on
+$(0,m)$.  Hence
+\[
+ \E_\theta[2X_1\mid M=m]
+ =2\left\{\frac{m}{n}+\left(1-\frac1n\right)\frac m2\right\}
+ =\frac{n+1}{n}m.
+\]
+The Lehmann--Scheff\'e theorem therefore gives
+\[
+ \widehat\theta_{\mathrm{UMVU}}=\frac{n+1}{n}X_{(n)}.
+\]
+This also follows directly from $M/\theta\sim\mathrm{Beta}(n,1)$, which implies
+$\E_\theta[M]=n\theta/(n+1)$.
+\end{example}
+
+\begin{example}[An exponential function of a Poisson mean]
+Let $X_1,\ldots,X_n\iid\Pois(\theta)$ and suppose the target is
+$g(\theta)=e^{-a\theta}$ for a known $a\in\R$.  The statistic
+$T=\sum_iX_i\sim\Pois(n\theta)$ is complete and sufficient.  The Poisson
+probability generating function first gives
+\[
+ \E_\theta[(1-a)^{X_1}]=e^{-a\theta}.
+\]
+Moreover, $X_1\mid T=t\sim\Bin(t,1/n)$, so conditioning yields
+\[
+ \E_\theta[(1-a)^{X_1}\mid T=t]
+ =\left(1-\frac1n+\frac{1-a}{n}\right)^t
+ =\left(1-\frac an\right)^t.
+\]
+Consequently
+\[
+ \widehat{e^{-a\theta}}_{\mathrm{UMVU}}
+ =\left(1-\frac an\right)^T.
+\]
+When $a=n$, the convention $0^0=1$ makes this estimator
+$\ind\{T=0\}$, whose expectation is $e^{-n\theta}$.
+\end{example}
+
+\begin{example}[Why UMVU does not mean globally optimal]
+In the preceding Poisson example, suppose $a>n$.  Then
+$\eta(T)=(1-a/n)^T$ is negative whenever $T$ is odd, although the target
+$e^{-a\theta}$ is positive.  Define the truncated estimator
+\[
+ \delta(T)=\max\{\eta(T),0\}.
+\]
+Whenever $\eta(T)<0$, truncation moves the estimate strictly closer to the
+positive target; otherwise it makes no change.  Because
+$P_\theta(T\text{ is odd})>0$ for every $\theta>0$,
+\[
+ R(\theta,\delta)<R(\theta,\eta)
+ \qquad\text{for every }\theta>0
+\]
+under squared-error loss.  There is no contradiction: $\delta$ is biased,
+whereas UMVU optimality is restricted to unbiased estimators.
+\end{example}
+
 \begin{example}[Normal mean and variance]
 If $X_1,\ldots,X_n\iid\Normal(\mu,\sigma^2)$ with both parameters unknown,
 then $(\sum_iX_i,\sum_iX_i^2)$ is complete and sufficient because the normal
@@ -802,6 +1181,22 @@ space.  Therefore $\bar X$ is UMVU for $\mu$, and
     S_X^2=\frac{1}{n-1}\sum_{i=1}^n(X_i-\bar X)^2
 \]
 is UMVU for $\sigma^2$.
+
+There is also an unbiased estimator of the standard deviation itself.  Put
+$Q=\sum_i(X_i-\bar X)^2$ and $\nu=n-1$.  Since
+$Q/\sigma^2\sim\chi_\nu^2$, we may write
+$\sqrt Q\overset{d}{=}\sigma V$, where $V$ has the chi distribution with $\nu$
+degrees of freedom.  Its mean is
+\[
+ c_\nu=\E[V]
+ =\sqrt2\,\frac{\Gamma((\nu+1)/2)}{\Gamma(\nu/2)}.
+\]
+Thus
+\[
+ \widehat\sigma_{\mathrm{UMVU}}
+ =\frac{\sqrt Q}{c_{n-1}}
+\]
+is unbiased and is a function of the complete sufficient statistic.
 \end{example}
 
 \section{Uniformly Minimum Risk Unbiased Estimators}
